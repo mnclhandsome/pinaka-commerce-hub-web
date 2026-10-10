@@ -1,831 +1,436 @@
-import React, { useEffect, useMemo, useState } from "react";
-import { ordersSeed } from "../data/data";
-import ViewDetailsModal from "../components/ViewDetailsModal";
+import { useEffect, useMemo, useState } from "react";
+import { Link, useLocation, useSearchParams } from "react-router-dom";
 import Pagination from "../components/Pagination";
 import FiltersBar from "../components/FiltersBar";
+import { listMerchants } from "../api/merchants";
+import { listMerchantStores } from "../api/stores";
+import { listOrders } from "../api/orders";
 import "../styles/orders.css";
 
+function statusClass(status) {
+  const value = String(status || "").toLowerCase();
+  if (value.includes("complete")) return "completed";
+  if (value.includes("pending")) return "pending";
+  if (value.includes("cancel")) return "cancelled";
+  if (value.includes("refund")) return "refunded";
+  if (value.includes("partial")) return "partial";
+  return "processing";
+}
+
+function matchesDate(createdAt, dateFilter) {
+  if (!dateFilter) return true;
+  const orderDate = new Date(createdAt);
+  if (Number.isNaN(orderDate.getTime())) return false;
+  const today = new Date();
+  if (dateFilter === "today") return orderDate.toDateString() === today.toDateString();
+  const from = new Date(today);
+  from.setDate(today.getDate() - (dateFilter === "7days" ? 7 : 30));
+  return orderDate >= from;
+}
+
+function getInitials(name = "") {
+  return String(name)
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0])
+    .join("")
+    .toUpperCase();
+}
+
 export default function Orders({
-    embedded = false,
-    merchantId,
-    storeId,
-    store,
+  embedded = false,
+  merchantId,
+  storeId,
+  store,
 }) {
-    const [search, setSearch] = useState("");
-    const [statusFilter, setStatusFilter] = useState("");
-    const [dateFilter, setDateFilter] = useState("");
-    const [salesChannel, setSalesChannel] = useState("");
-    const [authorFilter, setAuthorFilter] = useState("");
-    const [selectedOrder, setSelectedOrder] = useState(null);
+  const location = useLocation();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [merchants, setMerchants] = useState([]);
+  const [stores, setStores] = useState([]);
+  const [selectedMerchant, setSelectedMerchant] = useState(
+    merchantId || (!embedded && searchParams.get("merchant")) || "",
+  );
+  const [selectedStore, setSelectedStore] = useState(
+    storeId || (!embedded && searchParams.get("store")) || "",
+  );
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
+  const [dateFilter, setDateFilter] = useState("");
+  const [authorFilter, setAuthorFilter] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
-    // =========================================================
-    // PAGINATION
-    // =========================================================
+  useEffect(() => {
+    if (merchantId) setSelectedMerchant(merchantId);
+  }, [merchantId]);
 
-    const [currentPage, setCurrentPage] = useState(1);
-const [pageSize, setPageSize] = useState(10);
+  useEffect(() => {
+    if (storeId) setSelectedStore(storeId);
+  }, [storeId]);
 
-const handlePageSizeChange = (size) => {
-    setPageSize(size);
-    setCurrentPage(1);
-};
-
-    // =========================================================
-    // ORDERS
-    // =========================================================
-
-    const orders = ordersSeed || [];
-
-    // =========================================================
-    // AUTHORS
-    // =========================================================
-
-    const authors = useMemo(() => {
-        return [
-            ...new Set(
-                orders
-                    .map((order) => order.author)
-                    .filter(Boolean)
-            ),
-        ];
-    }, [orders]);
-
-    // =========================================================
-    // FILTER ORDERS
-    // =========================================================
-
-    const filteredOrders = useMemo(() => {
-        return orders.filter((order) => {
-            const searchText = `
-                ${order.wooOrderId || ""}
-                ${order.offlineOrderId || ""}
-                ${order.author || ""}
-                ${order.status || ""}
-            `.toLowerCase();
-
-            const matchesSearch =
-                !search ||
-                searchText.includes(
-                    search.toLowerCase()
-                );
-
-            const matchesStatus =
-                !statusFilter ||
-                order.status === statusFilter;
-
-            const matchesChannel =
-                !salesChannel ||
-                order.salesChannel === salesChannel;
-
-            const matchesAuthor =
-                !authorFilter ||
-                order.author === authorFilter;
-
-            let matchesDate = true;
-
-            if (dateFilter) {
-                const orderDate = new Date(
-                    order.date
-                );
-
-                const today = new Date();
-
-                if (dateFilter === "today") {
-                    matchesDate =
-                        orderDate.toDateString() ===
-                        today.toDateString();
-                }
-
-                if (dateFilter === "7days") {
-                    const sevenDaysAgo =
-                        new Date();
-
-                    sevenDaysAgo.setDate(
-                        today.getDate() - 7
-                    );
-
-                    matchesDate =
-                        orderDate >= sevenDaysAgo;
-                }
-
-                if (dateFilter === "30days") {
-                    const thirtyDaysAgo =
-                        new Date();
-
-                    thirtyDaysAgo.setDate(
-                        today.getDate() - 30
-                    );
-
-                    matchesDate =
-                        orderDate >= thirtyDaysAgo;
-                }
-            }
-
-            return (
-                matchesSearch &&
-                matchesStatus &&
-                matchesChannel &&
-                matchesAuthor &&
-                matchesDate
-            );
-        });
-    }, [
-        orders,
-        search,
-        statusFilter,
-        dateFilter,
-        salesChannel,
-        authorFilter,
-    ]);
-
-    // =========================================================
-    // PAGINATION
-    // =========================================================
-
-    const totalItems = filteredOrders.length;
-
-    const totalPages = Math.max(
-    1,
-    Math.ceil(totalItems / pageSize)
-);
-
-    const paginatedOrders = useMemo(() => {
-        const startIndex =
-            (currentPage - 1) * pageSize;
-
-        const endIndex =
-            startIndex + pageSize;
-
-        return filteredOrders.slice(
-            startIndex,
-            endIndex
-        );
-    }, [
-        filteredOrders,
-        currentPage,
-        pageSize,
-    ]);
-
-    // =========================================================
-    // RESET PAGE WHEN FILTERS CHANGE
-    // =========================================================
-
-    useEffect(() => {
-        setCurrentPage(1);
-    }, [
-        search,
-        statusFilter,
-        dateFilter,
-        salesChannel,
-        authorFilter,
-    ]);
-
-    // =========================================================
-    // KEEP CURRENT PAGE VALID
-    // =========================================================
-
-    useEffect(() => {
-        if (
-            totalPages > 0 &&
-            currentPage > totalPages
-        ) {
-            setCurrentPage(totalPages);
-        }
-    }, [
-        currentPage,
-        totalPages,
-    ]);
-
-    // =========================================================
-    // CLEAR FILTERS
-    // =========================================================
-
-    const clearFilters = () => {
-        setSearch("");
-        setStatusFilter("");
-        setDateFilter("");
-        setSalesChannel("");
-        setAuthorFilter("");
-        setCurrentPage(1);
+  useEffect(() => {
+    if (embedded) return undefined;
+    let active = true;
+    listMerchants()
+      .then((rows) => {
+        if (active) setMerchants(Array.isArray(rows) ? rows : []);
+      })
+      .catch(() => {
+        if (active) setMerchants([]);
+      });
+    return () => {
+      active = false;
     };
+  }, [embedded]);
 
-    // =========================================================
-    // SUMMARY
-    // =========================================================
+  useEffect(() => {
+    if (!selectedMerchant || embedded) {
+      if (!embedded) setStores([]);
+      return undefined;
+    }
+    let active = true;
+    listMerchantStores(selectedMerchant)
+      .then((rows) => {
+        if (!active) return;
+        setStores(rows);
+        if (rows.length === 1) setSelectedStore(rows[0].value);
+      })
+      .catch(() => {
+        if (active) setStores([]);
+      });
+    return () => {
+      active = false;
+    };
+  }, [selectedMerchant, embedded]);
 
-    const completedCount = orders.filter(
-        (order) =>
-            order.status === "Completed"
-    ).length;
+  useEffect(() => {
+    if (!selectedStore) {
+      setOrders([]);
+      setError("");
+      setLoading(false);
+      return undefined;
+    }
+    let active = true;
+    setLoading(true);
+    setError("");
+    listOrders(selectedStore)
+      .then((rows) => {
+        if (!active) return;
+        const merchantOrders = selectedMerchant
+          ? rows.filter((order) => !order.merchantId || String(order.merchantId) === String(selectedMerchant))
+          : rows;
+        setOrders(merchantOrders);
+      })
+      .catch((loadError) => {
+        if (!active) return;
+        setOrders([]);
+        setError(loadError?.message || "Failed to load orders.");
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [selectedStore, selectedMerchant]);
 
-    const pendingCount = orders.filter(
-        (order) =>
-            order.status === "Pending payment"
-    ).length;
+  const authors = useMemo(
+    () => [...new Set(orders.map((order) => order.author).filter(Boolean))],
+    [orders],
+  );
 
-    const cancelledCount = orders.filter(
-        (order) =>
-            order.status === "Cancelled"
-    ).length;
+  const filteredOrders = useMemo(() => {
+    const query = search.trim().toLowerCase();
+    return orders.filter((order) => {
+      const searchText = `${order.wooOrderId} ${order.offlineOrderId} ${order.author} ${order.status}`.toLowerCase();
+      return (
+        (!query || searchText.includes(query)) &&
+        (!statusFilter || order.status === statusFilter) &&
+        (!authorFilter || order.author === authorFilter) &&
+        matchesDate(order.createdAt, dateFilter)
+      );
+    });
+  }, [orders, search, statusFilter, authorFilter, dateFilter]);
 
-    const totalAmount = orders.reduce(
-        (sum, order) =>
-            sum +
-            Number(order.totalValue || 0),
-        0
-    );
-    const orderPercentage = (count) =>
-        orders.length ? ((count / orders.length) * 100).toFixed(1) : "0.0";
+  const totalItems = filteredOrders.length;
+  const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+  const paginatedOrders = useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    return filteredOrders.slice(start, start + pageSize);
+  }, [filteredOrders, currentPage, pageSize]);
 
-    // =========================================================
-    // RENDER
-    // =========================================================
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, statusFilter, dateFilter, authorFilter, selectedMerchant, selectedStore]);
 
-    return (
-        <div className="page-content orders-page">
+  useEffect(() => {
+    if (currentPage > totalPages) setCurrentPage(totalPages);
+  }, [currentPage, totalPages]);
 
-            {/* =================================================
-                HEADER
-            ================================================= */}
+  const completedCount = orders.filter((order) => statusClass(order.status) === "completed").length;
+  const pendingCount = orders.filter((order) => statusClass(order.status) === "pending").length;
+  const totalAmount = orders.reduce((sum, order) => sum + Number(order.totalValue || 0), 0);
+  const orderPercentage = (count) => (orders.length ? ((count / orders.length) * 100).toFixed(1) : "0.0");
+  const detailSearch = new URLSearchParams();
+  if (selectedMerchant) detailSearch.set("merchant", selectedMerchant);
+  if (selectedStore) detailSearch.set("store", selectedStore);
+  const detailQuery = detailSearch.toString();
 
-            <div className="orders-header">
+  function rememberFilters(nextMerchant, nextStore) {
+    if (embedded) return;
+    const next = new URLSearchParams(searchParams);
+    if (nextMerchant) next.set("merchant", nextMerchant);
+    else next.delete("merchant");
+    if (nextStore) next.set("store", nextStore);
+    else next.delete("store");
+    setSearchParams(next, { replace: true });
+  }
 
-                <div className="orders-title-area">
-                    <div>
-                        <h1>Orders</h1>
+  function clearFilters() {
+    setSearch("");
+    setStatusFilter("");
+    setDateFilter("");
+    setAuthorFilter("");
+    setCurrentPage(1);
+  }
 
-                        <p>
-                            View orders and transaction
-                            information for this store.
-                        </p>
-                    </div>
-
-                </div>
-
-                {/* STORE CONTEXT */}
-
-                {store && (
-                    <div className="orders-store-context">
-
-                        <i className="bi bi-shop" />
-
-                        <div>
-
-                            <span>STORE</span>
-
-                            <strong>
-                                {store.name}
-                            </strong>
-
-                            <small>
-                                {store.id}
-                            </small>
-
-                        </div>
-
-                    </div>
-                )}
-
+  return (
+    <div className="page-content orders-page">
+      <div className="orders-header">
+        <div className="orders-title-area">
+          <div>
+            <h1>Orders</h1>
+            <p>View orders and transaction information for this store.</p>
+          </div>
+        </div>
+        {store && (
+          <div className="orders-store-context">
+            <i className="bi bi-shop" />
+            <div>
+              <span>STORE</span>
+              <strong>{store.name || store.storeName}</strong>
+              <small>{store.storeCode || store.id}</small>
             </div>
+          </div>
+        )}
+      </div>
 
-            {/* =================================================
-                SUMMARY
-            ================================================= */}
+      <div className="orders-summary">
+        <SummaryCard icon="bi-bag-fill" tone="purple" label="Total Orders" value={orders.length} meta="Live Records" metaTone="positive" />
+        <SummaryCard icon="bi-check-circle-fill" tone="green" label="Completed" value={completedCount} meta={`${orderPercentage(completedCount)}% of total`} metaTone="positive" />
+        <SummaryCard icon="bi-clock-fill" tone="orange" label="Pending Payment" value={pendingCount} meta={`${orderPercentage(pendingCount)}% of total`} metaTone="warning" />
+        <SummaryCard icon="bi-cash-stack" tone="blue" label="Total Value" value={`$${totalAmount.toFixed(2)}`} meta="Across loaded orders" metaTone="info" />
+      </div>
 
-            <div className="orders-summary">
+      <div className="orders-card">
+        {!embedded && (
+          <FiltersBar
+            filters={[
+              {
+                key: "merchant",
+                label: "Merchant",
+                value: selectedMerchant,
+                options: [
+                  { label: "All Merchants", value: "" },
+                  ...merchants.map((merchant) => ({
+                    label: merchant.name || merchant.merchantId,
+                    value: merchant.id,
+                  })),
+                ],
+                onChange: (value) => {
+                  setSelectedMerchant(value);
+                  setSelectedStore("");
+                  setOrders([]);
+                  rememberFilters(value, "");
+                },
+              },
+              {
+                key: "store",
+                label: "Store",
+                value: selectedStore,
+                options: [
+                  { label: "All Stores", value: "" },
+                  ...stores.map((item) => ({ label: item.label, value: item.value })),
+                ],
+                onChange: (value) => {
+                  setSelectedStore(value);
+                  rememberFilters(selectedMerchant, value);
+                },
+              },
+            ]}
+            showClear={false}
+          />
+        )}
 
-                {/* TOTAL ORDERS */}
-
-                <div className="order-summary-card">
-
-                    <div className="order-summary-icon purple">
-                        <i className="bi bi-bag-fill" aria-hidden="true" />
-                    </div>
-
-                    <div>
-                        <span>Total Orders</span>
-
-                        <strong>
-                            {orders.length}
-                        </strong>
-                        <small className="order-summary-meta positive">
-                            <i className="bi bi-circle-fill" aria-hidden="true" /> Live Records
-                        </small>
-                    </div>
-
-                </div>
-
-                {/* COMPLETED */}
-
-                <div className="order-summary-card">
-
-                    <div className="order-summary-icon green">
-                        <i className="bi bi-check-circle-fill" aria-hidden="true" />
-                    </div>
-
-                    <div>
-                        <span>Completed</span>
-
-                        <strong>
-                            {completedCount}
-                        </strong>
-                        <small className="order-summary-meta positive">
-                            <i className="bi bi-circle-fill" aria-hidden="true" /> {orderPercentage(completedCount)}% of total
-                        </small>
-                    </div>
-
-                </div>
-
-                {/* PENDING */}
-
-                <div className="order-summary-card">
-
-                    <div className="order-summary-icon orange">
-                        <i className="bi bi-clock-fill" aria-hidden="true" />
-                    </div>
-
-                    <div>
-                        <span>Pending Payment</span>
-
-                        <strong>
-                            {pendingCount}
-                        </strong>
-                        <small className="order-summary-meta warning">
-                            <i className="bi bi-circle-fill" aria-hidden="true" /> {orderPercentage(pendingCount)}% of total
-                        </small>
-                    </div>
-
-                </div>
-
-                {/* TOTAL VALUE */}
-
-                <div className="order-summary-card">
-
-                    <div className="order-summary-icon blue">
-                        <i className="bi bi-cash-stack" aria-hidden="true" />
-                    </div>
-
-                    <div>
-                        <span>Total Value</span>
-
-                        <strong>
-                            ${totalAmount.toFixed(2)}
-                        </strong>
-                        <small className="order-summary-meta info">
-                            <i className="bi bi-circle-fill" aria-hidden="true" /> Across all orders
-                        </small>
-                    </div>
-
-                </div>
-
-            </div>
-
-            {/* =================================================
-                MAIN CARD
-            ================================================= */}
-
-            <div className="orders-card">
-
-                {/* =================================================
-                    TOOLBAR
-                ================================================= */}
-
-                <FiltersBar
-    searchValue={search}
-    onSearchChange={(value) => {
-        setSearch(value);
-        setCurrentPage(1);
-    }}
-    searchPlaceholder="Search order ID, offline ID, author..."
-    filters={[
-        {
-            key: "date",
-            label: "Date",
-            value: dateFilter,
-            options: [
+        <FiltersBar
+          searchValue={search}
+          onSearchChange={setSearch}
+          searchPlaceholder="Search order ID, client order ID, customer..."
+          filters={[
+            {
+              key: "date",
+              label: "Date",
+              value: dateFilter,
+              options: [
                 { label: "All Dates", value: "" },
                 { label: "Today", value: "today" },
                 { label: "Last 7 Days", value: "7days" },
                 { label: "Last 30 Days", value: "30days" },
-            ],
-            onChange: (value) => {
-                setDateFilter(value);
-                setCurrentPage(1);
+              ],
+              onChange: setDateFilter,
             },
-        },
-        {
-            key: "salesChannel",
-            label: "Sales Channel",
-            value: salesChannel,
-            options: [
-                { label: "All Sales Channels", value: "" },
-                { label: "POS", value: "POS" },
-                { label: "Online", value: "Online" },
-                { label: "WooCommerce", value: "WooCommerce" },
-            ],
-            onChange: (value) => {
-                setSalesChannel(value);
-                setCurrentPage(1);
+            {
+              key: "author",
+              label: "Customer",
+              value: authorFilter,
+              options: [
+                { label: "All Customers", value: "" },
+                ...authors.map((author) => ({ label: author, value: author })),
+              ],
+              onChange: setAuthorFilter,
             },
-        },
-        {
-            key: "author",
-            label: "Author",
-            value: authorFilter,
-            options: [
-                { label: "All Authors", value: "" },
-                ...authors.map((author) => ({
-                    label: author,
-                    value: author,
-                })),
-            ],
-            onChange: (value) => {
-                setAuthorFilter(value);
-                setCurrentPage(1);
-            },
-        },
-        {
-            key: "status",
-            label: "Status",
-            value: statusFilter,
-            options: [
+            {
+              key: "status",
+              label: "Status",
+              value: statusFilter,
+              options: [
                 { label: "All Status", value: "" },
-                { label: "Completed", value: "Completed" },
-                { label: "Pending Payment", value: "Pending payment" },
-                { label: "Processing", value: "Processing" },
-                { label: "Cancelled", value: "Cancelled" },
-                { label: "Refunded", value: "Refunded" },
-                {
-                    label: "Partially Refunded",
-                    value: "Partially Refunded",
-                },
-            ],
-            onChange: (value) => {
-                setStatusFilter(value);
-                setCurrentPage(1);
+                ...[...new Set(orders.map((order) => order.status).filter(Boolean))].map((status) => ({
+                  label: status,
+                  value: status,
+                })),
+              ],
+              onChange: setStatusFilter,
             },
-        },
-    ]}
-    onClear={clearFilters}
-/>
+          ]}
+          onClear={clearFilters}
+        />
 
-    
+        {error && <div className="orders-banner error">{error}</div>}
+        {loading && <div className="orders-banner">Loading orders...</div>}
 
-                {/* =================================================
-                    TABLE
-                ================================================= */}
+        {!selectedStore && !loading && (
+          <div className="orders-empty">
+            <div className="orders-empty-icon"><i className="bi bi-receipt" /></div>
+            <h3>Select a store</h3>
+            <p>Choose a merchant and store to load that store&apos;s orders.</p>
+          </div>
+        )}
 
-                <div className="orders-table-wrapper">
-
-                    <table className="orders-table">
-
-                        <thead>
-
-                            <tr>
-
-                                <th>Woo Order ID</th>
-                                <th>Offline Order ID</th>
-                                <th>Date</th>
-                                <th>Status</th>
-                                <th>Author</th>
-                                <th>Total</th>
-
-                            </tr>
-
-                        </thead>
-
-                        <tbody>
-
-                            {paginatedOrders.map(
-                                (order) => (
-                                    <OrderRow
-                                        key={order.id}
-                                        order={order}
-                                        onView={() => setSelectedOrder(order)}
-                                    />
-                                )
-                            )}
-
-                        </tbody>
-
-                    </table>
-
-                </div>
-
-                {/* =================================================
-                    EMPTY
-                ================================================= */}
-
-                {filteredOrders.length === 0 && (
-                    <div className="orders-empty">
-
-                        <div className="orders-empty-icon">
-
-                            <i className="bi bi-receipt" />
-
+        {selectedStore && !loading && filteredOrders.length > 0 && (
+          <div className="orders-table-wrapper">
+            <table className="orders-table">
+              <thead>
+                <tr>
+                  <th>Order ID</th>
+                  <th>Client Order ID</th>
+                  <th>Date</th>
+                  <th>Status</th>
+                  <th>Customer</th>
+                  <th>Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                {paginatedOrders.map((order) => (
+                  <tr key={order.id}>
+                    <td>
+                      <div className="order-id-cell">
+                        <div>
+                          <Link
+                            className="order-id-link"
+                            to={`/orders/${encodeURIComponent(order.id)}${detailQuery ? `?${detailQuery}` : ""}`}
+                            state={{ from: `${location.pathname}${location.search}` }}
+                          >
+                            <strong>{order.wooOrderId}</strong>
+                          </Link>
+                          <small>{order.paymentMethod || "POS"}</small>
                         </div>
+                      </div>
+                    </td>
+                    <td><span className="offline-order-id">{order.offlineOrderId || "—"}</span></td>
+                    <td>
+                      <div className="order-date">
+                        <strong>{order.date}</strong>
+                        {order.time && <small>{order.time}</small>}
+                      </div>
+                    </td>
+                    <td>
+                      <span className={`order-status ${statusClass(order.status)}`}>
+                        <i className="bi bi-circle-fill" />
+                        {order.status}
+                      </span>
+                    </td>
+                    <td>
+                      <div className="order-author">
+                        <div className="author-avatar">{getInitials(order.author)}</div>
+                        <span>{order.author}</span>
+                      </div>
+                    </td>
+                    <td><strong className="order-total">{order.total}</strong></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
 
-                        <h3>
-                            No orders found
-                        </h3>
+        {selectedStore && !loading && filteredOrders.length === 0 && (
+          <div className="orders-empty">
+            <div className="orders-empty-icon"><i className="bi bi-receipt" /></div>
+            <h3>No orders found</h3>
+            <p>{error ? "The order list could not be loaded." : "Try changing your search or filters."}</p>
+            {!error && (
+              <button type="button" onClick={clearFilters}>Clear Filters</button>
+            )}
+          </div>
+        )}
 
-                        <p>
-                            Try changing your search
-                            or filters.
-                        </p>
-
-                        <button
-                            type="button"
-                            onClick={clearFilters}
-                        >
-                            Clear Filters
-                        </button>
-
-                    </div>
-                )}
-
-                {/* =================================================
-                    PAGINATION
-                ================================================= */}
-
-               {filteredOrders.length > 0 && (
-    <Pagination
-        currentPage={currentPage}
-        totalPages={totalPages}
-        totalItems={totalItems}
-        pageSize={pageSize}
-        onPageChange={setCurrentPage}
-        onPageSizeChange={handlePageSizeChange}
-        itemLabel="orders"
-        showWhenEmpty={true}
-    />
-)}
-                {/* =================================================
-                    FOOTER
-                ================================================= */}
-
-                {filteredOrders.length > 0 && (
-                    <div className="orders-footer">
-
-                        <span className="orders-source">
-
-                            <i className="bi bi-arrow-repeat" />
-
-                            Synced from WooCommerce
-
-                        </span>
-
-                    </div>
-                )}
-
-            </div>
-
-                        <ViewDetailsModal
-                open={Boolean(selectedOrder)}
-                title="Order Details"
-                subtitle={
-                    selectedOrder
-                        ? `Order ${selectedOrder.wooOrderId || selectedOrder.id || ""}`
-                        : ""
-                }
-                data={selectedOrder}
-                onClose={() => setSelectedOrder(null)}
-                fields={[
-                    { key: "wooOrderId", label: "WooCommerce Order ID" },
-                    { key: "offlineOrderId", label: "Offline Order ID" },
-                    { key: "date", label: "Order Date" },
-                    { key: "time", label: "Order Time" },
-                    {
-                        key: "status",
-                        label: "Status",
-                        render: (value) => (
-                            <span
-                                className={`detail-status ${
-                                    value === "Completed"
-                                        ? "active"
-                                        : value === "Cancelled" || value === "Refunded"
-                                            ? "inactive"
-                                            : "pending"
-                                }`}
-                            >
-                                {value || "—"}
-                            </span>
-                        ),
-                    },
-                    { key: "author", label: "Author" },
-                    { key: "salesChannel", label: "Sales Channel" },
-                    { key: "customer", label: "Customer" },
-                    { key: "customerName", label: "Customer Name" },
-                    { key: "customerEmail", label: "Customer Email" },
-                    { key: "paymentMethod", label: "Payment Method" },
-                    { key: "subtotal", label: "Subtotal" },
-                    { key: "discount", label: "Discount" },
-                    { key: "tax", label: "Tax" },
-                    { key: "total", label: "Total" },
-                    {
-                        key: "totalValue",
-                        label: "Total Value",
-                        render: (value) =>
-                            value !== undefined && value !== null && value !== ""
-                                ? `$${Number(value).toFixed(2)}`
-                                : "—",
-                    },
-                    {
-                        key: "items",
-                        label: "Items",
-                        fullWidth: true,
-                        render: (value) => {
-                            if (!value) return "—";
-                            if (Array.isArray(value)) {
-                                return (
-                                    <div className="view-details-list">
-                                        {value.map((item, index) => (
-                                            <div
-                                                key={item?.id || item?.sku || index}
-                                                className="view-details-list-item"
-                                            >
-                                                {typeof item === "object"
-                                                    ? `${item.name || item.productName || "Item"}${
-                                                          item.quantity
-                                                              ? ` × ${item.quantity}`
-                                                              : ""
-                                                      }`
-                                                    : String(item)}
-                                            </div>
-                                        ))}
-                                    </div>
-                                );
-                            }
-                            return String(value);
-                        },
-                    },
-                    { key: "storeName", label: "Store" },
-                    { key: "storeId", label: "Store ID" },
-                ]}
-            />
-
-        </div>
-    );
-}
-
-// =========================================================
-// ORDER ROW
-// =========================================================
-
-function OrderRow({ order, onView }) {
-
-    const statusClass =
-        order.status === "Completed"
-            ? "completed"
-            : order.status === "Pending payment"
-                ? "pending"
-                : order.status === "Processing"
-                    ? "processing"
-                    : order.status === "Cancelled"
-                        ? "cancelled"
-                        : order.status === "Refunded"
-                            ? "refunded"
-                            : "partial";
-
-    return (
-        <tr
-            className="order-row-clickable"
-            onClick={onView}
-            role="button"
-            tabIndex={0}
-            onKeyDown={(event) => {
-                if (event.key === "Enter" || event.key === " ") {
-                    event.preventDefault();
-                    onView?.();
-                }
+        {filteredOrders.length > 0 && (
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalItems={totalItems}
+            pageSize={pageSize}
+            onPageChange={setCurrentPage}
+            onPageSizeChange={(size) => {
+              setPageSize(size);
+              setCurrentPage(1);
             }}
-        >
+            itemLabel="orders"
+            showWhenEmpty
+          />
+        )}
 
-            {/* =================================================
-                WOO ORDER ID
-            ================================================= */}
-
-            <td>
-
-                <div className="order-id-cell">
-                    <div>
-                        <strong>
-                            {order.wooOrderId}
-                        </strong>
-
-                        <small>
-                            WooCommerce
-                        </small>
-
-                    </div>
-
-                </div>
-
-            </td>
-
-            {/* =================================================
-                OFFLINE ORDER ID
-            ================================================= */}
-
-            <td>
-
-                <span className="offline-order-id">
-                    {order.offlineOrderId || "—"}
-                </span>
-
-            </td>
-
-            {/* =================================================
-                DATE
-            ================================================= */}
-
-            <td>
-
-                <div className="order-date">
-
-                    <strong>
-                        {order.date}
-                    </strong>
-
-                    {order.time && (
-                        <small>
-                            {order.time}
-                        </small>
-                    )}
-
-                </div>
-
-            </td>
-
-            {/* =================================================
-                STATUS
-            ================================================= */}
-
-            <td>
-
-                <span
-                    className={`order-status ${statusClass}`}
-                >
-
-                    <i className="bi bi-circle-fill" />
-
-                    {order.status}
-
-                </span>
-
-            </td>
-
-            {/* =================================================
-                AUTHOR
-            ================================================= */}
-
-            <td>
-
-                <div className="order-author">
-
-                    <div className="author-avatar">
-
-                        {getInitials(
-                            order.author
-                        )}
-
-                    </div>
-
-                    <span>
-                        {order.author}
-                    </span>
-
-                </div>
-
-            </td>
-
-            {/* =================================================
-                TOTAL
-            ================================================= */}
-
-            <td>
-
-                <strong className="order-total">
-                    {order.total}
-                </strong>
-
-            </td>
-
-        </tr>
-    );
+        {filteredOrders.length > 0 && (
+          <div className="orders-footer">
+            <span className="orders-source">
+              <i className="bi bi-arrow-repeat" />
+              Store orders
+            </span>
+          </div>
+        )}
+      </div>
+    </div>
+  );
 }
 
-// =========================================================
-// INITIALS
-// =========================================================
-
-function getInitials(name = "") {
-
-    return name
-        .split(" ")
-        .filter(Boolean)
-        .slice(0, 2)
-        .map((part) => part[0])
-        .join("")
-        .toUpperCase();
+function SummaryCard({ icon, tone, label, value, meta, metaTone }) {
+  return (
+    <div className="order-summary-card">
+      <div className={`order-summary-icon ${tone}`}>
+        <i className={`bi ${icon}`} aria-hidden="true" />
+      </div>
+      <div>
+        <span>{label}</span>
+        <strong>{value}</strong>
+        <small className={`order-summary-meta ${metaTone}`}>
+          <i className="bi bi-circle-fill" aria-hidden="true" /> {meta}
+        </small>
+      </div>
+    </div>
+  );
 }

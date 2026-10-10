@@ -84,4 +84,8 @@ export const endpoints = {
 
   merchantTendor: (merchantId, tendorId) =>
     `/merchants/${encodeURIComponent(merchantId)}/tendors/${encodeURIComponent(tendorId)}`,
+
+  orders: (storeId) =>
+    `/orders${storeId ? `?storeId=${encodeURIComponent(storeId)}` : ""}`,
+  order: (id) => `/orders/${encodeURIComponent(id)}`,
 };
