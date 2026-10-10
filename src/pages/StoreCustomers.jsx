@@ -1,3 +1,4 @@
+import FilterDropdown from "../components/FilterDropdown";
 import { useEffect, useMemo, useState } from "react";
 import Pagination from "../components/Pagination";
 import { customersSeed } from "../data/data";
@@ -338,7 +339,7 @@ export default function StoreCustomers({
 
           {/* CUSTOMER TYPE */}
 
-          <select
+          <FilterDropdown
             value={customerTypeFilter}
             onChange={(event) =>
               setCustomerTypeFilter(
@@ -358,11 +359,11 @@ export default function StoreCustomers({
                 {type}
               </option>
             ))}
-          </select>
+          </FilterDropdown>
 
           {/* STATUS */}
 
-          <select
+          <FilterDropdown
             value={statusFilter}
             onChange={(event) =>
               setStatusFilter(
@@ -381,7 +382,7 @@ export default function StoreCustomers({
             <option value="Inactive">
               Inactive
             </option>
-          </select>
+          </FilterDropdown>
 
           {/* CLEAR */}
 

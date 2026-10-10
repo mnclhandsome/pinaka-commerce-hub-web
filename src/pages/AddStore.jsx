@@ -1,4 +1,5 @@
 import { buildStoreSetupPayload } from "../api/storeDetails";
+import { useLocationOptions } from "../data/useLocationOptions";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import {
@@ -83,8 +84,16 @@ function validatePhoneForCountry(value, country) {
   const phone = String(value || "").trim();
   if (!phone) return "";
   const rule = PHONE_RULES[country];
-  if (!rule || !/^\+?[\d\s().-]+$/.test(phone))
+  if (!/^\+?[\d\s().-]+$/.test(phone))
     return `Enter a valid ${country || "country"} phone number.`;
+
+  // Countries without a local rule still accept internationally formatted numbers.
+  if (!rule) {
+    const digits = phone.replace(/\D/g, "");
+    return digits.length >= 7 && digits.length <= 15
+      ? ""
+      : `Enter a valid ${country || "country"} phone number.`;
+  }
 
   const hasInternationalPrefix = phone.startsWith("+") || phone.startsWith("00");
   let digits = phone.replace(/\D/g, "");
@@ -526,6 +535,7 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
   const { merchantId: routeMerchantId, storeId } = useParams();
   const editing = Boolean(storeId);
   const [store, setStore] = useState(() => blankStore(routeMerchantId || ""));
+  const locationOptions = useLocationOptions(store);
   const [merchants, setMerchants] = useState([]);
   const [merchantInfo, setMerchantInfo] = useState(null);
   const [subscription, setSubscription] = useState(null);
@@ -1638,6 +1648,7 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
     setStore((current) => ({
       ...current,
       country,
+      state: "",
       currency: COUNTRIES[country]?.currency || "",
       timezone: COUNTRIES[country]?.zones[0] || "",
     }));
@@ -1916,8 +1927,6 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
           return "Enter a valid website URL, including https://.";
         }
       }
-      if (store.country && !COUNTRIES[store.country])
-        return "Select a supported country.";
       if (store.timezone) {
         try {
           new Intl.DateTimeFormat("en", { timeZone: store.timezone });
@@ -2652,11 +2661,14 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
                 onChange={(value) => updateStore("city", value)}
                 placeholder="City"
               />
-              <Field
+              <SelectField
                 label="State / Province *"
                 value={store.state}
                 onChange={(value) => updateStore("state", value)}
-                placeholder="State or province"
+                options={[
+                  { value: "", label: store.country ? "Select state or province" : "Select country first" },
+                  ...locationOptions.states.map((value) => ({ value, label: value })),
+                ]}
               />
               <Field
                 label="Zip / Postal Code *"
@@ -2670,7 +2682,7 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
                 onChange={changeCountry}
                 options={[
                   { value: "", label: "Select country" },
-                  ...Object.keys(COUNTRIES).map((value) => ({
+                  ...locationOptions.countries.map((value) => ({
                     value,
                     label: value,
                   })),

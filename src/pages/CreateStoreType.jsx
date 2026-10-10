@@ -1,6 +1,9 @@
+import FilterDropdown from "../components/FilterDropdown";
 import { useEffect, useMemo, useState } from "react";
 
 import { useNavigate } from "react-router-dom";
+
+import Pagination from "../components/Pagination";
 
 import { storeTypesApi } from "../api/storeTypes";
 
@@ -109,17 +112,11 @@ function toRow(item) {
 }
 
 const emptyForm = {
-
   code: "",
-
   name: "",
-
   description: "",
-
   category: "",
-
-  status: "Active",
-
+  status: "Select Status",
 };
 
 export default function CreateStoreType() {
@@ -154,9 +151,8 @@ export default function CreateStoreType() {
 
   const [errors, setErrors] = useState({});
 
-  const ITEMS_PER_PAGE = 5;
-
   const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(5);
 
   async function loadStoreTypes() {
 
@@ -340,15 +336,14 @@ export default function CreateStoreType() {
 
   }, [storeTypes, search, statusFilter, sortBy]);
 
-  const totalPages = Math.ceil(filteredStoreTypes.length / ITEMS_PER_PAGE);
+  const totalPages = Math.ceil(
+    filteredStoreTypes.length / pageSize
+);
 
-  const paginatedStoreTypes = filteredStoreTypes.slice(
-
-    (currentPage - 1) * ITEMS_PER_PAGE,
-
-    currentPage * ITEMS_PER_PAGE,
-
-  );
+const paginatedStoreTypes = filteredStoreTypes.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+);
 
   useEffect(() => {
 
@@ -356,15 +351,13 @@ export default function CreateStoreType() {
 
   }, [search, statusFilter]);
 
-  useEffect(() => {
+ useEffect(() => {
+    const lastValidPage = Math.max(1, totalPages);
 
-    if (currentPage > totalPages && totalPages > 0) {
-
-      setCurrentPage(totalPages);
-
+    if (currentPage > lastValidPage) {
+        setCurrentPage(lastValidPage);
     }
-
-  }, [totalPages, currentPage]);
+}, [totalPages, currentPage]);
 
   const hasChanges =
     form.name.trim() !== (originalForm.name || "").trim() ||
@@ -373,7 +366,9 @@ export default function CreateStoreType() {
 
     form.status !== originalForm.status;
 
-  const canSubmitStoreType = !!form.name.trim();
+  const canSubmitStoreType =
+  !!form.name.trim() &&
+  (form.status === "Active" || form.status === "Inactive");
 
   function updateField(event) {
 
@@ -419,6 +414,8 @@ export default function CreateStoreType() {
 
   }
 
+  
+
   function validateForm() {
 
     const nextErrors = {};
@@ -446,6 +443,13 @@ export default function CreateStoreType() {
       nextErrors.name = "This display name already exists.";
 
     }
+
+    if (
+  form.status !== "Active" &&
+  form.status !== "Inactive"
+) {
+  nextErrors.status = "Please select a status.";
+}
 
     setErrors(nextErrors);
 
@@ -652,9 +656,6 @@ export default function CreateStoreType() {
     aria-readonly="true"
   />
 
-  <div className="store-type-field-slot">
-    <small>Generated automatically when saved.</small>
-  </div>
 </div>
 
 
@@ -690,29 +691,39 @@ export default function CreateStoreType() {
             )}
           </div>
 
-          <div className="store-type-field">
-            <label>
+          
+<div className="store-type-field">
+  <label>
+    Status <span className="required">*</span>
+  </label>
 
-              Status <span className="required">*</span>
-            </label>
-            <div className="select-shell">
-              <select
+  <div className="select-shell">
+    <select
+      name="status"
+      value={form.status}
+      onChange={updateField}
+      className={
+        form.status === "Active"
+          ? "active"
+          : form.status === "Inactive"
+          ? "inactive"
+          : ""
+      }
+    >
+      <option value="Select Status">
+        Select Status
+      </option>
+      <option value="Active">Active</option>
+      <option value="Inactive">Inactive</option>
+    </select>
 
-                name="status"
+    <i className="bi bi-chevron-down" />
+  </div>
 
-                value={form.status}
-
-                onChange={updateField}
-
-                className={form.status === "Active" ? "active" : "inactive"}
-              >
-                <option value="Active">Active</option>
-                <option value="Inactive">Inactive</option>
-              </select>
-              <i className="bi bi-chevron-down" />
-            </div>
-            <small></small>
-          </div>
+  {errors.status && (
+    <small className="field-error">{errors.status}</small>
+  )}
+</div>
         </div>
 
         <div className="store-type-form-grid">
@@ -748,15 +759,6 @@ export default function CreateStoreType() {
             />
 
             <div className="store-type-description-meta">
-
-              {errors.description ? (
-                <small className="field-error">{errors.description}</small>
-
-              ) : (
-                <small></small>
-
-              )}
-              <span>{form.description.length}/500</span>
             </div>
           </div>
         </div>
@@ -827,7 +829,7 @@ export default function CreateStoreType() {
             </label>
 
             <div className="store-filter-select pch-master-filter pch-master-control">
-              <select
+              <FilterDropdown preserveToolbarLayout
 
                 value={statusFilter}
 
@@ -836,12 +838,12 @@ export default function CreateStoreType() {
                 <option value="">All Statuses</option>
                 <option value="Active">Active</option>
                 <option value="Inactive">Inactive</option>
-              </select>
+              </FilterDropdown>
               <i className="bi bi-chevron-down" />
             </div>
 
             <div className="store-filter-select pch-master-filter pch-master-control">
-              <select
+              <FilterDropdown preserveToolbarLayout
 
                 value={sortBy}
 
@@ -852,7 +854,7 @@ export default function CreateStoreType() {
                 <option value="updated">Recently Updated</option>
                 <option value="name-asc">Name (A–Z)</option>
                 <option value="name-desc">Name (Z–A)</option>
-              </select>
+              </FilterDropdown>
               <i className="bi bi-chevron-down" />
             </div>
 
@@ -1011,65 +1013,18 @@ export default function CreateStoreType() {
           </div>
         </div>
 
-        <div className="store-types-pagination">
-          <span>
-
-            Showing{" "}
-
-            {filteredStoreTypes.length === 0
-
-              ? 0
-
-              : (currentPage - 1) * ITEMS_PER_PAGE + 1}{" "}
-
-            to{" "}
-
-            {Math.min(currentPage * ITEMS_PER_PAGE, filteredStoreTypes.length)}{" "}
-
-            of {filteredStoreTypes.length} entries
-          </span>
-
-          <div>
-            <button
-
-              type="button"
-
-              disabled={currentPage === 1}
-
-              onClick={() => setCurrentPage((p) => p - 1)}
-            >
-              <i className="bi bi-chevron-left" />
-            </button>
-
-            {Array.from({ length: totalPages }, (_, i) => (
-              <button
-
-                key={i + 1}
-
-                type="button"
-
-                className={currentPage === i + 1 ? "active" : ""}
-
-                onClick={() => setCurrentPage(i + 1)}
-              >
-
-                {i + 1}
-              </button>
-
-            ))}
-
-            <button
-
-              type="button"
-
-              disabled={currentPage === totalPages || totalPages === 0}
-
-              onClick={() => setCurrentPage((p) => p + 1)}
-            >
-              <i className="bi bi-chevron-right" />
-            </button>
-          </div>
-        </div>
+       <Pagination
+    currentPage={currentPage}
+    totalPages={totalPages}
+    totalItems={filteredStoreTypes.length}
+    pageSize={pageSize}
+    onPageChange={setCurrentPage}
+    onPageSizeChange={(newPageSize) => {
+        setPageSize(newPageSize);
+        setCurrentPage(1);
+    }}
+    itemLabel="entries"
+/>
       </section>
 
       {deleteTarget && (

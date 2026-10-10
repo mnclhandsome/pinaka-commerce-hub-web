@@ -91,7 +91,7 @@ export async function saveWordpressConnector(storeId, merchantId, values) {
     storeId,
     merchantId,
     wordpressUrl: siteUrl,
-    wordpressJwt: jwtToken,
+    ...(jwtToken ? { wordpressJwt: jwtToken } : {}),
   };
 
   const applyResult = (result) => {
@@ -101,39 +101,23 @@ export async function saveWordpressConnector(storeId, merchantId, values) {
     if (status === "CONNECTED" || status === "NOT_CONNECTED") {
       payload.connected = status === "CONNECTED";
     }
+    payload.wordpressJwtConfigured = Boolean(
+      result?.connector?.wordpressJwtConfigured || jwtToken
+    );
     return payload;
   };
 
-  // Single dynamic PUT request to save & connect
-  try {
-    applyResult(await api.put(`/connector/api/v1/stores/${storeId}/connector`, body));
-  } catch (err) {
-    try {
-      applyResult(await api.put(endpoints.storeConnector(storeId), body));
-    } catch {
-      payload.syncedToApi = false;
-    }
-  }
+  // Save through the merchant API. Do not report a browser-only save when the
+  // backend fails, because catalog sync uses the encrypted server-side token.
+  applyResult(await api.put(endpoints.storeConnector(storeId), body));
 
   localStorage.setItem(storageKey(storeId), JSON.stringify(payload));
   return payload;
 }
 
-export async function syncWordpressCatalog(storeId, values = {}) {
+export async function syncWordpressCatalog(storeId) {
   if (!storeId) throw new Error("Store ID is required.");
-  const body = {
-    wordpressUrl: String(values.siteUrl || "").replace(/\/+$/, ""),
-    wordpressJwt: String(values.jwtToken || "").trim(),
-  };
-  try {
-    return await api.post(`/connector/api/v1/stores/${storeId}/catalog/sync`, body);
-  } catch (err) {
-    try {
-      return await api.post(`/stores/${encodeURIComponent(storeId)}/catalog/sync`, body);
-    } catch (fallbackErr) {
-      throw new Error(err?.message || fallbackErr?.message || "Unable to sync categories and products.");
-    }
-  }
+  return api.post(`/stores/${encodeURIComponent(storeId)}/catalog/sync`);
 }
 
 async function postStoreSync(storeId, step) {

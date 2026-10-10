@@ -28,12 +28,12 @@
   flex-direction: column;
   align-items: flex-start;
   gap: 0;
-  margin: 0 0 18px;
+  margin: 0 0 12px;
   padding: 0;
 }
 
 .features-page-heading h1 {
-  margin: 0 0 8px;
+  margin-bottom: 5px;
   color: #10264d;
   font-size: 20px;
   line-height: 1.2;
@@ -268,7 +268,7 @@
   color: #25314c;
   font-family: inherit;
   font-size: 14px !important;
-  font-weight: 100 !important;
+  font-weight: 500 !important;
 }
 
 .select-shell > i {
@@ -1142,6 +1142,7 @@
   justify-content: center;
   gap: 2px;
   line-height: 1.25;
+  color: #10264d;
 }
 
 .feature-date-stack > span {
@@ -1149,7 +1150,7 @@
 }
 
 .feature-date-stack .feature-time {
-  color: #8795aa;
+  color: #7290ba;
   font-size: 11px;
   font-weight: 400;
 }

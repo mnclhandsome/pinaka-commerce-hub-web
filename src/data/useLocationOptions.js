@@ -12,9 +12,11 @@ export function useLocationOptions(form) {
     return () => { active = false; };
   }, []);
   const retain = (values, current) => [...new Set([...values, ...(current ? [current] : [])])];
-  const country = locations.find(item => item.name === form.country);
-  const state = country?.states.find(item => item.name === form.state);
+  const equals = (left, right) => String(left ?? "").trim().toLowerCase() === String(right ?? "").trim().toLowerCase();
+  const country = locations.find(item => [item.name, item.iso2, item.iso3].some(value => equals(value, form.country)));
+  const state = country?.states.find(item => [item.name, item.code].some(value => equals(value, form.state)));
   return { loading, error,
+    selectedCountry: country || null,
     countries: retain(locations.map(item => item.name), form.country),
     states: retain((country?.states || []).map(item => item.name), form.state),
     cities: retain((state?.cities || []).map(item => item.name), form.city),

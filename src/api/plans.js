@@ -482,6 +482,9 @@ export function normalizePlan(item) {
           feature.categoryName ??
           feature.category_name ??
           feature.featureCategory ??
+          feature.feature_category ??
+          feature.feature_type ??
+          feature.featureType ??
           "",
       };
     }).filter(Boolean)
@@ -710,7 +713,15 @@ export async function listPlans() {
 /**
  * GET /plans/:id
  */
-export async function getPlan(id) {
+const pendingPlanRequests = new Map();
+export function getPlan(id) {
+  if (!pendingPlanRequests.has(id)) {
+    pendingPlanRequests.set(id, loadPlan(id).finally(() => pendingPlanRequests.delete(id)));
+  }
+  return pendingPlanRequests.get(id);
+}
+
+async function loadPlan(id) {
   const response =
     await api.get(
       endpoints.plan(id)
@@ -718,17 +729,27 @@ export async function getPlan(id) {
 
   const plan = normalizePlan(unwrapPlan(response));
   if (!plan) return plan;
+  const raw = unwrapPlan(response);
+  const storeType = raw.storeType || raw.store_type;
+  const storeTypeName = raw.storeTypeName || raw.store_type_name ||
+    (typeof storeType === "object" ? storeType?.name : "");
+  const isUuid = (value) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(value || ""));
+  plan.storeTypeName = storeTypeName || plan.storeType;
+  const needsStoreType = !storeTypeName && isUuid(plan.storeType);
+  const needsFeatures = plan.includedFeatures.some(entry => !entry.name || isUuid(entry.name) || !entry.category);
   const [types, features] = await Promise.allSettled([
-    plan.storeType ? listStoreTypes() : Promise.resolve([]),
-    plan.includedFeatures.length ? listFeatures() : Promise.resolve([]),
+    needsStoreType ? listStoreTypes() : Promise.resolve([]),
+    needsFeatures ? listFeatures() : Promise.resolve([]),
   ]);
-  if (types.status === "fulfilled") {
+  if (needsStoreType && types.status === "fulfilled") {
     plan.storeTypeName = types.value.find(type => String(type.id) === String(plan.storeType))?.name || plan.storeType;
   }
-  if (features.status === "fulfilled") {
+  if (needsFeatures && features.status === "fulfilled") {
     plan.includedFeatures = plan.includedFeatures.map(entry => {
-      const feature = features.value.find(feature => String(feature.id) === String(entry.featureId));
-      return feature ? { ...entry, name: feature.name, category: feature.category } : entry;
+            const same = (a, b) => Boolean(a && b) && String(a).trim().toLowerCase() === String(b).trim().toLowerCase();
+      const feature = features.value.find(feature => same(feature.id, entry.featureId)) ||
+        features.value.find(feature => same(feature.name, entry.name) || same(feature.code, entry.featureId));
+      return feature ? { ...entry, name: feature.name || entry.name, category: entry.category || feature.category } : entry;
     });
   }
   return plan;

@@ -1,3 +1,4 @@
+import FilterDropdown from "./FilterDropdown";
 import "../styles/list-filter-toolbar.css";
 
 export default function FiltersBar({
@@ -32,7 +33,9 @@ export default function FiltersBar({
                 className="filter-select-wrapper"
                 key={filter.key}
             >
-                <select
+                <FilterDropdown
+                    aria-label={filter.label}
+                    disabled={filter.disabled}
                     value={filter.value ?? ""}
                     onChange={(e) =>
                         filter.onChange(e.target.value)
@@ -56,7 +59,7 @@ export default function FiltersBar({
                                 : option}
                         </option>
                     ))}
-                </select>
+                </FilterDropdown>
 
                 <i className="bi bi-chevron-down filter-select-arrow" />
             </div>

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
+import Pagination from "../components/Pagination";
 import {
   readRoleTemplatesList,
   roleTemplatesApi,
@@ -52,6 +53,8 @@ export default function StoreTypeRoleTemplates() {
   }));
   const [roles, setRoles] = useState([]);
   const [search, setSearch] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(5);
   const [showModal, setShowModal] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [selectedRoles, setSelectedRoles] = useState([]);
@@ -117,6 +120,29 @@ export default function StoreTypeRoleTemplates() {
       role.name.toLowerCase().includes(query)
     );
   }, [roles, search]);
+
+  useEffect(() => {
+  setCurrentPage(1);
+}, [search]);
+
+const totalPages = Math.max(
+  1,
+  Math.ceil(filteredRoles.length / pageSize)
+);
+
+const paginatedRoles = useMemo(() => {
+  const startIndex = (currentPage - 1) * pageSize;
+
+  return filteredRoles.slice(startIndex, startIndex + pageSize);
+}, [filteredRoles, currentPage, pageSize]);
+
+useEffect(() => {
+  const lastValidPage = Math.max(1, totalPages);
+
+  if (currentPage > lastValidPage) {
+    setCurrentPage(lastValidPage);
+  }
+}, [currentPage, totalPages]);
 
   function toggleRole(id) {
     setRoles((current) =>
@@ -311,55 +337,61 @@ export default function StoreTypeRoleTemplates() {
           </div>
         </div>
 
-        <div className="role-templates-table">
-          <div className="role-template-row role-template-row-head">
-            <div>Role Template Name</div>
-            <div>Access Scope</div>
-            <div>Actions</div>
-          </div>
+       
+<div className="role-templates-table">
+  <div className="role-template-row role-template-row-head">
+    <div>Role Template Name</div>
+    <div>Access Scope</div>
+    <div>Actions</div>
+  </div>
 
-          {filteredRoles.map((role) => (
-            <div className="role-template-row" key={role.id}>
-              <div className="role-template-name">{role.name}</div>
+  {paginatedRoles.length > 0 ? (
+    paginatedRoles.map((role) => (
+      <div className="role-template-row" key={role.id}>
+        <div className="role-template-name">{role.name}</div>
 
-              <div>{role.scope}</div>
+        <div>{role.scope}</div>
 
-              <div>
-                <button
-                  type="button"
-                  className="role-template-delete-button"
-                  title={`Remove ${role.name} assignment`}
-                  aria-label={`Remove ${role.name} assignment`}
-                  onClick={() => setDeleteTarget(role)}
-                >
-                  <i className="bi bi-trash3" aria-hidden="true" />
-                </button>
-              </div>
-            </div>
-          ))}
+        <div>
+          <button
+            type="button"
+            className="role-template-delete-button"
+            title={`Remove ${role.name} assignment`}
+            aria-label={`Remove ${role.name} assignment`}
+            onClick={() => setDeleteTarget(role)}
+          >
+            <i className="bi bi-trash3" aria-hidden="true" />
+          </button>
         </div>
+      </div>
+    ))
+  ) : (
+    <div className="role-templates-empty">
+      {search.trim()
+        ? "No role templates match your search."
+        : "No role templates assigned yet."}
+    </div>
+  )}
+</div>
 
-        <div className="role-templates-footer">
-          <div className="role-templates-info">
-            <i className="bi bi-info-circle-fill" />
-            Role templates are reusable defaults. They are not assigned to
-            employees here.
-          </div>
 
-          <div className="role-templates-pagination">
-            <button type="button" aria-label="Previous page">
-              <i className="bi bi-chevron-left" />
-            </button>
+       
+<div className="role-templates-footer">
+  <Pagination
+    currentPage={currentPage}
+    totalPages={totalPages}
+    totalItems={filteredRoles.length}
+    pageSize={pageSize}
+    onPageChange={setCurrentPage}
+    onPageSizeChange={(newPageSize) => {
+      setPageSize(newPageSize);
+      setCurrentPage(1);
+    }}
+    itemLabel="entries"
+    showWhenEmpty={true}
+  />
+</div>
 
-            <button type="button" className="active">
-              1
-            </button>
-
-            <button type="button" aria-label="Next page">
-              <i className="bi bi-chevron-right" />
-            </button>
-          </div>
-        </div>
       </section>
 
       {showModal && (

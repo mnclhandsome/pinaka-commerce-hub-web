@@ -1,167 +1,119 @@
+
 export default function Pagination({
-    currentPage,
-    totalPages,
-    totalItems,
-    pageSize,
-    onPageChange,
-    onPageSizeChange,
-    itemLabel = "items",
-    showWhenEmpty = false,
+  currentPage,
+  totalPages,
+  totalItems,
+  pageSize,
+  onPageChange,
+  onPageSizeChange,
+  itemLabel = "items",
+  showWhenEmpty = false,
 }) {
-    if (!totalItems && !showWhenEmpty) {
-        return null;
+  if (!totalItems && !showWhenEmpty) {return null;}
+
+  const safeTotalPages = Math.max(1, totalPages || 1);
+  const safeCurrentPage = Math.min(
+    Math.max(1, currentPage),
+    safeTotalPages
+  );
+
+  const startItem = totalItems
+    ? (safeCurrentPage - 1) * pageSize + 1
+    : 0;
+
+  const endItem = Math.min(
+    safeCurrentPage * pageSize,
+    totalItems
+  );
+
+  const getPageNumbers = () => {
+    const pages = [];
+    const start = Math.max(
+      1,
+      Math.min(safeCurrentPage, safeTotalPages - 1)
+    );
+
+    for (
+      let i = start;
+      i <= Math.min(start + 1, safeTotalPages);
+      i++
+    ) {
+      pages.push(i);
     }
 
-    const startItem = totalItems
-        ? (currentPage - 1) * pageSize + 1
-        : 0;
+    return pages;
+  };
 
-    const endItem = Math.min(
-        currentPage * pageSize,
-        totalItems
-    );
+  return (
+    <div className="pagination-container">
+      <div className="pagination-info">
+        Showing <strong>{startItem}</strong> to{" "}
+        <strong>{endItem}</strong> of{" "}
+        <strong>{totalItems}</strong> {itemLabel}
+      </div>
 
-    const getPageNumbers = () => {
-        const pages = [];
+      <div className="pagination-controls">
+        <div className="pagination-page-size">
+          <span>Rows per page:</span>
 
-        if (totalPages <= 5) {
-            for (let i = 1; i <= totalPages; i++) {
-                pages.push(i);
-            }
-
-            return pages;
-        }
-
-        pages.push(1);
-
-        if (currentPage > 3) {
-            pages.push("...");
-        }
-
-        const start = Math.max(2, currentPage - 1);
-
-        const end = Math.min(
-            totalPages - 1,
-            currentPage + 1
-        );
-
-        for (let i = start; i <= end; i++) {
-            pages.push(i);
-        }
-
-        if (currentPage < totalPages - 2) {
-            pages.push("...");
-        }
-
-        pages.push(totalPages);
-
-        return pages;
-    };
-
-    return (
-        <div className="pagination-container">
-
-            {/* LEFT - SHOWING COUNT */}
-
-            <div className="pagination-info">
-                Showing{" "}
-                <strong>{startItem}</strong>
-                {" to "}
-                <strong>{endItem}</strong>
-                {" of "}
-                <strong>{totalItems}</strong>{" "}
-                {itemLabel}
-            </div>
-
-            {/* RIGHT - CONTROLS */}
-
-            <div className="pagination-controls">
-
-                {/* ROWS PER PAGE */}
-
-                <div className="pagination-page-size">
-    <span>Rows per page:</span>
-
-    <div className="pagination-select-wrapper">
-        <select
-            value={pageSize}
-            onChange={(e) =>
+          <div className="pagination-select-wrapper">
+            <select
+              value={pageSize}
+              onChange={(e) =>
                 onPageSizeChange(Number(e.target.value))
-            }
-        >
-            <option value={5}>5</option>
-            <option value={10}>10</option>
-            <option value={25}>25</option>
-            <option value={50}>50</option>
-            <option value={100}>100</option>
-        </select>
+              }
+            >
+              <option value={5}>5</option>
+              <option value={10}>10</option>
+              <option value={25}>25</option>
+              <option value={50}>50</option>
+              <option value={100}>100</option>
+            </select>
 
-        <i className="bi bi-chevron-down pagination-select-arrow" />
-    </div>
-</div>
-
-                {/* PREVIOUS */}
-
-                <button
-                    type="button"
-                    className="pagination-arrow"
-                    disabled={currentPage === 1}
-                    onClick={() =>
-                        onPageChange(currentPage - 1)
-                    }
-                    aria-label="Previous page"
-                >
-                    <i className="bi bi-chevron-left" />
-                </button>
-
-                {/* PAGE NUMBERS */}
-
-                <div className="pagination-pages">
-                    {getPageNumbers().map(
-                        (page, index) =>
-                            page === "..." ? (
-                                <span
-                                    key={`ellipsis-${index}`}
-                                    className="pagination-ellipsis"
-                                >
-                                    ...
-                                </span>
-                            ) : (
-                                <button
-                                    key={page}
-                                    type="button"
-                                    className={
-                                        page === currentPage
-                                            ? "pagination-page active"
-                                            : "pagination-page"
-                                    }
-                                    onClick={() =>
-                                        onPageChange(page)
-                                    }
-                                >
-                                    {page}
-                                </button>
-                            )
-                    )}
-                </div>
-
-                {/* NEXT */}
-
-                <button
-                    type="button"
-                    className="pagination-arrow"
-                    disabled={
-                        currentPage === totalPages
-                    }
-                    onClick={() =>
-                        onPageChange(currentPage + 1)
-                    }
-                    aria-label="Next page"
-                >
-                    <i className="bi bi-chevron-right" />
-                </button>
-
-            </div>
+            <i className="bi bi-chevron-down pagination-select-arrow" />
+          </div>
         </div>
-    );
+
+        <button
+          type="button"
+          className="pagination-arrow"
+          disabled={!totalItems || safeCurrentPage <= 1}
+          onClick={() => onPageChange(safeCurrentPage - 1)}
+          aria-label="Previous page"
+        >
+          <i className="bi bi-chevron-left" />
+        </button>
+
+        <div className="pagination-pages">
+          {getPageNumbers().map((page) => (
+            <button
+              key={page}
+              type="button"
+              className={
+                page === safeCurrentPage
+                  ? "pagination-page active"
+                  : "pagination-page"
+              }
+              disabled={!totalItems}
+              onClick={() => onPageChange(page)}
+            >
+              {page}
+            </button>
+          ))}
+        </div>
+
+        <button
+          type="button"
+          className="pagination-arrow"
+          disabled={
+            !totalItems || safeCurrentPage >= safeTotalPages
+          }
+          onClick={() => onPageChange(safeCurrentPage + 1)}
+          aria-label="Next page"
+        >
+          <i className="bi bi-chevron-right" />
+        </button>
+      </div>
+    </div>
+  );
 }

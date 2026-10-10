@@ -209,13 +209,13 @@ export default function VendorPayments({ viewMode } = {}) {
           )}
 
           {view === "vendors" && (
-            <button onClick={() => setShowVendorForm(true)}>
+            <button className="vendor-primary-action" onClick={() => setShowVendorForm(true)}>
               Add New Vendor
             </button>
           )}
 
           {view === "payments" && (
-            <button onClick={() => setShowPaymentForm(true)}>
+            <button className="vendor-primary-action" onClick={() => setShowPaymentForm(true)}>
               Add New Vendor Payment
             </button>
           )}
@@ -374,13 +374,14 @@ export default function VendorPayments({ viewMode } = {}) {
             <div>
 
               <button
+                className="vendor-secondary-action"
                 type="button"
                 onClick={() => setShowVendorForm(false)}
               >
                 Cancel
               </button>
 
-              <button type="submit">
+              <button className="vendor-primary-action" type="submit">
                 Add Vendor
               </button>
 
@@ -485,13 +486,14 @@ export default function VendorPayments({ viewMode } = {}) {
             <div>
 
               <button
+                className="vendor-secondary-action"
                 type="button"
                 onClick={() => setShowPaymentForm(false)}
               >
                 Cancel
               </button>
 
-              <button type="submit">
+              <button className="vendor-primary-action" type="submit">
                 Save Payment
               </button>
 

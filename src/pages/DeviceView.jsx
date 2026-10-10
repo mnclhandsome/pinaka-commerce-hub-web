@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import DeviceNavigation from "../components/DeviceNavigation";
 import {
   ArrowLeft,
-  Pencil,
   Monitor,
   Link2,
   FileText,
@@ -81,7 +80,6 @@ export default function DeviceView() {
   }
   /* ========================================================= NORMALIZED VALUES ========================================================= */ const deviceName =
     device.name || "-";
-  const deviceIdValue = device.id || deviceId;
   const deviceCode = device.code || "-";
   const deviceType = device.type || "-";
   const serialNumber = device.serial || "-";
@@ -104,17 +102,6 @@ export default function DeviceView() {
           {" "}
           <h1>View Device</h1>{" "}
           <p>View device information, assignments, and settings.</p>{" "}
-        </div>{" "}
-        <div className="device-view-header-actions">
-          {" "}
-          <button
-            type="button"
-            className="device-view-edit"
-            onClick={() => navigate(`/devices/${deviceIdValue}/edit`)}
-          >
-            {" "}
-            <Pencil size={15} /> Edit Device{" "}
-          </button>{" "}
         </div>{" "}
       </div>{" "}
       {/* ===================================================== DEVICE DETAILS ===================================================== */}{" "}

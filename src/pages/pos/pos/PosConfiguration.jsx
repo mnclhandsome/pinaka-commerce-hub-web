@@ -13,7 +13,7 @@ import { MappingConfiguration, mappingRows } from "./terminal-mappings/MappingCo
 import { SafeConfiguration } from "./safe-drop/SafeConfiguration";
 import { getPosCashRegisters } from "./cash-registers/api";
 import { getPosTerminalMappings } from "./terminal-mappings/api";
-
+//
 const configurationCards = [
     {
         id: "currency-tax",

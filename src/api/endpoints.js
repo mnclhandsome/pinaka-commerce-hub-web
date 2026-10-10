@@ -78,6 +78,7 @@ export const endpoints = {
   merchantDevices: (merchantId) => `/devices/merchant/${encodeURIComponent(merchantId)}`,
   availableDevices: "/devices/available",
   storeDeviceMappings: "/store-device-mappings",
+  storeVendorMappings: "/store-vendor-mappings",
   // merchant tendors
   merchantTendors: (merchantId) =>
     `/merchants/${encodeURIComponent(merchantId)}/tendors`,

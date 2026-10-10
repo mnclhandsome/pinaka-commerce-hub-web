@@ -1,3 +1,4 @@
+import FilterDropdown from "../components/FilterDropdown";
 import { useMemo, useState } from "react";
 import ViewDetailsModal from "../components/ViewDetailsModal";
 import "../styles/store-payment-records.css";
@@ -189,25 +190,27 @@ export default function StorePaymentRecords({ store }) {
               placeholder="Search payments..."
               onChange={(event) => setSearch(event.target.value)}
             />
-            <button type="button">Search Payments</button>
+            <button type="button" className="store-payment-search-submit">
+              Search Payments
+            </button>
           </div>
         </div>
 
         <div className="store-payment-records-toolbar">
-          <select defaultValue="">
+          <FilterDropdown defaultValue="" className="store-payment-records-bulk-select">
             <option value="">Bulk actions</option>
             <option value="export">Export</option>
-          </select>
+          </FilterDropdown>
 
           <button type="button">Apply</button>
 
-          <select
+          <FilterDropdown
             value={dateFilter}
             onChange={(event) => setDateFilter(event.target.value)}
           >
             <option value="">All dates</option>
             <option value="2026-09-16">September 16, 2026</option>
-          </select>
+          </FilterDropdown>
 
           <button type="button" onClick={clearFilters}>
             Filter

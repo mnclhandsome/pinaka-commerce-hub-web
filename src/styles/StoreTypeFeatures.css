@@ -123,6 +123,7 @@
   border: 1px solid #e0eaf5;
   border-radius: 9px;
   background: #fff;
+  overflow: visible;
 }
 
 .store-features-card-header {
@@ -254,36 +255,36 @@
 }
 
 .store-features-footer {
+   display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  width: 100%;
+  min-height: 60px;
+  box-sizing: border-box;
+}
+ 
+
+.store-features-footer .pagination-container {
+  width: 100%;
+  flex-wrap: wrap;
+  gap: 12px;
+  box-sizing: border-box;
+}
+
+
+.store-features-empty {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  margin-top: 12px;
-  color: #5878a9;
-  font-size: 11px;
+  justify-content: center;
+  min-height: 100px;
+  padding: 24px;
+  color: #75819a;
+  font-size: 14px;
+  text-align: center;
+  border-top: 1px solid #e3e8f1;
 }
 
-.store-features-pagination {
-  display: flex;
-  gap: 7px;
-}
 
-.store-features-pagination button {
-  display: grid;
-  width: 27px;
-  height: 27px;
-  place-items: center;
-  border: 1px solid #dce9f5;
-  border-radius: 5px;
-  color: #684ee3;
-  background: #fff;
-  cursor: pointer;
-}
-
-.store-features-pagination button.active {
-  color: #fff;
-  background: #684ee3;
-}
 
 /* Delete feature modal */
 

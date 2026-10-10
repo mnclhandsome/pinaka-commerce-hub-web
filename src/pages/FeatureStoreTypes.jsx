@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
  
 import { useNavigate, useParams } from 'react-router-dom';
+import Pagination from '../components/Pagination';
  
 import { Store, Search, Plus, X, Trash2 } from 'lucide-react';
  
@@ -240,6 +241,10 @@ const FeatureStoreTypes = () => {
   const [search, setSearch] = useState('');
  
   const [modalSearch, setModalSearch] = useState('');
+
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const [pageSize, setPageSize] = useState(5);
  
   const [showAddModal, setShowAddModal] = useState(false);
  
@@ -368,6 +373,23 @@ const FeatureStoreTypes = () => {
     );
  
   }, [storeTypes, search]);
+
+  const totalPages = Math.max(
+  1,
+  Math.ceil(filtered.length / pageSize)
+);
+
+const paginatedStoreTypes = useMemo(() => {
+  const startIndex = (currentPage - 1) * pageSize;
+
+  return filtered.slice(startIndex, startIndex + pageSize);
+}, [filtered, currentPage, pageSize]);
+
+useEffect(() => {
+  if (currentPage > totalPages) {
+    setCurrentPage(totalPages);
+  }
+}, [currentPage, totalPages]);
  
   /*
  
@@ -886,11 +908,10 @@ const FeatureStoreTypes = () => {
  
                 value={search}
  
-                onChange={(e) =>
- 
-                  setSearch(e.target.value)
- 
-                }
+                onChange={(e) => {
+                 setSearch(e.target.value);
+                 setCurrentPage(1);
+                      }}
  
               />
  
@@ -988,9 +1009,8 @@ const FeatureStoreTypes = () => {
  
             <tbody>
  
-              {filtered.length > 0 ? (
- 
-                filtered.map((s) => {
+              {paginatedStoreTypes.length > 0 ? (
+                   paginatedStoreTypes.map((s) => {
  
                   /*
  
@@ -1119,6 +1139,19 @@ const FeatureStoreTypes = () => {
           </table>
  
         </div>
+
+        <Pagination
+  currentPage={currentPage}
+  totalPages={totalPages}
+  totalItems={filtered.length}
+  pageSize={pageSize}
+  onPageChange={setCurrentPage}
+  onPageSizeChange={(newPageSize) => {
+    setPageSize(newPageSize);
+    setCurrentPage(1);
+  }}
+  itemLabel="store types"
+/>
  
       </section>
  

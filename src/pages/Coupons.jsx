@@ -1,3 +1,4 @@
+import FilterDropdown from "../components/FilterDropdown";
 import { useEffect, useMemo, useState } from "react";
 import Pagination from "../components/Pagination";
 import ViewDetailsModal from "../components/ViewDetailsModal";
@@ -450,7 +451,7 @@ export default function Coupons({
 
                     {/* TYPE */}
 
-                    <select
+                    <FilterDropdown
                         value={typeFilter}
                         onChange={(e) =>
                             setTypeFilter(e.target.value)
@@ -469,11 +470,11 @@ export default function Coupons({
                             </option>
                         ))}
 
-                    </select>
+                    </FilterDropdown>
 
                     {/* STATUS */}
 
-                    <select
+                    <FilterDropdown
                         value={statusFilter}
                         onChange={(e) =>
                             setStatusFilter(e.target.value)
@@ -495,7 +496,7 @@ export default function Coupons({
                             Used
                         </option>
 
-                    </select>
+                    </FilterDropdown>
 
                     {/* CLEAR */}
 

@@ -24,6 +24,8 @@ import { EmployeeToast, EmployeeDeleteDialog } from "../components/EmployeeFeedb
 import { listMerchantEmployees, getEmployee, deleteEmployee } from "../api/employees";
 import { ApiError } from "../api/http";
 import { devicesApi } from "../api/devices";
+import { listStores } from "../api/stores";
+import { getStoreDeviceMappings } from "../api/storeDeviceMappings";
 import Pagination from "../components/Pagination";
 import ListActions from "../components/ListActions";
 import FiltersBar from "../components/FiltersBar";
@@ -71,6 +73,8 @@ function MerchantReadOnly({ merchantId, merchant, onBack, onSaveEmployee, onSave
   const [addingDevice, setAddingDevice] = useState(false);
   const [createdDevices,setCreatedDevices]=useState([]);
   const [apiDevices, setApiDevices] = useState([]);
+  const [apiStores, setApiStores] = useState([]);
+  const [apiStoreMappings, setApiStoreMappings] = useState([]);
   const [devicesLoading, setDevicesLoading] = useState(false);
   const [devicesError, setDevicesError] = useState('');
   async function saveDeviceAndRefresh(values) {
@@ -78,7 +82,7 @@ function MerchantReadOnly({ merchantId, merchant, onBack, onSaveEmployee, onSave
     if(result?.success===false)throw new Error(result.message || 'Device creation failed.');
     const returned=result?.device || result?.data?.device || result?.data || result;
     const record=returned && typeof returned==='object' && !Array.isArray(returned)?returned:{};
-    const device={id:record.id || record.deviceId || crypto.randomUUID(),merchantId,name:record.name || record.deviceName || values.deviceName,type:record.type || record.deviceType || values.deviceType,serialNumber:record.serialNumber || record.serial || values.serialNumber,storeId:record.storeId || values.storeId,storeName:record.storeName,status:record.connectionStatus || record.status || values.status || 'Unknown'};
+    const device={...record,id:record.id || record.uuid || record.deviceUuid || crypto.randomUUID(),deviceId:record.deviceId || record.device_id || values.deviceId || values.device_id || '',code:record.code || record.deviceCode || record.device_code || '',merchantId:record.merchantId || record.merchant_id || merchantId,name:record.name || record.deviceName || record.device_name || values.deviceName,type:record.type || record.deviceType || record.device_type || values.deviceType,serialNumber:record.serialNumber || record.serial_number || record.serial || values.serialNumber,storeId:record.storeId || record.store_id || values.storeId || values.store_id,storeName:record.storeName || record.store_name,status:record.connectionStatus || record.connection_status || record.status || values.status || 'Unknown'};
     setCreatedDevices(old=>[device,...old.filter(item=>String(item.id)!==String(device.id))]);return result;
   }
   const navigate = useNavigate();
@@ -185,6 +189,46 @@ async function openEmployeeEdit(employee) {
       if (active) setEmployeesError(failure.message || 'Unable to load merchant employees.');
     }).finally(() => {
       if (active) setEmployeesLoading(false);
+    });
+    return () => { active = false; };
+  }, [apiMerchantId]);
+  useEffect(() => {
+    let active = true;
+    setDevicesLoading(true);
+    setDevicesError('');
+    setApiDevices([]);
+    devicesApi.listAllByMerchantId(apiMerchantId).then(value => {
+      if (active) setApiDevices(Array.isArray(value) ? value : []);
+    }).catch(failure => {
+      if (active) setDevicesError(failure.message || 'Unable to load merchant devices.');
+    }).finally(() => {
+      if (active) setDevicesLoading(false);
+    });
+    return () => { active = false; };
+  }, [apiMerchantId]);
+  useEffect(() => {
+    let active = true;
+    listStores().then(({ stores: rows = [] }) => {
+      if (!active) return;
+      const merchantRows = (Array.isArray(rows) ? rows : []).filter(store => {
+        const owner = store.merchantId || store.merchant_id;
+        return owner != null && String(owner) === String(apiMerchantId);
+      });
+      setApiStores(merchantRows);
+      return Promise.all(merchantRows.map(async store => {
+        const storeId = store.id || store.uuid || store.storeUUID || store.storeUuid || store.store_uuid || store.storeId || store.store_id;
+        if (!storeId) return [];
+        try {
+          const mappings = await getStoreDeviceMappings(storeId);
+          return mappings.map(mapping => ({ ...mapping, mappedStoreId: storeId }));
+        } catch {
+          return [];
+        }
+      })).then(groups => {
+        if (active) setApiStoreMappings(groups.flat());
+      });
+    }).catch(() => {
+      if (active) { setApiStores([]); setApiStoreMappings([]); }
     });
     return () => { active = false; };
   }, [apiMerchantId]);
@@ -387,7 +431,26 @@ async function openEmployeeEdit(employee) {
   const addressLine2 = contact.addressLine2 || contact.address_line2 || raw.addressLine2 || raw.address_line2 || address.addressLine2 || address.address_line2;
   const fullAddress = [addressLine1, addressLine2].filter(Boolean).join(', ');
   const displayMerchantCode = raw.merchant_code || raw.merchantId || summary.merchantId || contact.code || raw.code || raw.merchantCode || summary.id || merchantId;
-  const storeName = device => device.storeName || stores.find(store=>device.storeId!=null && [store.id,store.code,store.storeId].some(id=>id!=null && String(id)===String(device.storeId)))?.name || (saved && typeof device.store==='number' ? stores[device.store]?.name : '') || device.storeId || '—';
+  const merchantStores = [...stores, ...apiStores.filter(store => {
+    const owner = store.merchantId || store.merchant_id;
+    return owner == null || String(owner) === String(apiMerchantId);
+  })];
+  const storeName = device => {
+    const storeValue = device.storeName || device.store_name || (typeof device.store === 'object' ? device.store.name || device.store.storeName : device.store);
+    if (storeValue && !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(storeValue))) return String(storeValue);
+    const deviceId = device.id || device.uuid || device.deviceUuid || device.device_uuid;
+    const matchingMapping = apiStoreMappings.find(mapping => {
+      const mappedDeviceId = mapping.deviceId || mapping.device_id || mapping.device?.id || mapping.device?.device_id;
+      return deviceId != null && mappedDeviceId != null && String(mappedDeviceId).toLowerCase() === String(deviceId).toLowerCase();
+    });
+    const deviceStoreId = device.storeId || device.store_id || (typeof device.store === 'object' ? device.store.id || device.store.storeId || device.store.store_id : device.store) || matchingMapping?.mappedStoreId;
+    const matchedStore = merchantStores.find(store =>
+      [store.id, store._id, store.uuid, store.storeUUID, store.storeUuid, store.store_uuid,
+        store.storeId, store.store_id, store.code, store.storeCode, store.store_code]
+        .some(id => id != null && deviceStoreId != null && String(id).toLowerCase() === String(deviceStoreId).toLowerCase())
+    );
+    return matchedStore?.name || matchedStore?.storeName || matchedStore?.store_name || deviceStoreId || '—';
+  };
   return <div className="page-content merchant-readonly">
     <style>{`
       .merchant-readonly .merchant-detail-actions{display:flex;flex-direction:column;align-items:stretch;gap:10px;min-width:200px;}
@@ -1313,13 +1376,13 @@ function MerchantDeviceList({devices,storeName,onAdd,loading=false,error=''}) {
   const [query,setQuery]=useState(''),[page,setPage]=useState(1),[sort,setSort]=useState({key:'name',direction:1}),[view,setView]=useState(null);
   const dialog=useRef(null),lastFocus=useRef(null);
   useEffect(()=>{if(view)dialog.current?.showModal();else if(dialog.current?.open){dialog.current.close();lastFocus.current?.focus();}},[view]);
-  const rows=devices.map(d=>({...d,name:d.name || d.deviceName || '—',type:d.type || d.deviceType || '—',storeLabel:storeName(d),serial:d.serial || d.serialNumber || '—',status:d.connectionStatus || d.status || 'Unknown'})).filter(d=>[d.name,d.type,d.serial,d.storeLabel].join(' ').toLowerCase().includes(query.trim().toLowerCase())).sort((a,b)=>String(a[sort.key]).localeCompare(String(b[sort.key]))*sort.direction);
+  const rows=devices.map(d=>({...d,deviceIdentifier:d.deviceId || d.device_id || '—',deviceCode:d.code || d.deviceCode || d.device_code || '—',name:d.name || d.deviceName || '—',type:d.type || d.deviceType || '—',storeLabel:storeName(d),serial:d.serial || d.serialNumber || '—',status:d.connectionStatus || d.status || 'Unknown'})).filter(d=>[d.deviceIdentifier,d.deviceCode,d.name,d.type,d.serial,d.storeLabel].join(' ').toLowerCase().includes(query.trim().toLowerCase())).sort((a,b)=>String(a[sort.key]).localeCompare(String(b[sort.key]))*sort.direction);
   const pages=Math.max(1,Math.ceil(rows.length/10)),current=Math.min(page,pages);
   const badge=value=>['online','active'].includes(String(value).toLowerCase())?'mdl-good':['offline','inactive'].includes(String(value).toLowerCase())?'mdl-off':'mdl-unknown';
   return <div className="mdl"><header className="mdl-card mdl-header"><div><h2>Devices</h2><p>These are the devices connected to this merchant.</p></div><button className="mdl-primary" onClick={onAdd}>＋ Add Device</button></header>
     <section className="mdl-card"><h3>Device List</h3>{error&&<p role="alert" className="alert alert-danger">{error}</p>}<div className="mdl-toolbar"><input aria-label="Search devices" placeholder="Search devices by name, type or serial…" value={query} onChange={e=>{setQuery(e.target.value);setPage(1);}}/><button onClick={()=>{setQuery('');setPage(1);setSort({key:'name',direction:1});}}>↺ Reset</button></div>
-    <div className="mdl-scroll"><table><thead><tr>{[['name','Device'],['type','Type'],['storeLabel','Store'],['serial','Serial No.'],['status','Status']].map(([key,title])=><th key={key} aria-sort={sort.key===key?(sort.direction===1?'ascending':'descending'):'none'}><button className="mdl-sort" onClick={()=>setSort(old=>({key,direction:old.key===key?-old.direction:1}))}>{title} {sort.key===key?(sort.direction===1?'↑':'↓'):'↕'}</button></th>)}<th>Actions</th></tr></thead><tbody>{loading&&<tr><td colSpan={6} role="status">Loading merchant devices…</td></tr>}{!loading&&rows.slice((current-1)*10,current*10).map((d,index)=><tr key={d.id || d.deviceId || index}><td><span className="mdl-name"><span className="mdl-icon" aria-hidden="true">▣</span><strong>{d.name}</strong></span></td><td>{d.type}</td><td>{d.storeLabel}</td><td>{d.serial}</td><td><span className={'mdl-badge '+badge(d.status)}>● {d.status}</span></td><td><ListActions viewLabel={'View '+d.name} onView={e=>{lastFocus.current=e.currentTarget;setView(d);}} /></td></tr>)}{!loading&&!rows.length&&<tr><td colSpan={6}>No devices found for this merchant.</td></tr>}</tbody></table></div>
+    <div className="mdl-scroll"><table><thead><tr>{[['deviceIdentifier','Device ID'],['deviceCode','Device Code'],['name','Device Name'],['type','Type'],['storeLabel','Store'],['serial','Serial No.'],['status','Status']].map(([key,title])=><th key={key} aria-sort={sort.key===key?(sort.direction===1?'ascending':'descending'):'none'}><button className="mdl-sort" onClick={()=>setSort(old=>({key,direction:old.key===key?-old.direction:1}))}>{title} {sort.key===key?(sort.direction===1?'↑':'↓'):'↕'}</button></th>)}<th>Actions</th></tr></thead><tbody>{loading&&<tr><td colSpan={8} role="status">Loading merchant devices…</td></tr>}{!loading&&rows.slice((current-1)*10,current*10).map((d,index)=><tr key={d.id || d.deviceId || index}><td>{d.deviceIdentifier}</td><td>{d.deviceCode}</td><td><span className="mdl-name"><span className="mdl-icon" aria-hidden="true">▣</span><strong>{d.name}</strong></span></td><td>{d.type}</td><td>{d.storeLabel}</td><td>{d.serial}</td><td><span className={'mdl-badge '+badge(d.status)}>● {d.status}</span></td><td><ListActions viewLabel={'View '+d.name} onView={e=>{lastFocus.current=e.currentTarget;setView(d);}} /></td></tr>)}{!loading&&!rows.length&&<tr><td colSpan={8}>No devices found for this merchant.</td></tr>}</tbody></table></div>
     <footer><span>Showing {rows.length?(current-1)*10+1:0} to {Math.min(current*10,rows.length)} of {rows.length} entries</span><div><button aria-label="Previous page" disabled={current===1} onClick={()=>setPage(current-1)}>‹</button><span>{current} / {pages}</span><button aria-label="Next page" disabled={current===pages} onClick={()=>setPage(current+1)}>›</button></div></footer></section>
-    <dialog className="mdl-dialog" ref={dialog} aria-labelledby="mdl-title" onCancel={e=>{e.preventDefault();setView(null);}}><header className="mdl-header"><h2 id="mdl-title">Device Details</h2><button aria-label="Close device details" onClick={()=>setView(null)}>×</button></header>{view&&<dl>{Object.entries({Device:view.name,Type:view.type,Store:view.storeLabel,'Serial No.':view.serial,Status:view.status,'Device ID':view.id || view.deviceId}).map(([key,value])=><div key={key}><dt>{key}</dt><dd>{value || '—'}</dd></div>)}</dl>}</dialog>
+    <dialog className="mdl-dialog" ref={dialog} aria-labelledby="mdl-title" onCancel={e=>{e.preventDefault();setView(null);}}><header className="mdl-header"><h2 id="mdl-title">Device Details</h2><button aria-label="Close device details" onClick={()=>setView(null)}>×</button></header>{view&&<dl>{Object.entries({Device:view.name,Type:view.type,Store:view.storeLabel,'Serial No.':view.serial,Status:view.status,'Device ID':view.deviceIdentifier,'Device Code':view.deviceCode}).map(([key,value])=><div key={key}><dt>{key}</dt><dd>{value || '—'}</dd></div>)}</dl>}</dialog>
   </div>;
 }

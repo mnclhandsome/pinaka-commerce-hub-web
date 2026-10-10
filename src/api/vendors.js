@@ -1,4 +1,5 @@
 import { apiRequest } from "./http";
+import { endpoints } from "./endpoints";
 
 /*
 |--------------------------------------------------------------------------
@@ -814,6 +815,57 @@ export async function unmapMerchantVendor(
   );
 }
 
+function extractStoreVendorMappings(data) {
+  let value = data;
+  for (let depth = 0; depth < 4 && value && typeof value === "object" && !Array.isArray(value); depth += 1) {
+    if (value.mappings) value = value.mappings;
+    else if (value.data) value = value.data;
+    else if (value.items) value = value.items;
+    else if (value.results) value = value.results;
+    else break;
+  }
+  if (Array.isArray(value)) return value;
+  if (Array.isArray(value?.mappings)) return value.mappings;
+  if (Array.isArray(value?.items)) return value.items;
+  if (Array.isArray(value?.results)) return value.results;
+  return [];
+}
+
+/* Store-level mappings use the store-vendor-mappings collection API. */
+export async function getMappedStoreVendors(storeId, { token, signal } = {}) {
+  if (!storeId) throw new Error("Store ID is required.");
+  const params = new URLSearchParams();
+  params.set("store_id", storeId);
+  const data = await request(`${endpoints.storeVendorMappings}?${params.toString()}`, { method: "GET", token, signal });
+  return extractStoreVendorMappings(data).map((mapping) => {
+    const vendor = mapping.vendor || mapping.vendorDetails || mapping.vendor_details || mapping;
+    const vendorId = mapping.vendorId || mapping.vendor_id || vendor.id || vendor._id || "";
+    return normalizeVendor({
+      ...vendor,
+      id: vendorId,
+      vendorId,
+      mappingId: mapping.mappingId || mapping.mapping_id || mapping.id || "",
+    });
+  }).filter((vendor) => vendor.id);
+}
+
+export async function addStoreVendors(storeId, vendorIds, { token, signal } = {}) {
+  if (!storeId) throw new Error("Store ID is required.");
+  if (!Array.isArray(vendorIds) || !vendorIds.length) throw new Error("Select at least one vendor.");
+  const created = [];
+  for (const vendorId of vendorIds) {
+    created.push(await request(endpoints.storeVendorMappings, {
+      method: "POST", token, signal, body: JSON.stringify({ store_id: storeId, vendor_id: vendorId }),
+    }));
+  }
+  return created;
+}
+
+export async function unmapStoreVendor(mappingId, { token, signal } = {}) {
+  if (!mappingId) throw new Error("Store vendor mapping ID is required.");
+  return request(`${endpoints.storeVendorMappings}/${encodeURIComponent(mappingId)}`, { method: "DELETE", token, signal });
+}
+
 /*
 |--------------------------------------------------------------------------
 | DEFAULT API OBJECT
@@ -835,4 +887,7 @@ export const vendorsApi = {
   getAvailableMerchantVendors,
   addMerchantVendors,
   unmapMerchantVendor,
+  getMappedStoreVendors,
+  addStoreVendors,
+  unmapStoreVendor,
 };

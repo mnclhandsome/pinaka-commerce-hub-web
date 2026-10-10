@@ -430,7 +430,7 @@ export default function AddEmployee() {
     city: "",
     state: "",
     pinCode: "",
-    country: "India",
+    country: "",
     role: "",
     merchant: "",
     store: "",
@@ -1092,7 +1092,7 @@ export default function AddEmployee() {
                 <SelectField
                   label="State" required name="state" value={formData.state}
                   onChange={handleChange} error={errors.state}
-                  placeholder="Select state" options={stateOptions.map(state => state.name)}
+                  placeholder={formData.country ? "Select state" : "Select country first"} options={stateOptions.map(state => state.name)}
                   disabled={locationsLoading || !formData.country}
                 />
               </div>

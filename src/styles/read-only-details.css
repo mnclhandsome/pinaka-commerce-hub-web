@@ -1,0 +1,3 @@
+.read-only-details-page .device-view-card + .device-view-card { margin-top: 12px; }
+.read-only-details-page .device-view-value { height: auto; min-height: 35px; padding: 9px 10px; overflow-wrap: anywhere; }
+.read-only-details-page .details-full-width { grid-column: 1 / -1; }

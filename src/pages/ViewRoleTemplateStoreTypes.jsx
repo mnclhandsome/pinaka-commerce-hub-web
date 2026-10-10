@@ -446,7 +446,7 @@ export default function ViewRoleTemplateStoreTypes() {
               disabled={saving}
             >
               {saving ? "Saving..." : "Save & Continue"}
-              {!saving && <i className="bi bi-arrow-right" />}
+              
             </button>
           </div>
         </section>

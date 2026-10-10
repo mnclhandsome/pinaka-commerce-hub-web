@@ -1,5 +1,7 @@
+import FilterDropdown from "../components/FilterDropdown";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import Pagination from "../components/Pagination";
 import { listFeatures } from "../api/features";
 import {
   listFeaturePermissions,
@@ -38,7 +40,7 @@ const emptyForm = {
   name: "",
   featureId: "",
   description: "",
-  status: "Active",
+  status: "Select Status",
 };
 
 /* =========================================================
@@ -134,8 +136,8 @@ export default function FeaturePermissions() {
   const [sortBy, setSortBy] =
     useState("newest");
 
-  const [currentPage, setCurrentPage] =
-    useState(1);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(5);
 
     const navigate = useNavigate();
 
@@ -154,7 +156,6 @@ export default function FeaturePermissions() {
   ] = useState("");
   const [lastSavedCode, setLastSavedCode] = useState("");
 
-  const ITEMS_PER_PAGE = 5;
 
   const isEditing =
     editingId !== null;
@@ -186,8 +187,9 @@ export default function FeaturePermissions() {
      ========================================================= */
 
   const requiredFieldsComplete =
-    form.name.trim() !== "" &&
-    String(form.featureId).trim() !== "";
+  form.name.trim() !== "" &&
+  String(form.featureId).trim() !== "" &&
+  form.status !== "Select Status";
 
   /* =========================================================
      ORIGINAL EDITING RECORD
@@ -1040,59 +1042,35 @@ export default function FeaturePermissions() {
      PAGINATION
      ========================================================= */
 
-  const totalEntries =
-    filteredPermissions.length;
+  const totalEntries = filteredPermissions.length;
+
+const totalPages = Math.max(
+  1,
+  Math.ceil(totalEntries / pageSize)
+);
+
+const startIndex = (currentPage - 1) * pageSize;
+
+const endIndex = Math.min(
+  startIndex + pageSize,
+  totalEntries
+);
+
+const paginatedPermissions = filteredPermissions.slice(
+  startIndex,
+  endIndex
+);
 
   useEffect(() => {
-    const pages = Math.max(
-      1,
-      Math.ceil(
-        filteredPermissions.length /
-          ITEMS_PER_PAGE,
-      ),
-    );
-
-    if (
-      currentPage > pages
-    ) {
-      setCurrentPage(pages);
-    }
-  }, [
-    filteredPermissions.length,
-    currentPage,
-  ]);
-
-  const totalPages = Math.max(
+  const pages = Math.max(
     1,
-    Math.ceil(
-      totalEntries /
-        ITEMS_PER_PAGE,
-    ),
+    Math.ceil(filteredPermissions.length / pageSize)
   );
 
-  const startIndex =
-    (currentPage - 1) *
-    ITEMS_PER_PAGE;
-
-  const endIndex = Math.min(
-    startIndex +
-      ITEMS_PER_PAGE,
-    totalEntries,
-  );
-
-  const paginatedPermissions =
-    filteredPermissions.slice(
-      startIndex,
-      endIndex,
-    );
-
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [
-    search,
-    statusFilter,
-    sortBy,
-  ]);
+  if (currentPage > pages) {
+    setCurrentPage(pages);
+  }
+}, [filteredPermissions.length, currentPage, pageSize]);
 
   /* =========================================================
      DATE FORMAT
@@ -1348,36 +1326,52 @@ export default function FeaturePermissions() {
         STATUS
         ================================================= */}
 
-    <div className="fp-field">
-      <label htmlFor="permission-status">
-        Status
-      </label>
+    
+<div className="fp-field">
+  <label htmlFor="permission-status">
+    Status
+    <span>*</span>
+  </label>
 
-      <div className="fp-select-wrap">
-        <select
-          className={`fp-form-status-select ${
-            form.status === "Inactive"
-              ? "inactive"
-              : "active"
-          }`}
-          id="permission-status"
-          name="status"
-          value={form.status}
-          onChange={updateField}
-          autoComplete="off"
-        >
-          <option value="Active">
-            Active
-          </option>
+  <div className="fp-select-wrap">
+    <select
+      className={`fp-form-status-select ${
+        form.status === "Active"
+          ? "active"
+          : form.status === "Inactive"
+          ? "inactive"
+          : ""
+      }`}
+      id="permission-status"
+      name="status"
+      value={form.status}
+      onChange={updateField}
+      autoComplete="off"
+      aria-invalid={Boolean(errors.status)}
+    >
+      <option value="Select Status">
+        Select Status
+      </option>
 
-          <option value="Inactive">
-            Inactive
-          </option>
-        </select>
+      <option value="Active">
+        Active
+      </option>
 
-        <i className="bi bi-chevron-down" />
-      </div>
-    </div>
+      <option value="Inactive">
+        Inactive
+      </option>
+    </select>
+
+    <i className="bi bi-chevron-down" />
+  </div>
+
+  {errors.status && (
+    <p className="fp-field-error">
+      {errors.status}
+    </p>
+  )}
+</div>
+
   </div>
 
   {/* =================================================
@@ -1440,7 +1434,7 @@ export default function FeaturePermissions() {
             {/* STATUS FILTER */}
 
             <div className="fp-status-filter">
-              <select
+              <FilterDropdown preserveToolbarLayout
                 value={statusFilter}
                 onChange={(event) =>
                   setStatusFilter(
@@ -1460,7 +1454,7 @@ export default function FeaturePermissions() {
                 <option value="Inactive">
                   Inactive
                 </option>
-              </select>
+              </FilterDropdown>
 
               <i className="bi bi-chevron-down" />
             </div>
@@ -1468,7 +1462,7 @@ export default function FeaturePermissions() {
             {/* SORTING FILTER */}
 
             <div className="fp-sort-filter">
-              <select
+              <FilterDropdown preserveToolbarLayout
                 value={sortBy}
                 onChange={(event) =>
                   setSortBy(
@@ -1497,7 +1491,7 @@ export default function FeaturePermissions() {
                 <option value="name-desc">
                   Name Z-A
                 </option>
-              </select>
+              </FilterDropdown>
 
               <i className="bi bi-chevron-down" />
             </div>
@@ -1750,89 +1744,22 @@ export default function FeaturePermissions() {
             TABLE FOOTER
             =================================================== */}
 
-        <div className="fp-list-footer">
-          <span>
-            Showing{" "}
-            {totalEntries === 0
-              ? 0
-              : startIndex + 1}{" "}
-            to {endIndex} of{" "}
-            {totalEntries} Permissions
-          </span>
+        
+<div className="fp-list-footer">
+  <Pagination
+    currentPage={currentPage}
+    totalPages={totalPages}
+    totalItems={totalEntries}
+    pageSize={pageSize}
+    onPageChange={setCurrentPage}
+    onPageSizeChange={(newPageSize) => {
+      setPageSize(newPageSize);
+      setCurrentPage(1);
+    }}
+    itemLabel="permissions"
+  />
+</div>
 
-          <div className="fp-pagination">
-            {/* PREVIOUS */}
-
-            <button
-              type="button"
-              aria-label="Previous page"
-              disabled={
-                currentPage === 1
-              }
-              onClick={() => {
-                setCurrentPage(
-                  (prev) =>
-                    Math.max(
-                      1,
-                      prev - 1,
-                    ),
-                );
-              }}
-            >
-              <i className="bi bi-chevron-left" />
-            </button>
-
-            {/* PAGE NUMBERS */}
-
-            {Array.from(
-              {
-                length: totalPages,
-              },
-              (_, index) =>
-                index + 1,
-            ).map((page) => (
-              <button
-                key={page}
-                type="button"
-                className={
-                  currentPage ===
-                  page
-                    ? "current"
-                    : ""
-                }
-                onClick={() => {
-                  setCurrentPage(
-                    page,
-                  );
-                }}
-              >
-                {page}
-              </button>
-            ))}
-
-            {/* NEXT */}
-
-            <button
-              type="button"
-              aria-label="Next page"
-              disabled={
-                currentPage ===
-                totalPages
-              }
-              onClick={() => {
-                setCurrentPage(
-                  (prev) =>
-                    Math.min(
-                      totalPages,
-                      prev + 1,
-                    ),
-                );
-              }}
-            >
-              <i className="bi bi-chevron-right" />
-            </button>
-          </div>
-        </div>
       </section>
 
       {/* =====================================================

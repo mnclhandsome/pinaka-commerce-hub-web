@@ -28,8 +28,7 @@
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-
-  margin-bottom: 18px;
+  margin-bottom: 12px;
 }
 
 .feature-permissions-page .fp-title-wrap {
@@ -38,7 +37,7 @@
 }
 
 .feature-permissions-page .fp-title-wrap h1 {
-  margin: 0 0 7px;
+  margin-bottom: 5px;
   color: #10264d;
   font-size: 20px;
   line-height: 1.2;
@@ -77,7 +76,7 @@
 
 .feature-permissions-page .fp-info-card {
   padding: 22px 28px 30px;
-  margin-bottom: 18px;
+  margin-bottom: 20px;
 }
 
 
@@ -106,8 +105,8 @@
   display: grid;
   place-items: center;
   border-radius: 50%;
-  background: #eef3ff;
-  color: #5b50e9;
+  background: #eaeaff;
+  color: #5143bc;
   font-size: 21px;
 }
 
@@ -741,13 +740,13 @@
    ========================================================= */
 
 .feature-permissions-page .fp-table {
-  width: 100%;
-  min-width: 1080px;
-
-  border-collapse: collapse;
-  table-layout: fixed;
-
-  background: #ffffff;
+  .feature-permissions-page .fp-table {
+  width: 100% !important;
+  min-width: 1250px !important;
+  max-width: none !important;
+  table-layout: fixed !important;
+  border-collapse: collapse !important;
+}
 }
 
 
@@ -1562,7 +1561,7 @@
 
 /* Description should use only its actual compact column */
 .feature-permissions-page .fp-description-cell {
-  width: auto !important;
+  width: 25% !important;
   max-width: none !important;
 }
 
@@ -1570,6 +1569,8 @@
 .feature-permissions-page .fp-table th:nth-child(5),
 .feature-permissions-page .fp-table td:nth-child(5) {
   padding-left: 6px !important;
+   width: 15%;
+
 }
 
 /* Give timestamps the room that was previously wasted in Description */
@@ -2462,10 +2463,10 @@ body .feature-permissions-page .fp-delete-modal-actions .fp-delete-confirm-btn i
    ========================================================= */
 
 .feature-permissions-page .fp-date-value {
-  color: #657a9b !important;
+  color: #10264d !important;
   font-size: 13px !important;
   line-height: 18px !important;
-  font-weight: 600 !important;
+  font-weight: 500 !important;
   white-space: nowrap !important;
 }
 
@@ -2475,7 +2476,7 @@ body .feature-permissions-page .fp-delete-modal-actions .fp-delete-confirm-btn i
    ========================================================= */
 
 .feature-permissions-page .fp-time-value {
-  color: #8795aa !important;
+  color: #7290ba !important;
   font-size: 11px !important;
   line-height: 16px !important;
   font-weight: 400 !important;
@@ -3307,3 +3308,85 @@ body .feature-permissions-page
   }
 }
 
+
+/* =========================================================
+   FINAL RESPONSIVE TABLE WIDTH FIX
+   Keep the Actions column inside the full available table width,
+   including when browser zoom is reduced.
+   ========================================================= */
+.feature-permissions-page .fp-table-wrap {
+  width: 100% !important;
+  min-width: 0 !important;
+  box-sizing: border-box !important;
+  overflow-x: auto !important;
+}
+
+.feature-permissions-page .fp-table {
+  width: 100% !important;
+  min-width: 100% !important;
+  max-width: 100% !important;
+  table-layout: fixed !important;
+}
+
+.feature-permissions-page .fp-table col.fp-col-key {
+  width: 13% !important;
+}
+.feature-permissions-page .fp-table col.fp-col-name {
+  width: 14% !important;
+}
+.feature-permissions-page .fp-table col.fp-col-feature {
+  width: 12% !important;
+}
+.feature-permissions-page .fp-table col.fp-col-description {
+  width: 16% !important;
+}
+.feature-permissions-page .fp-table col.fp-col-status {
+  width: 10% !important;
+}
+.feature-permissions-page .fp-table col.fp-col-created {
+  width: 11% !important;
+}
+.feature-permissions-page .fp-table col.fp-col-updated {
+  width: 11% !important;
+}
+.feature-permissions-page .fp-table col.fp-col-actions {
+  width: 13% !important;
+}
+
+.feature-permissions-page .fp-table th:last-child,
+.feature-permissions-page .fp-table td:last-child {
+  width: auto !important;
+  min-width: 0 !important;
+  text-align: center !important;
+  white-space: nowrap !important;
+}
+
+.feature-permissions-page .fp-row-actions.feature-row-actions {
+  width: 100% !important;
+  min-width: 0 !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  gap: 8px !important;
+  box-sizing: border-box !important;
+}
+
+.feature-permissions-page .fp-row-actions.feature-row-actions button {
+  flex: 0 0 32px !important;
+  width: 32px !important;
+  min-width: 32px !important;
+  box-sizing: border-box !important;
+}
+
+.feature-permissions-page .fp-list-footer {
+  width: 100% !important;
+  min-width: 0 !important;
+  box-sizing: border-box !important;
+}
+
+@media (max-width: 1100px) {
+  .feature-permissions-page .fp-table {
+    min-width: 1050px !important;
+    max-width: none !important;
+  }
+}

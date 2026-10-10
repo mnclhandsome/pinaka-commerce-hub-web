@@ -34,6 +34,8 @@ import Products from "./pages/Products";
 import Coupons from "./pages/Coupons";
 import Orders from "./pages/Orders";
 import OrderDetail from "./pages/OrderDetail";
+import OrderView from "./pages/OrderView";
+import VendorView from "./pages/VendorView";
 import CreateStoreType from "./pages/CreateStoreType";
 import CreatePlan from "./pages/CreatePlan";
 import StoreTypeDetails from "./pages/StoreTypeDetails";
@@ -244,7 +246,9 @@ export default function App() {
         
       
         {/* Master Setup */}
+        <Route path="/vendors/add" element={<Vendors formOnly />} />
         <Route path="/vendors" element={<Vendors />} />
+        <Route path="/vendors/:vendorId" element={<VendorView />} />
         <Route path="/tenders" element={<Tenders />} />
         <Route path="/tenders/:tenderId" element={<TenderDetails />} />
         <Route path="/role-templates" element={<RoleTemplates />} />
@@ -268,4 +272,3 @@ export default function App() {
     </Routes>
   );
 }
-

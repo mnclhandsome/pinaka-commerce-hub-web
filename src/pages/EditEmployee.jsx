@@ -245,7 +245,7 @@ export default function EditEmployee({ employee: employeeProp, onBack: onBackPro
     city: employee.city || "",
     state: employee.state || "",
     pinCode: employee.postalCode || employee.pinCode || "",
-    country: employee.country || "India",
+    country: employee.country || "",
 
     // Set initial merchant to Business Name or merchant string
     merchantId:
@@ -821,7 +821,7 @@ export default function EditEmployee({ employee: employeeProp, onBack: onBackPro
                   placeholder={locationOptions.loading ? "Loading countries..." : "Select country"} disabled={locationOptions.loading} />
                 <SelectField label="State" required name="state" value={formData.state}
                   onChange={handleChange} error={errors.state} options={locationOptions.states}
-                  placeholder="Select state" disabled={locationOptions.loading || !formData.country} />
+                  placeholder={formData.country ? "Select state" : "Select country first"} disabled={locationOptions.loading || !formData.country} />
                 <SelectField label="City" required name="city" value={formData.city}
                   onChange={handleChange} error={errors.city} options={locationOptions.cities}
                   placeholder={formData.state ? "Select city" : "Select state first"} disabled={locationOptions.loading || !formData.state} />

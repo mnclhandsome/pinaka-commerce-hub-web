@@ -265,28 +265,22 @@ export default function FeaturePermissionsOverview() {
                   : "—"}
               </DetailField>
 
-              <DetailField label="Status">
-                {permission.status}
-              </DetailField>
 
-              <DetailField label="Permission Name">
+               <DetailField label="Permission Name">
                 {permission.name}
               </DetailField>
 
-              <DetailField label="Permission Type">
-                {permission.permissionType}
-              </DetailField>
-
+            
               <DetailField label="Feature Name">
                 {permission.featureName ||
                   feature?.name ||
                   "—"}
               </DetailField>
-
-              <DetailField label="Feature ID">
-                {featureId || "—"}
+              
+              <DetailField label="Status">
+                {permission.status}
               </DetailField>
-
+              
               <DetailField
                 label="Description"
                 fullWidth

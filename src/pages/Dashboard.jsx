@@ -1,4 +1,5 @@
-import { useState, useEffect, useRef } from "react";
+import FilterDropdown from "../components/FilterDropdown";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 /* =========================================================
@@ -207,27 +208,9 @@ export default function Dashboard() {
 
   const [refreshing, setRefreshing] = useState(false);
   const [dateFilter, setDateFilter] = useState("Today");
-  const [showDateFilter, setShowDateFilter] = useState(false);
   const [customStartDate, setCustomStartDate] = useState("");
   const [customEndDate, setCustomEndDate] = useState("");
   const [planFilter, setPlanFilter] = useState("All plans");
-  const [showPlanFilter, setShowPlanFilter] = useState(false);
-  const dropdownsRef = useRef(null);
-
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (dropdownsRef.current && !dropdownsRef.current.contains(event.target)) {
-        setShowDateFilter(false);
-        setShowPlanFilter(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
 
   const refresh = () => {
     setRefreshing(true);
@@ -262,105 +245,26 @@ export default function Dashboard() {
           </button>
         </div>
 
-        <div className="dashboard-toolbar" ref={dropdownsRef}>
+        <div className="dashboard-toolbar">
 
          {/* DATE RANGE FILTER */}
-<div className="dashboard-date-filter-wrapper">
-  <button
-    type="button"
-    className="dashboard-filter dashboard-date-filter"
-    onClick={() => {
-      setShowDateFilter((prev) => !prev);
-      setShowPlanFilter(false);
-    }}
-  >
-    <i className="bi bi-calendar3" />
-
-    <span>{dateFilter}</span>
-
-    <i
-      className={`bi ${
-        showDateFilter
-          ? "bi-chevron-up"
-          : "bi-chevron-down"
-      }`}
-    />
-  </button>
-
-  {showDateFilter && (
-    <div className="dashboard-date-dropdown">
-
-      <button
-        type="button"
-        className={dateFilter === "Today" ? "active" : ""}
-        onClick={() => {
-          setDateFilter("Today");
-          setShowDateFilter(false);
-        }}
-      >
-        Today
-      </button>
-
-      <button
-        type="button"
-        className={dateFilter === "Last 7 days" ? "active" : ""}
-        onClick={() => {
-          setDateFilter("Last 7 days");
-          setShowDateFilter(false);
-        }}
-      >
-        Last 7 days
-      </button>
-
-      <button
-        type="button"
-        className={dateFilter === "Last 30 days" ? "active" : ""}
-        onClick={() => {
-          setDateFilter("Last 30 days");
-          setShowDateFilter(false);
-        }}
-      >
-        Last 30 days
-      </button>
-
-      <div className="dashboard-custom-date">
-        <span>Custom</span>
-
-        <div className="dashboard-date-inputs">
-          <input
-            type="date"
-            value={customStartDate}
-            onChange={(e) => setCustomStartDate(e.target.value)}
-          />
-
-          <span>to</span>
-
-          <input
-            type="date"
-            value={customEndDate}
-            onChange={(e) => setCustomEndDate(e.target.value)}
-          />
-        </div>
-
-        <button
-          type="button"
-          className="dashboard-custom-apply"
-          disabled={!customStartDate || !customEndDate}
-          onClick={() => {
-            setDateFilter(
-              `${customStartDate} - ${customEndDate}`
-            );
-            setShowDateFilter(false);
-          }}
-        >
-          Apply
-        </button>
-      </div>
-
+<FilterDropdown className="dashboard-filter dashboard-date-filter" aria-label="Date range" value={dateFilter}
+  triggerIcon={<i className="bi bi-calendar3" aria-hidden="true" />}
+  onChange={(event) => setDateFilter(event.target.value)}
+  renderFooter={(close) => <div className="dashboard-custom-date">
+    <span>Custom</span>
+    <div className="dashboard-date-inputs">
+      <input type="date" aria-label="Custom start date" value={customStartDate} onChange={(event) => setCustomStartDate(event.target.value)} />
+      <span>to</span>
+      <input type="date" aria-label="Custom end date" value={customEndDate} onChange={(event) => setCustomEndDate(event.target.value)} />
     </div>
-  )}
-</div>
-    
+    <button type="button" className="dashboard-custom-apply" disabled={!customStartDate || !customEndDate}
+      onClick={() => { setDateFilter(`${customStartDate} - ${customEndDate}`); close(); }}>Apply</button>
+  </div>}>
+  <option>Today</option><option>Last 7 days</option><option>Last 30 days</option>
+  {!["Today", "Last 7 days", "Last 30 days"].includes(dateFilter) && <option hidden disabled>{dateFilter}</option>}
+</FilterDropdown>
+
       {/* MERCHANT FILTER */}
       <button className="dashboard-filter">
         All merchants
@@ -368,78 +272,10 @@ export default function Dashboard() {
       </button>
 
       {/* PLAN FILTER */}
-      <div
-          className="dashboard-plan-filter-wrapper"
-        >
-        <button
-          type="button"
-          className="dashboard-filter dashboard-plan-filter"
-          onClick={() => {
-            setShowPlanFilter((prev) => !prev);
-            setShowDateFilter(false);
-          }}
-        >
-          <span>{planFilter}</span>
-
-          <i
-            className={`bi ${
-              showPlanFilter
-                ? "bi-chevron-up"
-                : "bi-chevron-down"
-            }`}
-          />
-        </button>
-
-        {showPlanFilter && (
-          <div className="dashboard-plan-dropdown">
-
-            <button
-              type="button"
-              className={planFilter === "All plans" ? "active" : ""}
-              onClick={() => {
-                setPlanFilter("All plans");
-                setShowPlanFilter(false);
-              }}
-            >
-              All plans
-            </button>
-
-            <button
-              type="button"
-              className={planFilter === "Basic" ? "active" : ""}
-              onClick={() => {
-                setPlanFilter("Basic");
-                setShowPlanFilter(false);
-              }}
-            >
-              Basic
-            </button>
-
-            <button
-              type="button"
-              className={planFilter === "Pro" ? "active" : ""}
-              onClick={() => {
-                setPlanFilter("Pro");
-                setShowPlanFilter(false);
-              }}
-            >
-              Pro
-            </button>
-
-            <button
-              type="button"
-              className={planFilter === "Enterprise" ? "active" : ""}
-              onClick={() => {
-                setPlanFilter("Enterprise");
-                setShowPlanFilter(false);
-              }}
-            >
-              Enterprise
-            </button>
-
-          </div>
-        )}
-      </div>
+      <FilterDropdown className="dashboard-filter dashboard-plan-filter" aria-label="Plan" value={planFilter}
+        onChange={(event) => setPlanFilter(event.target.value)}>
+        <option>All plans</option><option>Basic</option><option>Pro</option><option>Enterprise</option>
+      </FilterDropdown>
 
       {/* STORE FILTER */}
       <button className="dashboard-filter">

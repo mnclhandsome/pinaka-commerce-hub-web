@@ -1,5 +1,7 @@
+import FilterDropdown from "../components/FilterDropdown";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import Pagination from "../components/Pagination";
 import {
   roleTemplatesApi,
   readRoleTemplatesList,
@@ -9,7 +11,7 @@ const initialForm = {
   roleCode: "",
   name: "",
   description: "",
-  status: "ACTIVE",
+  status: "",
 };
  
 function displayDate(value) {
@@ -60,8 +62,8 @@ export default function RoleTemplates() {
   const [sortBy, setSortBy] = useState("NEWEST");
  
   // Client-side pagination over the real API-backed list.
-  const PAGE_SIZE = 10;
   const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(5);
  
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -154,17 +156,16 @@ export default function RoleTemplates() {
   }, [templates, search, statusFilter, sortBy]);
  
   const totalEntries = filteredTemplates.length;
-  const totalPages = Math.max(1, Math.ceil(totalEntries / PAGE_SIZE));
- 
-  const paginatedTemplates = useMemo(() => {
-    const start = (currentPage - 1) * PAGE_SIZE;
-    return filteredTemplates.slice(start, start + PAGE_SIZE);
-  }, [filteredTemplates, currentPage]);
- 
-  const showingFrom =
-    totalEntries === 0 ? 0 : (currentPage - 1) * PAGE_SIZE + 1;
-  const showingTo =
-    totalEntries === 0 ? 0 : Math.min(currentPage * PAGE_SIZE, totalEntries);
+
+const totalPages = Math.max(
+  1,
+  Math.ceil(totalEntries / pageSize)
+);
+
+const paginatedTemplates = useMemo(() => {
+  const start = (currentPage - 1) * pageSize;
+  return filteredTemplates.slice(start, start + pageSize);
+}, [filteredTemplates, currentPage, pageSize]);
 
   /** --------------------------------------------------------------
    *  Keep pagination in sync when filters change
@@ -177,8 +178,10 @@ export default function RoleTemplates() {
    *  Adjust page when a delete makes the current page invalid
    * -------------------------------------------------------------- */
   useEffect(() => {
-    if (currentPage > totalPages) setCurrentPage(totalPages);
-  }, [currentPage, totalPages]);
+  if (currentPage > totalPages) {
+    setCurrentPage(totalPages);
+  }
+}, [currentPage, totalPages]);
 
   /** --------------------------------------------------------------
    *  Form handling helpers
@@ -211,6 +214,11 @@ export default function RoleTemplates() {
       setError("Role Template Name is required.");
       return;
     }
+
+    if (!values.status) {
+  setError("Please select a status.");
+  return;
+}
 
        // 2. NEW: Check for duplicate name
     const isDuplicate = templates.some(
@@ -357,11 +365,12 @@ export default function RoleTemplates() {
   });
  
   const isFormValid =
-    form.roleCode.length >= 3 &&
-    form.roleCode.length <= 30 &&
-    /^[A-Z0-9_]+$/.test(form.roleCode) &&
-    form.name.trim().length > 0 &&
-    !isDuplicateName; // NEW: Block submit if duplicate
+  form.roleCode.length >= 3 &&
+  form.roleCode.length <= 30 &&
+  /^[A-Z0-9_]+$/.test(form.roleCode) &&
+  form.name.trim().length > 0 &&
+  Boolean(form.status) &&
+  !isDuplicateName;
  
   const hasFormChanges =
     editingId !== null &&
@@ -469,36 +478,43 @@ export default function RoleTemplates() {
  
 
             {/* ------------------ STATUS ------------------ */}
-            <label className="role-field role-status-field">
-              <span>
-                Status <b>*</b>
-              </span>
- 
-              <div
-                className={`role-select-wrap ${
-                  form.status === "INACTIVE"
-                    ? "role-status-select-inactive"
-                    : "role-status-select-active"
-                }`}
-              >
-                <select
-                  name="status"
-                  value={form.status}
-                  onChange={handleChange}
-                  className={
-                    form.status === "INACTIVE"
-                      ? "status-inactive"
-                      : "status-active"
-                  }
-                >
-                  <option value="ACTIVE">Active</option>
-                  <option value="INACTIVE">Inactive</option>
-                </select>
-                <i className="bi bi-chevron-down" />
-              </div>
- 
-              <small></small>
-            </label>
+<label className="role-field role-status-field">
+  <span>
+    Status <b>*</b>
+  </span>
+
+  <div
+    className={`role-select-wrap ${
+      form.status === "INACTIVE"
+        ? "role-status-select-inactive"
+        : form.status === "ACTIVE"
+        ? "role-status-select-active"
+        : ""
+    }`}
+  >
+    <select
+      name="status"
+      value={form.status}
+      onChange={handleChange}
+      className={
+        form.status === "INACTIVE"
+          ? "status-inactive"
+          : form.status === "ACTIVE"
+          ? "status-active"
+          : ""
+      }
+      required
+      aria-label="Select status"
+    >
+      <option value="">Select Status</option>
+      <option value="ACTIVE">Active</option>
+      <option value="INACTIVE">Inactive</option>
+    </select>
+
+    <i className="bi bi-chevron-down" />
+  </div>
+
+</label>
 
             {/* ------------------ DESCRIPTION ------------------ */}
             <label className="role-field role-description-field">
@@ -566,7 +582,7 @@ export default function RoleTemplates() {
                 />
               </div>
  
-              <select
+              <FilterDropdown preserveToolbarLayout
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
                 aria-label="Filter by status"
@@ -574,9 +590,9 @@ export default function RoleTemplates() {
                 <option value="ALL">All Statuses</option>
                 <option value="ACTIVE">Active</option>
                 <option value="INACTIVE">Inactive</option>
-              </select>
+              </FilterDropdown>
  
-              <select
+              <FilterDropdown preserveToolbarLayout
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
                 aria-label="Sort role templates"
@@ -585,7 +601,7 @@ export default function RoleTemplates() {
                 <option value="OLDEST">Oldest to Newest</option>
                 <option value="A_Z">A to Z</option>
                 <option value="Z_A">Z to A</option>
-              </select>
+              </FilterDropdown>
  
               <button
                 type="button"
@@ -760,55 +776,20 @@ export default function RoleTemplates() {
           </div>
 
           {/* ------------------ PAGINATION ------------------ */}
-          <div className="role-pagination">
-            <span className="role-pagination-info">
-              Showing {showingFrom} to {showingTo} of {totalEntries} role
-              templates
-            </span>
- 
-            {totalEntries > 0 && (
-              <div
-                className="role-pagination-controls"
-                aria-label="Role templates pagination"
-              >
-                <button
-                  type="button"
-                  className="role-page-btn role-page-arrow"
-                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                  disabled={currentPage === 1}
-                  aria-label="Previous page"
-                >
-                  <i className="bi bi-chevron-left" />
-                </button>
-
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                  (page) => (
-                    <button
-                      key={page}
-                      type="button"
-                      className={`role-page-btn ${currentPage === page ? "active" : ""}`}
-                      onClick={() => setCurrentPage(page)}
-                      aria-current={currentPage === page ? "page" : undefined}
-                    >
-                      {page}
-                    </button>
-                  ),
-                )}
-
-                <button
-                  type="button"
-                  className="role-page-btn role-page-arrow"
-                  onClick={() =>
-                    setCurrentPage((p) => Math.min(totalPages, p + 1))
-                  }
-                  disabled={currentPage === totalPages}
-                  aria-label="Next page"
-                >
-                  <i className="bi bi-chevron-right" />
-                </button>
-              </div>
-            )}
-          </div>
+<div className="role-pagination">
+  <Pagination
+    currentPage={currentPage}
+    totalPages={totalPages}
+    totalItems={totalEntries}
+    pageSize={pageSize}
+    onPageChange={setCurrentPage}
+    onPageSizeChange={(newPageSize) => {
+      setPageSize(newPageSize);
+      setCurrentPage(1);
+    }}
+    itemLabel="role templates"
+  />
+</div>
         </div>
       </section>
 

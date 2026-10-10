@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import Pagination from "../components/Pagination";
 import { getPlan } from "../api/plans";
 function displayText(value, fallback = "—") {
   if (typeof value === "string" || typeof value === "number") {
-    return String(value);
+    return String(value).trim() || fallback;
   }
   if (value && typeof value === "object") {
     return displayText(
@@ -55,6 +56,8 @@ function featureRows(features) {
 export default function ViewPlanFeaturesLimits() {
   const navigate = useNavigate();
   const { planId } = useParams();
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(5);
   const [retry, setRetry] = useState(0);
   const [result, setResult] = useState({
     id: null,
@@ -109,6 +112,28 @@ export default function ViewPlanFeaturesLimits() {
   const plan = loading ? null : result.plan;
   const error = loading ? "" : result.error;
   const selectedFeatures = loading ? [] : result.features;
+  // Reset pagination when switching plans or changing page size
+useEffect(() => {
+  setCurrentPage(1);
+}, [planId, pageSize]);
+
+const totalEntries = selectedFeatures.length;
+
+const totalPages = Math.max(
+  1,
+  Math.ceil(totalEntries / pageSize)
+);
+
+const paginatedFeatures = selectedFeatures.slice(
+  (currentPage - 1) * pageSize,
+  currentPage * pageSize
+);
+
+useEffect(() => {
+  if (currentPage > totalPages) {
+    setCurrentPage(totalPages);
+  }
+}, [currentPage, totalPages]);
   const basePath = `/plans/${encodeURIComponent(planId ?? "")}`;
   const tabs = [
     ["overview", "Overview", basePath],
@@ -211,45 +236,51 @@ export default function ViewPlanFeaturesLimits() {
                     <th>Feature Name</th> <th>Feature Category</th> <th>Included in Plan</th>{" "}
                   </tr>{" "}
                 </thead>{" "}
-                <tbody>
-                  {" "}
-                  {selectedFeatures.length === 0 ? (
-                    <tr>
-                      {" "}
-                      <td colSpan={3}>
-                        {" "}
-                        No included features are configured for this plan.{" "}
-                      </td>{" "}
-                    </tr>
-                  ) : (
-                    selectedFeatures.map((feature) => (
-                      <tr key={feature.id}>
-                        {" "}
-                        <td>
-                          {" "}
-                          <strong> {feature.name} </strong>{" "}
-                        </td>{" "}
-                        <td> {feature.category} </td>{" "}
-                        <td>
-                          {" "}
-                          <span className="plan-feature-included-badge">
-                            {" "}
-                            <i className="bi bi-circle-fill" /> Included{" "}
-                          </span>{" "}
-                        </td>{" "}
-                      </tr>
-                    ))
-                  )}{" "}
-                </tbody>{" "}
+                
+<tbody>
+  {paginatedFeatures.length === 0 ? (
+    <tr>
+      <td colSpan={3} className="plan-view-features-empty">
+        No included features are configured for this plan.
+      </td>
+    </tr>
+  ) : (
+    paginatedFeatures.map((feature) => (
+      <tr key={feature.id}>
+        <td>
+          <strong>{feature.name}</strong>
+        </td>
+        <td>{feature.category}</td>
+        <td>
+          <span className="plan-feature-included-badge">
+            <i className="bi bi-circle-fill" /> Included
+          </span>
+        </td>
+      </tr>
+    ))
+  )}
+</tbody>
+{" "}
               </table>{" "}
             </div>{" "}
             {/* ================================================= COUNT ================================================= */}{" "}
-            <p className="plan-view-table-count">
-              {" "}
-              {selectedFeatures.length === 0
-                ? "0 included features"
-                : `Showing 1 - ${selectedFeatures.length} of ${selectedFeatures.length} included features`}{" "}
-            </p>{" "}
+            
+<div className="plan-view-features-footer">
+  <Pagination
+    currentPage={currentPage}
+    totalPages={totalPages}
+    totalItems={totalEntries}
+    pageSize={pageSize}
+    onPageChange={setCurrentPage}
+    onPageSizeChange={(newPageSize) => {
+      setPageSize(newPageSize);
+      setCurrentPage(1);
+    }}
+    itemLabel="features"
+    showWhenEmpty={true}
+  />
+</div>
+{" "}
           </section>{" "}
         </>
       )}{" "}

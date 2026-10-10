@@ -177,3 +177,12 @@ export const api = {
 };
  
  
+
+// Share concurrent reads only; settled requests are never cached.
+const pendingStoreReads = new Map();
+export function pendingStoreRead(key, read) {
+  if (!pendingStoreReads.has(key)) {
+    pendingStoreReads.set(key, Promise.resolve().then(read).finally(() => pendingStoreReads.delete(key)));
+  }
+  return pendingStoreReads.get(key);
+}

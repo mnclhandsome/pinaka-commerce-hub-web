@@ -618,7 +618,7 @@
 .devices-table {
   width: 100%;
 
-  min-width: 1050px;
+  min-width: 1360px;
 
   margin: 0;
 
@@ -691,7 +691,7 @@
 }
 
 .devices-table tbody tr:hover {
-  background: #fcfcff;
+  background: #fafbfe;
 }
 
 
@@ -701,32 +701,42 @@
 
 .devices-table th:nth-child(1),
 .devices-table td:nth-child(1) {
-  width: 22%;
+  width: 10%;
 }
 
 .devices-table th:nth-child(2),
 .devices-table td:nth-child(2) {
-  width: 15%;
+  width: 14%;
 }
 
 .devices-table th:nth-child(3),
 .devices-table td:nth-child(3) {
-  width: 17%;
+  width: 16%;
 }
 
 .devices-table th:nth-child(4),
 .devices-table td:nth-child(4) {
-  width: 17%;
+  width: 10%;
 }
 
 .devices-table th:nth-child(5),
 .devices-table td:nth-child(5) {
-  width: 15%;
+  width: 13%;
 }
 
 .devices-table th:nth-child(6),
 .devices-table td:nth-child(6) {
-  width: 14%;
+  width: 13%;
+}
+
+.devices-table th:nth-child(7),
+.devices-table td:nth-child(7) {
+  width: 11%;
+}
+
+.devices-table th:nth-child(8),
+.devices-table td:nth-child(8) {
+  width: 13%;
 }
 
 
@@ -1240,7 +1250,7 @@
   }
 
   .devices-table {
-    min-width: 1050px;
+    min-width: 1360px;
   }
 }
 
@@ -1394,3 +1404,6 @@
 /* =========================================================
    END DEVICES CSS
 ========================================================= */
+
+.device-row-clickable { cursor: pointer; }
+.device-row-clickable:focus-visible { outline: 2px solid #6740e5; outline-offset: -2px; }

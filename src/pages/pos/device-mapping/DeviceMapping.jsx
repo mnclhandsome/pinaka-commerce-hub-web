@@ -20,13 +20,14 @@ async function combineMappings(rows, devices) {
     }
     return {
       ...(device || {}),
+      deviceIdentifier: device?.deviceId || device?.device_id || mapping.deviceIdentifier || mapping.device_identifier || mapping.device?.deviceId || "",
       deviceId,
       mappingId: mapping.mappingId || mapping.mapping_id || mapping.id,
-      code: device.code || device.deviceCode || mapping.code || mapping.device_code || "",
-      name: device.name || mapping.name || mapping.device_name || "",
-      type: device.type || mapping.type || mapping.device_type || "",
-      serial: device.serial || mapping.serial || mapping.serial_number || "",
-      status: device.status || mapping.status || "Active",
+      code: device?.code || device?.deviceCode || mapping.code || mapping.device_code || "",
+      name: device?.name || mapping.name || mapping.device_name || "",
+      type: device?.type || mapping.type || mapping.device_type || "",
+      serial: device?.serial || mapping.serial || mapping.serial_number || "",
+      status: device?.status || mapping.status || "Active",
     };
   })).then((mappings) => mappings.filter((mapping) => mapping.deviceId != null));
 }
@@ -88,7 +89,7 @@ export function DeviceMapping() {
   const addSelected = () => {
     const selected = devices.filter((device) => selection.includes(String(device.id)) && !mappedIds.has(String(device.id)));
     if (!selected.length) return;
-    setMappings((current) => [...current, ...selected.map((device) => ({ deviceId: device.id, name: device.name, code: device.code || device.deviceCode, type: device.type, serial: device.serial, status: device.status || "Active" }))]);
+    setMappings((current) => [...current, ...selected.map((device) => ({ deviceId: device.id, deviceIdentifier: device.deviceId || device.device_id || "", name: device.name, code: device.code || device.deviceCode || device.device_code, type: device.type, serial: device.serial, status: device.status || "Active" }))]);
     setSelection([]);
     setMappedPage(1);
     setView("mapped");
@@ -164,14 +165,14 @@ export function DeviceMapping() {
       </div>
       <div className="mv-picker-summary"><span>{available.length} matching devices · {selection.length} selected</span></div>
       <div className="mv-existing-table-wrap"><table>
-        <thead><tr><th>Select</th><th>Device Code</th><th>Device Name</th><th>Device Type</th><th>Serial Number</th><th>Status</th></tr></thead>
+        <thead><tr><th>Select</th><th>Device ID</th><th>Device Code</th><th>Device Name</th><th>Device Type</th><th>Serial Number</th><th>Status</th></tr></thead>
         <tbody>
           {pageRows.map((device) => { const selected = selection.includes(String(device.id)); return <tr key={device.id} className={selected ? "mv-row-selected" : ""} aria-selected={selected} onClick={(event) => { if (!event.target.closest("input,button,a,select")) toggleSelection(device.id); }}>
             <td><input type="checkbox" aria-label={`Select ${device.name}`} checked={selected} onChange={() => toggleSelection(device.id)} /></td>
-            <td>{device.code || device.deviceCode || "—"}</td><td><strong>{device.name || "—"}</strong></td><td>{device.type || "—"}</td><td>{device.serial || "—"}</td><td>{device.status || "Active"}</td>
+            <td>{device.deviceId || device.device_id || "—"}</td><td>{device.code || device.deviceCode || device.device_code || "—"}</td><td><strong>{device.name || "—"}</strong></td><td>{device.type || "—"}</td><td>{device.serial || "—"}</td><td>{device.status || "Active"}</td>
           </tr>; })}
-          {!loading && !pageRows.length && <tr><td colSpan="6">No unassigned devices found for this merchant.</td></tr>}
-          {loading && <tr><td colSpan="6" role="status">Loading merchant devices…</td></tr>}
+          {!loading && !pageRows.length && <tr><td colSpan="7">No unassigned devices found for this merchant.</td></tr>}
+          {loading && <tr><td colSpan="7" role="status">Loading merchant devices…</td></tr>}
         </tbody>
       </table></div>
       <nav className="mv-picker-pagination" aria-label="Device pages"><span>Showing {available.length ? (page - 1) * pageSize + 1 : 0}–{Math.min(page * pageSize, available.length)} of {available.length}</span>
@@ -187,9 +188,9 @@ export function DeviceMapping() {
     <section className="mv-card mv-device-list-card">
       <h3>Mapped Device List</h3>
       <div className="mv-toolbar"><div className="mv-toolbar-left"><input aria-label="Search mapped devices" placeholder="Search devices by name, type or serial…" value={mappedSearch} onChange={(event) => { setMappedSearch(event.target.value); setMappedPage(1); }} /></div><button type="button" className="mv-reset" onClick={() => { setMappedSearch(""); setMappedPage(1); }}>↺ Reset</button></div>
-      <div className="mv-scroll"><table><thead><tr><th>Device Name</th><th>Device Code</th><th>Device Type</th><th>Serial Number</th><th>Status</th><th>Actions</th></tr></thead><tbody>
-        {mappedRows.map((device) => <tr key={device.deviceId}><td><strong>{device.name || "—"}</strong></td><td>{device.code || "—"}</td><td>{device.type || "—"}</td><td>{device.serial || "—"}</td><td>{device.status || "Active"}</td><td><button type="button" className="mv-device-remove" onClick={() => setMappings((current) => current.filter((item) => String(item.deviceId) !== String(device.deviceId)))}>Remove</button></td></tr>)}
-        {!mappedRows.length && <tr><td colSpan="6">No mapped devices match. Use Add Existing Device to select from merchant devices.</td></tr>}
+      <div className="mv-scroll"><table><thead><tr><th>Device Code</th><th>Device ID</th><th>Device Name</th><th>Serial Number</th><th>Device Type</th><th>Actions</th></tr></thead><tbody>
+        {mappedRows.map((device) => <tr key={device.deviceId}><td>{device.code || "—"}</td><td>{device.deviceIdentifier || "—"}</td><td><strong>{device.name || "—"}</strong></td><td>{device.serial || "—"}</td><td>{device.type || "—"}</td><td><button type="button" className="mv-device-remove" onClick={() => setMappings((current) => current.filter((item) => String(item.deviceId) !== String(device.deviceId)))}>Remove</button></td></tr>)}
+        {!mappedRows.length && <tr><td colSpan="7">No mapped devices match. Use Add Existing Device to select from merchant devices.</td></tr>}
       </tbody></table></div>
       <nav className="mv-picker-pagination" aria-label="Mapped device pages"><span>Showing {filteredMappings.length ? (mappedPage - 1) * pageSize + 1 : 0}–{Math.min(mappedPage * pageSize, filteredMappings.length)} of {filteredMappings.length} entries</span>
         <div className="mv-popup-actions"><button type="button" disabled={mappedPage === 1} onClick={() => setMappedPage(mappedPage - 1)}>Previous</button><span>Page {mappedPage} of {mappedPageCount}</span><button type="button" disabled={mappedPage === mappedPageCount} onClick={() => setMappedPage(mappedPage + 1)}>Next</button></div>

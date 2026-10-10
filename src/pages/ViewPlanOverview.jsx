@@ -98,15 +98,7 @@ export default function ViewPlanOverview() {
                 </span>
               </button>
               <h1> {plan.name || "Unnamed plan"} </h1>
-              {/* <span
-                className={`plan-details-active-badge ${
-                  plan.status === "Inactive"
-                    ? "plan-details-inactive-badge"
-                    : ""
-                }`}
-              >
-                <i className="bi bi-circle-fill" /> {plan.status || "—"}
-              </span> */}
+              
             </div>
             <p> {plan.description || "No description provided."} </p>
           </div>

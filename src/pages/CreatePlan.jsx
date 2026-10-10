@@ -1,5 +1,7 @@
+import FilterDropdown from "../components/FilterDropdown";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import Pagination from "../components/Pagination";
 import { storeTypesApi } from "../api/storeTypes";
 import { createPlan, deletePlan, listPlans, updatePlan } from "../api/plans";
 
@@ -8,7 +10,7 @@ const emptyForm = {
   name: "",
   description: "",
   applicableStoreType: "",
-  status: "Active",
+  status: "Select Status",
   billingModel: "",
   currency: "",
   billingCycle: "",
@@ -413,19 +415,26 @@ export default function CreatePlan() {
     setCurrentPage(1);
   }, [search, billingFilter, statusFilter]);
 
-  const totalPlans = filteredPlans.length;
-  const totalPages = Math.ceil(totalPlans / itemsPerPage) || 1;
+ const totalPlans = filteredPlans.length;
+const totalPages = Math.max(1, Math.ceil(totalPlans / itemsPerPage));
 
-  const paginatedPlans = useMemo(() => {
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    return filteredPlans.slice(startIndex, startIndex + itemsPerPage);
-  }, [filteredPlans, currentPage]);
+const paginatedPlans = useMemo(() => {
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  return filteredPlans.slice(startIndex, startIndex + itemsPerPage);
+}, [filteredPlans, currentPage, itemsPerPage]);
 
-  const canContinueStepOne =
-    form.name.trim() &&
-    form.applicableStoreType &&
-    !codeError &&
-    !nameError;
+useEffect(() => {
+  if (currentPage > totalPages) {
+    setCurrentPage(totalPages);
+  }
+}, [currentPage, totalPages]);
+
+ const canContinueStepOne =
+  form.name.trim() &&
+  form.applicableStoreType &&
+  form.status &&
+  !codeError &&
+  !nameError;
 
   const canContinuePricing =
     form.billingModel &&
@@ -670,13 +679,6 @@ export default function CreatePlan() {
                 placeholder="e.g. Enter plan name"
                 className={nameError ? "input-error" : ""}
               />
-              <div className="plan-field-slot">
-                {nameError ? (
-                  <small className="plan-field-error">{nameError}</small>
-                ) : (
-                  <small />
-                )}
-              </div>
             </label>
 
             <label className="plan-field">
@@ -713,13 +715,6 @@ export default function CreatePlan() {
                   </option>
                 ))}
               </select>
-              <div className="plan-field-slot">
-                {storeTypesError ? (
-                  <small className="plan-field-error">{storeTypesError}</small>
-                ) : (
-                  <small className="plan-field-hint"></small>
-                )}
-              </div>
             </label>
 
             <label className="plan-field plan-description-field">
@@ -738,23 +733,27 @@ export default function CreatePlan() {
             </label>
 
             <label className="plan-field plan-information-status-field">
-              <span>
-                Status <b>*</b>
-              </span>
-              <select
-                autoComplete="off"
-                name="status"
-                value={form.status}
-                onChange={updateField}
-                className={`plan-status-select ${form.status === "Inactive" ? "inactive" : "active"}`}
-              >
-                <option value="Active">Active</option>
-                <option value="Inactive">Inactive</option>
-              </select>
-              <div className="plan-field-slot">
-                <small />
-              </div>
-            </label>
+  <span>
+    Status <b>*</b>
+  </span>
+
+  <select
+  name="status"
+  value={form.status}
+  onChange={updateField}
+  className={`plan-status-select ${
+    form.status === "Active"
+      ? "active"
+      : form.status === "Inactive"
+      ? "inactive"
+      : ""
+  }`}
+>
+  <option value="">Select Status</option>
+  <option value="Active">Active</option>
+  <option value="Inactive">Inactive</option>
+</select>
+</label>
           </div>
 
           <div className="plan-actions plan-information-actions">
@@ -1293,7 +1292,7 @@ export default function CreatePlan() {
               />
             </label>
 
-            <select
+            <FilterDropdown preserveToolbarLayout
               value={billingFilter}
               onChange={(event) => setBillingFilter(event.target.value)}
             >
@@ -1302,16 +1301,16 @@ export default function CreatePlan() {
               <option value="Per terminal">Per Terminal</option>
               <option value="Flat rate">Flat Rate</option>
                 <option value="Custom">Custom</option>
-            </select>
+            </FilterDropdown>
 
-            <select
+            <FilterDropdown preserveToolbarLayout
               value={statusFilter}
               onChange={(event) => setStatusFilter(event.target.value)}
             >
               <option value="">All Status</option>
               <option value="Active">Active</option>
               <option value="Inactive">Inactive</option>
-            </select>
+            </FilterDropdown>
 
             <button
               type="button"
@@ -1454,48 +1453,16 @@ export default function CreatePlan() {
 
         {/* PAGINATION UI (5 PER PAGE) */}
         <div className="plans-pagination">
-          <span>
-            Showing{" "}
-            {totalPlans === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1} to{" "}
-            {Math.min(currentPage * itemsPerPage, totalPlans)} of {totalPlans}{" "}
-            entries
-          </span>
-
-          <div>
-            <button
-              type="button"
-              aria-label="Previous page"
-              disabled={currentPage === 1}
-              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-            >
-              <i className="bi bi-chevron-left" />
-            </button>
-
-            {Array.from({ length: totalPages }, (_, index) => index + 1).map(
-              (page) => (
-                <button
-                  key={page}
-                  type="button"
-                  className={currentPage === page ? "active" : ""}
-                  onClick={() => setCurrentPage(page)}
-                >
-                  {page}
-                </button>
-              ),
-            )}
-
-            <button
-              type="button"
-              aria-label="Next page"
-              disabled={currentPage >= totalPages}
-              onClick={() =>
-                setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-              }
-            >
-              <i className="bi bi-chevron-right" />
-            </button>
-          </div>
-        </div>
+  <Pagination
+    currentPage={currentPage}
+    totalPages={totalPages}
+    totalItems={totalPlans}
+    pageSize={itemsPerPage}
+    onPageChange={setCurrentPage}
+    onPageSizeChange={() => {}}
+    itemLabel="plans"
+  />
+</div>
       </section>
 
       {deleteTarget && (

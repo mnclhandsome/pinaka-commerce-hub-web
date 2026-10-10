@@ -684,11 +684,11 @@
 /* Create Role Template heading – same as Create Store Type */
 
 .role-templates-page-heading {
-  margin-bottom: 13px;
+  margin-bottom: 12px;
 }
 
 .role-templates-page-heading h1 {
-  margin: 0 0 6px;
+  margin-bottom: 5px;
   color: #10264d;
   font-size: 20px;
   font-weight: 600;
@@ -1576,7 +1576,7 @@
 }
 
 .role-templates-page-heading h1 {
-  margin: 0 0 6px;
+  margin-bottom: 5px;
   color: #10264d;
   font-size: 20px;
   line-height: 1.2;
@@ -2072,7 +2072,7 @@
    ========================================================= */
 
 .role-templates-page-heading h1 {
-  margin: 0 0 5px;
+  margin-bottom: 5px;
   color: #10254a;
   font-size: 25px;
   line-height: 1.2;
@@ -2424,14 +2424,14 @@
 }
 
 .role-date-value {
-  color: #173861;
+  color: #10264d;
   font-size: 13px;
   font-weight: 500;
 }
 
 .role-time-value {
   margin-top: 2px;
-  color: #6c86ad;
+  color: #7290ba;
   font-size: 11px;
   font-weight: 400;
 }
@@ -2539,7 +2539,7 @@
 
 /* Outer page heading must stay fixed in both create and edit modes. */
 .role-templates-page-heading h1 {
-  margin: 0 0 5px;
+  margin-bottom: 5px;
   color: #10254a;
   font-size: 20px;
   line-height: 1.2;

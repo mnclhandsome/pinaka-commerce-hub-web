@@ -1,3 +1,5 @@
+import FilterDropdown from "../components/FilterDropdown";
+import Pagination from "../components/Pagination";
 import { useMemo, useState } from "react";
 import "../styles/employee-attendance.css";
 
@@ -79,7 +81,7 @@ export default function EmployeeAttendance({ store, embedded = false, onViewReco
   const [showDateRange, setShowDateRange] = useState(false);
   const [query, setQuery] = useState("");
   const [page, setPage] = useState(1);
-  const pageSize = 10;
+  const [pageSize, setPageSize] = useState(10);
 
   const employees = useMemo(() => [...new Map(records.map((row) => [row.code, row.name])).entries()], [records]);
   const filtered = useMemo(() => records.filter((row) =>
@@ -114,9 +116,9 @@ export default function EmployeeAttendance({ store, embedded = false, onViewReco
 
       <div className="ea-toolbar">
         <form className="ea-search" onSubmit={(event) => { event.preventDefault(); setPage(1); }}><i className="bi bi-search" aria-hidden="true" /><input value={query} onChange={(event) => { setQuery(event.target.value); setPage(1); }} placeholder="Search employees..." aria-label="Search employee attendance" /></form>
-        <label className="ea-inline-filter"><span className="sr-only">Employee</span><select value={employee} onChange={(event) => { setEmployee(event.target.value); setPage(1); }}><option value="">All Employees</option>{employees.map(([code, name]) => <option key={code} value={code}>{name} ({code})</option>)}</select></label>
-        <label className="ea-inline-filter"><span className="sr-only">Status</span><select value={status} onChange={(event) => { setStatus(event.target.value); setPage(1); }}><option value="">All Statuses</option><option>Present</option><option>Absent</option></select></label>
-        <label className="ea-inline-filter ea-date-filter"><span className="sr-only">Date range</span><select value={dateFilter} onChange={(event) => {
+        <label className="ea-inline-filter"><span className="sr-only">Employee</span><FilterDropdown value={employee} onChange={(event) => { setEmployee(event.target.value); setPage(1); }}><option value="">All Employees</option>{employees.map(([code, name]) => <option key={code} value={code}>{name} ({code})</option>)}</FilterDropdown></label>
+        <label className="ea-inline-filter"><span className="sr-only">Status</span><FilterDropdown value={status} onChange={(event) => { setStatus(event.target.value); setPage(1); }}><option value="">All Statuses</option><option>Present</option><option>Absent</option></FilterDropdown></label>
+        <label className="ea-inline-filter ea-date-filter"><span className="sr-only">Date range</span><FilterDropdown value={dateFilter} onChange={(event) => {
           const next = event.target.value;
           setDateFilter(next);
           setPage(1);
@@ -130,7 +132,7 @@ export default function EmployeeAttendance({ store, embedded = false, onViewReco
             setEndDate(to);
             setShowDateRange(false);
           }
-        }}><option value="any">Any Date</option><option value="today">Today</option><option value="week">This Week</option><option value="month">This Month</option><option value="custom">Custom Range</option></select></label>
+        }}><option value="any">Any Date</option><option value="today">Today</option><option value="week">This Week</option><option value="month">This Month</option><option value="custom">Custom Range</option></FilterDropdown></label>
         <button type="button" className="ea-reset" onClick={() => { setEmployee(""); setStatus(""); setQuery(""); setStartDate(""); setEndDate(""); setDraftStartDate(""); setDraftEndDate(""); setDateFilter("any"); setShowDateRange(false); setPage(1); }}><i className="bi bi-arrow-counterclockwise" aria-hidden="true" /> Reset</button>
       </div>
 
@@ -146,7 +148,19 @@ export default function EmployeeAttendance({ store, embedded = false, onViewReco
         <tbody>{pageRows.map((row) => <tr key={row.id}><td>{displayDate(row.date)}</td><td>{row.code}</td><td>{row.name}</td><td>{displayTime(row.clockIn)}</td><td>{displayTime(row.clockOut)}</td><td>{row.total}</td><td><span className={`ea-status ${row.status.toLowerCase()}`}>{row.status}</span></td><td><div className="ea-row-actions"><button type="button" title={`View ${row.name} attendance`} aria-label={`View ${row.name} attendance`} onClick={() => onViewRecord?.(row)}><i className="bi bi-eye" /></button></div></td></tr>)}
           {!pageRows.length && <tr><td colSpan={8} className="ea-empty">No attendance records match these filters.</td></tr>}
         </tbody></table></div>
-      <footer className="ea-pagination"><span>Showing {filtered.length ? (page - 1) * pageSize + 1 : 0} to {Math.min(page * pageSize, filtered.length)} of {filtered.length} records</span><div><label><span className="sr-only">Rows per page</span><select value={pageSize} disabled><option value={10}>10 per page</option></select></label><button type="button" aria-label="Previous page" disabled={page <= 1} onClick={() => setPage((value) => value - 1)}>‹</button><span>{page} / {totalPages}</span><button type="button" aria-label="Next page" disabled={page >= totalPages} onClick={() => setPage((value) => value + 1)}>›</button></div></footer>
+      <Pagination
+        currentPage={page}
+        totalPages={totalPages}
+        totalItems={filtered.length}
+        pageSize={pageSize}
+        onPageChange={setPage}
+        onPageSizeChange={(size) => {
+          setPageSize(size);
+          setPage(1);
+        }}
+        itemLabel="records"
+        showWhenEmpty
+      />
 
     </section>
   );

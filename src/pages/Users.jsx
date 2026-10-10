@@ -1,3 +1,4 @@
+import FilterDropdown from "../components/FilterDropdown";
 import {
     useEffect,
     useMemo,
@@ -1306,7 +1307,7 @@ export default function Users({
 
                     </div>
 
-                    <select
+                    <FilterDropdown
                         className="role-filter"
                         value={
                             roleFilter
@@ -1345,7 +1346,7 @@ export default function Users({
                             )
                         )}
 
-                    </select>
+                    </FilterDropdown>
 
                 </div>
 

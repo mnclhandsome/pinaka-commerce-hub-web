@@ -1133,26 +1133,19 @@
 
 .tenders-actions {
   white-space: nowrap;
+  text-align: center;
 }
 
 .tenders-actions button {
-  display: inline-grid;
-  width: 36px;
-  height: 34px;
-  margin-right: 6px;
-  place-items: center;
-  border: 1px solid #d8e8ff !important;
-  border-radius: 7px;
-  background: #f2f7ff !important;
-  color: #1677e8 !important;
-  cursor: pointer;
-  font-size: 14px;
-  transition:
-    color 0.18s ease,
-    background 0.18s ease,
-    border-color 0.18s ease,
-    box-shadow 0.18s ease,
-    transform 0.18s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 32px;
+  height: 30px;
+  margin: 0 3px;
+  padding: 0;
+  vertical-align: middle;
 }
 
 .tenders-actions button:last-child {
@@ -1307,13 +1300,25 @@
   color: #25314c;
 }
 
-.tenders-form-grid .tender-status-select option[value="Inactive"] {
-  color: #d72d47;
-}
-
 .tenders-form-grid.tender-create-fields-grid select.tender-status-select:focus {
   border-color: #8c7cf0;
   box-shadow: 0 0 0 3px rgba(104, 78, 227, 0.08);
+}
+
+.tender-status-select {
+  color: #25314c;
+}
+
+.tender-status-select.status-active {
+  color: #1c9b4d;
+}
+
+.tender-status-select.status-inactive {
+  color: #d72d47;
+}
+
+.tender-status-select option {
+  color: #25314c;
 }
 
 /* Same disabled treatment as the Role Template reference button. */
@@ -1349,7 +1354,7 @@
   height: 30px;
   margin: 0 3px;
   padding: 0;
-  place-items: center;
+  place-items: right;
   border: 1px solid #d8e8ff !important;
   border-radius: 7px;
   background: #f2f7ff !important;
@@ -1413,7 +1418,7 @@
 
 .tender-date-cell .tender-date {
   display: block;
-  color: #23426e;
+  color: #10264d;
   font-size: 13px;
   line-height: 1.25;
   font-weight: 500;
@@ -1422,7 +1427,7 @@
 .tender-date-cell .tender-time {
   display: block;
   margin-top: 2px;
-  color: #6f84a4;
+  color: #7290ba;
   font-size: 11px;
   line-height: 1.2;
   font-weight: 400;
@@ -1961,4 +1966,5 @@
     font-size: 21px;
   }
 }
+
 

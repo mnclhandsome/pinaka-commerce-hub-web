@@ -1,3 +1,4 @@
+import FilterDropdown from "../components/FilterDropdown";
 import { useEffect, useMemo, useState } from "react";
 import Pagination from "../components/Pagination";
 import ViewDetailsModal from "../components/ViewDetailsModal";
@@ -653,7 +654,7 @@ export default function Products({
 
                     {/* CATEGORY */}
 
-                    <select
+                    <FilterDropdown
                         value={category}
                         onChange={(e) =>
                             setCategory(
@@ -675,11 +676,11 @@ export default function Products({
                                 </option>
                             )
                         )}
-                    </select>
+                    </FilterDropdown>
 
                     {/* TYPE */}
 
-                    <select
+                    <FilterDropdown
                         value={type}
                         onChange={(e) =>
                             setType(
@@ -701,11 +702,11 @@ export default function Products({
                                 </option>
                             )
                         )}
-                    </select>
+                    </FilterDropdown>
 
                     {/* STOCK */}
 
-                    <select
+                    <FilterDropdown
                         value={stockStatus}
                         onChange={(e) =>
                             setStockStatus(
@@ -728,7 +729,7 @@ export default function Products({
                         <option value="Out of stock">
                             Out of Stock
                         </option>
-                    </select>
+                    </FilterDropdown>
 
                     {/* CLEAR */}
 

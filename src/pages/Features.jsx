@@ -1,11 +1,19 @@
+import FilterDropdown from "../components/FilterDropdown";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import Pagination from "../components/Pagination";
 import "../styles/features.css";
 import { listFeatures, createFeature as createFeatureApi, updateFeature as updateFeatureApi, deleteFeature as deleteFeatureApi } from "../api/features";
 
 const initialFeatures = [];
 
-const emptyForm = { code: "", name: "", description: "", category: "", status: "Active" };
+const emptyForm = {
+  code: "",
+  name: "",
+  description: "",
+  category: "",
+  status: "Select Status",
+};
 
 const defaultCategories = [
   "Inventory",
@@ -367,8 +375,6 @@ export default function Features() {
               maxLength={500}
             />
             <div className="feature-description-meta">
-              <small></small>
-              <span>{form.description.length}/500</span>
             </div>
           </div>
 
@@ -390,7 +396,6 @@ export default function Features() {
                   </option>
                 ))}
               </select>
-              <i className="bi bi-chevron-down" />
             </div>
             {formErrors.category ? (
               <small className="feature-error-text">{formErrors.category}</small>
@@ -400,22 +405,30 @@ export default function Features() {
           </div>
 
           <div className="feature-field feature-form-status-field">
-            <label>Status</label>
-            <div className="select-shell">
-              <select
-                name="status"
-                value={form.status}
-                onChange={updateField}
-                autoComplete="off"
-                className={`feature-form-status-select ${form.status === "Inactive" ? "inactive" : "active"}`}
-              >
-                <option value="Active">Active</option>
-                <option value="Inactive">Inactive</option>
-              </select>
-              <i className="bi bi-chevron-down" />
-            </div>
-            <small> </small>
-          </div>
+  <label>Status</label>
+
+  <div className="select-shell">
+    <select
+      name="status"
+      value={form.status}
+      onChange={updateField}
+      autoComplete="off"
+      className={`feature-form-status-select ${
+        form.status === "Active"
+          ? "active"
+          : form.status === "Inactive"
+          ? "inactive"
+          : ""
+      }`}
+    >
+      <option value="Select Status">Select Status</option>
+      <option value="Active">Active</option>
+      <option value="Inactive">Inactive</option>
+    </select>
+  </div>
+
+  <small></small>
+</div>
         </div>
 
         <div className="feature-form-footer">
@@ -451,7 +464,7 @@ export default function Features() {
             </div>
 
             <div className="feature-filter-control">
-              <select
+              <FilterDropdown preserveToolbarLayout
                 className="features-filter-select features-status-select"
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
@@ -459,12 +472,12 @@ export default function Features() {
                 <option value="All Statuses">All Statuses</option>
                 <option value="Active">Active</option>
                 <option value="Inactive">Inactive</option>
-              </select>
+              </FilterDropdown>
               <i className="bi bi-chevron-down feature-filter-chevron" />
             </div>
 
             <div className="feature-filter-control feature-sort-control">
-              <select
+              <FilterDropdown preserveToolbarLayout
                 className="features-filter-select"
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
@@ -475,7 +488,7 @@ export default function Features() {
                 <option value="updated">Recently Updated</option>
                 <option value="name-asc">Name A-Z</option>
                 <option value="name-desc">Name Z-A</option>
-              </select>
+              </FilterDropdown>
               <i className="bi bi-chevron-down feature-filter-chevron" />
             </div>
 
@@ -609,41 +622,15 @@ export default function Features() {
         </div>
 
         <div className="feature-pagination-row">
-          <span>
-            Showing {totalEntries === 0 ? 0 : startIndex + 1} - {endIndex} of {totalEntries} Features
-          </span>
-          <div className="feature-pagination">
-            <button
-              type="button"
-              aria-label="Previous page"
-              onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
-              disabled={currentPage === 1}
-            >
-              <i className="bi bi-chevron-left" />
-            </button>
-
-            {Array.from({ length: totalPages }, (_, index) => index + 1).map((page) => (
-              <button
-                key={page}
-                type="button"
-                className={currentPage === page ? "current" : ""}
-                onClick={() => setCurrentPage(page)}
-                aria-current={currentPage === page ? "page" : undefined}
-              >
-                {page}
-              </button>
-            ))}
-
-            <button
-              type="button"
-              aria-label="Next page"
-              onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}
-              disabled={currentPage === totalPages}
-            >
-              <i className="bi bi-chevron-right" />
-            </button>
-          </div>
-        </div>
+  <Pagination
+    currentPage={currentPage}
+    totalPages={totalPages}
+    totalItems={totalEntries}
+    pageSize={itemsPerPage}
+    onPageChange={setCurrentPage}
+    itemLabel="features"
+  />
+</div>
       </section>
 
       {deleteTarget && (

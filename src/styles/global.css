@@ -98,7 +98,6 @@ table thead th {
     gap: 24px;
     padding: 16px 24px;
     box-sizing: border-box;
-    border-top: 1px solid #e5e7eb;
     background: #ffffff;
 }
 
@@ -204,9 +203,7 @@ table thead th {
     transition:
         background 0.15s ease,
         border-color 0.15s ease,
-        color 0.15s ease;
-
-   
+        color 0.15s ease; 
    
 }
 
@@ -270,6 +267,25 @@ table thead th {
     color: #fff;
     font-weight: 600;
 }
+
+
+/* Dim page numbers when the list is empty */
+.pagination-pages .pagination-page:disabled {
+  background: #ffffff;
+  color: #aeb7c6;
+  border-color: #e2e7ef;
+  cursor: not-allowed;
+  opacity: 0.7;
+  box-shadow: none;
+}
+
+/* Prevent the active page color when no records exist */
+.pagination-pages .pagination-page.active:disabled {
+  background: #d0c5f5;
+  color: #645c85;
+  border-color: #e2e7ef;
+}
+
 
 .pagination-ellipsis {
     width: 20px;
@@ -615,6 +631,33 @@ table thead th {
     pointer-events: none;
 }
 
+/* Keep visible dropdown chevrons consistent across native and shared controls. */
+select:not(.pch-filter-sizing):not(.pch-master-filter-sizing) {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Cpath fill='%23294a76' fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708'/%3E%3C/svg%3E") !important;
+    background-size: 11px 11px !important;
+    background-position: right 11px center !important;
+    background-repeat: no-repeat !important;
+}
+
+:is(
+    .filter-select-arrow,
+    .pagination-select-arrow,
+    .employee-select-arrow,
+    .device-select-arrow,
+    .sf-select-arrow,
+    .feature-filter-chevron,
+    .fp-filter-chevron
+) {
+    display: none !important;
+}
+
+.pch-filter-trigger > i.bi-chevron-down {
+    font-size: 11px !important;
+}
+
 
 /* =========================================================
    RESET
@@ -677,4 +720,3 @@ table thead th {
         margin-left: 0;
     }
 }
-

@@ -22,14 +22,16 @@
 }
 
 .plans-page-heading {
-  margin: 6px 0 13px;
+  margin: 0 0 12px;
 }
 
 .plans-page-heading h1 {
-  margin: 0 0 5px;
+  margin-bottom: 5px;
   color: #10254a;
-  font-size: 22px;
+  font-size: 20px;
   font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.5px;
 }
 
 .plans-page-heading p {
@@ -80,13 +82,13 @@
 
 .plan-step.active,
 .plan-step.complete {
-  color: #684ee3;
+  color: #5143bc;
 }
 
 .plan-step.active span,
 .plan-step.complete span {
   color: #fff;
-  background: #684ee3;
+  background: #5143bc;
 }
 
 .plan-step-line {
@@ -99,7 +101,7 @@
 
 .plan-form-card,
 .plans-list-card {
-  margin-top: 10px;
+  margin-top: 12px;
   margin-bottom: 20px;
   padding: 17px 18px 10px;
   border: 1px solid #e1ebf5;
@@ -207,6 +209,8 @@
   background-color: #f5f7fa !important;
 }
 
+
+
 .plan-input-wrap input {
   height: auto;
   padding: 0;
@@ -275,13 +279,6 @@
   margin-top: 14px;
 }
 
-.plan-status-select.active {
-  color: #1c9b4d;
-}
-
-.plan-status-select.inactive {
-  color: #d72d47;
-}
 .plan-price-input {
   display: flex;
   height: 34px;
@@ -339,11 +336,14 @@
 .plan-submit-button {
   border: 0;
   color: #fff;
-  background: #684ee3;
+  background: #5143bc;
 }
 
 .plan-submit-button:disabled {
-  opacity: 0.5;
+  cursor: not-allowed;
+  background-color:#e6eaf1;
+  border-color: #dce3ed;
+  color: #8a96a8;
   cursor: not-allowed;
 }
 
@@ -401,6 +401,8 @@
   background: #e7f2ff;
   font-size: 12px;
 }
+
+
 
 .plan-feature-check>span:last-child,
 .plan-addon-row>span:nth-child(2) {
@@ -1267,10 +1269,22 @@
   grid-row: 2;
 }
 
-.plan-information-grid .plan-status-select.active { color: #1c9b4d; }
-.plan-information-grid .plan-status-select.inactive { color: #d72d47; }
-.plan-information-grid .plan-status-select option { color: #25314c; }
-.plan-information-grid .plan-status-select option[value="Inactive"] { color: #d72d47; }
+
+.plan-information-grid .plan-status-select {
+  color: #25314c;
+}
+
+.plan-information-grid .plan-status-select.active {
+  color: #1c9b4d;
+}
+
+.plan-information-grid .plan-status-select.inactive {
+  color: #d72d47;
+}
+
+.plan-information-grid .plan-status-select option {
+  color: #25314c;
+}
 
 .plan-information-actions {
   display: flex;
@@ -1327,10 +1341,14 @@
   line-height: 1.25;
 }
 .plan-date-cell strong {
-  color: #4d5970;
-  font-weight: 600;
+  color: #10264d;
+  font-weight: 500;
+  font-size: 13px;
 }
-.plan-date-cell span { font-weight: 400; }
+.plan-date-cell span {
+  color: #7290ba;
+  font-weight: 400;
+  font-size: 11px; }
 
 /* Preserve requested action icon treatment */
 .plan-table-actions button:first-child { color: #5b67ff; }

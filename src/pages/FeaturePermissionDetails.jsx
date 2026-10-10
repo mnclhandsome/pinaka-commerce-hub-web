@@ -1,5 +1,7 @@
+import FilterDropdown from "../components/FilterDropdown";
 import React, { useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import Pagination from "../components/Pagination";
 import {
   Search,
   Trash2,
@@ -22,6 +24,9 @@ import "../styles/feature-detail-header.css";
 const FeaturePermissions = () => {
   const navigate = useNavigate();
   const { featureId } = useParams();
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(5);
 
   const [permissions, setPermissions] = useState([]);
   const [feature, setFeature] = useState(null);
@@ -88,6 +93,32 @@ const FeaturePermissions = () => {
       return matchesSearch && matchesFilter;
     });
   }, [permissions, search, filter]);
+
+  const totalPages = Math.max(
+  1,
+  Math.ceil(filteredPermissions.length / pageSize)
+);
+
+const paginatedPermissions = useMemo(() => {
+  const startIndex = (currentPage - 1) * pageSize;
+
+  return filteredPermissions.slice(
+    startIndex,
+    startIndex + pageSize
+  );
+}, [filteredPermissions, currentPage, pageSize]);
+
+React.useEffect(() => {
+  if (currentPage > totalPages) {
+    setCurrentPage(totalPages);
+  }
+}, [currentPage, totalPages]);
+
+React.useEffect(() => {
+  if (currentPage > totalPages) {
+    setCurrentPage(totalPages);
+  }
+}, [currentPage, totalPages]);
 
   /* =====================================================
      DELETE PERMISSION
@@ -269,16 +300,22 @@ const FeaturePermissions = () => {
                 type="text"
                 placeholder="Search permissions..."
                 value={search}
-                onChange={(event) => setSearch(event.target.value)}
+                onChange={(event) => {
+                setSearch(event.target.value);
+                setCurrentPage(1);
+                  }}
               />
             </div>
 
             {/* FILTER */}
 
             <div className="fp-filter-wrapper">
-              <select
+              <FilterDropdown preserveToolbarLayout
                 value={filter}
-                onChange={(event) => setFilter(event.target.value)}
+                onChange={(event) => {
+                   setSearch(event.target.value);
+                   setCurrentPage(1);
+                   }}
                 className="fp-filter"
               >
                 <option value="all">All Permissions</option>
@@ -286,7 +323,7 @@ const FeaturePermissions = () => {
                 <option value="active">Active Permissions</option>
 
                 <option value="inactive">Inactive Permissions</option>
-              </select>
+              </FilterDropdown>
 
               <ChevronDown
                 size={16}
@@ -334,7 +371,7 @@ const FeaturePermissions = () => {
                 </tr>
               )}
 
-              {filteredPermissions.map((permission) => (
+              {paginatedPermissions.map((permission) => (
                 <tr key={permission.key}>
                   <td className="fp-permission-key">{permission.key}</td>
 
@@ -376,25 +413,19 @@ const FeaturePermissions = () => {
         ====================================================== */}
 
         <div className="fp-table-footer">
-          <p className="fp-results-text">
-            Showing {filteredPermissions.length > 0 ? 1 : 0} - {" "}
-            {filteredPermissions.length} - {filteredPermissions.length} Permissions 
-          </p>
-
-          <div className="fp-pagination">
-            <button type="button" className="fp-page-button fp-arrow" disabled>
-              <ChevronLeft size={16} strokeWidth={2} />
-            </button>
-
-            <button type="button" className="fp-page-button active">
-              1
-            </button>
-
-            <button type="button" className="fp-page-button fp-arrow" disabled>
-              <ChevronRight size={16} strokeWidth={2} />
-            </button>
-          </div>
-        </div>
+  <Pagination
+    currentPage={currentPage}
+    totalPages={totalPages}
+    totalItems={filteredPermissions.length}
+    pageSize={pageSize}
+    onPageChange={setCurrentPage}
+    onPageSizeChange={(newPageSize) => {
+      setPageSize(newPageSize);
+      setCurrentPage(1);
+    }}
+    itemLabel="permissions"
+  />
+</div>
       </section>
 
       {/* =====================================================

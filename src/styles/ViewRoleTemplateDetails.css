@@ -31,7 +31,7 @@
   padding: 0;
   border: 1px solid #dce8f5;
   border-radius: 8px;
-  color: #076cf0;
+  color: #5143bc;
   background: #fff;
   cursor: pointer;
   font-size: 16px;
@@ -194,10 +194,6 @@
   font-size: 13px;
   font-weight: 500;
   white-space: nowrap;
-}
-
-.role-details-tabs button:hover {
-  color: #0873f9;
 }
 
 .role-details-tabs button.active {
@@ -421,7 +417,7 @@
    ========================================================= */
 
 .role-store-type-option.selected strong {
-  color: #4f45c7;
+  color: #5143bc;
 }
 
 
@@ -443,6 +439,30 @@
 
 .role-access-title > div {
   min-width: 0;
+}
+
+.role-access-title > span {
+  background: #f3f0ff;
+  color: #5143bc;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  padding: 0;
+  line-height: 1;
+  box-sizing: border-box;
+}
+  
+.role-access-title > span i {
+  display: block;
+  font-size: 20px;
+  line-height: 1;
+  margin: 0;
+  padding: 0;
 }
 
 
@@ -818,12 +838,12 @@
 .role-details-primary-btn {
   border: 0;
   color: #fff;
-  background: #684ee3;
+  background: #5143bc;
   box-shadow: 0 4px 10px rgba(104, 78, 227, 0.16);
 }
 
 .role-details-primary-btn:hover {
-  background: #5b43d1;
+  background: #5143bc;
 }
 
 .role-details-primary-btn:disabled,

@@ -894,6 +894,34 @@
 .mv-dialog-create .vendors-form-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; }
 .mv-dialog-create .vendors-form input, .mv-dialog-create .vendors-form select { font-size: 14px; font-weight: 400; }
 .mv-dialog-create .vendors-form-actions { margin-top: 28px; gap: 12px; }
+.mv-create-content .vendors-form-actions .vendors-clear-button,
+.mv-dialog-create .vendors-form-actions .vendors-clear-button {
+    border: 1px solid #dce8f4;
+    background: #fff;
+    color: #25466f;
+}
+.mv-create-content .vendors-form-actions .vendors-clear-button:hover:not(:disabled),
+.mv-dialog-create .vendors-form-actions .vendors-clear-button:hover:not(:disabled) {
+    border-color: #c8d8eb;
+    background: #f8fbff;
+}
+.mv-create-content .vendors-form-actions .vendors-save-button,
+.mv-dialog-create .vendors-form-actions .vendors-save-button {
+    border: 1px solid #5143bc;
+    background: #5143bc;
+    color: #fff;
+    box-shadow: none;
+}
+.mv-create-content .vendors-form-actions .vendors-save-button:hover:not(:disabled),
+.mv-dialog-create .vendors-form-actions .vendors-save-button:hover:not(:disabled) {
+    border-color: #4638ad;
+    background: #4638ad;
+}
+.mv-create-content .vendors-form-actions :is(.vendors-clear-button, .vendors-save-button):focus-visible,
+.mv-dialog-create .vendors-form-actions :is(.vendors-clear-button, .vendors-save-button):focus-visible {
+    outline: 2px solid #c4bdf2;
+    outline-offset: 2px;
+}
 .mv-dialog-select {
     width: min(1180px, calc(100vw - 32px));
     max-width: 1180px;

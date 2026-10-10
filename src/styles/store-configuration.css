@@ -2114,7 +2114,7 @@
 .store-section-editor .sf-search input { font-size: 14px; background: transparent; }
 .store-section-editor .sf-search input::placeholder { color: #78869b; }
 .store-section-editor .sf-table { font-size: 13px; }
-.store-section-editor .sf-table th { height: 44px; padding: 0 14px; font-size: 12px; font-weight: 600; letter-spacing: .04em; line-height: 18px; color: #58677e; background: #f1f3fd; }
+.store-section-editor .sf-table th { height: 44px; padding: 0 14px; font-size: 12px; font-weight: 600; line-height: 18px; color: #58677e; background: #f1f3fd; }
 .store-section-editor .sf-table td { height: 52px; padding: 10px 14px; font-size: 13px; line-height: 18px; color: var(--store-text); }
 .store-section-editor .sf-feature-table td:nth-child(3) { color: var(--store-muted); }
 .store-section-editor .sf-table input[type=checkbox],
@@ -2182,6 +2182,32 @@
   min-width: 0;
   min-height: 0;
 }
+.store-workspace-page .store-workspace-card > .shifts-page {
+  background: #fff;
+}
+.store-workspace-page .store-workspace-card > .pos-page-content {
+  background: #fff;
+}
+.store-workspace-page .store-workspace-card .coupons-table tbody td :is(
+  .coupon-code-cell > div > strong,
+  .coupon-order-list > span,
+  .coupon-type,
+  .coupon-amount,
+  .coupon-description,
+  .coupon-product-ids > span,
+  .coupon-usage,
+  .coupon-expiry,
+  .empty-value
+) {
+  font-size: 13px;
+}
+.store-workspace-page .store-workspace-card .coupons-table tbody td :is(
+  .coupon-status,
+  .coupon-order-list > small,
+  .coupon-product-ids > small
+) {
+  font-size: 11px;
+}
 .store-workspace-page .store-workspace-main > .store-workspace-card:has(> .store-overview-card) {
   padding: var(--store-content-padding);
 }
@@ -2217,4 +2243,775 @@
   .store-workspace-page .store-section-editor.sf-root {
     padding: var(--store-content-padding);
   }
+}
+
+/* Store list controls follow the Merchants toolbar without changing page layouts. */
+.store-workspace-page .store-workspace-card :is(
+  .filters-bar,
+  .products-toolbar,
+  .coupons-toolbar,
+  .store-customers-toolbar,
+  .store-payment-records-search,
+  .store-payment-records-toolbar,
+  .ea-toolbar,
+  .shift-filter-bar,
+  .shift-bottom-toolbar,
+  .categories-toolbar,
+  .fast-key-toolbar,
+  .vendor-toolbar,
+  .sf-feature-tools
+) {
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  flex-wrap: wrap;
+}
+
+.store-workspace-page .store-workspace-card :is(
+  .filter-search,
+  .ea-search,
+  .sf-search
+) {
+  box-sizing: border-box;
+  height: 35px;
+  min-height: 35px;
+  border-color: #e1e4eb;
+  border-radius: 5px;
+  background: #fff;
+  color: #9aa2b3;
+}
+
+.store-workspace-page .store-workspace-card :is(
+  .products-search input,
+  .coupons-search input,
+  .store-customers-search input,
+  .store-payment-records-search input,
+  .shift-filter-bar input,
+  .shift-search-area input,
+  .categories-search input,
+  .pos-config-search input,
+  .vendor-search input,
+  .fast-key-toolbar input
+) {
+  box-sizing: border-box;
+  height: 35px;
+  border: 1px solid #e1e4eb;
+  border-radius: 5px;
+  background: #fff;
+  color: #3c465a;
+  font-size: 12px;
+  box-shadow: none;
+}
+
+.store-workspace-page .store-workspace-card :is(
+  .products-search input,
+  .coupons-search input,
+  .store-customers-search input,
+  .store-payment-records-search input,
+  .shift-filter-bar input,
+  .shift-search-area input,
+  .categories-search input,
+  .pos-config-search input,
+  .vendor-search input,
+  .fast-key-toolbar input
+)::placeholder {
+  color: #a0a6b5;
+  opacity: 1;
+}
+
+.store-workspace-page .store-workspace-card :is(
+  .filter-search input,
+  .ea-search input,
+  .sf-search input
+) {
+  box-sizing: border-box;
+  height: 100%;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: #3c465a;
+  font-size: 12px;
+  box-shadow: none;
+}
+
+.store-workspace-page .store-workspace-card :is(
+  .filter-search input,
+  .ea-search input,
+  .sf-search input
+)::placeholder {
+  color: #a0a6b5;
+  opacity: 1;
+}
+
+.store-workspace-page .store-workspace-card :is(
+  .products-search > i,
+  .coupons-search > i,
+  .store-customers-search > i,
+  .filter-search > i,
+  .ea-search > i,
+  .categories-search > i
+) {
+  color: #9aa2b3;
+  font-size: 12px;
+}
+
+.store-workspace-page .store-workspace-card :is(
+  .filter-select-wrapper select,
+  .products-toolbar select,
+  .coupons-toolbar select,
+  .store-customers-toolbar select,
+  .store-payment-records-toolbar select,
+  .ea-inline-filter select,
+  .shift-filter-bar select,
+  .shift-bottom-toolbar select,
+  .pch-master-toolbar.pch-master-control select
+) {
+  box-sizing: border-box;
+  height: 35px;
+  min-height: 35px;
+  border-color: #e1e4eb;
+  border-radius: 6px;
+  background-color: #fff;
+  color: #59647a;
+  font-size: 12px;
+}
+
+.store-workspace-page .store-workspace-card :is(
+  .filter-search:focus-within,
+  .filter-select-wrapper select:focus,
+  .products-search input:focus,
+  .products-toolbar select:focus,
+  .coupons-search input:focus,
+  .coupons-toolbar select:focus,
+  .store-customers-search input:focus,
+  .store-customers-toolbar select:focus,
+  .store-payment-records-search input:focus,
+  .store-payment-records-toolbar select:focus,
+  .ea-search:focus-within,
+  .ea-inline-filter select:focus,
+  .shift-filter-bar input:focus,
+  .shift-filter-bar select:focus,
+  .shift-search-area input:focus,
+  .shift-bottom-toolbar select:focus,
+  .categories-search input:focus,
+  .pos-config-search input:focus,
+  .vendor-search input:focus,
+  .fast-key-toolbar input:focus,
+  .sf-search:focus-within
+) {
+  border-color: #c8c1f2;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(81, 67, 188, 0.08);
+}
+
+.store-workspace-page .store-workspace-card :is(
+  .filter-search:hover,
+  .products-search input:hover,
+  .coupons-search input:hover,
+  .store-customers-search input:hover,
+  .store-payment-records-search input:hover,
+  .ea-search:hover,
+  .shift-filter-bar input:hover,
+  .shift-search-area input:hover,
+  .categories-search input:hover,
+  .pos-config-search input:hover,
+  .vendor-search input:hover,
+  .fast-key-toolbar input:hover,
+  .sf-search:hover,
+  .filter-select-wrapper select:hover,
+  .pch-filter-trigger:hover:not(:disabled),
+  .products-toolbar select:hover,
+  .coupons-toolbar select:hover,
+  .store-customers-toolbar select:hover,
+  .store-payment-records-toolbar select:hover,
+  .ea-inline-filter select:hover,
+  .shift-filter-bar select:hover,
+  .shift-bottom-toolbar select:hover
+):not(:focus, :focus-within) {
+  border-color: #d3d7e0;
+}
+
+.store-workspace-page .store-workspace-card :is(
+  .shift-add-btn,
+  .ea-export,
+  .store-config-btn
+) {
+  border-color: #5143bc;
+  background: #5143bc;
+  color: #fff;
+  font-weight: 500;
+}
+
+.store-workspace-page .store-workspace-card :is(
+  .shift-add-btn,
+  .ea-export,
+  .store-config-btn
+):hover:not(:disabled) {
+  border-color: #4638ad;
+  background: #4638ad;
+  color: #fff;
+}
+
+.store-workspace-page .store-workspace-card :is(
+  .filter-reset-btn,
+  .products-clear-btn,
+  .coupons-clear-btn,
+  .store-customers-clear-btn,
+  .ea-reset,
+  .shift-small-btn,
+  .reset-filter,
+  .fp-reset-btn,
+  .role-reset-icon-btn
+) {
+  box-sizing: border-box;
+  height: 35px;
+  min-height: 35px;
+  padding: 0 12px;
+  border: 1px solid #e1e4eb;
+  border-radius: 6px;
+  background: #fff;
+  color: #59647a;
+  font-size: 12px;
+  font-weight: 400;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.store-workspace-page .store-workspace-card :is(
+  .filter-reset-btn,
+  .products-clear-btn,
+  .coupons-clear-btn,
+  .store-customers-clear-btn,
+  .ea-reset,
+  .shift-small-btn,
+  .reset-filter,
+  .fp-reset-btn,
+  .role-reset-icon-btn,
+  .store-payment-records-search > button,
+  .store-payment-records-toolbar > button,
+  .shift-add-btn,
+  .shift-search-area > button,
+  .shift-filter-bar > .shift-small-btn,
+  .shift-bottom-toolbar > .shift-small-btn,
+  .detail-filter-bar > .shift-back-btn,
+  .ea-export,
+  .store-config-btn,
+  .products-header-actions button,
+  .coupons-header-actions button,
+  .store-payment-records-header button,
+  .shifts-page-header button,
+  .fast-keys-heading button,
+  .vendor-title-row button,
+  .store-categories-header button,
+  .ea-header-actions button,
+  .pos-config-page-header button,
+  .store-panel-heading button
+) i {
+  font-size: 13px;
+  line-height: 1;
+}
+
+.store-workspace-page .store-workspace-card .ea-toolbar {
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.store-workspace-page .store-workspace-card .ea-toolbar .ea-search {
+  flex: 1 1 250px;
+  min-width: 190px;
+}
+
+.store-workspace-page .store-workspace-card .ea-toolbar .ea-inline-filter {
+  flex: 0 1 145px;
+  min-width: 120px;
+}
+
+.store-workspace-page .store-workspace-card .ea-toolbar .ea-reset {
+  flex: 0 0 auto;
+}
+
+.store-workspace-page .store-section-editor .sf-employee-tools {
+  align-items: center;
+  gap: 8px;
+}
+
+.store-workspace-page .store-section-editor .sf-employee-tools > .sf-search {
+  box-sizing: border-box;
+  flex: 0 1 280px;
+  min-width: 180px;
+  height: 35px;
+  padding: 0 9px;
+  gap: 7px;
+  border: 1px solid #e1e4eb;
+  border-radius: 5px;
+  color: #9aa2b3;
+}
+
+.store-workspace-page .store-section-editor .sf-employee-tools > .sf-search > i {
+  flex: 0 0 auto;
+  color: #9aa2b3;
+  font-size: 12px;
+}
+
+.store-workspace-page .store-section-editor .sf-employee-tools > .sf-search input {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: #3c465a;
+  font-size: 12px;
+  box-shadow: none;
+}
+
+.store-workspace-page .store-section-editor .sf-employee-tools > .sf-search input::placeholder {
+  color: #a0a6b5;
+  opacity: 1;
+}
+
+.store-workspace-page .store-section-editor .sf-employee-tools > .sf-field {
+  flex: 0 0 auto;
+  gap: 8px;
+  color: #59647a;
+  font-size: 12px;
+  font-weight: 400;
+  white-space: nowrap;
+}
+
+.store-workspace-page .store-section-editor .sf-employee-tools > .sf-field select {
+  box-sizing: border-box;
+  width: 145px;
+  height: 35px;
+  min-height: 35px;
+  padding: 0 30px 0 10px;
+  border: 1px solid #e1e4eb;
+  border-radius: 6px;
+  background-color: #fff;
+  color: #59647a;
+  font-size: 12px;
+  font-weight: 400;
+}
+
+.store-workspace-page .store-section-editor .sf-employee-tools > .sf-search:focus-within {
+  border-color: #c8c1f2;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(81, 67, 188, 0.08);
+}
+
+.store-workspace-page .store-section-editor .sf-employee-tools > .sf-search input:focus-visible,
+.store-workspace-page .store-section-editor .sf-employee-tools > .sf-field select:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+
+.store-workspace-page .store-section-editor .sf-employee-tools > .sf-field select:focus {
+  border-color: #c8c1f2;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(81, 67, 188, 0.08);
+}
+
+.store-workspace-page .store-section-editor .sf-employee-tools > .sf-search:hover,
+.store-workspace-page .store-section-editor .sf-employee-tools > .sf-field select:hover {
+  border-color: #d3d7e0;
+}
+
+.store-workspace-page .store-workspace-card :is(
+  .store-payment-records-search > button,
+  .store-payment-records-toolbar > button,
+  .shift-add-btn,
+  .ea-export,
+  .store-config-btn,
+  .products-header-actions button,
+  .coupons-header-actions button,
+  .store-payment-records-header button,
+  .shifts-page-header button,
+  .fast-keys-heading button,
+  .vendor-title-row button,
+  .store-categories-header button,
+  .ea-header-actions button,
+  .pos-config-page-header button,
+  .store-panel-heading button
+) {
+  box-sizing: border-box;
+  height: 35px;
+  min-height: 35px;
+  padding: 0 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.store-workspace-page .store-workspace-card :is(
+  .filter-reset-btn,
+  .products-clear-btn,
+  .coupons-clear-btn,
+  .store-customers-clear-btn,
+  .ea-reset,
+  .shift-small-btn,
+  .reset-filter,
+  .fp-reset-btn,
+  .role-reset-icon-btn,
+  .store-payment-records-search > button,
+  .store-payment-records-toolbar > button,
+  .shift-add-btn,
+  .shift-search-area > button,
+  .shift-filter-bar > .shift-small-btn,
+  .shift-bottom-toolbar > .shift-small-btn,
+  .detail-filter-bar > .shift-back-btn,
+  .ea-export,
+  .store-config-btn,
+  .products-header-actions button,
+  .coupons-header-actions button,
+  .store-payment-records-header button,
+  .shifts-page-header button,
+  .fast-keys-heading button,
+  .vendor-title-row button,
+  .store-categories-header button,
+  .ea-header-actions button,
+  .pos-config-page-header button,
+  .store-panel-heading button
+):disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.store-workspace-page .store-workspace-card :is(
+  .filter-reset-btn,
+  .products-clear-btn,
+  .coupons-clear-btn,
+  .store-customers-clear-btn,
+  .ea-reset,
+  .shift-small-btn,
+  .reset-filter,
+  .fp-reset-btn,
+  .role-reset-icon-btn
+):hover:not(:disabled) {
+  border-color: #c8c1f2;
+  background: #f7f6ff;
+  color: #5143bc;
+}
+
+.store-workspace-page .store-workspace-card :is(
+  .filter-reset-btn,
+  .products-clear-btn,
+  .coupons-clear-btn,
+  .store-customers-clear-btn,
+  .ea-reset,
+  .shift-small-btn,
+  .reset-filter,
+  .fp-reset-btn,
+  .role-reset-icon-btn,
+  .store-payment-records-search > button,
+  .store-payment-records-toolbar > button,
+  .shift-add-btn,
+  .shift-search-area > button,
+  .shift-filter-bar > .shift-small-btn,
+  .shift-bottom-toolbar > .shift-small-btn,
+  .detail-filter-bar > .shift-back-btn,
+  .ea-export,
+  .store-config-btn,
+  .products-header-actions button,
+  .coupons-header-actions button,
+  .store-payment-records-header button,
+  .shifts-page-header button,
+  .fast-keys-heading button,
+  .vendor-title-row button,
+  .store-categories-header button,
+  .ea-header-actions button,
+  .pos-config-page-header button,
+  .store-panel-heading button
+):focus-visible {
+  outline: 2px solid #c8c1f2;
+  outline-offset: 1px;
+  box-shadow: 0 0 0 2px rgba(81, 67, 188, 0.08);
+}
+
+.store-workspace-page .store-workspace-card .store-payment-records-search input {
+  box-sizing: border-box;
+  height: 35px;
+  padding: 0 10px;
+  border: 1px solid #e1e4eb;
+  border-radius: 5px;
+  outline: none;
+  background: #fff;
+  color: #3c465a;
+  font-size: 12px;
+  box-shadow: none;
+}
+
+.store-workspace-page .store-workspace-card .store-payment-records-search input:focus {
+  border-color: #c8c1f2;
+  box-shadow: 0 0 0 2px rgba(81, 67, 188, 0.08);
+}
+
+.store-workspace-page .store-workspace-card .store-payment-records-search input:hover:not(:focus) {
+  border-color: #d3d7e0;
+}
+
+.store-workspace-page .store-workspace-card .shift-search-area {
+  flex: 1 1 250px;
+  min-width: 190px;
+  gap: 8px;
+}
+
+.store-workspace-page .store-workspace-card .shift-search-area input {
+  flex: 1 1 auto;
+  width: 100%;
+  min-width: 0;
+}
+
+.store-workspace-page .store-workspace-card :is(
+  .store-payment-records-toolbar > .pch-filter-dropdown,
+  .shift-filter-bar > .pch-filter-dropdown,
+  .shift-bottom-toolbar > .pch-filter-dropdown
+) {
+  flex: 0 0 145px;
+  width: 145px;
+  min-width: 0;
+}
+
+.store-workspace-page .store-workspace-card .shifts-page-header {
+  display: flex;
+  align-items: center;
+}
+
+.store-workspace-page .store-workspace-card .shifts-title-row {
+  flex: 1 1 auto;
+  justify-content: space-between;
+  gap: 16px;
+  min-width: 0;
+}
+
+.store-workspace-page .store-workspace-card .shifts-title-row > .shift-add-btn {
+  flex: 0 0 auto;
+}
+
+.store-workspace-page .store-workspace-card :is(
+  .shift-pagination-mini,
+  .store-payment-records-pagination
+) {
+  align-items: center;
+  gap: 8px;
+}
+
+.store-workspace-page .store-workspace-card :is(
+  .shift-pagination-mini,
+  .store-payment-records-pagination
+) > button {
+  box-sizing: border-box;
+  display: inline-flex;
+  width: 35px;
+  height: 35px;
+  min-height: 35px;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 1px solid #5143bc;
+  border-radius: 6px;
+  background: #fff;
+  color: #5143bc;
+  font-size: 12px;
+  line-height: 1;
+}
+
+.store-workspace-page .store-workspace-card :is(
+  .shift-pagination-mini,
+  .store-payment-records-pagination
+) > button:hover:not(:disabled):not(.active) {
+  background: #f7f6ff;
+}
+
+.store-workspace-page .store-workspace-card :is(
+  .shift-pagination-mini,
+  .store-payment-records-pagination
+) > button.active {
+  border-color: #5143bc;
+  background: #5143bc;
+  color: #fff;
+}
+
+.store-workspace-page .store-workspace-card :is(
+  .shift-pagination-mini,
+  .store-payment-records-pagination
+) > button:disabled {
+  border-color: #e1e4eb;
+  background: #f7f8fa;
+  color: #a0a6b5;
+  cursor: not-allowed;
+}
+
+.store-workspace-page .store-workspace-card :is(
+  .store-payment-records-toolbar > select,
+  .shift-filter-bar > select,
+  .shift-bottom-toolbar > select
+) {
+  min-width: 120px;
+  padding: 0 30px 0 10px;
+  outline: none;
+}
+
+.store-workspace-page .store-workspace-card :is(
+  .store-payment-records-toolbar > select:focus,
+  .shift-filter-bar > select:focus,
+  .shift-bottom-toolbar > select:focus
+) {
+  border-color: #c8c1f2;
+  box-shadow: 0 0 0 2px rgba(81, 67, 188, 0.08);
+}
+
+.store-workspace-page .store-workspace-card :is(
+  .store-payment-records-toolbar > select:hover:not(:focus),
+  .shift-filter-bar > select:hover:not(:focus),
+  .shift-bottom-toolbar > select:hover:not(:focus)
+) {
+  border-color: #d3d7e0;
+}
+
+.store-workspace-page .store-workspace-card .store-payment-records-search input::placeholder {
+  color: #a0a6b5;
+  opacity: 1;
+}
+
+.store-workspace-page .store-workspace-card :is(
+  .store-payment-records-search > button,
+  .store-payment-records-toolbar > button,
+  .shift-search-area > button,
+  .shift-filter-bar > .shift-small-btn,
+  .shift-bottom-toolbar > .shift-small-btn,
+  .detail-filter-bar > .shift-back-btn
+) {
+  box-sizing: border-box;
+  height: 35px;
+  min-height: 35px;
+  padding: 0 12px;
+  border: 1px solid #e1e4eb;
+  border-radius: 6px;
+  background: #fff;
+  color: #59647a;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.store-workspace-page .store-workspace-card :is(
+  .store-payment-records-search > button,
+  .store-payment-records-toolbar > button,
+  .shift-search-area > button,
+  .shift-filter-bar > .shift-small-btn,
+  .shift-bottom-toolbar > .shift-small-btn,
+  .detail-filter-bar > .shift-back-btn
+):hover:not(:disabled) {
+  border-color: #c8c1f2;
+  background: #f7f6ff;
+  color: #5143bc;
+}
+
+.store-workspace-page .store-workspace-card :is(
+  .store-payment-records-search > button,
+  .store-payment-records-toolbar > button,
+  .shift-search-area > button,
+  .shift-filter-bar > .shift-small-btn,
+  .shift-bottom-toolbar > .shift-small-btn,
+  .detail-filter-bar > .shift-back-btn
+):disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.store-workspace-page .store-workspace-card .store-payment-records-toolbar {
+  gap: 8px;
+}
+
+.store-workspace-page .store-workspace-card .shift-filter-bar {
+  gap: 8px;
+  min-height: 35px;
+}
+
+.store-workspace-page .store-workspace-card .store-payment-records-toolbar,
+.store-workspace-page .store-workspace-card .shift-filter-bar {
+  row-gap: 8px;
+}
+
+.store-workspace-page .store-workspace-card .store-payment-records-toolbar > .pch-filter-dropdown {
+  box-sizing: border-box;
+  flex: 0 0 145px;
+  width: 145px;
+  min-width: 0;
+}
+
+.store-workspace-page .store-workspace-card .store-payment-records-toolbar > .pch-filter-dropdown > .pch-filter-sizing {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+}
+
+.store-workspace-page .store-workspace-card .store-payment-records-toolbar > .pch-filter-dropdown:has(> .store-payment-records-bulk-select) {
+  flex-basis: 160px;
+  width: 160px;
+}
+
+.store-workspace-page .store-workspace-card .store-payment-records-toolbar > :is(button, .pch-filter-dropdown) {
+  flex-shrink: 0;
+}
+
+.store-workspace-page .store-workspace-card .store-payment-records-search > .store-payment-search-submit {
+  border-color: #5143bc;
+  background: #5143bc;
+  color: #fff;
+  font-weight: 500;
+}
+
+.store-workspace-page .store-workspace-card .store-payment-records-search > .store-payment-search-submit:hover:not(:disabled) {
+  border-color: #4638ad;
+  background: #4638ad;
+  color: #fff;
+}
+
+.store-workspace-page .store-workspace-card .store-payment-records-search > .store-payment-search-submit:focus-visible {
+  outline: 2px solid #c8c1f2;
+  outline-offset: 1px;
+  box-shadow: 0 0 0 2px rgba(81, 67, 188, 0.08);
+}
+
+.store-workspace-page .store-workspace-card .store-payment-records-search > .store-payment-search-submit:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.store-workspace-page .store-section-editor .sf-feature-tools > .sf-search {
+  box-sizing: border-box;
+  min-width: 220px;
+  height: 35px;
+  min-height: 35px;
+  padding: 0 10px;
+  gap: 7px;
+  border: 1px solid #e1e4eb;
+  border-radius: 5px;
+  background: #fff;
+}
+
+.store-workspace-page .store-section-editor .sf-feature-tools > .sf-search > input,
+.store-workspace-page .store-section-editor .sf-feature-tools > .sf-search > input:focus,
+.store-workspace-page .store-section-editor .sf-feature-tools > .sf-search > input:focus-visible {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  outline-offset: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.store-workspace-page .store-section-editor .sf-feature-tools > .sf-search:focus-within {
+  border-color: #c8c1f2;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(81, 67, 188, 0.08);
 }

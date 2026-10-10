@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import Pagination from "../components/Pagination";
 import { listFeatures } from "../api/features";
 import { storeTypesApi } from "../api/storeTypes";
 
@@ -122,6 +123,8 @@ export default function StoreTypeFeatures() {
   const [featureCatalog, setFeatureCatalog] = useState([]);
   const [search, setSearch] = useState("");
   const [modalSearch, setModalSearch] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(5);
   const [showAddModal, setShowAddModal] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [selectedFeatures, setSelectedFeatures] = useState([]);
@@ -183,6 +186,29 @@ export default function StoreTypeFeatures() {
       feature.name.toLowerCase().includes(query),
     );
   }, [features, search]);
+
+useEffect(() => {
+  setCurrentPage(1);
+}, [search]);
+
+const totalPages = Math.max(
+  1,
+  Math.ceil(filteredFeatures.length / pageSize)
+);
+
+const paginatedFeatures = useMemo(() => {
+  const startIndex = (currentPage - 1) * pageSize;
+
+  return filteredFeatures.slice(startIndex, startIndex + pageSize);
+}, [filteredFeatures, currentPage, pageSize]);
+
+useEffect(() => {
+  const lastValidPage = Math.max(1, totalPages);
+
+  if (currentPage > lastValidPage) {
+    setCurrentPage(lastValidPage);
+  }
+}, [currentPage, totalPages]);
 
   const featureGroups = useMemo(() => {
     return featureCatalog.reduce((groups, feature) => {
@@ -436,53 +462,58 @@ export default function StoreTypeFeatures() {
           </div>
         </div>
 
-        <div className="store-features-table">
-          <div className="store-features-row store-features-row-head">
-            <div>Feature Name</div>
-            <div>Feature Category</div>
-            <div>Actions</div>
-          </div>
+       
+<div className="store-features-table">
+  <div className="store-features-row store-features-row-head">
+    <div>Feature Name</div>
+    <div>Feature Category</div>
+    <div>Actions</div>
+  </div>
 
-          {filteredFeatures.map((feature) => (
-            <div className="store-features-row" key={feature.id}>
-              <div className="store-features-name">{feature.name}</div>
-
-              <div>{feature.category}</div>
-
-              <div>
-                <button
-                  type="button"
-                  className="feature-delete-button"
-                  title={`Remove ${feature.name} assignment`}
-                  aria-label={`Remove ${feature.name} assignment`}
-                  onClick={() => setDeleteTarget(feature)}
-                >
-                  <i className="bi bi-trash3" aria-hidden="true" />
-                </button>
-              </div>
-            </div>
-          ))}
+  {paginatedFeatures.length > 0 ? (
+    paginatedFeatures.map((feature) => (
+      <div className="store-features-row" key={feature.id}>
+        <div className="store-features-name">{feature.name}</div>
+        <div>{feature.category}</div>
+        <div>
+          <button
+            type="button"
+            className="feature-delete-button"
+            title={`Remove ${feature.name} assignment`}
+            aria-label={`Remove ${feature.name} assignment`}
+            onClick={() => setDeleteTarget(feature)}
+          >
+            <i className="bi bi-trash3" aria-hidden="true" />
+          </button>
         </div>
+      </div>
+    ))
+  ) : (
+    <div className="store-features-empty">
+      {search.trim()
+        ? "No features match your search."
+        : "No features assigned yet."}
+    </div>
+  )}
+</div>
 
-        <div className="store-features-footer">
-          <span>
-            Showing 1 - {filteredFeatures.length} of {features.length} entries
-          </span>
 
-          <div className="store-features-pagination">
-            <button type="button" aria-label="Previous page">
-              <i className="bi bi-chevron-left" />
-            </button>
-
-            <button type="button" className="active">
-              1
-            </button>
-
-            <button type="button" aria-label="Next page">
-              <i className="bi bi-chevron-right" />
-            </button>
-          </div>
-        </div>
+{/* TABLE FOOTER */}
+<div className="store-features-footer">
+  <Pagination
+    currentPage={currentPage}
+    totalPages={Math.max(1, totalPages)}
+    totalItems={filteredFeatures.length}
+    pageSize={pageSize}
+    onPageChange={setCurrentPage}
+    onPageSizeChange={(newPageSize) => {
+      setPageSize(newPageSize);
+      setCurrentPage(1);
+    }}
+    itemLabel="entries"
+    showWhenEmpty={true}
+  />
+</div>
       </section>
 
       {showAddModal && (

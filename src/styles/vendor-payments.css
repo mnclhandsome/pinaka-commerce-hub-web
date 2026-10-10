@@ -41,6 +41,24 @@
   cursor: pointer;
 }
 
+.vendor-actions .vendor-primary-action {
+  border-color: #5143bc;
+  border-radius: 6px;
+  background: #5143bc;
+  color: #fff;
+}
+
+.vendor-actions .vendor-primary-action:hover {
+  border-color: #4638ad;
+  background: #4638ad;
+}
+
+.vendor-primary-action:focus-visible,
+.vendor-secondary-action:focus-visible {
+  outline: 2px solid #c4bdf2;
+  outline-offset: 2px;
+}
+
 /* Toolbar */
 
 .vendor-toolbar {
@@ -183,6 +201,30 @@
   background: #fff;
   color: #1d5d91;
   cursor: pointer;
+}
+
+.vendor-modal .vendor-secondary-action {
+  border-color: #dce8f4;
+  border-radius: 6px;
+  background: #fff;
+  color: #25466f;
+}
+
+.vendor-modal .vendor-secondary-action:hover {
+  border-color: #c8d8eb;
+  background: #f8fbff;
+}
+
+.vendor-modal .vendor-primary-action {
+  border-color: #5143bc;
+  border-radius: 6px;
+  background: #5143bc;
+  color: #fff;
+}
+
+.vendor-modal .vendor-primary-action:hover {
+  border-color: #4638ad;
+  background: #4638ad;
 }
 
 /* Responsive */

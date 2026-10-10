@@ -117,10 +117,6 @@ export default function ViewRoleTemplateOverview() {
           <p>Configure store types, features, and permissions for this role template.</p>
         </div>
 
-        <span className="role-details-active">
-          <i className="bi bi-circle-fill" />
-          {roleDetails.status}
-        </span>
       </div>
 
       <nav className="role-details-tabs">
