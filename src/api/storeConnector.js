@@ -120,6 +120,36 @@ export async function syncWordpressCatalog(storeId) {
   return api.post(`/stores/${encodeURIComponent(storeId)}/catalog/sync`);
 }
 
+async function postStoreSync(storeId, step) {
+  if (!storeId) throw new Error("Store ID is required.");
+  const path = `/stores/${encodeURIComponent(storeId)}/catalog/sync/${step}`;
+  try {
+    return await api.post(`/connector/api/v1${path}`);
+  } catch (err) {
+    try {
+      return await api.post(path);
+    } catch (fallbackErr) {
+      throw new Error(err?.message || fallbackErr?.message || `Unable to sync ${step}.`);
+    }
+  }
+}
+
+export function syncWordpressProducts(storeId) {
+  return postStoreSync(storeId, "products");
+}
+
+export function syncWordpressCategories(storeId) {
+  return postStoreSync(storeId, "categories");
+}
+
+export function syncWordpressAttributes(storeId) {
+  return postStoreSync(storeId, "attributes");
+}
+
+export function syncWordpressTags(storeId) {
+  return postStoreSync(storeId, "tags");
+}
+
 // export async function syncWordpressCatalog(storeId, { siteUrl, jwtToken, merchantId } = {}) {
 //   const result = await testWordpressConnection(siteUrl, jwtToken, storeId, merchantId);
 //   if (!result?.ok) {

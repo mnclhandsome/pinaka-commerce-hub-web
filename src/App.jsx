@@ -33,6 +33,7 @@ import EditDevice from "./pages/EditDevice";
 import Products from "./pages/Products";
 import Coupons from "./pages/Coupons";
 import Orders from "./pages/Orders";
+import OrderDetail from "./pages/OrderDetail";
 import OrderView from "./pages/OrderView";
 import VendorView from "./pages/VendorView";
 import CreateStoreType from "./pages/CreateStoreType";
@@ -204,7 +205,7 @@ export default function App() {
         <Route path="/products" element={<Products />} />
         <Route path="/coupons" element={<Coupons />} />
         <Route path="/orders" element={<Orders />} />
-        <Route path="/orders/:orderId" element={<OrderView />} />
+        <Route path="/orders/:orderId" element={<OrderDetail />} />
         {/* Users and POS */}
         <Route path="/users" element={<Users />} />
         <Route path="/pos-configuration" element={<PosConfiguration />} />

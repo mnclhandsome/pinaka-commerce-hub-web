@@ -27,7 +27,10 @@ import {
   fetchWordpressConnector,
   getWordpressConnector,
   saveWordpressConnector,
-  syncWordpressCatalog,
+  syncWordpressAttributes,
+  syncWordpressCategories,
+  syncWordpressProducts,
+  syncWordpressTags,
 } from "../api/storeConnector";
 
 
@@ -224,7 +227,8 @@ export default function StoreConfiguration() {
   const [showToken, setShowToken] = useState(false);
 
   const [saving, setSaving] = useState(false);
-  const [testing, setTesting] = useState(false);
+  const [syncing, setSyncing] = useState(false);
+  const [syncProgress, setSyncProgress] = useState(null);
 
   const [message, setMessage] = useState("");
   const [connected, setConnected] = useState(false);
@@ -373,7 +377,7 @@ export default function StoreConfiguration() {
 
   const handleSave = async (event) => {
     event.preventDefault();
-    if (!editingSection || saving || testing) return;
+    if (!editingSection || saving || syncing) return;
 
     if (!siteUrl.trim() || !jwtToken.trim()) {
       setMessage(
@@ -420,33 +424,42 @@ export default function StoreConfiguration() {
      TEST WORDPRESS CONNECTION
      ======================================================= */
 
-  const handleSyncCatalog = async () => {
-    if (testing || saving) return;
-    if (!siteUrl.trim() || !jwtToken.trim()) {
-      setMessage("Save the WordPress site URL and JWT token before syncing.");
-      return;
-    }
-
-    setTesting(true);
+  const runSyncSteps = async (steps, doneMessage) => {
+    if (syncing || saving || !connected) return;
+    setSyncing(true);
     setMessage("");
-
     try {
-      const result = await syncWordpressCatalog(storeId, {
-        siteUrl,
-        jwtToken,
-      });
-      const categoryCount = result?.catalog?.categoryCount ?? 0;
-      const productCount = result?.catalog?.productCount ?? 0;
-      setMessage(
-        result?.message ||
-          `Synced ${categoryCount} categories and ${productCount} products.`
-      );
+      for (let index = 0; index < steps.length; index += 1) {
+        const [label, action] = steps[index];
+        setSyncProgress({
+          label,
+          percent: Math.round((index / steps.length) * 100),
+        });
+        await action(storeId);
+      }
+      setSyncProgress({ label: "Sync complete", percent: 100 });
+      setMessage(doneMessage);
     } catch (err) {
-      setMessage(err?.message || "Unable to sync categories and products.");
+      setMessage(err?.message || "Unable to sync WordPress data.");
+      setSyncProgress(null);
     } finally {
-      setTesting(false);
+      setSyncing(false);
     }
   };
+
+  const handleSyncProducts = () => runSyncSteps(
+    [["Syncing Products", syncWordpressProducts]],
+    "Products synced.",
+  );
+
+  const handleSyncCategories = () => runSyncSteps(
+    [
+      ["Syncing Categories", syncWordpressCategories],
+      ["Syncing Attributes", syncWordpressAttributes],
+      ["Syncing Tags", syncWordpressTags],
+    ],
+    "Categories, attributes, and tags synced.",
+  );
 
   /* =======================================================
      BACK TO STORES
@@ -668,7 +681,10 @@ export default function StoreConfiguration() {
                   <div className="store-panel-heading">
                     <div><h2>Website Connection</h2><p>{editingSection ? "Update the website URL and JWT token for this store." : "View the saved JWT connection status."}</p></div>
                     <div className="store-panel-actions">
-                      <button type="button" className="sf-outline" onClick={handleSyncCatalog} disabled={testing || saving}>{testing ? "Syncing…" : "Sync Categories & Products"}</button>
+                      {connected && <>
+                        <button type="button" className="sf-outline" onClick={handleSyncCategories} disabled={syncing || saving}>Sync Category</button>
+                        <button type="button" className="sf-outline" onClick={handleSyncProducts} disabled={syncing || saving}>Sync Product</button>
+                      </>}
                       {!editingSection && <button type="button" className="store-config-btn" onClick={() => {restoreConnection();setEditingSection(true);}}><i className="bi bi-pencil" aria-hidden="true" /> Edit</button>}
                     </div>
                   </div>
@@ -680,7 +696,7 @@ export default function StoreConfiguration() {
                     ]} />
                   ) : (
                     <form className="store-connection-section" onSubmit={handleSave}>
-                      <fieldset disabled={saving || testing} style={{border:0,padding:0,margin:0,minWidth:0}}>
+                      <fieldset disabled={saving || syncing} style={{border:0,padding:0,margin:0,minWidth:0}}>
                         <label className="store-field">WordPress Site URL
                           <input type="url" placeholder="https://your-store.com" value={siteUrl} onChange={event => setSiteUrl(event.target.value)} required />
                         </label>
@@ -697,6 +713,13 @@ export default function StoreConfiguration() {
                       </fieldset>
                     </form>
                   )}
+                  {syncProgress && <div className="store-sync-progress" role="status">
+                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
+                      <span>{syncProgress.label}</span>
+                      <span>{syncProgress.percent}%</span>
+                    </div>
+                    <progress max={100} value={syncProgress.percent} style={{ width: "100%" }} />
+                  </div>}
                   {message && <div className="store-message info" role="status">{message}</div>}
                 </div>
 
