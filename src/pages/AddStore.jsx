@@ -542,6 +542,7 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
   const [merchants, setMerchants] = useState([]);
   const [merchantInfo, setMerchantInfo] = useState(null);
   const [subscription, setSubscription] = useState(null);
+  const featuresOnly = embeddedStep === 2;
   const [merchantStores, setMerchantStores] = useState([]);
   const [storeTypes, setStoreTypes] = useState([]);
   const [storeTypesLoading, setStoreTypesLoading] = useState(false);
@@ -989,9 +990,9 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
       setLoadError("");
       try {
         const [result, featuresResult, plansResult] = await Promise.all([
-          listMerchants().catch(() => []),
-          listFeatures().catch(() => []),
-          listPlans().catch(() => []),
+          embeddedStep !== null ? Promise.resolve([]) : pendingStoreRead("store-setup-merchants", () => listMerchants()).catch(() => []),
+          pendingStoreRead("store-setup-features", () => listFeatures()).catch(() => []),
+          pendingStoreRead("store-setup-plans", () => listPlans()).catch(() => []),
         ]);
         if (!cancelled) {
           setMerchants(
@@ -1011,9 +1012,7 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
           setMasterPlans(Array.isArray(plansResult) ? plansResult : []);
         }
         if (storeId) {
-          const response = await api.get(
-            endpoints.store(encodeURIComponent(storeId)),
-          );
+          const response = await pendingStoreRead(`store:${storeId}`, () => api.get(endpoints.store(encodeURIComponent(storeId))));
           const saved = response?.store || response;
           if (!cancelled) {
             const address =
@@ -1102,8 +1101,7 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
 
     async function loadStoreTypes() {
       try {
-        const masterRes = await storeTypesApi
-          .getAll()
+        const masterRes = await pendingStoreRead("store-setup-store-types", () => storeTypesApi.getAll())
           .catch(() => ({ storeTypes: [] }));
         const masterTypes = (
           masterRes?.storeTypes ||
@@ -1117,7 +1115,7 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
 
         if (merchantId) {
           try {
-            const merchantRes = await storeTypesApi.getForMerchant(merchantId);
+            const merchantRes = await pendingStoreRead(`merchant-store-types:${merchantId}`, () => storeTypesApi.getForMerchant(merchantId));
             const merchantTypes = (
               merchantRes?.storeTypes ||
               merchantRes?.data?.storeTypes ||
@@ -1202,9 +1200,9 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
     async function loadMerchantContext() {
       try {
         const [result, employeeResult, storesResult] = await Promise.all([
-          getMerchant(merchantId),
-          listMerchantEmployees(merchantId),
-          api.get(endpoints.merchantStores(merchantId)).catch(() => null),
+          pendingStoreRead(`merchant:${merchantId}`, () => getMerchant(merchantId)),
+          featuresOnly ? Promise.resolve([]) : listMerchantEmployees(merchantId),
+          featuresOnly ? Promise.resolve(null) : api.get(endpoints.merchantStores(merchantId)).catch(() => null),
         ]);
         if (cancelled) return;
 
@@ -1247,6 +1245,7 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
             }))
             .filter((employee) => employee.id),
         );
+        if (!featuresOnly) {
         let roleResult = await merchantRoleTemplatesApi
           .getAvailable(merchantId)
           .catch(() => null);
@@ -1261,6 +1260,7 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
           templates = readMerchantSelectedTemplates(roleResult);
         }
         setRoleDefinitions(templates);
+        }
         // A new store starts with no role assignments; the user selects them explicitly.
         if (!editing) {
           const country =
@@ -1305,7 +1305,7 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
     let cancelled = false;
     setStoreTypeRoleIds(null);
     setRolesError("");
-    if (!activeStoreTypeId) {
+    if (featuresOnly || !activeStoreTypeId) {
       setStoreTypeRoleIds(new Set());
       setStoreTypeRolesLoading(false);
       return () => {
@@ -1378,7 +1378,7 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
   // Load Store-Type Features
   useEffect(() => {
     let cancelled = false;
-    if (!editing || !merchantId || !storeId) return;
+    if (featuresOnly || !editing || !merchantId || !storeId) return;
     listStoreEmployees(merchantId, storeId)
       .then((response) => {
         if (cancelled) return;
@@ -1409,7 +1409,7 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
 
   useEffect(() => {
     let cancelled = false;
-    if (!editing || !merchantId || !storeId) {
+    if (featuresOnly || !editing || !merchantId || !storeId) {
       setSavedRolePermissions([]);
       return;
     }
@@ -1430,7 +1430,7 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
 
   useEffect(() => {
     let cancelled = false;
-    if (!editing || !merchantId || !storeId) return;
+    if (featuresOnly || !editing || !merchantId || !storeId) return;
     setRolesLoading(true);
     setRolesError("");
     storeRoleTemplatesApi
@@ -1485,7 +1485,7 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
 
   useEffect(() => {
     let cancelled = false;
-    if (!activeRole || !roles.includes(activeRole)) return;
+    if (featuresOnly || !activeRole || !roles.includes(activeRole)) return;
     if (editedPermissionRoles.current.has(activeRole)) return;
     setPermissionsLoading(true);
     roleTemplatesApi
@@ -1546,9 +1546,7 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
     }
     setFeaturesLoading(true);
     const featureScope = JSON.stringify([merchantId, activeStoreTypeId]);
-    storeTypesApi
-      .getMerchantFeatures(merchantId, activeStoreTypeId)
-      .catch(() => storeTypesApi.getFeatures(activeStoreTypeId))
+    pendingStoreRead(`merchant-store-type-features:${merchantId}:${activeStoreTypeId}`, () => storeTypesApi.getMerchantFeatures(merchantId, activeStoreTypeId).catch(() => storeTypesApi.getFeatures(activeStoreTypeId)))
       .then((data) => {
         if (!cancelled) {
           loadedFeatureType.current = featureScope;

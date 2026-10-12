@@ -2,7 +2,7 @@ import "../styles/merchant-stores-embedded.css";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { getMerchant } from "../api/merchants";
-import { api, ApiError } from "../api/http";
+import { api, ApiError, pendingStoreRead } from "../api/http";
 import { activateStore, deactivateStore } from "../api/stores";
 import { endpoints } from "../api/endpoints";
 
@@ -55,6 +55,7 @@ function shortLocation(value, wordLimit = 8) {
 export default function MerchantStores({
   merchantId: selectedMerchantId,
   embedded = false,
+  merchantDetails = null,
 }) {
   const params = useParams();
   const merchantId = selectedMerchantId ?? params.merchantId;
@@ -88,8 +89,8 @@ export default function MerchantStores({
         }
 
         const [result, storesResult] = await Promise.all([
-          getMerchant(merchantId),
-          api.get(endpoints.merchantStores(merchantId)),
+          merchantDetails ? Promise.resolve({ merchant: merchantDetails }) : pendingStoreRead(`merchant:${merchantId}`, () => getMerchant(merchantId)),
+          pendingStoreRead(`merchant-stores:${merchantId}`, () => api.get(endpoints.merchantStores(merchantId))),
         ]);
 
         if (!cancelled) {

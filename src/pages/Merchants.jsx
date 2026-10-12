@@ -22,9 +22,9 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { listMerchants, getMerchant, updateMerchantStatus } from "../api/merchants";
 import { EmployeeToast, EmployeeDeleteDialog } from "../components/EmployeeFeedback";
 import { listMerchantEmployees, getEmployee, deleteEmployee } from "../api/employees";
-import { ApiError } from "../api/http";
+import { api, ApiError, pendingStoreRead } from "../api/http";
 import { devicesApi } from "../api/devices";
-import { listStores } from "../api/stores";
+import { storeListFromResponse, normalizeStore } from "../api/stores";
 import { getStoreDeviceMappings } from "../api/storeDeviceMappings";
 import Pagination from "../components/Pagination";
 import ListActions from "../components/ListActions";
@@ -130,24 +130,10 @@ function MerchantReadOnly({ merchantId, merchant, onBack, onSaveEmployee, onSave
   const [allPlans, setAllPlans] = useState([]);
 
   useEffect(() => {
-    let active = true;
-    Promise.all([
-      listSubscriptions().catch(() => []),
-      listPlans().catch(() => [])
-    ]).then(([subs, plans]) => {
-      if (active) {
-        setAllSubscriptions(Array.isArray(subs) ? subs : []);
-        setAllPlans(Array.isArray(plans) ? plans : []);
-      }
-    });
-    return () => { active = false; };
-  }, []);
-
-  useEffect(() => {
     if (draft) { setLoading(false); setError(''); return; }
     let active = true;
     setLoading(true); setError('');
-    Promise.resolve().then(() => getMerchant(merchantId)).then(value => {
+    pendingStoreRead(`merchant:${merchantId}`, () => getMerchant(merchantId)).then(value => {
       if (active) setResult(value);
     }).catch(failure => { if (active) setError(failure.message || 'Unable to load merchant details.'); })
       .finally(() => { if (active) setLoading(false); });
@@ -180,10 +166,11 @@ async function openEmployeeEdit(employee) {
   }
   useEffect(() => {
     let active = true;
+    if (activeTab !== 'employees' || !apiMerchantId) return;
     setEmployeesLoading(true);
     setEmployeesError('');
     setApiEmployees(null);
-    listMerchantEmployees(apiMerchantId).then(value => {
+    pendingStoreRead(`employees:${apiMerchantId}`, () => listMerchantEmployees(apiMerchantId)).then(value => {
       if (active) setApiEmployees(value);
     }).catch(failure => {
       if (active) setEmployeesError(failure.message || 'Unable to load merchant employees.');
@@ -191,13 +178,14 @@ async function openEmployeeEdit(employee) {
       if (active) setEmployeesLoading(false);
     });
     return () => { active = false; };
-  }, [apiMerchantId]);
+  }, [apiMerchantId, activeTab]);
   useEffect(() => {
     let active = true;
+    if (activeTab !== 'devices' || !apiMerchantId) return;
     setDevicesLoading(true);
     setDevicesError('');
     setApiDevices([]);
-    devicesApi.listAllByMerchantId(apiMerchantId).then(value => {
+    pendingStoreRead(`devices:${apiMerchantId}`, () => devicesApi.listAllByMerchantId(apiMerchantId)).then(value => {
       if (active) setApiDevices(Array.isArray(value) ? value : []);
     }).catch(failure => {
       if (active) setDevicesError(failure.message || 'Unable to load merchant devices.');
@@ -205,10 +193,12 @@ async function openEmployeeEdit(employee) {
       if (active) setDevicesLoading(false);
     });
     return () => { active = false; };
-  }, [apiMerchantId]);
+  }, [apiMerchantId, activeTab]);
   useEffect(() => {
     let active = true;
-    listStores().then(({ stores: rows = [] }) => {
+    if (activeTab !== 'devices' || !apiMerchantId) return;
+    pendingStoreRead(`merchant-stores:${apiMerchantId}`, () => api.get(`/merchants/${encodeURIComponent(apiMerchantId)}/stores`)).then(response => {
+      const rows = storeListFromResponse(response).map(normalizeStore);
       if (!active) return;
       const merchantRows = (Array.isArray(rows) ? rows : []).filter(store => {
         const owner = store.merchantId || store.merchant_id;
@@ -219,7 +209,7 @@ async function openEmployeeEdit(employee) {
         const storeId = store.id || store.uuid || store.storeUUID || store.storeUuid || store.store_uuid || store.storeId || store.store_id;
         if (!storeId) return [];
         try {
-          const mappings = await getStoreDeviceMappings(storeId);
+          const mappings = await pendingStoreRead(`store-mappings:${storeId}`, () => getStoreDeviceMappings(storeId));
           return mappings.map(mapping => ({ ...mapping, mappedStoreId: storeId }));
         } catch {
           return [];
@@ -231,12 +221,28 @@ async function openEmployeeEdit(employee) {
       if (active) { setApiStores([]); setApiStoreMappings([]); }
     });
     return () => { active = false; };
-  }, [apiMerchantId]);
+  }, [apiMerchantId, activeTab]);
   const saved = draft || raw._onboarding;
   const summary = { ...(result?.merchant || {}), ...(merchant || {}) };
   const contact = saved?.merchant || raw;
   const subscription = result?.subscription || raw.subscription || response.subscription || {};
   const subPlan = subscription.plan || raw.plan || response.plan || {};
+  const needsSubscriptionFallback = !subscription.id && !subscription.plan && !subscription.planName && !raw.plan;
+  const needsPlanFallback = !subPlan || typeof subPlan !== 'object' || !Object.keys(subPlan).length;
+  useEffect(() => {
+    if (activeTab !== 'subscription' || loading || !result) return;
+    let active = true;
+    Promise.all([
+      needsSubscriptionFallback ? pendingStoreRead('subscriptions', listSubscriptions).catch(() => []) : Promise.resolve([]),
+      needsPlanFallback ? pendingStoreRead('plans', listPlans).catch(() => []) : Promise.resolve([]),
+    ]).then(([subs, plans]) => {
+      if (active) {
+        setAllSubscriptions(Array.isArray(subs) ? subs : []);
+        setAllPlans(Array.isArray(plans) ? plans : []);
+      }
+    });
+    return () => { active = false; };
+  }, [activeTab, loading, result, needsSubscriptionFallback, needsPlanFallback]);
   const subStoreType = subscription.storeType || subscription.store_type || subPlan.storeType || subPlan.store_type || raw.storeType || {};
 
   const subMatch = useMemo(() => {
@@ -513,13 +519,13 @@ async function openEmployeeEdit(employee) {
         ]} /></ViewSection>
       </div>
       <div role="tabpanel" id="merchant-panel-stores" aria-labelledby="merchant-tab-stores" hidden={activeTab !== 'stores'} tabIndex={0}>
-        {activeTab === 'stores' && <MerchantStores merchantId={merchantId} embedded />}
+        {activeTab === 'stores' && <MerchantStores merchantId={apiMerchantId || merchantId} merchantDetails={result?.merchant || merchant || raw} embedded />}
       </div>
       <div role="tabpanel" id="merchant-panel-vendors" aria-labelledby="merchant-tab-vendors" hidden={activeTab !== 'vendors'} tabIndex={0}>
-        <MerchantVendors merchantId={merchantId} masterVendors={masterVendors} assignedVendorIds={vendorAssignments?.[merchantId] ?? saved?.vendorIds ?? raw.vendorIds ?? raw.vendors ?? []} onSaveAssignments={onSaveVendorAssignments} loading={vendorsLoading} error={vendorsError}/>
+        {activeTab === 'vendors' && <MerchantVendors merchantId={merchantId} masterVendors={masterVendors} assignedVendorIds={vendorAssignments?.[merchantId] ?? saved?.vendorIds ?? raw.vendorIds ?? raw.vendors ?? []} onSaveAssignments={onSaveVendorAssignments} loading={vendorsLoading} error={vendorsError}/>}
       </div>
       <div role="tabpanel" id="merchant-panel-tenders" aria-labelledby="merchant-tab-tenders" hidden={activeTab !== 'tenders'} tabIndex={0}>
-        <MerchantTenders merchantId={merchantId} masterTenders={masterTenders} assignedTenderIds={tenderAssignments?.[merchantId] ?? saved?.tenderIds ?? raw.tenderIds ?? raw.tenders ?? []} onSaveAssignments={onSaveTenderAssignments} loading={tendersLoading} error={tendersError}/>
+        {activeTab === 'tenders' && <MerchantTenders merchantId={merchantId} masterTenders={masterTenders} assignedTenderIds={tenderAssignments?.[merchantId] ?? saved?.tenderIds ?? raw.tenderIds ?? raw.tenders ?? []} onSaveAssignments={onSaveTenderAssignments} loading={tendersLoading} error={tendersError}/>}
       </div>
       <div role="tabpanel" id="merchant-panel-employees" aria-labelledby="merchant-tab-employees" hidden={activeTab !== 'employees'} tabIndex={0}>
         {employeesError && <div className="alert alert-danger" role="alert">{employeesError}</div>}
