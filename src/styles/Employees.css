@@ -1080,3 +1080,12 @@
   flex-wrap: nowrap; justify-content: center; gap: 6px;
 }
 .employees-table tbody tr:hover { background: #fafbfe; }
+
+.employees-list-card .employees-table th:nth-child(8),
+.employees-list-card .employees-table td:nth-child(8) {
+  text-align: left;
+}
+
+.employees-list-card .employees-table td:nth-child(8) .list-actions {
+  justify-content: flex-start;
+}

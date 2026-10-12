@@ -189,7 +189,9 @@ export default function DeviceView() {
       {" "}
       <label>{label}</label>{" "}
       {status ? (
-        <span className={`device-view-status ${status}`}> {value} </span>
+        <div className={`device-view-value device-view-status-field ${status}`}>
+          {value}
+        </div>
       ) : (
         <div className="device-view-value"> {value || "-"} </div>
       )}{" "}

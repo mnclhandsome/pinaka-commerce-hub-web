@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState, } from "react";
 import Pagination from "../components/Pagination";
 import FiltersBar from "../components/FiltersBar";
+import { Download } from "lucide-react";
+import DeleteConfirmationDialog from "../components/DeleteConfirmationDialog";
 import { useLocationOptions } from "../data/useLocationOptions";
 import { getVendors, createVendor, updateVendor, deleteVendor as deleteVendorApi, } from "../api/vendors";
 
@@ -986,6 +988,7 @@ export default function Vendors({
 
   const vendorForm = (
       <form
+        id="vendor-form"
         className={`vendors-form ${
           viewingId !== null
             ? "vendors-form-view-mode"
@@ -1002,9 +1005,7 @@ export default function Vendors({
             <div className="vendors-heading-icon">
               <i
                 className={
-                  viewingId !== null
-                    ? "bi bi-lock-fill"
-                    : "bi bi-truck"
+                  "bi bi-truck"
                 }
               />
             </div>
@@ -1399,51 +1400,41 @@ export default function Vendors({
 
         </div>
 
-        {/* ===================================================
-            FORM ACTIONS
-        =================================================== */}
-
-        <div className="vendors-form-actions">
-
-          <button
-            type="button"
-            className="vendors-clear-button"
-            onClick={onCancel || resetForm}
-            disabled={saving}
-          >
-            Cancel
-          </button>
-
-          <button
-            type="submit"
-            className="vendors-save-button"
-            disabled={
-              saving ||
-              viewingId !== null ||
-              !isFormComplete ||
-              (editingId !== null && !isEditDirty)
-            }
-          >
-            {saving ? (
-              <>
-                <i className="bi bi-arrow-repeat vendors-loading-icon" />
-
-                {editingId !== null
-                  ? "Saving..."
-                  : "Creating..."}
-              </>
-            ) : (
-              <>
-                {editingId !== null
-                  ? "Save Changes"
-                  : "Create Vendor"}
-              </>
-            )}
-          </button>
-
-        </div>
-
       </form>
+  );
+
+  const standaloneFormActions = (
+    <div className="vendors-form-actions">
+      <button
+        type="button"
+        className="vendors-clear-button"
+        onClick={onCancel || resetForm}
+        disabled={saving}
+      >
+        Cancel
+      </button>
+
+      <button
+        type="submit"
+        form="vendor-form"
+        className="vendors-save-button"
+        disabled={
+          saving ||
+          viewingId !== null ||
+          !isFormComplete ||
+          (editingId !== null && !isEditDirty)
+        }
+      >
+        {saving ? (
+          <>
+            <i className="bi bi-arrow-repeat vendors-loading-icon" />
+            {editingId !== null ? "Saving..." : "Creating..."}
+          </>
+        ) : (
+          <>{editingId !== null ? "Save Changes" : "Create Vendor"}</>
+        )}
+      </button>
+    </div>
   );
 
   const activeVendorCount = vendors.filter((vendor) => String(vendor.status || "").toLowerCase() === "active").length;
@@ -1462,7 +1453,7 @@ export default function Vendors({
     URL.revokeObjectURL(url);
   }
 
-  if (formOnly) return <section className="vendors-page">{error && <div className="vendors-error" role="alert">{error}</div>}{vendorForm}</section>;
+  if (formOnly) return <section className="vendors-page">{error && <div className="vendors-error" role="alert">{error}</div>}{vendorForm}{standaloneFormActions}</section>;
 
   if (showForm) {
     const formTitle = editingId !== null ? "Edit Vendor" : viewingId !== null ? "View Vendor" : "Add Vendor";
@@ -1490,6 +1481,7 @@ export default function Vendors({
           </div>
         )}
         {vendorForm}
+        {standaloneFormActions}
       </section>
     );
   }
@@ -1513,7 +1505,7 @@ export default function Vendors({
         </div>
         <div className="vendors-header-actions">
           <button type="button" className="vendors-primary-button" onClick={() => { resetForm(); setShowForm(true); }}><i className="bi bi-plus-lg" /> Add Vendor</button>
-          <button type="button" className="vendors-export-button" onClick={exportVendors}><i className="bi bi-arrow-down" /> Export</button>
+          <button type="button" className="vendors-export-button" onClick={exportVendors}><Download size={18} aria-hidden="true" /> Export</button>
         </div>
       </div>
 
@@ -1902,95 +1894,27 @@ export default function Vendors({
           DELETE CONFIRMATION POPUP
       ===================================================== */}
 
-      {deleteTarget && (
-        <div
-          className="vendors-delete-backdrop"
-          onClick={() =>
-            !deleting &&
-            setDeleteTarget(
-              null
-            )
+      <DeleteConfirmationDialog
+        isOpen={Boolean(deleteTarget)}
+        title="Deactivate Vendor?"
+        message={deleteTarget && (
+          <>
+            Are you sure you want to deactivate{" "}
+            <strong>{deleteTarget.name}</strong>?
+          </>
+        )}
+        cancelLabel="Cancel"
+        confirmLabel="Deactivate"
+        busyLabel="Deactivating..."
+        busy={deleting}
+        error={error}
+        onCancel={() => {
+          if (!deleting) {
+            setDeleteTarget(null);
           }
-        >
-
-          <div
-            className="vendors-delete-modal"
-            onClick={(event) =>
-              event.stopPropagation()
-            }
-          >
-
-            {/* DELETE ICON */}
-
-            <div className="vendors-delete-icon">
-              <i className="bi bi-exclamation-triangle" />
-            </div>
-
-            {/* TITLE */}
-
-            <h2>
-              Delete Vendor?
-            </h2>
-
-            {/* MESSAGE */}
-
-            <p>
-              Are you sure you want
-              to delete{" "}
-              <strong>
-                {deleteTarget.name}
-              </strong>
-              ?
-            </p>
-
-            <p className="vendors-delete-warning">
-              This action cannot be undone.
-            </p>
-
-            {/* ACTIONS */}
-
-            <div className="vendors-delete-actions">
-
-              <button
-                type="button"
-                className="vendors-delete-cancel"
-                onClick={() =>
-                  setDeleteTarget(
-                    null
-                  )
-                }
-                disabled={deleting}
-              >
-                No, Keep It
-              </button>
-
-              <button
-                type="button"
-                className="vendors-delete-confirm"
-                onClick={
-                  handleDeleteVendor
-                }
-                disabled={deleting}
-              >
-                {deleting ? (
-                  <>
-                    <i className="bi bi-arrow-repeat vendors-loading-icon" />
-
-                    Deleting...
-                  </>
-                ) : (
-                  <>
-                    Yes, Delete
-                  </>
-                )}
-              </button>
-
-            </div>
-
-          </div>
-
-        </div>
-      )}
+        }}
+        onConfirm={handleDeleteVendor}
+      />
 
     </section>
   );
