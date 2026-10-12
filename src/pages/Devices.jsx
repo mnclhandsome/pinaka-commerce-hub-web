@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import {
   Monitor,
   AlertCircle,
+  Download,
 } from "lucide-react";
  
 import "../styles/devices.css";
@@ -13,6 +14,7 @@ import { devicesApi } from "../api/devices";
 import Pagination from "../components/Pagination";
 import ListActions from "../components/ListActions";
 import FiltersBar from "../components/FiltersBar";
+import DeleteConfirmationDialog from "../components/DeleteConfirmationDialog";
  
 export default function Devices() {
  
@@ -296,7 +298,7 @@ export default function Devices() {
  
             {" "}
  
-            <span className="export-icon">↓</span> Export {" "}
+            <Download size={18} aria-hidden="true" /> Export
  
           </button>{" "}
  
@@ -509,9 +511,18 @@ export default function Devices() {
   <DeviceRow
     key={device.id}
     device={device}
-    onView={() => navigate(`/devices/${device.id}`)}
-    onEdit={() => navigate(`/devices/${device.id}/edit`)}
-    onDelete={() => setDeleteDevice(device)}
+    onView={(event) => {
+      event?.stopPropagation();
+      navigate(`/devices/${device.id}`);
+    }}
+    onEdit={(event) => {
+      event?.stopPropagation();
+      navigate(`/devices/${device.id}/edit`);
+    }}
+    onDelete={(event) => {
+      event?.stopPropagation();
+      setDeleteDevice(device);
+    }}
     deleting={deleting}
   />
 ))
@@ -563,87 +574,24 @@ export default function Devices() {
       </div>{" "}
       {/* ===================================================== DELETE MODAL ===================================================== */}{" "}
  
-      <DeactivateDeviceModal
- 
-        device={deleteDevice}
- 
-        deleting={deleting}
- 
+      <DeleteConfirmationDialog
+        isOpen={Boolean(deleteDevice)}
+        title="Deactivate Device?"
+        message={deleteDevice
+          ? `Are you sure you want to deactivate ${deleteDevice.name || "this device"}?`
+          : ""}
+        busy={deleting}
+        cancelLabel="Cancel"
+        confirmLabel="Yes, Deactivate"
+        busyLabel="Deactivating..."
         onCancel={() => (deleting ? null : setDeleteDevice(null))}
- 
         onConfirm={handleDeactivateDevice}
- 
-      />{" "}
+      />
  
     </div>
  
   );
  
-}
- 
-/* ========================================================= DEACTIVATION CONFIRMATION MODAL ========================================================= */ 
-function DeactivateDeviceModal({
-  device,
-  deleting,
-  onCancel,
-  onConfirm,
-}) {
-  if (!device) {
-    return null;
-  }
-
-  return (
-    <div
-      className="device-deactivate-overlay"
-      role="presentation"
-      onMouseDown={onCancel}
-    >
-      <div
-        className="device-deactivate-modal"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="deactivate-device-title"
-        onMouseDown={(event) => event.stopPropagation()}
-      >
-        <div className="device-deactivate-icon">
-          <i className="bi bi-trash" aria-hidden="true" />
-        </div>
-
-        <h2 id="deactivate-device-title">
-          Deactivate Device
-        </h2>
-
-        <p className="device-deactivate-message">
-          Are you sure you want to deactivate{" "}
-          <strong>{device.name || "this device"}</strong>?
-        </p>
-
-        <p className="device-deactivate-warning">
-          This device will no longer be active.
-        </p>
-
-        <div className="device-deactivate-actions">
-          <button
-            type="button"
-            className="device-deactivate-cancel"
-            onClick={onCancel}
-            disabled={deleting}
-          >
-            Cancel
-          </button>
-
-          <button
-            type="button"
-            className="device-deactivate-confirm"
-            onClick={onConfirm}
-            disabled={deleting}
-          >
-            {deleting ? "Deactivating..." : "Deactivate"}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
 }
  
 /* ========================================================= STAT CARD ========================================================= */ function StatCard({
@@ -738,7 +686,22 @@ function DeviceRow({
     device.status?.toLowerCase().replace(/\s+/g, "-") || "unknown";
 
   return (
-    <tr>
+    <tr
+      className="device-row-clickable"
+      role="link"
+      tabIndex={0}
+      aria-label={`View ${device.name || "device"}`}
+      onClick={onView}
+      onKeyDown={(event) => {
+        if (event.target !== event.currentTarget) {
+          return;
+        }
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          onView();
+        }
+      }}
+    >
       {/* DEVICE ID */}
       <td>{device.deviceId || device.device_id || "-"}</td>
 
@@ -780,7 +743,7 @@ function DeviceRow({
       </td>
 
       {/* ACTIONS */}
-      <td>
+      <td onClick={(event) => event.stopPropagation()}>
         <ListActions
           onView={onView}
           onEdit={onEdit}

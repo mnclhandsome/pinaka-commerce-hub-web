@@ -16,10 +16,13 @@ import {
   Eye,
   EyeOff,
   ArrowLeft,
+  Save,
 } from "lucide-react";
 
+import DeviceNavigation from "../components/DeviceNavigation";
 import "../styles/add-employee.css";
 import "../styles/editemployee.css";
+import "../styles/employee-device-edit.css";
 
 // import { updateEmployee } from "../api/employees";
 import {
@@ -646,31 +649,43 @@ export default function EditEmployee({ employee: employeeProp, onBack: onBackPro
 
 
   return (
-    <div className={`add-employee-page${employeeProp ? " merchant-employee-edit" : ""}`}>
+    <div className={`add-employee-page${employeeProp ? " merchant-employee-edit" : " employee-device-edit-page"}`}>
       <StoreRoleAssignmentStyles />
+
+      {!employeeProp && (
+        <DeviceNavigation
+          title="Edit Employee"
+          listLabel="Employees"
+          onBack={handleBack}
+        />
+      )}
 
       {/* PAGE HEADER */}
       <div className="add-employee-header">
         <div>
           <h1>Edit Employee</h1>
-
-          <div className="add-employee-breadcrumb">
-            <span>Home</span>
-            <span className="breadcrumb-arrow">›</span>
-            <span>Employees</span>
-            <span className="breadcrumb-arrow">›</span>
-            <strong>Edit Employee</strong>
-          </div>
+          {employeeProp ? (
+            <div className="add-employee-breadcrumb">
+              <span>Home</span>
+              <span className="breadcrumb-arrow">›</span>
+              <span>Employees</span>
+              <span className="breadcrumb-arrow">›</span>
+              <strong>Edit Employee</strong>
+            </div>
+          ) : (
+            <p>Update employee information, access, and settings.</p>
+          )}
         </div>
-
-        <button
-          type="button"
-          className="back-employees-btn"
-          onClick={handleBack}
-        >
-           <ArrowLeft size={17} />
-          {onBackProp ? "Back to Merchant Employees" : "Back to Employees"}
-        </button>
+        {employeeProp && (
+          <button
+            type="button"
+            className="back-employees-btn"
+            onClick={handleBack}
+          >
+            <ArrowLeft size={17} />
+            {onBackProp ? "Back to Merchant Employees" : "Back to Employees"}
+          </button>
+        )}
       </div>
 
       {/* API ERROR BANNER */}
@@ -678,8 +693,20 @@ export default function EditEmployee({ employee: employeeProp, onBack: onBackPro
       {confirmPhotoDelete && <EmployeeDeleteDialog title="Delete Profile Photo?" description="Are you sure you want to remove this employee’s profile photo?" busy={deletingProfileImage} onCancel={() => setConfirmPhotoDelete(false)} onConfirm={handleDeleteProfileImage} />}
 
       {/* FORM */}
-      <form onSubmit={handleSave} autoComplete="off">
-        <div className="add-employee-layout">
+      <form id="edit-employee-form" onSubmit={handleSave} autoComplete="off">
+        <div className={employeeProp ? undefined : "employee-edit-main-card"}>
+          {!employeeProp && (
+            <div className="device-card-header employee-edit-card-header">
+              <div className="device-card-icon">
+                <Settings size={19} />
+              </div>
+              <div>
+                <h2>Employee Details</h2>
+                <p>Update employee information, roles, and account settings.</p>
+              </div>
+            </div>
+          )}
+          <div className="add-employee-layout">
           {/* LEFT COLUMN */}
           <div className="add-employee-left">
             {/* PERSONAL INFORMATION */}
@@ -997,9 +1024,34 @@ export default function EditEmployee({ employee: employeeProp, onBack: onBackPro
               </div>
             </section>
           </div>
+          </div>
         </div>
+      </form>
 
-        {/* BOTTOM ACTION BAR */}
+      {/* BOTTOM ACTION BAR */}
+      {!employeeProp && (
+        <div className="employee-form-actions">
+        <button
+          type="button"
+          className="cancel-employee-btn"
+          onClick={handleBack}
+          disabled={saving}
+        >
+          Cancel
+        </button>
+
+        <button
+          type="submit"
+          form="edit-employee-form"
+          className="save-employee-btn"
+          disabled={saving}
+        >
+          <Save size={15} />
+          {saving ? "Updating..." : "Save Changes"}
+        </button>
+        </div>
+      )}
+      {employeeProp && (
         <div className="employee-form-actions">
           <button
             type="button"
@@ -1010,11 +1062,11 @@ export default function EditEmployee({ employee: employeeProp, onBack: onBackPro
             Cancel
           </button>
 
-          <button type="submit" className="save-employee-btn" disabled={saving}>
+          <button type="submit" form="edit-employee-form" className="save-employee-btn" disabled={saving}>
             {saving ? "Updating..." : "Update Employee"}
           </button>
         </div>
-      </form>
+      )}
     </div>
   );
 }
