@@ -816,18 +816,26 @@ export async function unmapMerchantVendor(
 }
 
 function extractStoreVendorMappings(data) {
+  const collectionKeys = [
+    "mappings", "storeVendorMappings", "store_vendor_mappings",
+    "storeVendorMapping", "store_vendor_mapping", "storeVendors", "store_vendors",
+    "vendorMappings", "vendor_mappings", "vendorMapping", "vendor_mapping", "vendors", "items", "results",
+  ];
   let value = data;
-  for (let depth = 0; depth < 4 && value && typeof value === "object" && !Array.isArray(value); depth += 1) {
-    if (value.mappings) value = value.mappings;
-    else if (value.data) value = value.data;
-    else if (value.items) value = value.items;
-    else if (value.results) value = value.results;
+  for (let depth = 0; depth < 7 && value && typeof value === "object" && !Array.isArray(value); depth += 1) {
+    const collection = collectionKeys.find((key) => Array.isArray(value[key]));
+    if (collection) return value[collection];
+    const nestedCollection = collectionKeys.find((key) => value[key] && typeof value[key] === "object");
+    if (nestedCollection) {
+      value = value[nestedCollection];
+      continue;
+    }
+    if (value.mapping && typeof value.mapping === "object") value = value.mapping;
+    else if (value.data && typeof value.data === "object") value = value.data;
     else break;
   }
   if (Array.isArray(value)) return value;
-  if (Array.isArray(value?.mappings)) return value.mappings;
-  if (Array.isArray(value?.items)) return value.items;
-  if (Array.isArray(value?.results)) return value.results;
+  if (value && typeof value === "object" && (value.vendor || value.vendor_id || value.vendorId || value.vendor_details || value.vendorDetails)) return [value];
   return [];
 }
 
@@ -837,14 +845,21 @@ export async function getMappedStoreVendors(storeId, { token, signal } = {}) {
   const params = new URLSearchParams();
   params.set("store_id", storeId);
   const data = await request(`${endpoints.storeVendorMappings}?${params.toString()}`, { method: "GET", token, signal });
-  return extractStoreVendorMappings(data).map((mapping) => {
-    const vendor = mapping.vendor || mapping.vendorDetails || mapping.vendor_details || mapping;
-    const vendorId = mapping.vendorId || mapping.vendor_id || vendor.id || vendor._id || "";
+  return extractStoreVendorMappings(data).filter((mapping) => {
+    const storeValue = mapping.storeId || mapping.store_id || mapping.storeUUID || mapping.store_uuid || mapping.store?.id || mapping.store?._id || mapping.store;
+    const mappedStoreId = storeValue && typeof storeValue === "object" ? storeValue.id || storeValue._id || storeValue.storeId || storeValue.store_id : storeValue;
+    return !mappedStoreId || String(mappedStoreId) === String(storeId);
+  }).map((mapping) => {
+    const nestedVendor = mapping.vendor || mapping.vendorDetails || mapping.vendor_details || mapping.vendorInfo || mapping.vendor_info;
+    const vendor = nestedVendor && typeof nestedVendor === "object" ? nestedVendor : mapping;
+    const vendorIdValue = mapping.vendorId || mapping.vendor_id || mapping.vendorUUID || mapping.vendor_uuid || (typeof nestedVendor === "string" ? nestedVendor : "") || vendor.id || vendor._id || "";
+    const vendorId = typeof vendorIdValue === "object" ? vendorIdValue.id || vendorIdValue._id || vendorIdValue.vendorId || vendorIdValue.vendor_id || "" : vendorIdValue;
+    const mappingId = mapping.mappingId || mapping.mappingID || mapping.mapping_id || mapping.mapping_uuid || mapping.mappingUUID || mapping.storeVendorMappingId || mapping.storeVendorMappingUuid || mapping.store_vendor_mapping_id || mapping.store_vendor_mapping_uuid || mapping.storeVendorMapId || mapping.store_vendor_map_id || mapping.vendorMappingId || mapping.vendor_mapping_id || mapping.storeVendorId || mapping.store_vendor_id || mapping.assignmentId || mapping.assignment_id || mapping.id || mapping._id || "";
     return normalizeVendor({
       ...vendor,
       id: vendorId,
       vendorId,
-      mappingId: mapping.mappingId || mapping.mapping_id || mapping.id || "",
+      mappingId,
     });
   }).filter((vendor) => vendor.id);
 }
@@ -854,15 +869,19 @@ export async function addStoreVendors(storeId, vendorIds, { token, signal } = {}
   if (!Array.isArray(vendorIds) || !vendorIds.length) throw new Error("Select at least one vendor.");
   const created = [];
   for (const vendorId of vendorIds) {
-    created.push(await request(endpoints.storeVendorMappings, {
-      method: "POST", token, signal, body: JSON.stringify({ store_id: storeId, vendor_id: vendorId }),
-    }));
+    try {
+      created.push(await request(endpoints.storeVendorMappings, {
+        method: "POST", token, signal, body: JSON.stringify({ store_id: storeId, vendor_id: vendorId }),
+      }));
+    } catch (error) {
+      if (!/(already|duplicate|exists|mapped)/i.test(String(error?.message || ""))) throw error;
+    }
   }
   return created;
 }
 
 export async function unmapStoreVendor(mappingId, { token, signal } = {}) {
-  if (!mappingId) throw new Error("Store vendor mapping ID is required.");
+  if (!mappingId) throw new Error("The store-vendor API response did not include a mapping ID, so this assignment cannot be removed.");
   return request(`${endpoints.storeVendorMappings}/${encodeURIComponent(mappingId)}`, { method: "DELETE", token, signal });
 }
 
