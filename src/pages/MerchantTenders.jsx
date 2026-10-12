@@ -1,3 +1,4 @@
+import { pendingStoreRead } from "../api/http";
 import { useEffect, useRef, useState } from "react";
 import "../styles/merchant-tenders.css";
 import { tendorsApi } from "../api/tendors";
@@ -143,7 +144,7 @@ export default function MerchantTenders({
       setMasterError("");
 
       try {
-        const response = await tendorsApi.getAll();
+        const response = await pendingStoreRead("tendors", () => tendorsApi.getAll());
 
         if (!cancelled) {
           setMasterTenders(tendorsFrom(response));
@@ -178,7 +179,7 @@ export default function MerchantTenders({
       setAssignmentError("");
 
       try {
-        const response = await tendorsApi.getMerchantTendors(merchantId);
+        const response = await pendingStoreRead(`merchant-tendors:${merchantId}`, () => tendorsApi.getMerchantTendors(merchantId));
 
         if (!cancelled) {
           setIds(assignedIdsFrom(response));
@@ -270,7 +271,7 @@ export default function MerchantTenders({
     setSaveError("");
 
     try {
-      const response = await tendorsApi.getAll();
+      const response = await pendingStoreRead("tendors", () => tendorsApi.getAll());
 
       console.log("TENDORS API RESPONSE:", response);
 
