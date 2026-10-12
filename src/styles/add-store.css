@@ -502,6 +502,15 @@
   font-size: 10px;
 }
 
+.sf-root .sf-search:focus-within {
+  border-color: #aeb7ff;
+  box-shadow: 0 0 0 2px rgba(104, 78, 227, 0.06);
+}
+
+.sf-root .sf-search input:focus-visible {
+  outline: none;
+}
+
 .sf-four-cols {
   grid-template-columns: repeat(4, minmax(0, 1fr));
 }
@@ -531,6 +540,11 @@
   color: #98a2b6;
   font-size: 10px;
   font-weight: 500;
+}
+
+.sf-field > .pch-filter-dropdown,
+.sf-table .pch-filter-dropdown {
+  width: 100%;
 }
 
 .sf-field input,
@@ -1020,14 +1034,16 @@
 }
 
 .sf-copy-permissions select {
-  min-width: 120px;
-  height: 31px;
-  padding: 0 34px 0 7px;
-  border: 1px solid #e0e5ee;
-  border-radius: 5px;
-  background: white;
-  color: #53617b;
-  font-size: 9px;
+  width: 160px;
+  min-width: 160px;
+  height: 40px;
+  padding: 0 32px 0 11px;
+  border: 1px solid #d9e6f4;
+  border-radius: 7px;
+  background: #fff;
+  color: #294a76;
+  font-size: 12px;
+  font-weight: 400;
   appearance: none;
   -webkit-appearance: none;
   -moz-appearance: none;
@@ -1185,7 +1201,8 @@
 .sf-search {
   display: flex;
   min-width: 185px;
-  height: 34px;
+  height: 40px;
+  min-height: 40px;
   align-items: center;
   gap: 7px;
   padding: 0 9px;
@@ -1534,7 +1551,11 @@
 
 .sf-employee-tools .sf-field select {
   width: 125px;
-  height: 34px;
+  height: 40px;
+}
+
+.sf-employee-tools .sf-field > .pch-filter-dropdown {
+  width: 125px;
 }
 
 .sf-employees-table {
@@ -1833,7 +1854,7 @@
 .sf-sidebar nav strong { display: block; font-size: 12px; }
 .sf-sidebar nav small { display: block; margin-top: 3px; color: #8994aa; font-size: 10px; line-height: 1.25; }
 .sf-sidebar-foot { margin-top: auto; padding: 20px 10px 0; color: #98a2b5; font-size: 11px; }
-.sf-main { min-width: 0; padding: 30px clamp(18px, 3vw, 42px) 26px; }
+.sf-main { min-width: 0; padding: 24px; }
 .sf-heading-row { display: flex; justify-content: space-between; align-items: flex-end; gap: 22px; margin-bottom: 23px; }
 .sf-eyebrow { margin-bottom: 5px; color:#5143bc; }
 .sf-heading-row h1 { margin: 0; color: var(--sf-navy); font-size: 26px; line-height: 1.2; letter-spacing: -.035em; }
@@ -2133,7 +2154,7 @@
   }
 
   .sf-main {
-    padding: 22px 16px;
+    padding: 16px 12px;
   }
 }
 
@@ -2216,6 +2237,10 @@
   }
 
   .sf-search {
+    width: 100%;
+  }
+
+  .sf-employee-tools .sf-field > .pch-filter-dropdown {
     width: 100%;
   }
 

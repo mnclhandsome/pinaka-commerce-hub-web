@@ -1,4 +1,6 @@
 import { useMemo, useRef, useState } from "react";
+import FilterDropdown from "../components/FilterDropdown";
+import Pagination from "../components/Pagination";
 import "../styles/store-shifts.css";
 
 const SHIFT_RECORDS = [
@@ -52,7 +54,6 @@ export default function StoreShifts({ store }) {
     && (!filters.closedBy || row.closedBy === filters.closedBy)
     && (!filters.device || row.openDevice === filters.device || row.closeDevice === filters.device),
   ), [filters, searchQuery]);
-  const pages = Math.max(1, Math.ceil(filtered.length / pageSize));
   const visible = filtered.slice((page - 1) * pageSize, page * pageSize);
   const rangeLabel = filters.from && filters.to
     ? `${dateLabel(filters.from)} - ${dateLabel(filters.to)}`
@@ -102,11 +103,11 @@ export default function StoreShifts({ store }) {
 
     <div className="sm-filter-card">
       <label className="sm-search-control"><i className="bi bi-search" aria-hidden="true" /><span className="sr-only">Search shifts</span><input aria-label="Search shifts" placeholder="Search shifts..." value={searchQuery} onChange={(event) => { setSearchQuery(event.target.value); setPage(1); }} /></label>
-      <select aria-label="Filter by date" value={datePreset} onChange={(event) => chooseDatePreset(event.target.value)}><option value="any">Any Date</option><option value="today">Today</option><option value="week">This Week</option><option value="month">This Month</option><option value="custom">Custom Date Range</option></select>
-      <select aria-label="Filter by shift status" value={draft.status} onChange={(event) => updateDraft("status", event.target.value)}><option value="">All Shift Statuses</option><option value="open">Open</option><option value="closed">Closed</option></select>
-      <select aria-label="Filter by started by" value={draft.startedBy} onChange={(event) => updateDraft("startedBy", event.target.value)}><option value="">All Started By</option>{employees.map((employee) => <option key={employee}>{employee}</option>)}</select>
-      <select aria-label="Filter by closed by" value={draft.closedBy} onChange={(event) => updateDraft("closedBy", event.target.value)}><option value="">All Closed By</option>{employees.map((employee) => <option key={employee}>{employee}</option>)}</select>
-      <select aria-label="Filter by device" value={draft.device} onChange={(event) => updateDraft("device", event.target.value)}><option value="">All Devices</option>{devices.map((device) => <option key={device}>{device}</option>)}</select>
+      <FilterDropdown aria-label="Filter by date" value={datePreset} onChange={(event) => chooseDatePreset(event.target.value)}><option value="any">Any Date</option><option value="today">Today</option><option value="week">This Week</option><option value="month">This Month</option><option value="custom">Custom Date Range</option></FilterDropdown>
+      <FilterDropdown aria-label="Filter by shift status" value={draft.status} onChange={(event) => updateDraft("status", event.target.value)}><option value="">All Shift Statuses</option><option value="open">Open</option><option value="closed">Closed</option></FilterDropdown>
+      <FilterDropdown aria-label="Filter by started by" value={draft.startedBy} onChange={(event) => updateDraft("startedBy", event.target.value)}><option value="">All Started By</option>{employees.map((employee) => <option key={employee}>{employee}</option>)}</FilterDropdown>
+      <FilterDropdown aria-label="Filter by closed by" value={draft.closedBy} onChange={(event) => updateDraft("closedBy", event.target.value)}><option value="">All Closed By</option>{employees.map((employee) => <option key={employee}>{employee}</option>)}</FilterDropdown>
+      <FilterDropdown aria-label="Filter by device" value={draft.device} onChange={(event) => updateDraft("device", event.target.value)}><option value="">All Devices</option>{devices.map((device) => <option key={device}>{device}</option>)}</FilterDropdown>
       <button type="button" className="sm-reset-button" onClick={reset}><i className="bi bi-arrow-counterclockwise" aria-hidden="true" /> Reset</button>
     </div>
 
@@ -125,7 +126,17 @@ export default function StoreShifts({ store }) {
           {!visible.length && <tr><td colSpan={14} className="sm-empty">No shift records match these filters.</td></tr>}
         </tbody>
       </table></div>
-      <footer className="sm-pagination"><span>Items per page</span><select aria-label="Items per page" value={pageSize} onChange={(event) => { setPageSize(Number(event.target.value)); setPage(1); }}><option value={10}>10</option><option value={25}>25</option><option value={50}>50</option></select><span>{filtered.length ? `${(page - 1) * pageSize + 1}–${Math.min(page * pageSize, filtered.length)} of ${filtered.length}` : "0 of 0"}</span><button type="button" aria-label="Previous page" disabled={page <= 1} onClick={() => setPage((value) => value - 1)}>‹</button><button type="button" className="sm-page-current">{page}</button><button type="button" aria-label="Next page" disabled={page >= pages} onClick={() => setPage((value) => value + 1)}>›</button></footer>
+      <Pagination
+        currentPage={page}
+        totalPages={Math.max(1, Math.ceil(filtered.length / pageSize))}
+        totalItems={filtered.length}
+        pageSize={pageSize}
+        onPageChange={setPage}
+        onPageSizeChange={(size) => { setPageSize(size); setPage(1); }}
+        itemLabel="items"
+        showWhenEmpty
+        pageSizeOptions={[10, 25, 50]}
+      />
     </section>
   </section>;
 }

@@ -370,7 +370,7 @@ export default function MerchantStores({
                 onClick={handleReset}
               >
                 <i className="bi bi-arrow-counterclockwise" />
-                Reset
+                Clear
               </button>
 
             </div>
@@ -551,22 +551,32 @@ export default function MerchantStores({
 
                 <button
                   type="button"
+                  className="pagination-arrow"
                   disabled={currentPage === 1}
                   onClick={() =>
                     setPage((value) =>
                       Math.max(1, value - 1)
                     )
                   }
+                  aria-label="Previous page"
                 >
-                  ‹
+                  <i className="bi bi-chevron-left" aria-hidden="true" />
                 </button>
 
-                <span>
-                  {currentPage} / {totalPages}
-                </span>
+                <div className="pagination-pages">
+                  <button
+                    type="button"
+                    className="pagination-page active"
+                    aria-current="page"
+                    onClick={() => setPage(currentPage)}
+                  >
+                    {currentPage}
+                  </button>
+                </div>
 
                 <button
                   type="button"
+                  className="pagination-arrow"
                   disabled={
                     currentPage === totalPages
                   }
@@ -578,8 +588,9 @@ export default function MerchantStores({
                       )
                     )
                   }
+                  aria-label="Next page"
                 >
-                  ›
+                  <i className="bi bi-chevron-right" aria-hidden="true" />
                 </button>
 
               </div>
@@ -620,5 +631,3 @@ export default function MerchantStores({
     </div>
   );
 }
-
-

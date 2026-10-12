@@ -13,9 +13,16 @@
 
 .page-content.store-workspace-page {
   padding: 0;
+  flex: 1;
+  min-width: 0;
   min-height: 0;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
+}
+
+.store-workspace-page > .store-workspace-topbar {
+  flex-shrink: 0;
 }
 
 
@@ -51,8 +58,11 @@
 .store-workspace-page .store-workspace {
   display: grid;
   grid-template-columns: 270px minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
   flex: 1;
+  min-width: 0;
   min-height: 0;
+  overflow: hidden;
 }
 
 
@@ -76,6 +86,13 @@
   min-width: 0;
   min-height: 0;
   overflow-y: auto;
+  align-self: stretch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.store-workspace-page .store-subnav::-webkit-scrollbar {
+  display: none;
 }
 
 .store-workspace-page .store-subnav-group {
@@ -2106,13 +2123,33 @@
 .store-section-editor .sf-employee-summary strong { font-size: 18px; font-weight: 600; }
 .store-section-editor .sf-plan-summary > div:not(:first-child) { flex-direction: column; align-items: flex-start; justify-content: center; gap: 2px; }
 .store-section-editor .sf-feature-tools,
-.store-section-editor .sf-employee-tools { padding: 16px 20px; gap: 12px; flex-wrap: wrap; }
+.store-section-editor .sf-employee-tools {
+  align-items: center;
+  padding: 16px 20px;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.store-section-editor .sf-feature-tools { justify-content: space-between; }
+.store-section-editor .sf-employee-tools { justify-content: flex-end; }
 .store-section-editor .sf-tabs { gap: 8px; }
+.store-section-editor .sf-feature-tools .sf-tabs { flex: 1 1 auto; min-width: 0; }
 .store-section-editor .sf-tabs button { min-height: 36px; padding: 8px 12px; border-radius: 7px; color: var(--store-muted); font-size: 13px; line-height: 1.4; }
 .store-section-editor .sf-tabs button.active { color: var(--store-accent); border-color: #d4cef3; background: var(--store-accent-soft); font-weight: 600; }
-.store-section-editor .sf-search { min-width: 220px; height: 40px; padding: 0 12px; border-radius: 8px; background: #fff; }
+.store-section-editor .sf-search {
+  box-sizing: border-box;
+  flex: 0 1 280px;
+  width: 280px;
+  min-width: 220px;
+  height: 40px;
+  min-height: 40px;
+  padding: 0 12px;
+  border-radius: 8px;
+  background: #fff;
+}
 .store-section-editor .sf-search input { font-size: 14px; background: transparent; }
 .store-section-editor .sf-search input::placeholder { color: #78869b; }
+.store-section-editor .sf-employee-tools .sf-field { margin: 0; }
+.store-section-editor .sf-employee-tools .sf-field select { width: 125px; height: 40px; }
 .store-section-editor .sf-table { font-size: 13px; }
 .store-section-editor .sf-table th { height: 44px; padding: 0 14px; font-size: 12px; font-weight: 600; line-height: 18px; color: #58677e; background: #f1f3fd; }
 .store-section-editor .sf-table td { height: 52px; padding: 10px 14px; font-size: 13px; line-height: 18px; color: var(--store-text); }
@@ -2155,6 +2192,8 @@
   .store-section-editor .sf-feature-tools,
   .store-section-editor .sf-employee-tools { padding: 14px; }
   .store-section-editor .sf-search { width: 100%; min-width: 0; }
+  .store-section-editor .sf-employee-tools .sf-field { width: 100%; }
+  .store-section-editor .sf-employee-tools .sf-field select { width: 100%; }
   .store-section-editor .sf-table { min-width: 640px; }
   .store-section-editor .sf-employees-table { min-width: 1080px; }
 }
@@ -2983,11 +3022,10 @@
   cursor: not-allowed;
 }
 
-.store-workspace-page .store-section-editor .sf-feature-tools > .sf-search {
+.store-workspace-page .store-section-editor .sf-search {
   box-sizing: border-box;
-  min-width: 220px;
-  height: 35px;
-  min-height: 35px;
+  height: 40px;
+  min-height: 40px;
   padding: 0 10px;
   gap: 7px;
   border: 1px solid #e1e4eb;
@@ -2995,9 +3033,9 @@
   background: #fff;
 }
 
-.store-workspace-page .store-section-editor .sf-feature-tools > .sf-search > input,
-.store-workspace-page .store-section-editor .sf-feature-tools > .sf-search > input:focus,
-.store-workspace-page .store-section-editor .sf-feature-tools > .sf-search > input:focus-visible {
+.store-workspace-page .store-section-editor .sf-search > input,
+.store-workspace-page .store-section-editor .sf-search > input:focus,
+.store-workspace-page .store-section-editor .sf-search > input:focus-visible {
   box-sizing: border-box;
   width: 100%;
   min-width: 0;
@@ -3010,7 +3048,7 @@
   box-shadow: none;
 }
 
-.store-workspace-page .store-section-editor .sf-feature-tools > .sf-search:focus-within {
+.store-workspace-page .store-section-editor .sf-search:focus-within {
   border-color: #c8c1f2;
   outline: none;
   box-shadow: 0 0 0 2px rgba(81, 67, 188, 0.08);

@@ -862,7 +862,8 @@ export default function MerchantVendors({
                             });
                         }}
                     >
-                        ↺ Reset
+                        <i className="bi bi-arrow-counterclockwise" aria-hidden="true" />
+                        Clear
                     </button>
 
                 </div>
@@ -1011,47 +1012,52 @@ export default function MerchantVendors({
                                 of {rows.length} entries
                             </span>
 
-                            {pages > 1 && (
-                                <div className="mv-pagination">
+                            <div className="mv-pagination">
 
+                                <button
+                                    type="button"
+                                    className="pagination-arrow"
+                                    disabled={
+                                        current === 1
+                                    }
+                                    onClick={() =>
+                                        setPage(
+                                            current - 1
+                                        )
+                                    }
+                                    aria-label="Previous page"
+                                >
+                                    <i className="bi bi-chevron-left" aria-hidden="true" />
+                                </button>
+
+                                <div className="pagination-pages">
                                     <button
                                         type="button"
-                                        className="mv-page"
-                                        disabled={
-                                            current === 1
-                                        }
-                                        onClick={() =>
-                                            setPage(
-                                                current - 1
-                                            )
-                                        }
-                                        aria-label="Previous page"
+                                        className="pagination-page active"
+                                        aria-current="page"
+                                        onClick={() => setPage(current)}
                                     >
-                                        ‹
+                                        {current}
                                     </button>
-
-                                    <span className="mv-page-number">
-                                        {current} / {pages}
-                                    </span>
-
-                                    <button
-                                        type="button"
-                                        className="mv-page"
-                                        disabled={
-                                            current === pages
-                                        }
-                                        onClick={() =>
-                                            setPage(
-                                                current + 1
-                                            )
-                                        }
-                                        aria-label="Next page"
-                                    >
-                                        ›
-                                    </button>
-
                                 </div>
-                            )}
+
+                                <button
+                                    type="button"
+                                    className="pagination-arrow"
+                                    disabled={
+                                        current === pages
+                                    }
+                                    onClick={() =>
+                                        setPage(
+                                            current + 1
+                                        )
+                                    }
+                                    aria-label="Next page"
+                                >
+                                    <i className="bi bi-chevron-right" aria-hidden="true" />
+                                </button>
+
+                            </div>
 
                         </footer>
                     </>

@@ -237,6 +237,11 @@
     font-weight: 500;
 }
 
+.store-table-datetime strong {
+    color: #10264d;
+    font-weight: 600;
+}
+
 .store-table-details small {
     color: #7a8498;
     font-size: 12px;
