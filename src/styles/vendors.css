@@ -2299,3 +2299,39 @@
 .vendors-actions button.vendors-delete-action:hover:not(:disabled) i {
   color: #c93443 !important;
 }
+
+
+/* =========================================================
+   VENDORS PAGINATION — ALIGN WITH TABLE WIDTH
+   ========================================================= */
+
+.vendors-page > .vendors-list-card > .pagination-container {
+  width: calc(100% - 24px);
+  max-width: calc(100% - 24px);
+  margin: 0 12px;
+  padding: 16px 8px;
+  box-sizing: border-box;
+  border-top: 0;
+}
+
+/* Keep pagination aligned on mobile */
+@media (max-width: 700px) {
+  .vendors-page > .vendors-list-card > .pagination-container {
+    width: calc(100% - 16px);
+    max-width: calc(100% - 16px);
+    margin-right: 8px;
+    margin-left: 8px;
+    padding: 12px 4px;
+  }
+}
+
+/* Prevent pagination content from breaking the layout */
+.vendors-page .pagination-container {
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.vendors-page .pagination-container > * {
+  min-width: 0;
+}
+

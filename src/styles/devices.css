@@ -306,9 +306,37 @@
   box-sizing: border-box;
 }
 
+
+/* =========================================================
+   DEVICES PAGINATION — ALIGN WITH TABLE WIDTH
+========================================================= */
+
 .devices-list-card > .pagination-container {
+  width: calc(100% - 24px);
+  max-width: calc(100% - 24px);
+  margin: 0 12px;
+  padding: 16px 8px;
+  box-sizing: border-box;
   border-top: 0;
+  min-width: 0;
 }
+
+.devices-list-card > .pagination-container > * {
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+/* Mobile — match the devices table wrapper */
+@media (max-width: 600px) {
+  .devices-list-card > .pagination-container {
+    width: calc(100% - 20px);
+    max-width: calc(100% - 20px);
+    margin-right: 10px;
+    margin-left: 10px;
+    padding: 12px 4px;
+  }
+}
+
 
 
 /* =========================================================

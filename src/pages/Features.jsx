@@ -649,23 +649,23 @@ export default function Features() {
               <i className="bi bi-trash" />
             </div>
 
-            <h2 id="delete-feature-title">Delete Feature?</h2>
+            <h2 id="delete-feature-title">Deactivate Feature?</h2>
 
             <p>
-              Are you sure you want to delete <strong>{deleteTarget.name}</strong>?
+             Are you sure you want to deactivate{" "}
+              <strong>{deleteTarget.name}</strong>?
             </p>
 
             <p className="features-delete-final-warning">
-              This action cannot be undone.
-            </p>
-
+             The record will remain visible and can be activated again later.
+             </p>
             <div className="features-delete-actions">
               <button
                 type="button"
                 className="features-delete-keep-button"
                 onClick={() => setDeleteTarget(null)}
               >
-                Cancel
+                No, Keep it
               </button>
 
               <button
@@ -673,7 +673,7 @@ export default function Features() {
                 className="features-delete-confirm-button"
                 onClick={confirmDeleteFeature}
               >
-                Delete
+                Yes, Deactivate
               </button>
             </div>
           </div>

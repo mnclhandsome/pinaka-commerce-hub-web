@@ -754,7 +754,7 @@ useEffect(() => {
                 onClick={cancelDeleteTender}
                 disabled={deleting}
               >
-                Cancel
+                No, Keep it
               </button>
 
               <button

@@ -467,13 +467,6 @@ const paginatedTemplates = useMemo(() => {
                   className={isDuplicateName ? "role-input-invalid" : ""}
                 />
 </div>
-              {/* NEW: Show duplicate name warning */}
-<small
-                className={isDuplicateName ? "role-field-error" : ""}
-                style={{ color: isDuplicateName ? "#dc2626" : "inherit" }}
->
-                {isDuplicateName ? "This role template name already exists." : ""}
-</small>
 </label>
  
 
@@ -816,10 +809,6 @@ const paginatedTemplates = useMemo(() => {
               ?
             </p>
  
-            <p>
-              This role template will be set to <strong>Inactive</strong>.
-            </p>
- 
             <p>This action cannot be undone.</p>
 
             {deleteError && (
@@ -839,7 +828,7 @@ const paginatedTemplates = useMemo(() => {
                 onClick={closeDeletePopup}
                 disabled={saving}
               >
-                Cancel
+                No,keep it.
               </button>
  
               <button

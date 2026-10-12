@@ -201,7 +201,7 @@
 
 .store-type-details-field input,
 .store-type-details-field select {
-  height: 34px;
+  height: 40px;
   padding: 0 10px;
 }
 
@@ -224,8 +224,8 @@
 }
 
 .store-type-details-description textarea {
-  height: 42px;
-  min-height: 42px;
+  height: 40px;
+  min-height: 40px;
   resize: none;
 }
 

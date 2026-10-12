@@ -1424,6 +1424,7 @@ useEffect(() => {
                   <div className="plan-table-actions">
                     <button
                       type="button"
+                      className="plan-edit-icon"
                       title="Edit plan"
                       onClick={(e) => {
                         e.stopPropagation();
@@ -1478,12 +1479,14 @@ useEffect(() => {
               <i className="bi bi-trash3" />
             </div>
 
-            <h2>Delete Plan?</h2>
+            <h2>Deactivate Plan?</h2>
 
             <p>
-              Are you sure you want to delete{" "}
-              <strong>{deleteTarget.name}</strong>? This action cannot be
-              undone.
+               Are you sure you want to deactivate{" "}
+              <strong>{deleteTarget.name}</strong>? <p className="delete-final-warning">
+
+              The record will remain visible and can be activated again later.
+            </p>
             </p>
 
             <div className="delete-plan-actions">
@@ -1500,8 +1503,9 @@ useEffect(() => {
                 className="delete-plan-confirm-button"
                 disabled={deletingPlan}
                 onClick={confirmDelete}
+
               >
-                {deletingPlan ? "Deleting..." : "Yes, Delete"}
+                {deletingPlan ? "Deleting..." : "Yes, Deactivate"}
               </button>
             </div>
           </div>

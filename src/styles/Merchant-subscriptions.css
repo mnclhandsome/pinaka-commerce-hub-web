@@ -5558,7 +5558,12 @@
 }
 
 .merchant-subscriptions-page > .subscription-table-card > .pagination-container {
-  border-top: 0;
+   width: calc(100% - 24px);
+    max-width: calc(100% - 24px);
+    margin: 0 12px;
+    padding: 16px 8px;
+    box-sizing: border-box;
+    border-top: 0;
 }
 
 :is(.merchant-subscriptions-page, .subscription-flow-page, .subscription-page) .subscription-filter-bar {
@@ -5572,4 +5577,12 @@
     margin-right: 10px;
     margin-left: 10px;
   }
+
+   .merchant-subscriptions-page > .subscription-table-card > .pagination-container {
+        width: calc(100% - 20px);
+        max-width: calc(100% - 20px);
+        margin-right: 10px;
+        margin-left: 10px;
+        padding: 12px 0;
+    }
 }

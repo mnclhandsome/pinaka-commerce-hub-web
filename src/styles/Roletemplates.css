@@ -2308,32 +2308,6 @@
 }
 
 
-/* Final Role Template action colors */
-.role-table .role-actions .role-edit-action {
-  color: #1677e8 !important;
-  background: #f2f7ff !important;
-  border: 1px solid #d8e8ff !important;
-}
-
-.role-table .role-actions .role-edit-action:hover {
-  color: #0b63c7 !important;
-  background: #e8f2ff !important;
-  border-color: #bcd9ff !important;
-}
-
-.role-table .role-actions .role-delete-action {
-  color: #e34d5b !important;
-  background: #fff4f4 !important;
-  border: 1px solid #f8d9dc !important;
-}
-
-.role-table .role-actions .role-delete-action:hover {
-  color: #c93443 !important;
-  background: #ffe9eb !important;
-  border-color: #f2bfc5 !important;
-}
-
-
 /* =========================================================
    FINAL EQUAL TABLE COLUMN RULE
    JSX uses .role-equal-col on every table column/header/cell.
@@ -2981,34 +2955,38 @@
 
 .role-table .role-actions .role-edit-action,
 .role-table .role-actions .role-delete-action {
-  width: 32px !important;
-  min-width: 32px !important;
-  height: 32px !important;
-  margin: 0 !important;
-  padding: 0 !important;
+  width: 35px;
+  min-width: 35px;
+  height: 35px;
+  margin: 0 ;
+  padding: 0 ;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid #edf0f5 !important;
-  border-radius: 7px !important;
-  background: #f8faff !important;
+  border: 1px solid #edf0f5;
+  border-radius: 7px;
+  background: #f8faff;
   box-shadow: none !important;
   cursor: pointer;
 }
 
-.role-table .role-actions .role-edit-action {
-  color: #5367f0 !important;
+.role-table .role-actions .role-edit-action:hover {
+  color: #0b63c7 !important;
+  background: #e8f2ff !important;
+  border-color: #bcd9ff !important;
 }
 
 .role-table .role-actions .role-delete-action {
   margin-left: 8px !important;
   color: #d9485f !important;
+  
 }
 
-.role-table .role-actions .role-edit-action:hover,
+
 .role-table .role-actions .role-delete-action:hover {
-  background: #f0f3fb !important;
-  border-color: #edf0f5 !important;
+ 
+  border-color: #ffd8e1 !important;
+  background: #fff0f3 !important;
 }
 
 .role-table .role-actions .role-edit-action i,
