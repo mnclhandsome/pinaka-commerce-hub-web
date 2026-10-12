@@ -417,12 +417,12 @@
 
 .fp-table th:nth-child(1),
 .fp-table td:nth-child(1) {
-  width: 18%;
+  width: 12%;
 }
 
 .fp-table th:nth-child(2),
 .fp-table td:nth-child(2) {
-  width: 18%;
+  width: 12%;
 }
 
 .fp-table th:nth-child(3),
@@ -432,14 +432,28 @@
 
 .fp-table th:nth-child(4),
 .fp-table td:nth-child(4) {
-  width: 44%;
+  width: 18%;
 }
 
 .fp-table th:nth-child(5),
 .fp-table td:nth-child(5) {
-  width: 8%;
+  width: 10%;
 }
 
+.fp-table th:nth-child(6),
+.fp-table td:nth-child(6) {
+  width: 12%;
+}
+
+.fp-table th:nth-child(7),
+.fp-table td:nth-child(7) {
+  width: 12%;
+}
+
+.fp-table th:nth-child(8),
+.fp-table td:nth-child(8) {
+  width: 12%;
+}
 
 /* =========================================================
    TABLE HEADER

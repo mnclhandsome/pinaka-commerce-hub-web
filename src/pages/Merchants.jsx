@@ -29,6 +29,7 @@ import { getStoreDeviceMappings } from "../api/storeDeviceMappings";
 import Pagination from "../components/Pagination";
 import ListActions from "../components/ListActions";
 import FiltersBar from "../components/FiltersBar";
+import DeleteConfirmationDialog from "../components/DeleteConfirmationDialog";
 import "../styles/merchants.css";
 import "../styles/merchant-details.css";
 import "../styles/global.css";
@@ -70,6 +71,11 @@ function MerchantReadOnly({ merchantId, merchant, onBack, onSaveEmployee, onSave
     setApiEmployees(old=>[employee,...(Array.isArray(old)?old:[]).filter(item=>String(item.id || item.employeeId)!==String(employee.id))]);
     return result;
   }
+  
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [merchantToDelete, setMerchantToDelete] = useState(null);
+  const [deleteBusy, setDeleteBusy] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
   const [addingDevice, setAddingDevice] = useState(false);
   const [createdDevices,setCreatedDevices]=useState([]);
   const [apiDevices, setApiDevices] = useState([]);

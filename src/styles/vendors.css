@@ -625,8 +625,14 @@
 }
 
 .vendors-page > .vendors-list-card > .pagination-container {
+   width: calc(100% - 24px);
+  max-width: calc(100% - 24px);
+  margin: 0 12px;
+  padding: 16px 8px;
+  box-sizing: border-box;
   border-top: 0;
 }
+
 
 .vendors-pagination {
   min-height: 50px;
@@ -1237,6 +1243,23 @@
   .vendors-save-button {
     width: 100%;
   }
+
+  .vendors-page > .vendors-list-card > .pagination-container {
+    width: calc(100% - 16px);
+    max-width: calc(100% - 16px);
+    margin-right: 8px;
+    margin-left: 8px;
+    padding: 12px 4px;
+  }
+
+  .vendors-page .pagination-container {
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.vendors-page .pagination-container > * {
+  min-width: 0;
+}
 }
 
 
