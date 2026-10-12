@@ -24,12 +24,9 @@ import {
   storeRoleTemplatesApi,
   readStoreRoleTemplates,
 } from "../api/storeRoleTemplatesApi";
-<<<<<<< HEAD
 import FilterDropdown from "../components/FilterDropdown";
 import { api, ApiError } from "../api/http";
-=======
 import { api, ApiError, pendingStoreRead } from "../api/http";
->>>>>>> 41ecfa4fcfa50b6f30864d48acb860aa2c3125c5
 import { endpoints } from "../api/endpoints";
 import {
   getActiveSubscriptions,
