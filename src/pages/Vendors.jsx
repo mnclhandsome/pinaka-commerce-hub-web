@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState, } from "react";
 import Pagination from "../components/Pagination";
+import FiltersBar from "../components/FiltersBar";
 import { useLocationOptions } from "../data/useLocationOptions";
 import { getVendors, createVendor, updateVendor, deleteVendor as deleteVendorApi, } from "../api/vendors";
 
@@ -161,6 +162,15 @@ function VendorAuditCell({ value }) {
   );
 }
 
+function VendorStatCard({ icon, title, value, variant }) {
+  return (
+    <div className="vendors-stat-card">
+      <div className={`vendors-stat-icon ${variant}`}><i className={`bi ${icon}`} aria-hidden="true" /></div>
+      <div className="vendors-stat-content"><div className="vendors-stat-title">{title}</div><div className="vendors-stat-value">{value}</div></div>
+    </div>
+  );
+}
+
 /*
 |--------------------------------------------------------------------------
 | COMPONENT
@@ -178,6 +188,7 @@ export default function Vendors({
 }) {
   const [vendors, setVendors] =
     useState([]);
+  const [showForm, setShowForm] = useState(false);
 
   const [form, setForm] =
     useState(emptyForm);
@@ -464,6 +475,7 @@ export default function Vendors({
       ...emptyForm,
     });
     setError("");
+    setShowForm(false);
   }
 
   /*
@@ -789,6 +801,7 @@ export default function Vendors({
     };
 
     setViewingId(vendor.id);
+    setShowForm(true);
     setEditingId(null);
     setForm(viewForm);
     setOriginalForm(viewForm);
@@ -865,6 +878,7 @@ export default function Vendors({
     setEditingId(
       vendor.id
     );
+    setShowForm(true);
     setViewingId(null);
 
     setForm(editForm);
@@ -1432,7 +1446,53 @@ export default function Vendors({
       </form>
   );
 
+  const activeVendorCount = vendors.filter((vendor) => String(vendor.status || "").toLowerCase() === "active").length;
+  const supplierCount = vendors.filter((vendor) => getVendorTypeLabel(vendor.vendorType) === "Supplier").length;
+  const organizerCount = vendors.filter((vendor) => getVendorTypeLabel(vendor.vendorType) === "Organizer").length;
+
+  function exportVendors() {
+    const columns = ["Vendor Code", "Vendor Name", "Address", "Vendor Type", "Contact Person", "Phone Number", "Email Address", "Products Supplied", "Status", "Created At", "Updated At"];
+    const rows = filteredVendors.map((vendor) => [vendor.code, vendor.name, vendor.addressLine1, getVendorTypeLabel(vendor.vendorType), vendor.contactPerson, vendor.phone, vendor.email, vendor.category, vendor.status, vendor.createdTime, vendor.updatedTime]);
+    const csv = [columns, ...rows].map((row) => row.map((value) => `"${String(value ?? "").replace(/"/g, '""')}"`).join(",")).join("\r\n");
+    const url = URL.createObjectURL(new Blob(["\uFEFF", csv], { type: "text/csv;charset=utf-8" }));
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "vendors.csv";
+    link.click();
+    URL.revokeObjectURL(url);
+  }
+
   if (formOnly) return <section className="vendors-page">{error && <div className="vendors-error" role="alert">{error}</div>}{vendorForm}</section>;
+
+  if (showForm) {
+    const formTitle = editingId !== null ? "Edit Vendor" : viewingId !== null ? "View Vendor" : "Add Vendor";
+    return (
+      <section className="vendors-page vendors-create-page">
+        <nav className="vendors-navigation" aria-label="Vendor navigation">
+          <button type="button" className="vendors-back-link" onClick={resetForm}>
+            <i className="bi bi-arrow-left" aria-hidden="true" />
+            Vendors List
+          </button>
+          <span aria-hidden="true">/</span>
+          <strong aria-current="page">{formTitle}</strong>
+        </nav>
+        <div className="vendors-header">
+          <div>
+            <h1>{formTitle}</h1>
+            <p>{viewingId !== null ? "View vendor details and contact information." : "Enter vendor details and contact information."}</p>
+          </div>
+        </div>
+        {error && (
+          <div className="vendors-error" role="alert">
+            <i className="bi bi-exclamation-circle" />
+            <span>{error}</span>
+            <button type="button" onClick={() => setError("")} aria-label="Close error"><i className="bi bi-x" /></button>
+          </div>
+        )}
+        {vendorForm}
+      </section>
+    );
+  }
 
   return (
     <section className="vendors-page">
@@ -1451,6 +1511,17 @@ export default function Vendors({
             Manage vendor details and contact information.
           </p>
         </div>
+        <div className="vendors-header-actions">
+          <button type="button" className="vendors-primary-button" onClick={() => { resetForm(); setShowForm(true); }}><i className="bi bi-plus-lg" /> Add Vendor</button>
+          <button type="button" className="vendors-export-button" onClick={exportVendors}><i className="bi bi-arrow-down" /> Export</button>
+        </div>
+      </div>
+
+      <div className="vendors-stats" aria-label="Vendor summary">
+        <VendorStatCard icon="bi-truck-front-fill" title="Total Vendors" value={vendors.length} variant="purple" />
+        <VendorStatCard icon="bi-check-circle-fill" title="Active Vendors" value={activeVendorCount} variant="green" />
+        <VendorStatCard icon="bi-box-seam-fill" title="Suppliers" value={supplierCount} variant="orange" />
+        <VendorStatCard icon="bi-people-fill" title="Organizers" value={organizerCount} variant="red" />
       </div>
 
       {/* =====================================================
@@ -1481,7 +1552,7 @@ export default function Vendors({
           VENDOR FORM
       ===================================================== */}
 
-      {vendorForm}
+      {showForm && vendorForm}
 
       {/* =====================================================
           VENDORS LIST
@@ -1489,72 +1560,16 @@ export default function Vendors({
 
       <div className="vendors-list-card">
 
-        <div className="vendors-list-toolbar">
-
-          <div>
-            <h2>
-              Vendors List
-            </h2>
-
-            <p>
-              {filteredVendors.length}{" "}
-              vendor
-              {filteredVendors.length ===
-              1
-                ? ""
-                : "s"}{" "}
-              found
-            </p>
-          </div>
-
-          <div className="vendors-filters">
-  {/* SEARCH */}
-  <div className="vendors-search">
-    <i className="bi bi-search" />
-    <input
-      type="text"
-      value={search}
-      onChange={(event) => handleFilterChange(setSearch, event.target.value)}
-      placeholder="Search vendors..."
-      autoComplete="off"
-      data-lpignore="true"
-      data-1p-ignore="true"
-    />
-  </div>
-
-  {/* Vendor Type */}
-  <select
-    value={vendorTypeFilter}
-    onChange={(event) => handleFilterChange(setVendorTypeFilter, event.target.value)}
-  >
-    <option>All Vendor Types</option>
-    <option value="Supplier">Supplier</option>
-    <option value="Organizer">Organizer</option>
-  </select>
-
-  {/* Status */}
-  <select
-    value={statusFilter}
-    onChange={(event) => handleFilterChange(setStatusFilter, event.target.value)}
-  >
-    <option>All Statuses</option>
-    <option value="Active">Active</option>
-    <option value="Inactive">Inactive</option>
-  </select>
-
-  {/* Reset Icon */}
-  <button
-    type="button"
-    className="vendors-reset-button"
-    onClick={clearFilters}
-    title="Reset filters"
-    aria-label="Reset filters"
-  >
-    <i className="bi bi-arrow-counterclockwise" />
-  </button>
-</div>
-
-        </div>
+        <FiltersBar
+          searchValue={search}
+          onSearchChange={(value) => handleFilterChange(setSearch, value)}
+          searchPlaceholder="Search vendors..."
+          filters={[
+            { key: "vendorType", value: vendorTypeFilter, options: ["All Vendor Types", "Supplier", "Organizer"], onChange: (value) => handleFilterChange(setVendorTypeFilter, value) },
+            { key: "status", value: statusFilter, options: ["All Statuses", "Active", "Inactive"], onChange: (value) => handleFilterChange(setStatusFilter, value) },
+          ]}
+          onClear={clearFilters}
+        />
 
         {/* ===================================================
             TABLE

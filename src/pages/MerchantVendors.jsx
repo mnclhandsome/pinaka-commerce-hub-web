@@ -189,7 +189,7 @@ export default function MerchantVendors({
        LOAD MAPPED VENDORS
     ========================================================= */
 
-    async function loadMappedVendors(searchValue = "") {
+    async function loadMappedVendors(searchValue = "", { preserveIdsWhenEmpty = false } = {}) {
         if (!mappingId) {
             setIds([]);
             return;
@@ -199,9 +199,12 @@ export default function MerchantVendors({
         setMappedError("");
 
         try {
-            const mapped = storeScope
-                ? await getMappedStoreVendors(mappingId, { search: searchValue })
-                : await getMappedMerchantVendors(mappingId, { search: searchValue });
+            const [mapped, merchantMaster] = storeScope
+                ? await Promise.all([
+                    getMappedStoreVendors(mappingId, { search: searchValue }),
+                    getMappedMerchantVendors(merchantId).catch(() => []),
+                ])
+                : [await getMappedMerchantVendors(mappingId, { search: searchValue }), []];
 
             const mappedIds = mapped.map(idOf);
 
@@ -213,15 +216,32 @@ export default function MerchantVendors({
                     ])
                 );
 
+                merchantMaster.forEach((vendor) => {
+                    const id = idOf(vendor);
+                    if (id) byId.set(id, { ...byId.get(id), ...vendor });
+                });
+
                 mapped.forEach((vendor) => {
-                    byId.set(idOf(vendor), vendor);
+                    const id = idOf(vendor);
+                    if (!id) return;
+                    const details = byId.get(id) || {};
+                    // Keep full merchant vendor details when the store mapping
+                    // endpoint returns only IDs and mapping metadata.
+                    byId.set(id, {
+                        ...vendor,
+                        ...details,
+                        id,
+                        vendorId: id,
+                        mappingId: vendor.mappingId || details.mappingId || "",
+                    });
                 });
 
                 return Array.from(byId.values());
             });
 
-            setIds(mappedIds);
+            if (!preserveIdsWhenEmpty || mappedIds.length) setIds(mappedIds);
             setPage(1);
+            return mapped;
         } catch (e) {
             console.error(
                 `Failed to load mapped ${entityName} vendors:`,
@@ -232,6 +252,7 @@ export default function MerchantVendors({
                 e?.message ||
                     "Unable to load mapped vendors."
             );
+            return null;
         } finally {
             setMappedLoading(false);
         }
@@ -373,15 +394,29 @@ export default function MerchantVendors({
         setSaveError("");
 
         try {
+            let latestMappedIds = ids;
+            if (storeScope) {
+                const latestMappings = await getMappedStoreVendors(mappingId);
+                latestMappedIds = latestMappings.map(idOf);
+                setIds(latestMappedIds);
+                setMasterVendors((current) => {
+                    const byId = new Map(current.map((vendor) => [idOf(vendor), vendor]));
+                    latestMappings.forEach((vendor) => byId.set(idOf(vendor), vendor));
+                    return Array.from(byId.values());
+                });
+            }
             const vendors = storeScope
-                ? (await getMappedMerchantVendors(merchantId)).filter(vendor => !ids.includes(idOf(vendor)))
+                ? (await getMappedMerchantVendors(merchantId)).filter(vendor => !latestMappedIds.includes(idOf(vendor)))
                 : await getAvailableMerchantVendors(mappingId);
 
-            setMasterVendors(
-                Array.isArray(vendors)
-                    ? vendors
-                    : []
-            );
+            setMasterVendors((current) => {
+                const byId = new Map(current.map((vendor) => [idOf(vendor), vendor]));
+                (Array.isArray(vendors) ? vendors : []).forEach((vendor) => {
+                    const id = idOf(vendor);
+                    if (id) byId.set(id, { ...byId.get(id), ...vendor });
+                });
+                return Array.from(byId.values()).filter((vendor) => idOf(vendor));
+            });
 
             setModal({
                 type: "select",
@@ -462,8 +497,9 @@ export default function MerchantVendors({
             );
 
             if (modal?.type === "remove") {
-                if (storeScope) await unmapStoreVendor(modal.vendor.mappingId);
+                if (storeScope) await unmapStoreVendor(modal.vendor.mappingId, { storeId: mappingId, vendorId: modal.vendor.id });
                 else await unmapMerchantVendor(mappingId, modal.vendor.id);
+                if (storeScope) setIds((current) => current.filter((id) => id !== modal.vendor.id));
             } else if (modal?.type === "select") {
                 if (!addedIds.length) {
                     throw new Error(
@@ -471,11 +507,38 @@ export default function MerchantVendors({
                     );
                 }
 
-                if (storeScope) await addStoreVendors(mappingId, addedIds);
-                else await addMerchantVendors(mappingId, addedIds);
+                if (storeScope) {
+                    let latestIds = ids;
+                    try {
+                        latestIds = (await getMappedStoreVendors(mappingId)).map(idOf);
+                    } catch {
+                        // Continue with the latest IDs already loaded in the screen.
+                    }
+                    const idsToAdd = addedIds.filter((id) => !latestIds.includes(id));
+                    if (idsToAdd.length) {
+                        try {
+                            await addStoreVendors(mappingId, idsToAdd);
+                        } catch (error) {
+                            const message = String(error?.message || "").toLowerCase();
+                            if (!/(already|duplicate|exists|mapped)/.test(message)) throw error;
+                        }
+                    }
+                    const assignedIds = [...new Set([...latestIds, ...addedIds])];
+                    setIds(assignedIds);
+                    setMasterVendors((current) => {
+                        const byId = new Map(current.map((vendor) => [idOf(vendor), vendor]));
+                        addedIds.forEach((id) => {
+                            const selectedVendor = vendors.find((vendor) => vendor.id === id);
+                            if (selectedVendor) byId.set(id, selectedVendor);
+                        });
+                        return Array.from(byId.values());
+                    });
+                } else {
+                    await addMerchantVendors(mappingId, addedIds);
+                }
             }
 
-            await loadMappedVendors();
+            await loadMappedVendors("", { preserveIdsWhenEmpty: storeScope });
 
             setModal(null);
         } catch (e) {
@@ -804,7 +867,7 @@ export default function MerchantVendors({
 
                 </div>
 
-                {loading || mappedLoading ? (
+                {(loading || mappedLoading) && !rows.length ? (
                     <p role="status">
                         Loading vendors…
                     </p>
