@@ -9,6 +9,7 @@ import {
 import { listPlans } from "../api/plans";
 import { useLocationOptions } from "../data/useLocationOptions";
 import { storeTypesApi } from "../api/storeTypes";
+import FilterDropdown from "../components/FilterDropdown";
 import ReviewSubscribe from "./ReviewSubscribe";
 import PhoneInputModule from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
@@ -86,13 +87,13 @@ function Select({ label, value, options, onChange, placeholder, ...props }) {
   return (
     <label className="pch-field">
       {label}
-      <select {...props} value={value ?? ""} onChange={(event) => onChange(event.target.value)}>
+      <FilterDropdown {...props} aria-label={label} aria-required={props.required} value={value ?? ""} onChange={(event) => onChange(event.target.value)}>
         <option value="">{placeholder || `Select ${label.replace(/\s*\*$/, "")}`}</option>
         {options.map((option) => {
           const item = typeof option === "string" ? { value: option, label: option } : option;
           return <option key={item.value} value={item.value}>{item.label}</option>;
         })}
-      </select>
+      </FilterDropdown>
     </label>
   );
 }
@@ -350,7 +351,7 @@ function MerchantEditor({ merchantId, localMerchants, onSave }) {
   />;
 
   return (
-    <div id="pch-new" className={editing ? undefined : "pch-step-scroll"}><Header editing={editing} onBack={cancel} />
+    <div id="pch-new" className={editing ? "pch-editing" : "pch-step-scroll"}><Header editing={editing} onBack={cancel} />
       <div className="pch-layout">
         <aside><div className="pch-eyebrow pch-aside-note">Add merchant</div><nav className="pch-rail" aria-label="Setup steps">
           {[

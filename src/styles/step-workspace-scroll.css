@@ -9,6 +9,44 @@
   flex-shrink: 0;
 }
 
+.main-content:has(> .sf-root > .sf-shell) {
+  height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.main-content:has(> .sf-root > .sf-shell) > .topbar {
+  flex-shrink: 0;
+}
+
+.sf-root:has(> .sf-shell) {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.sf-root:has(> .sf-shell) > .sf-topbar {
+  flex-shrink: 0;
+}
+
+.sf-root:has(> .sf-shell) > .sf-shell {
+  flex: 1;
+  grid-template-rows: minmax(0, 1fr);
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.sf-root:has(> .sf-shell) > .sf-shell > .sf-sidebar,
+.sf-root:has(> .sf-shell) > .sf-shell > .sf-main {
+  min-width: 0;
+  min-height: 0;
+  overflow-y: auto;
+}
+
 #pch-new.pch-step-scroll,
 .main-content > :is(.pch-step-scroll, .choose-plan-redesign) {
   display: flex;
@@ -74,6 +112,14 @@
 @media (max-width: 850px) {
   .sf-root.pch-step-scroll > .sf-shell {
     grid-template-rows: fit-content(40%) minmax(0, 1fr);
+  }
+
+  .sf-root:has(> .sf-shell) > .sf-shell {
+    grid-template-rows: fit-content(40%) minmax(0, 1fr);
+  }
+
+  .sf-root:has(> .sf-shell) > .sf-shell > .sf-sidebar {
+    max-height: 40%;
   }
 }
 

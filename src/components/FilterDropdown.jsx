@@ -180,6 +180,7 @@ export default function FilterDropdown({ children, value, defaultValue, onChange
   const trigger = <button type="button" ref={triggerRef} id={props.id} className="pch-filter-trigger" style={triggerStyle}
       disabled={disabled} role="combobox" aria-haspopup="listbox" aria-expanded={open}
       aria-controls={open ? id : undefined} aria-label={props["aria-label"] || options[0]?.label || "Filter"}
+      aria-required={props["aria-required"]}
       title={options[selected]?.label} onKeyDown={keyDown}
       onClick={() => { if (open) close(); else { setActive(selected >= 0 && !options[selected].disabled ? selected : options.findIndex((option) => !option.disabled && !option.hidden)); setOpen(true); } }}>
       {triggerIcon}<span>{options[selected]?.label || ""}</span>

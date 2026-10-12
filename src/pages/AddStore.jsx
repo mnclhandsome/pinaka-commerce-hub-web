@@ -24,6 +24,7 @@ import {
   storeRoleTemplatesApi,
   readStoreRoleTemplates,
 } from "../api/storeRoleTemplatesApi";
+import FilterDropdown from "../components/FilterDropdown";
 import { api, ApiError } from "../api/http";
 import { endpoints } from "../api/endpoints";
 import {
@@ -479,6 +480,7 @@ const SelectField = ({
   value,
   onChange,
   options,
+  required = false,
   optional = false,
   ...props
 }) => (
@@ -487,8 +489,9 @@ const SelectField = ({
       {label}
       {optional && <small> (Optional)</small>}
     </span>
-    <select
+    <FilterDropdown
       value={value ?? ""}
+      aria-required={required}
       onChange={(event) => onChange(event.target.value)}
       {...props}
     >
@@ -503,7 +506,7 @@ const SelectField = ({
           </option>
         ),
       )}
-    </select>
+    </FilterDropdown>
   </label>
 );
 
@@ -2537,9 +2540,9 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
             <div className="sf-form-grid sf-basic-grid">
               <div className="sf-field sf-merchant-field">
                 <label htmlFor="sf-merchant">Merchant *</label>
-                <select
+                <FilterDropdown
                   id="sf-merchant"
-                  required
+                  aria-required="true"
                   value={merchantSelectValue}
                   disabled={Boolean(routeMerchantId) || editing || saving}
                   onChange={(event) => changeMerchant(event.target.value)}
@@ -2562,7 +2565,7 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
                         idOf(item)}
                     </option>
                   ))}
-                </select>
+                </FilterDropdown>
               </div>
               <Field
                 label="Store Name *"
@@ -2765,7 +2768,8 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
                     <tr key={row.day}>
                       <td>{row.day}</td>
                       <td>
-                        <select
+                        <FilterDropdown
+                          aria-label={`${row.day} status`}
                           value={row.status}
                           onChange={(event) =>
                             updateHours(index, "status", event.target.value)
@@ -2773,7 +2777,7 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
                         >
                           <option>Open</option>
                           <option>Closed</option>
-                        </select>
+                        </FilterDropdown>
                       </td>
                       <td>
                         <input
@@ -3122,7 +3126,7 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
                 </label>
                 <label>
                   Copy from
-                  <select
+                  <FilterDropdown
                     value={copyFromRole}
                     onChange={(event) => setCopyFromRole(event.target.value)}
                   >
@@ -3134,7 +3138,7 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
                           {roleName(roleId)}
                         </option>
                       ))}
-                  </select>
+                  </FilterDropdown>
                 </label>
                 <button
                   type="button"
@@ -3291,15 +3295,21 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
                 }}
               />
             </label>
-            <SelectField
-              label="Filter"
-              value={employeeFilter}
-              onChange={(value) => {
-                setEmployeeFilter(value);
-                setEmployeePage(1);
-              }}
-              options={["All", "Assigned", "Available"]}
-            />
+            <label className="sf-field">
+              <span>Filter</span>
+              <FilterDropdown
+                aria-label="Employee assignment filter"
+                value={employeeFilter}
+                onChange={(event) => {
+                  setEmployeeFilter(event.target.value);
+                  setEmployeePage(1);
+                }}
+              >
+                <option value="All">All</option>
+                <option value="Assigned">Assigned</option>
+                <option value="Available">Available</option>
+              </FilterDropdown>
+            </label>
           </div>
           {duplicatePinNames.length > 0 && (
             <div className="alert alert-danger" role="alert">
@@ -3357,7 +3367,8 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
                       <td>{employee.phone || "—"}</td>
                       <td>{employee.email || "—"}</td>
                       <td>
-                        <select
+                        <FilterDropdown
+                          aria-label={`${employee.name || "Employee"} store role`}
                           value={assignment?.role || ""}
                           disabled={readOnly || !isAssigned}
                           onChange={(event) =>
@@ -3370,7 +3381,7 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
                               {roleName(roleId)}
                             </option>
                           ))}
-                        </select>
+                        </FilterDropdown>
                       </td>
                       <td className="sf-pin-cell">
                         {editingPin ? (
