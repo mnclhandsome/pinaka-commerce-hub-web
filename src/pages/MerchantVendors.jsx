@@ -214,11 +214,6 @@ export default function MerchantVendors({
                     ])
                 );
 
-                merchantMaster.forEach((vendor) => {
-                    const id = idOf(vendor);
-                    if (id) byId.set(id, { ...byId.get(id), ...vendor });
-                });
-
                 mapped.forEach((vendor) => {
                     const id = idOf(vendor);
                     if (!id) return;
