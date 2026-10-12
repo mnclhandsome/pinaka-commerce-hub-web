@@ -1576,7 +1576,13 @@ dialog.merchant-delete-dialog::backdrop {
   margin-bottom: 8px;
 }
 .merchant-table-card > .pagination-container {
+    width: calc(100% - 24px);
+    max-width: calc(100% - 24px);
+    margin: 0 12px;
+    padding: 10px 0;
+    box-sizing: border-box;
     border-top: 0;
+
 }
 
 .merchant-table-card > .filter-bar {
@@ -1585,12 +1591,24 @@ dialog.merchant-delete-dialog::backdrop {
   gap: 10px;
 }
 .merchant-table-card > .merchant-pagination {
-  padding: 10px 12px;
+    width: calc(100% - 24px);
+    max-width: calc(100% - 24px);
+    margin: 0 12px;
+    padding: 10px 0;
+    box-sizing: border-box;
 }
 @media (max-width: 600px) {
   .page-content:has(> .merchant-table-card) {
     padding: 8px 10px 0;
   }
+
+.merchant-table-card > .pagination-container,
+.merchant-table-card > .merchant-pagination {
+    width: calc(100% - 20px);
+    max-width: calc(100% - 20px);
+    margin-right: 10px;
+    margin-left: 10px;
+}
 }
 
 /* Desktop outer padding for the selected top-level listing screens. */

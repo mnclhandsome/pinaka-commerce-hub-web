@@ -26,17 +26,16 @@
     margin: 0;
 }
 
+.merchant-store-page.merchant-stores-embedded {
+    padding: 0;
+}
+
 .merchant-view-layout > #merchant-panel-stores,
 .merchant-stores-embedded .merchant-stores-layout {
     padding-top: 0;
     margin-top: 0;
     align-self: start;
 }
-
-.merchant-view-layout > #merchant-panel-stores .stores-header-card {
-    margin-top: -22px;
-}
-
 
 /* =========================================================
    COMMON CARD
@@ -83,7 +82,7 @@
 }
 
 .merchant-stores-embedded .stores-card-header p {
-    margin: 4px 0 12px;
+    margin: 4px 0 0;
 
     color: #81899a;
     font-size: 13px;
@@ -141,7 +140,7 @@
 }
 
 .merchant-stores-embedded .store-list-heading {
-    margin: 0 0 4px;
+    margin: 0;
     padding: 0;
 }
 
@@ -169,7 +168,7 @@
 
     gap: 12px;
 
-    margin: 14px 0;
+    margin: 16px 0;
 }
 
 .merchant-stores-embedded .store-search-box {
@@ -604,7 +603,7 @@
 
     gap: 12px;
 
-    margin: 14px 0 0;
+    margin: 16px 0 0;
 
     font-size: 12px;
 }
@@ -617,42 +616,47 @@
 
 .merchant-stores-embedded .store-pagination-controls {
     display: flex;
-
     align-items: center;
-
-    gap: 8px;
+    gap: 6px;
 }
 
 .merchant-stores-embedded .store-pagination-controls button {
-    padding: 6px;
-
-    border: 1px solid #dfe3eb;
-    border-radius: 5px;
-
+    width: 34px;
+    height: 34px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: 1px solid #dfe4ed;
+    border-radius: 7px;
     background: #fff;
-    color: #5143bc;
-
+    color: #66738a;
     font-family: inherit;
-    font-size: 14px;
-
+    font-size: 13px;
+    font-weight: 600;
     cursor: pointer;
+    transition: all 0.18s ease;
 }
 
-.merchant-stores-embedded
-.store-pagination-controls
-button:disabled {
-    opacity: 0.5;
+.merchant-stores-embedded .store-pagination-controls button:hover:not(:disabled) {
+    border-color: #5143bc;
+    background: #f6f4ff;
+    color: #5143bc;
+}
+
+.merchant-stores-embedded .store-pagination-controls button:disabled {
+    border-color: #e7eaf0;
+    background: #f7f8fa;
+    color: #c2c8d2;
     cursor: not-allowed;
 }
 
 .merchant-stores-embedded .store-pagination-controls span {
-    min-width: 28px;
-
+    min-width: 34px;
     text-align: center;
-
-    color: #5143bc;
-
+    color: #66738a;
     font-size: 12px;
+    font-weight: 500;
 }
 
 
@@ -694,12 +698,6 @@ button:disabled {
     }
 }
 
-
-@media (max-width: 650px) {
-    .merchant-view-layout > #merchant-panel-stores .stores-header-card {
-        margin-top: 0;
-    }
-}
 
 @media (max-width: 600px) {
 

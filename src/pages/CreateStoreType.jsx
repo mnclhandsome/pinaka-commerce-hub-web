@@ -717,7 +717,7 @@ const paginatedStoreTypes = filteredStoreTypes.slice(
       <option value="Inactive">Inactive</option>
     </select>
 
-    <i className="bi bi-chevron-down" />
+   
   </div>
 
   {errors.status && (
@@ -803,7 +803,7 @@ const paginatedStoreTypes = filteredStoreTypes.slice(
 
                 ? "Update Store Type"
 
-                : "Create Store Type"}
+                : "Add Store Type"}
           </button>
         </div>
       </form>
@@ -968,6 +968,8 @@ const paginatedStoreTypes = filteredStoreTypes.slice(
                   <button
 
                     type="button"
+                    
+                    class="store-type-edit-icon"
 
                     onClick={(e) => {
 
@@ -1047,7 +1049,6 @@ const paginatedStoreTypes = filteredStoreTypes.slice(
             <h2>Deactivate Store Type?</h2>
 
             <p>
-
               Are you sure you want to deactivate{" "}
               <strong>{deleteTarget.name}</strong>?
             </p>

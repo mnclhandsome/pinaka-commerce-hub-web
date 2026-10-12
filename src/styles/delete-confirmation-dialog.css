@@ -1,0 +1,137 @@
+.delete-confirmation-dialog {
+  position: fixed;
+  inset: 0;
+  width: min(380px, calc(100vw - 24px));
+  max-width: 380px;
+  height: fit-content;
+  max-height: calc(100vh - 32px);
+  margin: auto;
+  padding: 22px;
+  overflow-y: auto;
+  border: 0;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+  color: #17233e;
+  text-align: center;
+}
+
+.delete-confirmation-dialog::backdrop {
+  background: rgba(20, 25, 35, 0.58);
+}
+
+.delete-confirmation-icon {
+  width: 58px;
+  height: 58px;
+  margin: 0 auto 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #fee2e2;
+  color: #ef2626;
+}
+
+.delete-confirmation-icon i {
+  font-size: 27px;
+  line-height: 1;
+}
+
+.delete-confirmation-dialog h2 {
+  margin: 0 0 12px;
+  color: #172033;
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.delete-confirmation-message {
+  margin: 0 0 10px;
+  color: #566176;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.delete-confirmation-message strong {
+  color: #17233e;
+  font-weight: 700;
+}
+
+.delete-confirmation-error {
+  margin: 12px 0 18px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: #fff0f0;
+  color: #ef2626;
+  font-size: 14px;
+}
+
+.delete-confirmation-actions {
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+  margin-top: 25px;
+}
+
+.delete-confirmation-cancel,
+.delete-confirmation-confirm {
+  min-width: 120px;
+  height: 44px;
+  padding: 0 24px;
+  border-radius: 9px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.delete-confirmation-cancel {
+  border: 1px solid #cfd5df;
+  background: #fff;
+  color: #3d485c;
+}
+
+.delete-confirmation-cancel:hover:not(:disabled) {
+  background: #f7f8fa;
+}
+
+.delete-confirmation-confirm {
+  border: 1px solid #ef2626;
+  background: #ef2626;
+  color: #fff;
+}
+
+.delete-confirmation-confirm:hover:not(:disabled) {
+  border-color: #d91f1f;
+  background: #d91f1f;
+}
+
+.delete-confirmation-cancel:disabled,
+.delete-confirmation-confirm:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@media (max-width: 600px) {
+  .delete-confirmation-dialog {
+    width: calc(100vw - 24px);
+    padding: 24px 20px;
+  }
+
+  .delete-confirmation-dialog h2 {
+    font-size: 25px;
+  }
+
+  .delete-confirmation-message {
+    font-size: 17px;
+  }
+
+  .delete-confirmation-actions {
+    flex-direction: column;
+  }
+
+  .delete-confirmation-cancel,
+  .delete-confirmation-confirm {
+    width: 100%;
+  }
+}

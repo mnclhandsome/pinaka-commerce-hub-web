@@ -61,6 +61,7 @@
 
 #pch-new > header {
     height: 62px;
+    flex-shrink: 0;
     padding: 0 24px;
     background: #fff;
     border-bottom: 1px solid #e7e9ef;
@@ -114,6 +115,61 @@
     grid-template-columns: 270px minmax(0, 1fr);
 
     min-height: calc(100vh - 62px);
+}
+
+.main-content:has(> #pch-new.pch-editing) {
+    height: 100dvh;
+    min-height: 0;
+}
+
+.main-content:has(> #pch-new.pch-editing) > .topbar {
+    flex-shrink: 0;
+}
+
+#pch-new.pch-editing {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
+}
+
+#pch-new.pch-editing > .pch-layout {
+    flex: 1;
+    grid-template-rows: minmax(0, 1fr);
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
+}
+
+#pch-new.pch-editing > .pch-layout > aside {
+    min-width: 0;
+    min-height: 0;
+    overflow-y: auto;
+}
+
+#pch-new.pch-editing > .pch-layout > main {
+    min-width: 0;
+    min-height: 0;
+    overflow-y: auto;
+}
+
+@media (max-width: 991px) {
+    #pch-new.pch-editing > .pch-layout {
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-rows: fit-content(40%) minmax(0, 1fr);
+    }
+
+    #pch-new.pch-editing > .pch-layout > aside {
+        max-height: 40%;
+    }
+}
+
+@media (max-width: 767px) {
+    #pch-new.pch-editing > .pch-layout {
+        display: grid;
+    }
 }
 
 /* =========================================================
@@ -356,6 +412,11 @@
     font-size: 13px;
     transition: 0.2s ease;
     color:#304766;
+}
+
+#pch-new .pch-field > .pch-filter-dropdown {
+    display: grid;
+    width: 100%;
 }
 
 #pch-new .pch-field input:focus,
@@ -640,6 +701,7 @@
     align-items: stretch;
     min-width: 0;
     margin-top: 12px;
+    padding: 0 14px 14px;
 }
 
 #pch-new .pch-plan-detail-column {
@@ -666,7 +728,7 @@
 }
 
 #pch-new .pch-plan-list-scroll {
-    max-height: 430px;
+    max-height: none;
     overflow-y: auto;
     overscroll-behavior: contain;
     padding: 8px;
@@ -938,7 +1000,7 @@
     }
 
     #pch-new .pch-plan-list-scroll {
-        max-height: 300px;
+        max-height: none;
     }
 
     #pch-new .pch-plan-detail {
@@ -1608,7 +1670,7 @@
 /* Main content spacing */
 #pch-new main,
 .rs-page .rs-content {
-  padding: 32px;
+  padding: 24px;
 }
 
 #pch-new main > h1,
@@ -1717,7 +1779,7 @@
 
   #pch-new main,
   .rs-page .rs-content {
-    padding: 18px 14px;
+    padding: 16px 12px;
   }
 
   .rs-page .rs-step-panel {

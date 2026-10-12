@@ -808,8 +808,8 @@
   place-items: center;
   border: 1px solid #dce9f5;
   border-radius: 7px;
-  color: #274970;
-  background: #fff;
+   color: #5367f0;
+  background: #fcfdff;
   cursor: pointer;
   padding: 0;
 }
@@ -817,6 +817,22 @@
 .plan-delete-icon {
   color: #ef3b5c !important;
 }
+
+.plan-delete-icon:hover {
+  border-color: #ffd8e1 !important;
+  background: #fff0f3 !important;
+}
+
+.plan-edit-icon{
+ color: #5367f0;
+}
+
+ .plan-edit-icon:hover {
+  color: #0b63c7 !important;
+  background: #e8f2ff !important;
+  border-color: #bcd9ff !important;
+}
+
 
 .plans-pagination {
   display: flex;
@@ -910,8 +926,8 @@
 }
 
 .delete-plan-keep-button {
-  border: 1.5px solid #0873f9;
-  color: #0873f9;
+  border: 1px solid #8995a3;
+  color: #8995a3;
   background: #fff;
 }
 

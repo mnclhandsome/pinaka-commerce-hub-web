@@ -724,16 +724,16 @@
 }
 
 .feature-row-actions button {
-  width: 32px;
-  height: 32px;
-  min-width: 32px;
+  width: 35px;
+  height: 35px;
+  min-width: 35px;
   padding: 0;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   border: 1px solid #edf0f5;
   border-radius: 7px;
-  background: #f8faff;
+  background: #fcfdff;
   color: #677590;
   box-shadow: none;
   cursor: pointer;
@@ -783,14 +783,14 @@
 
 .features-delete-icon {
   display: grid;
-  width: 54px;
-  height: 54px;
+   width: 58px;
+  height: 58px;
   place-items: center;
-  margin: 0 auto 15px;
+  margin: 0 auto 16px;
   border-radius: 50%;
-  color: #e5455d;
+  color: #ef3b5c;
   background: #fff0f2;
-  font-size: 23px;
+  font-size: 25px;
 }
 
 .features-delete-modal h2 {
@@ -808,7 +808,7 @@
 
 .features-delete-final-warning {
   margin-top: 12px !important;
-  color: #dc2649 !important;
+  color: #b9203f !important;
   font-size: 12px !important;
 }
 
@@ -830,9 +830,9 @@
 }
 
 .features-delete-keep-button {
-  border: 1px solid #dce8f4;
-  background: #ffffff;
-  color: #25466f;
+     border: 1.5px solid #8995a3;
+  color: #8995a3;
+  background: #fff;
 }
 
 .features-delete-confirm-button {

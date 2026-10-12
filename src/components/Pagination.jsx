@@ -1,3 +1,4 @@
+import FilterDropdown from "./FilterDropdown";
 
 export default function Pagination({
   currentPage,
@@ -8,6 +9,7 @@ export default function Pagination({
   onPageSizeChange,
   itemLabel = "items",
   showWhenEmpty = false,
+  pageSizeOptions = [5, 10, 25, 50, 100],
 }) {
   if (!totalItems && !showWhenEmpty) {return null;}
 
@@ -57,20 +59,17 @@ export default function Pagination({
           <span>Rows per page:</span>
 
           <div className="pagination-select-wrapper">
-            <select
+            <FilterDropdown
+              aria-label="Rows per page"
               value={pageSize}
               onChange={(e) =>
                 onPageSizeChange(Number(e.target.value))
               }
             >
-              <option value={5}>5</option>
-              <option value={10}>10</option>
-              <option value={25}>25</option>
-              <option value={50}>50</option>
-              <option value={100}>100</option>
-            </select>
-
-            <i className="bi bi-chevron-down pagination-select-arrow" />
+              {pageSizeOptions.map((size) => (
+                <option key={size} value={size}>{size}</option>
+              ))}
+            </FilterDropdown>
           </div>
         </div>
 

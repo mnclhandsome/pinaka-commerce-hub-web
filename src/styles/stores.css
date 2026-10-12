@@ -237,6 +237,11 @@
     font-weight: 500;
 }
 
+.store-table-datetime strong {
+    color: #10264d;
+    font-weight: 600;
+}
+
 .store-table-details small {
     color: #7a8498;
     font-size: 12px;
@@ -688,6 +693,11 @@
 }
 
 .stores-card > .pagination-container {
+     width: calc(100% - 24px);
+    max-width: calc(100% - 24px);
+    margin: 0 12px;
+    padding: 16px 8px;
+    box-sizing: border-box;
     border-top: 0;
 }
 
@@ -722,5 +732,13 @@
         max-width: calc(100% - 20px);
         margin-right: 10px;
         margin-left: 10px;
+    }
+
+     .stores-card > .pagination-container {
+        width: calc(100% - 20px);
+        max-width: calc(100% - 20px);
+        margin-right: 10px;
+        margin-left: 10px;
+        padding: 12px 0;
     }
 }

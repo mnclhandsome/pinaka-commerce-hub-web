@@ -393,7 +393,29 @@
 }
 
 .employees-list-card > .pagination-container {
+   width: calc(100% - 24px);
+  max-width: calc(100% - 24px);
+  margin: 0 12px;
+  padding: 16px 8px;
+  box-sizing: border-box;
   border-top: 0;
+  min-width: 0;
+}
+
+.employees-list-card > .pagination-container > * {
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+/* Mobile — match the employee table wrapper */
+@media (max-width: 600px) {
+  .employees-list-card > .pagination-container {
+    width: calc(100% - 20px);
+    max-width: calc(100% - 20px);
+    margin-right: 10px;
+    margin-left: 10px;
+    padding: 12px 4px;
+  }
 }
 
 .employees-list-card > .employees-filter-bar {
@@ -1058,3 +1080,12 @@
   flex-wrap: nowrap; justify-content: center; gap: 6px;
 }
 .employees-table tbody tr:hover { background: #fafbfe; }
+
+.employees-list-card .employees-table th:nth-child(8),
+.employees-list-card .employees-table td:nth-child(8) {
+  text-align: left;
+}
+
+.employees-list-card .employees-table td:nth-child(8) .list-actions {
+  justify-content: flex-start;
+}

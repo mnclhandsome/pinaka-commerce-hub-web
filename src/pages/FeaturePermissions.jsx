@@ -1252,8 +1252,6 @@ const paginatedPermissions = filteredPermissions.slice(
             </option>
           ))}
         </select>
-
-        <i className="bi bi-chevron-down" />
       </div>
 
       {errors.featureId && (
@@ -1361,8 +1359,6 @@ const paginatedPermissions = filteredPermissions.slice(
         Inactive
       </option>
     </select>
-
-    <i className="bi bi-chevron-down" />
   </div>
 
   {errors.status && (
@@ -1522,7 +1518,7 @@ const paginatedPermissions = filteredPermissions.slice(
               <col className="fp-col-key" />
               <col className="fp-col-name" />
               <col className="fp-col-feature" />
-              <col className="fp-col-description" />
+              <col className="fp-col-description"/>
               <col className="fp-col-status" />
               <col className="fp-col-created" />
               <col className="fp-col-updated" />
@@ -1686,7 +1682,7 @@ const paginatedPermissions = filteredPermissions.slice(
                     {/* Actions */}
 
                     <td>
-                      <div className="fp-row-actions feature-row-actions">
+                      <div className="fp-row-actions">
                         {/* EDIT */}
 
                         <button
@@ -1817,7 +1813,7 @@ const paginatedPermissions = filteredPermissions.slice(
                   isDeleting
                 }
               >
-                Cancel
+               No, Keep it
               </button>
 
               <button
@@ -1832,7 +1828,7 @@ const paginatedPermissions = filteredPermissions.slice(
               >
                 {isDeleting
                   ? "Deactivating..."
-                  : "Deactivate"}
+                  : "Yes, Deactivate"}
               </button>
             </div>
           </div>
