@@ -98,7 +98,6 @@ export default function StoreShifts({ store }) {
     <nav className="sm-breadcrumb" aria-label="Shift navigation"><span>Shift Management</span></nav>
     <header className="sm-page-heading">
       <div><h1>Shift Management</h1><p>View and manage store-level shifts. A shift remains open until it is closed.</p></div>
-      <div className="sm-store-chip"><span className="sm-store-icon"><i className="bi bi-shop" /></span><span><strong>{store?.name || store?.storeName || "Store"}</strong><small>{store?.storeCode || store?.store_code || store?.id || "Store ID unavailable"}</small></span><span className="sm-store-status">{String(store?.status || "Active").toUpperCase()}</span></div>
     </header>
 
     <div className="sm-filter-card">

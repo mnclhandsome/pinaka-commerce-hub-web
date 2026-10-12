@@ -1,7 +1,7 @@
 .sm-screen {
   width: 100%;
   min-width: 0;
-  padding: 18px 10px 8px;
+  padding: 24px;
   color: #142347;
   font-family: Inter, Arial, sans-serif;
   font-size: 14px;
@@ -84,7 +84,6 @@
 .sm-pagination button:disabled { color:#aab3c3; cursor:default; }
 .sm-pagination .sm-page-current { border-color:#5937ef; color:#4f32e7; font-size:13px; }
 .sm-detail-heading { margin-bottom:22px; }
-.sm-detail-screen { padding-top:18px; }
 .sm-detail-heading .sm-button-outline { min-height:40px; }
 .sm-detail-overview { position:relative; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); padding:20px 10px; margin-bottom:14px; }
 .sm-detail-status { position:absolute; top:15px; right:16px; z-index:1; display:inline-flex; align-items:center; gap:6px; padding:7px 11px; border-radius:6px; background:#e0f8e9; color:#17813b; font-size:11px; font-weight:700; }
@@ -131,7 +130,7 @@
 }
 @media (max-width:760px) {
   .sm-page-heading, .sm-detail-heading { align-items:flex-start; flex-direction:column; }
-  .sm-screen { padding:14px 4px 6px; }
+  .sm-screen { padding:16px; }
   .sm-store-chip { width:100%; max-width:none; }
   .sm-filter-card { grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; padding:16px; }
   .sm-search-control { grid-column:span 2; }

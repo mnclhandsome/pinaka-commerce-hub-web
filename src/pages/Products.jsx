@@ -453,24 +453,6 @@ export default function Products({
                         )}
                     </button>
 
-                    {/* STORE CONTEXT */}
-
-                    {store && (
-                        <div className="products-store-context">
-
-                            <i className="bi bi-shop" />
-
-                            <div>
-                                <span>STORE</span>
-
-                                <strong>
-                                    {store.name}
-                                </strong>
-                            </div>
-
-                        </div>
-                    )}
-
                 </div>
             </div>
 

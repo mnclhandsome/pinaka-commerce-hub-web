@@ -207,16 +207,6 @@ export default function Orders({
             <p>View orders and transaction information for this store.</p>
           </div>
         </div>
-        {store && (
-          <div className="orders-store-context">
-            <i className="bi bi-shop" />
-            <div>
-              <span>STORE</span>
-              <strong>{store.name || store.storeName}</strong>
-              <small>{store.storeCode || store.id}</small>
-            </div>
-          </div>
-        )}
       </div>
 
       <div className="orders-summary">
