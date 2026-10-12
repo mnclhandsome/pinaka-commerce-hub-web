@@ -25,7 +25,6 @@ import {
   readStoreRoleTemplates,
 } from "../api/storeRoleTemplatesApi";
 import FilterDropdown from "../components/FilterDropdown";
-import { api, ApiError } from "../api/http";
 import { api, ApiError, pendingStoreRead } from "../api/http";
 import { endpoints } from "../api/endpoints";
 import {
