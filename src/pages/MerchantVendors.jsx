@@ -1,3 +1,4 @@
+import { pendingStoreRead } from "../api/http";
 import { useEffect, useRef, useState } from "react";
 import { Eye, Trash2 } from "lucide-react";
 import "../styles/merchant-vendors.css";
@@ -200,8 +201,8 @@ export default function MerchantVendors({
 
         try {
             const mapped = storeScope
-                ? await getMappedStoreVendors(mappingId, { search: searchValue })
-                : await getMappedMerchantVendors(mappingId, { search: searchValue });
+                ? await pendingStoreRead(`store-vendors:${mappingId}:${searchValue}`, () => getMappedStoreVendors(mappingId, { search: searchValue }))
+                : await pendingStoreRead(`merchant-vendors:${mappingId}:${searchValue}`, () => getMappedMerchantVendors(mappingId, { search: searchValue }));
 
             const mappedIds = mapped.map(idOf);
 

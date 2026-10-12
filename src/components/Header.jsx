@@ -8,10 +8,12 @@ export default function Header({ onMobileMenu }) {
   const nav = useNavigate();
   const { pathname } = useLocation();
   const isStoreTypesScreen = pathname.startsWith("/store-types");
+  const storeRouteId = pathname.match(/^\/(?:merchants\/[^/]+\/)?stores\/([^/]+)(?:\/|$)/)?.[1];
+  const isStoreDetailsScreen = Boolean(storeRouteId && storeRouteId !== "new");
   const [merchants, setMerchants] = useState([]),
     [merchantError, setMerchantError] = useState("");
   useEffect(() => {
-    if (isStoreTypesScreen) {
+    if (isStoreTypesScreen || isStoreDetailsScreen) {
       setMerchants([]);
       setMerchantError("");
       return undefined;
@@ -31,7 +33,7 @@ export default function Header({ onMobileMenu }) {
     return () => {
       active = false;
     };
-  }, [isStoreTypesScreen, pathname]);
+  }, [isStoreTypesScreen, isStoreDetailsScreen, pathname]);
   const { user, logout } = useAuth();
   const displayName = user
     ? [user.firstName, user.lastName].filter(Boolean).join(" ") ||
@@ -58,7 +60,7 @@ export default function Header({ onMobileMenu }) {
         <button className="sidebar-toggle" onClick={onMobileMenu}>
           <i className="bi bi-list" />
         </button>
-        <select
+        {!isStoreDetailsScreen && <select
           aria-label="Merchant"
           title={merchantError || "Choose merchant"}
           className="merchant-select"
@@ -78,7 +80,7 @@ export default function Header({ onMobileMenu }) {
             </option>
           ))}
           {merchantError && <option disabled>Unable to load merchants</option>}
-        </select>
+        </select>}
         <div className="global-search">
           <i className="bi bi-search" />
           <input
