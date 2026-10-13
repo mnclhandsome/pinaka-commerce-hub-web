@@ -1395,7 +1395,7 @@ useEffect(() => {
         modal?.vendor?.name || "this vendor"
     } from this ${entityName}? The vendor will remain available in Master Data.`}
     cancelLabel="Cancel"
-    confirmLabel="Remove Assignment"
+    confirmLabel="Remove"
     busyLabel="Removing..."
     busy={busy}
     error={saveError}

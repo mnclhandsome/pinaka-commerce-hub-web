@@ -1032,8 +1032,8 @@ const paginatedStoreTypes = filteredStoreTypes.slice(
         } The record will remain visible and can be activated again later.`
       : ""
   }
-  cancelLabel="No, Keep It"
-  confirmLabel="Yes, Deactivate"
+  cancelLabel="Cancel"
+  confirmLabel="Deactivate"
   busyLabel="Deactivating..."
   busy={deleting}
   error={deleteError}

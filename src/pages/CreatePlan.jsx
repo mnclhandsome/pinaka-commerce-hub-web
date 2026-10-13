@@ -1503,8 +1503,8 @@ async function confirmDelete() {
       ? `Are you sure you want to deactivate "${deleteTarget.name || "this plan"}"?`
       : ""
   }
-  cancelLabel="No, Keep It"
-  confirmLabel="Yes, Deactivate"
+  cancelLabel="Cancel"
+  confirmLabel="Deactivate"
   busyLabel="Deactivating..."
   busy={deletingPlan}
   error={deleteError}

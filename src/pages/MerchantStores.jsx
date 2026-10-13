@@ -6,6 +6,8 @@ import { api, ApiError, pendingStoreRead } from "../api/http";
 import { activateStore, deactivateStore } from "../api/stores";
 import { endpoints } from "../api/endpoints";
 import DeleteConfirmationDialog from "../components/DeleteConfirmationDialog";
+import Pagination from "../components/Pagination";
+import FiltersBar from "../components/FiltersBar";
 
 const isUuid = (value) =>
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(value || ""));
@@ -71,11 +73,13 @@ export default function MerchantStores({
   const [deleteError, setDeleteError] = useState("");
   const [deleting, setDeleting] = useState(false);
   const [activatingStoreId, setActivatingStoreId] = useState("");
+  
 
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(5);
 
-  const pageSize = 5;
+  
 
   useEffect(() => {
     let cancelled = false;
@@ -313,31 +317,7 @@ export default function MerchantStores({
       ) : (
         <div className="merchant-stores-layout">
 
-          {/* =====================================
-              TOP HEADER
-          ====================================== */}
-
-          <section className="stores-card stores-header-card">
-            <div className="stores-card-header">
-              <div>
-                <h2>Stores</h2>
-
-                <p>
-                  Manage the store locations for this
-                  merchant.
-                </p>
-              </div>
-
-              <button
-                className="btn-new-store"
-                type="button"
-                onClick={handleNewStore}
-              >
-                <i className="bi bi-plus-lg" />
-                New Store
-              </button>
-            </div>
-          </section>
+        
 
           {/* =====================================
               STORE LIST
@@ -348,35 +328,28 @@ export default function MerchantStores({
             {error && <p className="store-action-error" role="alert">{error}</p>}
 
             <div className="store-list-heading">
-              <h2>Store List</h2>
-            </div>
+                  <div className="store-list-heading-content">
+                    <h2>Store List</h2>
+                    <p> Manage the store locations for this merchant. </p>
+                   </div>
+                      <button
+                         className="btn-new-store"
+                          type="button"
+                          onClick={handleNewStore} >
+                          <i className="bi bi-plus-lg" />
+                           New Store
+                            </button>
+                             </div>
 
-            {/* SEARCH + RESET */}
-
-            <div className="store-list-toolbar">
-
-              <div className="store-search-box">
-                <input
-                  type="text"
-                  value={search}
-                  placeholder="Search stores by name, type or location..."
-                  onChange={(event) =>
-                    setSearch(event.target.value)
-                  }
-                />
-              </div>
-
-              <button
-                type="button"
-                className="store-reset-btn"
-                onClick={handleReset}
-              >
-                <i className="bi bi-arrow-counterclockwise" />
-                Clear
-              </button>
-
-            </div>
-
+                 {/* SEARCH + FILTERS */}
+                  <FiltersBar
+                      searchValue={search}
+                    onSearchChange={setSearch}
+                      searchPlaceholder="Search stores by name, type or location..."
+                      filters={[]}
+                      onClear={handleReset}
+                       showClear={true}
+                        />
             {/* =====================================
                 TABLE
             ====================================== */}
@@ -528,76 +501,25 @@ export default function MerchantStores({
 
             </div>
 
-            {/* =====================================
-                PAGINATION
-            ====================================== */}
+           
+{/* =====================================
+    PAGINATION
+====================================== */}
 
-            <div className="store-pagination">
+<Pagination
+  currentPage={currentPage}
+  totalPages={totalPages}
+  totalItems={filteredStores.length}
+  pageSize={pageSize}
+  onPageChange={setPage}
+  onPageSizeChange={(size) => {
+    setPageSize(size);
+    setPage(1);
+  }}
+  itemLabel="stores"
+  showWhenEmpty={true}
+/>
 
-              <span className="store-pagination-info">
-                Showing{" "}
-                {filteredStores.length === 0
-                  ? 0
-                  : (currentPage - 1) *
-                      pageSize +
-                    1}{" "}
-                to{" "}
-                {Math.min(
-                  currentPage * pageSize,
-                  filteredStores.length
-                )}{" "}
-                of {filteredStores.length} entries
-              </span>
-
-              <div className="store-pagination-controls">
-
-                <button
-                  type="button"
-                  className="pagination-arrow"
-                  disabled={currentPage === 1}
-                  onClick={() =>
-                    setPage((value) =>
-                      Math.max(1, value - 1)
-                    )
-                  }
-                  aria-label="Previous page"
-                >
-                  <i className="bi bi-chevron-left" aria-hidden="true" />
-                </button>
-
-                <div className="pagination-pages">
-                  <button
-                    type="button"
-                    className="pagination-page active"
-                    aria-current="page"
-                    onClick={() => setPage(currentPage)}
-                  >
-                    {currentPage}
-                  </button>
-                </div>
-
-                <button
-                  type="button"
-                  className="pagination-arrow"
-                  disabled={
-                    currentPage === totalPages
-                  }
-                  onClick={() =>
-                    setPage((value) =>
-                      Math.min(
-                        totalPages,
-                        value + 1
-                      )
-                    )
-                  }
-                  aria-label="Next page"
-                >
-                  <i className="bi bi-chevron-right" aria-hidden="true" />
-                </button>
-
-              </div>
-
-            </div>
 
           </section>
         </div>
@@ -609,7 +531,7 @@ export default function MerchantStores({
           getStoreName(deleteTarget || {})
         }? The store will remain in the system with inactive status.`}
         cancelLabel="Cancel"
-        confirmLabel="Deactivate Store"
+        confirmLabel="Deactivate"
         busyLabel="Deactivating..."
         busy={deleting}
         error={deleteError}

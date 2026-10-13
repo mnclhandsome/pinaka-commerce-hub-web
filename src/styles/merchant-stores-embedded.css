@@ -140,8 +140,33 @@
 }
 
 .merchant-stores-embedded .store-list-heading {
-    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    width: 100%;
+    margin: 0 0 16px;
     padding: 0;
+}
+
+.merchant-stores-embedded .store-list-heading-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.merchant-stores-embedded .store-list-heading-content h2 {
+  margin: 0 0 4px;
+}
+
+.merchant-stores-embedded .store-list-heading-content p{
+  margin: 4px 0 0;
+    color: #81899a;
+    font-size: 13px;
+}
+
+.merchant-stores-embedded .store-list-heading .btn-new-store{
+    flex-shrink: 0;
+    margin-left: auto;
 }
 
 .merchant-stores-embedded .store-list-heading h2 {
@@ -161,46 +186,30 @@
    TOOLBAR
 ========================================================= */
 
-.merchant-stores-embedded .store-list-toolbar {
-    display: flex;
-    justify-content: space-between;
+.merchant-stores-embedded .filters-bar {
+     display: flex;
+    flex-flow: row nowrap;
+    justify-content: flex-start;
     align-items: center;
-
     gap: 12px;
-
-    margin: 16px 0;
-}
-
-.merchant-stores-embedded .store-search-box {
-    width: 100%;
-    max-width: 460px;
-}
-
-.merchant-stores-embedded .store-search-box input {
-    height: 40px;
-
     width: 100%;
     min-width: 0;
-
-    border: 1px solid #dfe3eb;
-    border-radius: 6px;
-
-    padding: 10px 12px;
-
-    background: #ffffff;
-    color: #17233e;
-
-    font-family: inherit;
-    font-size: 14px;
-
-    outline: none;
+    margin: 16px 0;
+    padding: 0;
+}
+.merchant-stores-embedded .filters-bar .filter-search {
+     display: flex;
+    flex: 1 1 0;
+    width: 0;
+    min-width: 0;
+    max-width: none;
 }
 
-.merchant-stores-embedded .store-search-box input::placeholder {
+.merchant-stores-embedded .filters-bar .filter-search input::placeholder {
     color: #9aa2b3;
 }
 
-.merchant-stores-embedded .store-search-box input:focus {
+.merchant-stores-embedded .filters-bar .filter-search input:focus {
     border-color: #5143bc;
     box-shadow: 0 0 0 1px rgba(81, 67, 188, 0.08);
 }
@@ -210,25 +219,32 @@
    RESET BUTTON
 ========================================================= */
 
-.merchant-stores-embedded .store-reset-btn {
-    padding: 8px 12px;
+/* Keep Reset on the right */
+.merchant-stores-embedded .filters-bar .filter-options {
+    display: flex;
+    flex: 0 0 auto;
+    align-items: center;
+    gap: 12px;
+    width: auto;
+    min-width: 0;
+    margin-left: 0;
+}
 
+.merchant-stores-embedded .filters-bar .filter-reset-btn {
+     flex: 0 0 auto;
+    padding: 8px 12px;
     border: 1px solid #dfe3eb;
     border-radius: 5px;
-
     background: #fff;
     color: #5143bc;
-
     font-family: inherit;
     font-size: 14px;
-
     cursor: pointer;
-
     white-space: nowrap;
 }
 
-.merchant-stores-embedded .store-reset-btn:hover {
-    background: #f8f7ff;
+.merchant-stores-embedded .filters-bar .filter-reset-btn:hover {
+   background: #f8f7ff;
     border-color: #5143bc;
 }
 
@@ -714,15 +730,22 @@
         width: auto;
     }
 
-    .merchant-stores-embedded .store-list-toolbar {
-        flex-wrap: wrap;
+    .merchant-stores-embedded .filters-bar {
+    flex-wrap: wrap;
     }
 
-    .merchant-stores-embedded .store-search-box {
-        max-width: 100%;
+    .merchant-stores-embedded .filters-bar .filter-search {
+    flex: 1 1 100%;
+    max-width: 100%;
     }
 
     .merchant-stores-embedded .store-pagination {
         align-items: center;
     }
+
+    .merchant-stores-embedded .store-list-heading {
+    align-items: flex-start;
+  }
 }
+
+

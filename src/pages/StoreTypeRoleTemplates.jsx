@@ -520,8 +520,8 @@ async function confirmDeleteRole() {
       ? `Are you sure you want to remove "${deleteTarget.name}" from this store type?`
       : ""
   }
-  cancelLabel="No, Keep It"
-  confirmLabel="Yes, Remove"
+  cancelLabel="Cancel"
+  confirmLabel="Remove"
   busyLabel="Removing..."
   busy={savingRoles}
   error={deleteError}

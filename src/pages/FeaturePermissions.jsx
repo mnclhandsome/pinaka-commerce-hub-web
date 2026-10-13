@@ -1757,8 +1757,8 @@ const paginatedPermissions = filteredPermissions.slice(
         }" as inactive?`
       : ""
   }
-  cancelLabel="No, Keep It"
-  confirmLabel="Yes, Deactivate"
+  cancelLabel="Cancel"
+  confirmLabel="Deactivate"
   busyLabel="Deactivating..."
   busy={isDeleting}
   error={deleteError}

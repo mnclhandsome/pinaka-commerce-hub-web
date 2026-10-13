@@ -500,9 +500,10 @@ table thead th {
     align-items: center;
     gap: 10px;
     padding: 12px 12px 16px;
-    background: #fbfcfe;
+    background: transparent;
     min-height: 48px;
     box-sizing: border-box;
+    flex-wrap: nowrap;
 }
 
 

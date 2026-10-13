@@ -550,9 +550,9 @@ useEffect(() => {
           deleteTarget?.storeName ||
           deleteTarget?.name ||
           "this store"
-        }? The store will remain in the system with inactive status.`}
+        }?`}
         cancelLabel="Cancel"
-        confirmLabel="Deactivate Store"
+        confirmLabel="Deactivate"
         busyLabel="Deactivating..."
         busy={deleting}
         error={deleteError}

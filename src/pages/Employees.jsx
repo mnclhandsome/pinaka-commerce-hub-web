@@ -556,8 +556,8 @@ const handlePageSizeChange = (size) => {
       ? `Are you sure you want to delete "${deleteTarget.name}"?`
       : ""
   }
-  cancelLabel="No, Keep It"
-  confirmLabel="Yes, Delete"
+  cancelLabel="Cancel"
+  confirmLabel="Delete"
   busyLabel="Deleting..."
   busy={Boolean(deletingId)}
   error={deleteError}
