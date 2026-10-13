@@ -13,6 +13,25 @@
   background: #f5f7fb;
 }
 
+/* Keep invalid controls visually consistent with the other create forms. */
+.add-employee-page .field-invalid,
+.add-employee-page .employee-phone-invalid .form-control {
+  border-color: #ef4456 !important;
+  background-color: #fffafb !important;
+  box-shadow: 0 0 0 1px rgba(239, 68, 86, 0.08) !important;
+}
+
+.add-employee-page .field-invalid:focus,
+.add-employee-page .employee-phone-invalid .form-control:focus {
+  border-color: #ef4456 !important;
+  box-shadow: 0 0 0 1px rgba(239, 68, 86, 0.08) !important;
+  outline: none !important;
+}
+
+.add-employee-page .employee-phone-invalid .flag-dropdown {
+  border-color: #ef4456 !important;
+}
+
 /* =========================================================
    HEADER
 ========================================================= */

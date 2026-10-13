@@ -1,4 +1,4 @@
-import { api } from "./http";
+import { api, pendingStoreRead } from "./http";
 
 const path = (id) => `/features/${encodeURIComponent(id)}`;
 
@@ -41,10 +41,10 @@ const payload = (form) => ({
 const unwrapFeature = (response) =>
   normalize(response?.feature || response?.data?.feature || response?.data || response);
 
-export const getFeature = async (id) => unwrapFeature(await api.get(path(id)));
+export const getFeature = async (id) => unwrapFeature(await pendingStoreRead(`feature:${id}`, () => api.get(path(id))));
 
 export const listFeatures = async () => {
-  const response = await api.get("/features");
+  const response = await pendingStoreRead("features-list", () => api.get("/features"));
   const list = Array.isArray(response?.features)
     ? response.features
     : Array.isArray(response?.data?.features)

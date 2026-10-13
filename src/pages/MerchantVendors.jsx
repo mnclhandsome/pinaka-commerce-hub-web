@@ -652,7 +652,7 @@ useEffect(() => {
                           "type",
                           "products",
                           "contact",
-                          "assignedStoreCount",
+                          ...(!storeScope ? ["assignedStoreCount"] : []),
                           "status",
                       ]
                 ).map((key) => (
@@ -922,11 +922,11 @@ useEffect(() => {
                                                         "—"}
                                                 </td>
 
-                                                <td>
-                                                    {
-                                                        vendor.assignedStoreCount
-                                                    }
-                                                </td>
+                                                {!storeScope && (
+                                                    <td>
+                                                        {vendor.assignedStoreCount}
+                                                    </td>
+                                                )}
 
                                                 <td>
                                                     {badge(vendor)}

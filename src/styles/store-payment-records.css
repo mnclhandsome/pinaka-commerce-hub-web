@@ -242,6 +242,10 @@
     color: #4b5566;
 }
 
+.store-payment-records-table tbody td {
+    border-bottom: 0;
+}
+
 .store-payment-records-table tbody tr:last-child td {
     border-bottom: 0;
 }

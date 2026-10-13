@@ -459,9 +459,10 @@ const Field = ({
   onChange,
   type = "text",
   optional = false,
+  invalid = false,
   ...props
 }) => (
-  <label className="sf-field">
+  <label className={`sf-field${invalid ? " sf-field-invalid" : ""}`}>
     <span>
       {label}
       {optional && <small> (Optional)</small>}
@@ -482,9 +483,10 @@ const SelectField = ({
   options,
   required = false,
   optional = false,
+  invalid = false,
   ...props
 }) => (
-  <label className="sf-field">
+  <label className={`sf-field${invalid ? " sf-field-invalid" : ""}`}>
     <span>
       {label}
       {optional && <small> (Optional)</small>}
@@ -492,6 +494,7 @@ const SelectField = ({
     <FilterDropdown
       value={value ?? ""}
       aria-required={required}
+      aria-invalid={invalid}
       onChange={(event) => onChange(event.target.value)}
       {...props}
     >
@@ -513,7 +516,15 @@ const SelectField = ({
 const Panel = ({ title, subtitle, action, children, className = "" }) => (
   <section className={`sf-panel ${className}`}>
     {(title || action) && (
-      <div className="sf-panel-head">
+      <div
+        className="sf-panel-head"
+        style={className.includes("sf-permissions-panel") ? {
+          display: "grid",
+          gridTemplateColumns: "minmax(0, 1fr) auto",
+          alignItems: "center",
+          gap: 32,
+        } : undefined}
+      >
         <div>
           {title && <h2>{title}</h2>}
           {subtitle && <p>{subtitle}</p>}
@@ -523,6 +534,42 @@ const Panel = ({ title, subtitle, action, children, className = "" }) => (
     )}
     {children}
   </section>
+);
+
+const ValidationSummary = ({ error, summaryRef, onDismiss }) => {
+  const lines = error.split("\n");
+  const fieldNames = [...new Set(lines.flatMap((line) => {
+    const match = line.match(/^FIELD::([^:]+)::/);
+    return match ? [match[1]] : [];
+  }))];
+  const otherIssues = lines.filter((line) => !line.startsWith("FIELD::"));
+  const summary = [
+    ...(fieldNames.length ? [fieldNames.join(", ")] : []),
+    ...otherIssues,
+  ].join("; ");
+
+  return (
+    <div className="sf-error" role="alert" ref={summaryRef}>
+      <div className="sf-error-content">
+        <strong>Please fill in valid data for the following fields.</strong>
+        <p>{summary}</p>
+      </div>
+      <button type="button" onClick={onDismiss} aria-label="Dismiss validation errors">
+        ×
+      </button>
+    </div>
+  );
+};
+
+const SelectedStoreContext = ({ store, typeName, planName }) => (
+  <div className="sf-role-context">
+    <span className="sf-icon-square bi bi-shop" />
+    <div>
+      <small>Selected Store</small>
+      <strong>{store.name || "New Store"}</strong>
+      <small>{typeName || "Store type"} | {planName}</small>
+    </div>
+  </div>
 );
 
 const Detail = ({ label, children }) => (
@@ -596,11 +643,32 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
   const [featuresLoading, setFeaturesLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const invalidStoreFields = useMemo(
+    () => new Set(Array.from(String(error).matchAll(/FIELD::([^:]+)::/g), (match) => match[1])),
+    [error],
+  );
+  const errorBannerRef = useRef(null);
+  const scrollToValidationSummary = () => {
+    requestAnimationFrame(() => {
+      errorBannerRef.current?.scrollIntoView({ block: "start", behavior: "smooth" });
+    });
+  };
   const [employeeSearch, setEmployeeSearch] = useState("");
   const [employeeFilter, setEmployeeFilter] = useState("All");
   const [employeePage, setEmployeePage] = useState(1);
+  const [employeePageSize, setEmployeePageSize] = useState(10);
   const [featureSearch, setFeatureSearch] = useState("");
   const [featureCategory, setFeatureCategory] = useState("All Features");
+  const [featurePage, setFeaturePage] = useState(1);
+  const [featurePageSize, setFeaturePageSize] = useState(10);
+
+  useEffect(() => {
+    if (!error) return undefined;
+    const frame = requestAnimationFrame(() => {
+      errorBannerRef.current?.scrollIntoView({ block: "start", behavior: "smooth" });
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [error, step]);
 
   const merchantLookupId = routeMerchantId || store.merchantId;
   const merchantRecord = merchants.find(
@@ -854,7 +922,7 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
   const roleName = (id) => roleById[id]?.name || id;
   const categories = [
     "All Features",
-    ...new Set(featureRows.map((row) => row.category)),
+    ...new Set(featureRows.map((row) => row.category).filter((category) => String(category).toLowerCase() !== "more")),
   ];
   const entitled = (name) => {
     const target = String(name || "")
@@ -931,6 +999,12 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
         .includes(featureSearch.toLowerCase())
     );
   });
+  const featurePageCount = Math.max(1, Math.ceil(filteredFeatures.length / featurePageSize));
+  const currentFeaturePage = Math.min(featurePage, featurePageCount);
+  const pagedFeatures = filteredFeatures.slice(
+    (currentFeaturePage - 1) * featurePageSize,
+    currentFeaturePage * featurePageSize,
+  );
   const selectableFeatureNames = filteredFeatures.filter((row) => entitled(row.name)).map((row) => row.name);
   const allVisibleFeaturesSelected = selectableFeatureNames.length > 0 && selectableFeatureNames.every((name) => enabledFeatures.includes(name));
   const roleAvailableForStoreType = (role) => storeTypeRoleIds === null || roleTemplateKeys(role).some((key) => storeTypeRoleIds.has(key));
@@ -956,7 +1030,7 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
     );
   });
 
-  const pageSize = 10;
+  const pageSize = employeePageSize;
   const pageCount = Math.max(1, Math.ceil(employeeRows.length / pageSize));
   const currentEmployeePage = Math.min(employeePage, pageCount);
   const pagedEmployees = employeeRows.slice(
@@ -1266,20 +1340,14 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
         }
         // A new store starts with no role assignments; the user selects them explicitly.
         if (!editing) {
-          const country =
-            info.owner.country || info.owner.address?.country || "";
           setStore((current) => ({
             ...current,
             merchantId,
             type: info.typeName,
             storeTypeId: info.typeId,
-            country,
-            currency:
-              info.owner.currency ||
-              info.subscription?.currency ||
-              COUNTRIES[country]?.currency ||
-              "",
-            timezone: info.owner.timezone || "",
+            country: "",
+            currency: "",
+            timezone: "",
             defaultLanguage: info.owner.defaultLanguage || "",
           }));
           setRoles([]);
@@ -1646,6 +1714,7 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
     setEmployeePage(1);
     setFeatureSearch("");
     setFeatureCategory("All Features");
+    setFeaturePage(1);
     setCopyFromRole("");
     setError("");
     setStep(0);
@@ -1655,16 +1724,23 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
     if (!editing) changeMerchant(routeMerchantId || "");
   }, [routeMerchantId, storeId]);
 
-  const updateStore = (key, value) =>
+  const clearStoreValidation = () => setError((current) =>
+    current.includes("FIELD::") ? "" : current,
+  );
+  const updateStore = (key, value) => {
+    clearStoreValidation();
     setStore((current) => ({ ...current, [key]: value }));
+  };
   const updateHours = (index, key, value) => {
+    clearStoreValidation();
     const hours = hoursRef.current.map((row, i) =>
       i === index ? { ...row, [key]: value } : row,
     );
     hoursRef.current = hours;
     setStore((current) => ({ ...current, hours }));
   };
-  const changeCountry = (country) =>
+  const changeCountry = (country) => {
+    clearStoreValidation();
     setStore((current) => ({
       ...current,
       country,
@@ -1672,6 +1748,7 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
       currency: COUNTRIES[country]?.currency || "",
       timezone: COUNTRIES[country]?.zones[0] || "",
     }));
+  };
   const copyScheduleToAll = () => {
     const base = hoursRef.current[0] || blankHours()[0];
     const hours = DAYS.map((day) => ({ ...base, day }));
@@ -1897,10 +1974,12 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
       );
     if (imageReads.current > 0) return "Wait for the images to finish loading.";
     if (index === 0) {
-      if (!store.name.trim()) return "Enter the store name.";
-      if (store.name.trim().length > 150)
-        return "Store name must be 150 characters or fewer.";
-      if (!draftOnly && !store.storeTypeId) return "Select a store type.";
+      const errors = [];
+      const addError = (field, message) => errors.push(`FIELD::${field}::${message}`);
+      if (!store.name.trim()) addError("Store Name", "Enter the store name.");
+      else if (store.name.trim().length > 150)
+        addError("Store Name", "Store name must be 150 characters or fewer.");
+      if (!draftOnly && !store.storeTypeId) addError("Store Type", "Select a store type.");
       if (
         store.storeTypeId &&
         !storeTypes.some(
@@ -1911,71 +1990,50 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
             String(type.name).toLowerCase() ===
               String(store.storeTypeId).toLowerCase(),
         )
-      )
-        return "Select an available store type.";
+      ) addError("Store Type", "Select an available store type.");
       if (!draftOnly) {
-        for (const [key, label] of [
-          ["addressLine1", "address"],
-          ["city", "city"],
-          ["state", "state or province"],
-          ["zip", "postal code"],
-          ["country", "country"],
-          ["timezone", "time zone"],
-          ["currency", "currency"],
-          ["phone", "phone number"],
-          ["url", "website URL"],
+        for (const [key, field, label] of [
+          ["addressLine1", "Address Line 1", "address"], ["city", "City", "city"],
+          ["state", "State / Province", "state or province"], ["zip", "Zip / Postal Code", "postal code"],
+          ["country", "Country", "country"], ["timezone", "Time Zone", "time zone"],
+          ["currency", "Currency", "currency"], ["phone", "Store Phone", "phone number"],
+          ["url", "Website URL", "website URL"],
         ]) {
           if (!String(store[key] || "").trim())
-            return "Enter the store " + label + ".";
+            addError(field, "Enter the store " + label + ".");
         }
       }
       const phoneError = validatePhoneForCountry(store.phone, store.country);
-      if (phoneError) return phoneError;
+      if (phoneError) addError("Store Phone", phoneError);
       if (store.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(store.email.trim()))
-        return "Enter a valid email address.";
+        addError("Store Email", "Enter a valid email address.");
       if (store.url) {
         try {
           const url = new URL(store.url.trim());
-          if (
-            !["https:", "http:"].includes(url.protocol) ||
-            !url.hostname ||
-            url.username ||
-            url.password
-          )
-            return "Enter an HTTP or HTTPS website URL without embedded credentials.";
+          if (!["https:", "http:"].includes(url.protocol) || !url.hostname || url.username || url.password)
+            addError("Website URL", "Enter an HTTP or HTTPS website URL without embedded credentials.");
         } catch {
-          return "Enter a valid website URL, including https://.";
+          addError("Website URL", "Enter a valid website URL, including https://.");
         }
       }
       if (store.timezone) {
-        try {
-          new Intl.DateTimeFormat("en", { timeZone: store.timezone });
-        } catch {
-          return "Select a valid time zone.";
-        }
+        try { new Intl.DateTimeFormat("en", { timeZone: store.timezone }); }
+        catch { addError("Time Zone", "Select a valid time zone."); }
       }
       if (store.currency && !/^[A-Z]{3}$/.test(store.currency))
-        return "Select a valid three-letter currency code.";
-      // if (!["Active","Inactive","Draft"].includes(store.status)) return "Select a valid store status.";
+        addError("Currency", "Select a valid three-letter currency code.");
       for (const row of store.hours) {
         if (!["Open", "Closed"].includes(row.status))
-          return "Select Open or Closed for " + row.day + ".";
-        if (row.status === "Open" && (row.open || row.close)) {
-          if (
-            !/^([01]\d|2[0-3]):[0-5]\d$/.test(row.open) ||
-            !/^([01]\d|2[0-3]):[0-5]\d$/.test(row.close) ||
-            row.open === row.close
-          )
-            return (
-              "Enter different opening and closing times for " +
-              row.day +
-              ". Overnight hours are supported."
-            );
-        }
+          addError(`${row.day} Schedule`, "Select Open or Closed for " + row.day + ".");
+        if (row.status === "Open" && (row.open || row.close) &&
+          (!/^([01]\d|2[0-3]):[0-5]\d$/.test(row.open) ||
+           !/^([01]\d|2[0-3]):[0-5]\d$/.test(row.close) || row.open === row.close))
+          addError(`${row.day} Schedule`, "Enter different opening and closing times for " + row.day + ". Overnight hours are supported.");
         const shifts = Number(row.shifts);
         if (!Number.isInteger(shifts) || shifts < 0 || shifts > 100)
-          return "Enter a shift count from 0 to 100 for " + row.day + ".";
+          addError(`${row.day} Schedule`, "Enter a shift count from 0 to 100 for " + row.day + ".");
       }
+      if (errors.length) return errors.join("\n");
     }
     if (index === 1 && !draftOnly) {
       const activeSub = subOverride !== null ? subOverride : subscription;
@@ -2069,6 +2127,7 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
         if (step0Problem) {
           setError(step0Problem);
           setStep(0);
+          scrollToValidationSummary();
           return;
         }
 
@@ -2090,6 +2149,7 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
         if (problem) {
           setError(problem);
           setStep(current);
+          scrollToValidationSummary();
           return;
         }
       }
@@ -2147,6 +2207,7 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
       if (problem) {
         setError(problem);
         setStep(index);
+        scrollToValidationSummary();
         return;
       }
     }
@@ -2348,26 +2409,6 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
       "Not provided";
     return (
       <>
-        <div className="sf-info-banner">
-          <span className="bi bi-info-circle-fill" /> Subscription and billing
-          are managed on the merchant. This store uses the plan assigned to{" "}
-          {merchantName}.
-        </div>
-        <Panel title="Selected Store" className="sf-selected-store">
-          <div className="sf-store-identity">
-            <span className="sf-icon-square bi bi-shop-window" />
-            <div>
-              <strong>{store.name || "New store"}</strong>
-              <small>
-                {store.storeCode || "Store code pending"} <i />{" "}
-                {typeName || "Store type pending"}
-              </small>
-            </div>
-          </div>
-          <button type="button" className="sf-outline" onClick={() => goTo(0)}>
-            Edit Store Details
-          </button>
-        </Panel>
         <Panel
           title="1. Choose Subscription Option"
           subtitle="Subscription and plan changes are managed at merchant level."
@@ -2431,13 +2472,12 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
             </table>
           </div>
         </Panel>
-        <Panel title="Plan Details">
+        <Panel title="Plan Details" className="sf-plan-details-card">
           <div className="sf-plan-details">
             <div className="sf-plan-title">
               <span className="sf-icon-square bi bi-file-earmark-text" />
               <div>
                 <strong>{planName}</strong>
-                <small>{billing} billing</small>
               </div>
             </div>
             <div className="sf-plan-metrics">
@@ -2474,19 +2514,9 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
             </div>
             <div className="sf-key-features">
               <strong>Key Features</strong>
-              <div>
-                {includedFeatures.slice(0, 8).map((item) => (
-                  <span key={item}>
-                    <i className="bi bi-check-circle-fill" />
-                    {item}
-                  </span>
-                ))}
-                {!includedFeatures.length && (
-                  <small>
-                    Included features are not available in the merchant
-                    subscription record.
-                  </small>
-                )}
+              <div className="sf-key-feature-count">
+                <strong>{includedFeatures.length}</strong>
+                <small>included features</small>
               </div>
             </div>
           </div>
@@ -2586,12 +2616,14 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
               </div>
               <Field
                 label="Store Name *"
+                invalid={invalidStoreFields.has("Store Name")}
                 value={store.name}
                 onChange={(value) => updateStore("name", value)}
                 placeholder="Enter store name"
               />
               <SelectField
                 label="Store Type *"
+                invalid={invalidStoreFields.has("Store Type")}
                 value={store.storeTypeId}
                 disabled={storeTypesLoading}
                 onChange={(value) => {
@@ -2613,6 +2645,7 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
                   permissionsRef.current = {};
                   editedPermissionRoles.current = new Set();
                   setLoadError("");
+                  clearStoreValidation();
                 }}
                 options={[
                   {
@@ -2662,8 +2695,22 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
             subtitle="Enter the complete address of the store."
           >
             <div className="sf-form-grid sf-address-grid">
+              <SelectField
+                label="Country *"
+                invalid={invalidStoreFields.has("Country")}
+                value={store.country}
+                onChange={changeCountry}
+                options={[
+                  { value: "", label: "Select country" },
+                  ...locationOptions.countries.map((value) => ({
+                    value,
+                    label: value,
+                  })),
+                ]}
+              />
               <Field
                 label="Address Line 1 *"
+                invalid={invalidStoreFields.has("Address Line 1")}
                 value={store.addressLine1}
                 onChange={(value) => updateStore("addressLine1", value)}
                 placeholder="Street address"
@@ -2677,12 +2724,14 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
               />
               <Field
                 label="City *"
+                invalid={invalidStoreFields.has("City")}
                 value={store.city}
                 onChange={(value) => updateStore("city", value)}
                 placeholder="City"
               />
               <SelectField
                 label="State / Province *"
+                invalid={invalidStoreFields.has("State / Province")}
                 value={store.state}
                 onChange={(value) => updateStore("state", value)}
                 options={[
@@ -2692,21 +2741,10 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
               />
               <Field
                 label="Zip / Postal Code *"
+                invalid={invalidStoreFields.has("Zip / Postal Code")}
                 value={store.zip}
                 onChange={(value) => updateStore("zip", value)}
                 placeholder="Postal code"
-              />
-              <SelectField
-                label="Country *"
-                value={store.country}
-                onChange={changeCountry}
-                options={[
-                  { value: "", label: "Select country" },
-                  ...locationOptions.countries.map((value) => ({
-                    value,
-                    label: value,
-                  })),
-                ]}
               />
             </div>
           </Panel>
@@ -2717,6 +2755,7 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
             <div className="sf-form-grid sf-three-cols">
               <SelectField
                 label="Time Zone *"
+                invalid={invalidStoreFields.has("Time Zone")}
                 value={store.timezone}
                 onChange={(value) => updateStore("timezone", value)}
                 options={[
@@ -2736,6 +2775,7 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
               />
               <SelectField
                 label="Currency *"
+                invalid={invalidStoreFields.has("Currency")}
                 value={currencyCode}
                 onChange={(value) => updateStore("currency", value)}
                 options={[
@@ -2787,6 +2827,7 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
                       <td>
                         <FilterDropdown
                           aria-label={`${row.day} status`}
+                          aria-invalid={invalidStoreFields.has(`${row.day} Schedule`)}
                           value={row.status}
                           onChange={(event) =>
                             updateHours(index, "status", event.target.value)
@@ -2799,6 +2840,7 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
                       <td>
                         <input
                           aria-label={`${row.day} opens`}
+                          aria-invalid={invalidStoreFields.has(`${row.day} Schedule`)}
                           type="time"
                           value={row.open}
                           disabled={row.status === "Closed"}
@@ -2810,6 +2852,7 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
                       <td>
                         <input
                           aria-label={`${row.day} closes`}
+                          aria-invalid={invalidStoreFields.has(`${row.day} Schedule`)}
                           type="time"
                           value={row.close}
                           disabled={row.status === "Closed"}
@@ -2821,6 +2864,7 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
                       <td>
                         <input
                           aria-label={`${row.day} shifts`}
+                          aria-invalid={invalidStoreFields.has(`${row.day} Schedule`)}
                           type="number"
                           min="0"
                           value={row.shifts}
@@ -2869,6 +2913,7 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
           >
             <Field
               label="Store Phone *"
+              invalid={invalidStoreFields.has("Store Phone")}
               value={store.phone}
               onChange={(value) => updateStore("phone", value)}
               type="tel"
@@ -2876,6 +2921,7 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
             />
             <Field
               label="Store Email"
+              invalid={invalidStoreFields.has("Store Email")}
               optional
               value={store.email}
               onChange={(value) => updateStore("email", value)}
@@ -2884,6 +2930,7 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
             />
             <Field
               label="Website URL *"
+              invalid={invalidStoreFields.has("Website URL")}
               value={store.url}
               onChange={(value) => updateStore("url", value)}
               type="url"
@@ -2928,6 +2975,7 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
         <Panel
           title="Features"
           subtitle={readOnly ? "Features available to this store and their saved selection status." : "Select the features you want to enable for this store."}
+          className="sf-feature-list-panel"
           action={<label className="sf-select-all-label sf-panel-select-all"><input type="checkbox" disabled={readOnly || mastersLoading || !selectableFeatureNames.length} checked={allVisibleFeaturesSelected} onChange={(event) => setEnabledFeatures((current) => event.target.checked ? [...new Set([...current, ...selectableFeatureNames])] : current.filter((name) => !selectableFeatureNames.includes(name)))} />Select all eligible</label>}
         >
           <div className="sf-feature-tools">
@@ -2943,7 +2991,10 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
                     key={category}
                     type="button"
                     className={featureCategory === category ? "active" : ""}
-                    onClick={() => setFeatureCategory(category)}
+                    onClick={() => {
+                      setFeatureCategory(category);
+                      setFeaturePage(1);
+                    }}
                   >
                     {category} ({count})
                   </button>
@@ -2955,11 +3006,14 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
               <input
                 placeholder="Search features..."
                 value={featureSearch}
-                onChange={(event) => setFeatureSearch(event.target.value)}
+                onChange={(event) => {
+                  setFeatureSearch(event.target.value);
+                  setFeaturePage(1);
+                }}
               />
             </label>
           </div>
-          <div className="sf-table-wrap">
+          <div className="sf-table-wrap sf-feature-table-wrap">
             <table className="sf-table sf-feature-table">
               <thead>
                 <tr>
@@ -2971,12 +3025,12 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
                 </tr>
               </thead>
               <tbody>
-                {filteredFeatures.map((feature, index) => {
+                {pagedFeatures.map((feature, index) => {
                   const hasPlan = entitled(feature.name);
                   const checked = enabledFeatures.includes(feature.name);
                   return (
                     <tr key={feature.id || feature.name}>
-                      <td>{index + 1}</td>
+                      <td>{(currentFeaturePage - 1) * featurePageSize + index + 1}</td>
                       <td>{feature.name}</td>
                       <td>{feature.description || "—"}</td>
                       <td>
@@ -3002,7 +3056,7 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
                     </tr>
                   );
                 })}
-                {!filteredFeatures.length && (
+                {!pagedFeatures.length && (
                   <tr>
                     <td colSpan="5" className="sf-empty">
                       No features match this search.
@@ -3011,6 +3065,63 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
                 )}
               </tbody>
             </table>
+          </div>
+          <div className="pagination-container sf-feature-pagination">
+            <span className="pagination-info">
+              Showing <strong>{filteredFeatures.length ? (currentFeaturePage - 1) * featurePageSize + 1 : 0}</strong> to{" "}
+              <strong>{Math.min(currentFeaturePage * featurePageSize, filteredFeatures.length)}</strong> of{" "}
+              <strong>{filteredFeatures.length}</strong> items
+            </span>
+            <div className="pagination-controls">
+              <label className="pagination-page-size">
+                <span>Rows per page:</span>
+                <span className="pagination-select-wrapper">
+                  <FilterDropdown
+                    aria-label="Rows per page"
+                    value={featurePageSize}
+                    onChange={(event) => {
+                      setFeaturePageSize(Number(event.target.value));
+                      setFeaturePage(1);
+                    }}
+                  >
+                    {[5, 10, 25, 50, 100].map((size) => (
+                      <option key={size} value={size}>{size}</option>
+                    ))}
+                  </FilterDropdown>
+                </span>
+              </label>
+              <button
+                type="button"
+                className="pagination-arrow"
+                disabled={currentFeaturePage <= 1}
+                onClick={() => setFeaturePage((page) => Math.max(1, page - 1))}
+              >
+                ‹
+              </button>
+              <div className="pagination-pages">
+                {Array.from({ length: featurePageCount }, (_, index) => index + 1)
+                  .slice(0, 5)
+                  .map((page) => (
+                    <button
+                      type="button"
+                      key={page}
+                      className={`pagination-page ${currentFeaturePage === page ? "active" : ""}`}
+                      disabled={!filteredFeatures.length}
+                      onClick={() => setFeaturePage(page)}
+                    >
+                      {page}
+                    </button>
+                  ))}
+              </div>
+              <button
+                type="button"
+                className="pagination-arrow"
+                disabled={currentFeaturePage >= featurePageCount}
+                onClick={() => setFeaturePage((page) => Math.min(featurePageCount, page + 1))}
+              >
+                ›
+              </button>
+            </div>
           </div>
         </Panel>
       </>
@@ -3074,11 +3185,6 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
                 </span>
                 <span>
                   <strong>{role.name}</strong>
-                  <small>
-                    {role.description ||
-                      role.roleCode ||
-                      "Merchant role template"}
-                  </small>
                 </span>
               </label>
             ))}
@@ -3124,8 +3230,20 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
           <Panel
             title={`Permissions for ${activeName}`}
             subtitle={readOnly ? "Saved access for the selected role." : "Set what this role can view, create, edit or delete."}
+            className="sf-permissions-panel"
             action={
-              <div className="sf-copy-permissions">
+              <div
+                className="sf-copy-permissions"
+                style={{
+                  display: "grid",
+                  width: "max-content",
+                  justifySelf: "end",
+                  marginRight: 0,
+                  gridTemplateColumns: "max-content 220px",
+                  alignItems: "end",
+                  gap: 12,
+                }}
+              >
                 <label className="sf-select-all-label">
                   <input type="checkbox" disabled={readOnly || !active || !matrixRows.length} checked={Boolean(active && matrixRows.length && matrixRows.every((item) => STANDARD_ACTIONS.every((action) => Boolean(permissions[active]?.[item.name]?.[action]))))} onChange={(event) => {
                     if (!active) return;
@@ -3141,8 +3259,7 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
                   }} />
                   Select all permissions
                 </label>
-                <label>
-                  Copy from
+                <label style={{ width: 220 }}>
                   <FilterDropdown
                     value={copyFromRole}
                     onChange={(event) => setCopyFromRole(event.target.value)}
@@ -3157,27 +3274,6 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
                       ))}
                   </FilterDropdown>
                 </label>
-                <button
-                  type="button"
-                  className="sf-outline"
-                  disabled={readOnly || !active || !copyFromRole}
-                  onClick={() => {
-                    setPermissions((current) => ({
-                      ...current,
-                      [active]: { ...(current[copyFromRole] || {}) },
-                    }));
-                    setPermissionAvailability((current) => ({
-                      ...current,
-                      [active]: { ...(current[copyFromRole] || {}) },
-                    }));
-                    setRoleFeatureRows((current) => ({
-                      ...current,
-                      [active]: [...(current[copyFromRole] || [])],
-                    }));
-                  }}
-                >
-                  Apply
-                </button>
               </div>
             }
           >
@@ -3333,7 +3429,7 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
               Duplicate login PINs are assigned to {duplicatePinNames.join(", ")}. Change one PIN for this store before continuing.
             </div>
           )}
-          <div className="sf-table-wrap">
+          <div className="sf-table-wrap sf-employees-table-wrap">
             <table className="sf-table sf-employees-table">
               <thead>
                 <tr>
@@ -3489,35 +3585,57 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
               </tbody>
             </table>
           </div>
-          <div className="sf-pagination">
-            <span>
+          <div className="pagination-container employee-pagination-container">
+            <span className="pagination-info">
               Showing{" "}
               {employeeRows.length ? (employeePage - 1) * pageSize + 1 : 0}–
               {Math.min(employeePage * pageSize, employeeRows.length)} of{" "}
               {employeeRows.length} employees
             </span>
-            <div>
+            <div className="pagination-controls">
+              <label className="pagination-page-size">
+                <span>Rows per page:</span>
+                <span className="pagination-select-wrapper">
+                  <FilterDropdown
+                    aria-label="Rows per page"
+                    value={pageSize}
+                    onChange={(event) => {
+                      setEmployeePageSize(Number(event.target.value));
+                      setEmployeePage(1);
+                    }}
+                  >
+                    {[5, 10, 25, 50, 100].map((size) => (
+                      <option key={size} value={size}>{size}</option>
+                    ))}
+                  </FilterDropdown>
+                </span>
+              </label>
               <button
                 type="button"
+                className="pagination-arrow"
                 disabled={employeePage <= 1}
                 onClick={() => setEmployeePage((page) => Math.max(1, page - 1))}
               >
                 ‹
               </button>
-              {Array.from({ length: pageCount }, (_, index) => index + 1)
-                .slice(0, 5)
-                .map((page) => (
-                  <button
-                    type="button"
-                    key={page}
-                    className={employeePage === page ? "active" : ""}
-                    onClick={() => setEmployeePage(page)}
-                  >
-                    {page}
-                  </button>
-                ))}
+              <div className="pagination-pages">
+                {Array.from({ length: pageCount }, (_, index) => index + 1)
+                  .slice(0, 5)
+                  .map((page) => (
+                    <button
+                      type="button"
+                      key={page}
+                      className={`pagination-page ${employeePage === page ? "active" : ""}`}
+                      disabled={!employeeRows.length}
+                      onClick={() => setEmployeePage(page)}
+                    >
+                      {page}
+                    </button>
+                  ))}
+              </div>
               <button
                 type="button"
+                className="pagination-arrow"
                 disabled={employeePage >= pageCount}
                 onClick={() =>
                   setEmployeePage((page) => Math.min(pageCount, page + 1))
@@ -3536,6 +3654,7 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
     <>
       <div className="sf-review-grid">
         <Panel
+          className="sf-review-merchant"
           title={
             <>
               <i className="bi bi-person-vcard" /> Merchant & Subscription
@@ -3559,6 +3678,7 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
           </Detail>
         </Panel>
         <Panel
+          className="sf-review-store"
           title={
             <>
               <i className="bi bi-shop" /> Store Details
@@ -3593,6 +3713,7 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
           <Detail label="Status">{store.status}</Detail>
         </Panel>
         <Panel
+          className="sf-review-features"
           title={
             <>
               <i className="bi bi-grid" /> Features ({enabledCount} enabled)
@@ -3623,6 +3744,7 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
           </div>
         </Panel>
         <Panel
+          className="sf-review-roles"
           title={
             <>
               <i className="bi bi-shield-lock" /> Roles & Permissions (
@@ -3662,6 +3784,7 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
           </div>
         </Panel>
         <Panel
+          className="sf-review-employees"
           title={
             <>
               <i className="bi bi-people" /> Employees (
@@ -3709,6 +3832,7 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
           </div>
         </Panel>
         <Panel
+          className="sf-review-contact"
           title={
             <>
               <i className="bi bi-link-45deg" /> Store Base URL & Contact
@@ -3744,7 +3868,7 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
     event.preventDefault();
     if (readOnly || saveLock.current) return;
     const problem = validateStep(step);
-    if (problem) { setError(problem); return; }
+    if (problem) { setError(problem); scrollToValidationSummary(); return; }
     saveLock.current = true; setSaving(true); setError("");
     try {
       if (step === 4) {
@@ -3767,8 +3891,15 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
     const pending = saving || mastersLoading || merchantLoading || featuresLoading || subscriptionLoading || rolesLoading || storeTypeRolesLoading || permissionsLoading;
     const failure = loadError || merchantError || rolesError;
     return <div className={"sf-root store-section-editor" + (readOnly ? " store-section-readonly" : "")}>
-      <div className="store-panel-heading"><div><h2>{STEPS[step]}</h2><p>{readOnly ? "View saved store information." : STEP_HINTS[step]}</p></div>{readOnly && onEdit && <button type="button" className="store-config-btn" onClick={onEdit}><i className="bi bi-pencil" aria-hidden="true" /> Edit</button>}</div>
-      {(error || failure) && <div className="alert alert-danger" role="alert">{error || failure}<button type="button" onClick={() => setReload(v => v + 1)}>Retry</button></div>}
+      <div className="store-panel-heading">
+        <div>
+          <h2>{STEPS[step]}</h2>
+          <p>{readOnly ? "View saved store information." : STEP_HINTS[step]}</p>
+        </div>
+        {readOnly && onEdit && <button type="button" className="store-config-btn" onClick={onEdit}><i className="bi bi-pencil" aria-hidden="true" /> Edit</button>}
+      </div>
+      {error && <ValidationSummary error={error} summaryRef={errorBannerRef} onDismiss={() => setError("")} />}
+      {failure && <div className="alert alert-danger" role="alert">{failure}<button type="button" onClick={() => setReload(v => v + 1)}>Retry</button></div>}
       {pending && <p role="status">Loading store selections…</p>}
       <form onSubmit={saveSection}><fieldset disabled={pending || Boolean(failure) || (readOnly && step < 2)} style={{border:0,padding:0,minWidth:0}}>{screens[step]()} {!readOnly && <div className="sf-footer"><button type="button" className="sf-outline" onClick={onDone}>Cancel</button><button type="submit" className="sf-primary">{saving ? "Saving…" : "Save Changes"}</button></div>}</fieldset></form>
     </div>;
@@ -3813,7 +3944,7 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
           </div>
         </aside>
         <main className="sf-main">
-          <div className="sf-heading-row">
+          <div className={`sf-heading-row${step === 1 ? " sf-subscription-heading" : ""}`}>
             <div>
               <div className="sf-eyebrow">
                 STEP {step + 1} OF {STEPS.length}
@@ -3827,26 +3958,12 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
                     : STEP_HINTS[step]}
               </p>
             </div>
-            {step === 3 && (
-              <div className="sf-role-context">
-                <span className="sf-icon-square bi bi-shop" />
-                <div>
-                  <small>Selected Store</small>
-                  <strong>{store.name || "New Store"}</strong>
-                  <small>
-                    {typeName || "Store type"} | {planName}
-                  </small>
-                </div>
-              </div>
+            {step >= 1 && step <= 4 && (
+              <SelectedStoreContext store={store} typeName={typeName} planName={planName} />
             )}
           </div>
           {error && (
-            <div className="sf-error" role="alert">
-              {error}
-              <button type="button" onClick={() => setError("")}>
-                ×
-              </button>
-            </div>
+            <ValidationSummary error={error} summaryRef={errorBannerRef} onDismiss={() => setError("")} />
           )}
           {(loadError || merchantError) && (
             <div className="sf-error" role="alert">

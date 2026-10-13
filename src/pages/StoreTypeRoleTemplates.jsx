@@ -1,3 +1,4 @@
+import { pendingStoreRead } from "../api/http";
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import Pagination from "../components/Pagination";
@@ -67,6 +68,7 @@ export default function StoreTypeRoleTemplates() {
   const [deleteError, setDeleteError] = useState("");
 
   useEffect(() => {
+    if (initialState) return;
     let cancelled = false;
 
     storeTypesApi
@@ -77,6 +79,7 @@ export default function StoreTypeRoleTemplates() {
         if (!item || typeof item !== "object" || cancelled) return;
 
         setStoreType({
+          ...item,
           name: item.name ?? initialStoreType.name,
           description: item.description ?? initialStoreType.description,
           status: item.status ?? initialStoreType.status,
@@ -94,8 +97,7 @@ export default function StoreTypeRoleTemplates() {
   useEffect(() => {
     let cancelled = false;
 
-    roleTemplatesApi
-      .getForStoreType(storeTypeId)
+    pendingStoreRead(`store-type-roles:${storeTypeId}`, () => roleTemplatesApi.getForStoreType(storeTypeId))
       .then((response) => {
         if (cancelled) return;
 
@@ -180,7 +182,7 @@ useEffect(() => {
 
     setLoadingAvailableRoles(true);
     try {
-      const response = await roleTemplatesApi.getAll();
+      const response = await pendingStoreRead("store-type-role-catalog", () => roleTemplatesApi.getAll());
       const apiRoles = readRoleTemplatesList(response).map(normalizeRole);
 
       setAvailableRoles(apiRoles);
@@ -303,7 +305,7 @@ async function confirmDeleteRole() {
 
         <button
           type="button"
-          onClick={() => navigate(`/store-types/${storeTypeId}/features`)}
+          onClick={() => navigate(`/store-types/${storeTypeId}/features`, { state: { storeType } })}
         >
           Assigned Features
         </button>

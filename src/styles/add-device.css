@@ -197,6 +197,20 @@
   box-shadow: 0 0 0 2px rgba(103, 68, 220, 0.08);
 }
 
+.device-field-invalid input,
+.device-field-invalid .device-select-wrapper select {
+  border-color: #ef4456 !important;
+  background-color: #fffafb !important;
+  box-shadow: 0 0 0 1px rgba(239, 68, 86, 0.08) !important;
+}
+
+.device-field-invalid input:focus,
+.device-field-invalid .device-select-wrapper select:focus {
+  border-color: #ef4456 !important;
+  box-shadow: 0 0 0 1px rgba(239, 68, 86, 0.08) !important;
+  outline: none !important;
+}
+
 /* =========================================================
    SELECT
 ========================================================= */

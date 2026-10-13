@@ -831,23 +831,6 @@ export default function AddEmployee() {
     const validationErrors = validateForm();
 
     if (Object.keys(validationErrors).length > 0) {
-      const invalidFields = [
-        ...new Set(
-          Object.keys(validationErrors).map((field) => {
-            if (
-              field === "storeAssignments" ||
-              field.startsWith("store-") ||
-              field.startsWith("roles-")
-            ) {
-              return "store and role assignments";
-            }
-            return field
-              .replace(/([A-Z])/g, " $1")
-              .replace(/^./, (character) => character.toUpperCase());
-          }),
-        ),
-      ];
-      setSubmitError(`Please fix: ${invalidFields.join(", ")}.`);
       requestAnimationFrame(() => {
         const firstInvalid = document.querySelector(
           ".field-invalid, .employee-phone-invalid .form-control",
@@ -908,7 +891,7 @@ export default function AddEmployee() {
           FORM
       ===================================================== */}
 
-      <form onSubmit={handleSave} autoComplete="off">
+      <form onSubmit={handleSave} autoComplete="off" noValidate>
         <div className="add-employee-layout">
           {/* =================================================
               LEFT COLUMN
@@ -967,6 +950,7 @@ export default function AddEmployee() {
                   </label>
 
                   <PhoneInput
+                    containerClass={errors.phone ? "employee-phone-invalid" : ""}
                     country="in"
                     enableSearch
                     countryCodeEditable={false}

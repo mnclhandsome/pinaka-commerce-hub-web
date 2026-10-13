@@ -36,6 +36,43 @@
   font-size: 13px;
 }
 
+.taxonomy-sync-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex: 0 0 auto;
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1px solid #5941c8;
+  border-radius: 7px;
+  background: #5941c8;
+  color: #fff;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.taxonomy-sync-button:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.taxonomy-sync-spinning {
+  animation: taxonomy-sync-spin 1s linear infinite;
+}
+
+.taxonomy-sync-message {
+  margin: -6px 0 14px;
+  color: #28704b;
+  font-size: 13px;
+}
+
+@keyframes taxonomy-sync-spin {
+  to { transform: rotate(360deg); }
+}
+
 .categories-store-context {
   display: flex;
   align-items: center;
@@ -126,18 +163,19 @@
 ========================================================= */
 
 .categories-toolbar {
+  box-sizing: border-box;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 14px;
-  padding: 14px 18px;
-  border-bottom: 1px solid #e8ebf0;
-  background: #fafbfc;
+  gap: 8px;
+  width: calc(100% - 24px);
+  margin: 0 12px;
+  padding: 12px 0 16px;
 }
 
 .categories-search {
   position: relative;
-  width: 320px;
+  flex: 1 1 360px;
+  width: auto;
   max-width: 100%;
 }
 
@@ -177,8 +215,20 @@
 ========================================================= */
 
 .categories-table-wrap {
-  width: 100%;
+  box-sizing: border-box;
+  width: calc(100% - 24px);
+  max-width: calc(100% - 24px);
+  margin: 0 12px;
   overflow-x: auto;
+  border: 1px solid #dfe9f4;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.categories-table-wrap + .pagination-container {
+  box-sizing: border-box;
+  width: calc(100% - 24px);
+  margin: 0 12px;
 }
 
 .categories-table {
@@ -460,7 +510,7 @@
   }
 
   .categories-toolbar {
-    padding: 12px;
+    padding: 12px 0 16px;
   }
 
   .categories-search {
@@ -494,5 +544,20 @@
   .categories-tab {
     height: 48px;
     font-size: 12px;
+  }
+}
+
+@media (max-width: 600px) {
+  .categories-table-wrap {
+    width: calc(100% - 20px);
+    max-width: calc(100% - 20px);
+    margin-right: 10px;
+    margin-left: 10px;
+  }
+
+  .categories-table-wrap + .pagination-container {
+    width: calc(100% - 20px);
+    margin-right: 10px;
+    margin-left: 10px;
   }
 }

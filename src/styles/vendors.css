@@ -2006,9 +2006,18 @@
   line-height: 1.35;
 }
 
-.vendors-form input[aria-invalid="true"] {
-  border-color: #f1a8b4;
-  background: #fffafa;
+.vendors-form input[aria-invalid="true"],
+.vendors-form select[aria-invalid="true"] {
+  border-color: #ef4456 !important;
+  background: #fffafb !important;
+  box-shadow: 0 0 0 1px rgba(239, 68, 86, 0.08) !important;
+}
+
+.vendors-form input[aria-invalid="true"]:focus,
+.vendors-form select[aria-invalid="true"]:focus {
+  border-color: #ef4456 !important;
+  box-shadow: 0 0 0 1px rgba(239, 68, 86, 0.08) !important;
+  outline: none !important;
 }
 
 /* Active / Inactive status field colors. */
