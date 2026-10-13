@@ -211,6 +211,14 @@
   outline: none !important;
 }
 
+.device-field-error {
+  display: block;
+  margin-top: 5px;
+  color: #ef304b;
+  font-size: 12px;
+  line-height: 1.3;
+}
+
 /* =========================================================
    SELECT
 ========================================================= */
