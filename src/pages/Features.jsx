@@ -2,6 +2,7 @@ import FilterDropdown from "../components/FilterDropdown";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Pagination from "../components/Pagination";
+import DeleteConfirmationDialog from "../components/DeleteConfirmationDialog";
 import "../styles/features.css";
 import { listFeatures, createFeature as createFeatureApi, updateFeature as updateFeatureApi, deleteFeature as deleteFeatureApi } from "../api/features";
 
@@ -59,6 +60,8 @@ export default function Features() {
   const [sortBy, setSortBy] = useState("newest");
   const [formErrors, setFormErrors] = useState({});
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
 
@@ -218,15 +221,25 @@ export default function Features() {
     }
   };
 
-  const confirmDeleteFeature = async () => {
-    if (!deleteTarget) return;
-    try {
-      await deleteFeature(deleteTarget.id);
-      setDeleteTarget(null);
-    } catch {
-      // Keep modal open on error
-    }
-  };
+  
+const confirmDeleteFeature = async () => {
+  if (!deleteTarget || deleting) return;
+
+  setDeleting(true);
+  setDeleteError("");
+
+  try {
+    await deleteFeature(deleteTarget.id);
+    setDeleteTarget(null);
+  } catch (e) {
+    setDeleteError(
+      e.message || "Unable to deactivate feature. Please try again."
+    );
+  } finally {
+    setDeleting(false);
+  }
+};
+
 
   const filteredFeatures = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -604,10 +617,7 @@ export default function Features() {
                       <button
                         type="button"
                         className="delete-button"
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          setDeleteTarget(item);
-                        }}
+                       onClick={(event) => {event.stopPropagation(); setDeleteError(""); setDeleteTarget(item);}}
                         aria-label={`Delete ${item.name}`}
                         title={`Delete ${item.name}`}
                       >
@@ -633,52 +643,30 @@ export default function Features() {
 </div>
       </section>
 
-      {deleteTarget && (
-        <div
-          className="features-delete-overlay"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="delete-feature-title"
-          onClick={() => setDeleteTarget(null)}
-        >
-          <div
-            className="features-delete-modal"
-            onClick={(event) => event.stopPropagation()}
-          >
-            <div className="features-delete-icon">
-              <i className="bi bi-trash" />
-            </div>
+      
+<DeleteConfirmationDialog
+  isOpen={Boolean(deleteTarget)}
+  title="Deactivate Feature?"
+  message={
+    deleteTarget
+      ? `Are you sure you want to deactivate "${deleteTarget.name}"?`
+      : ""
+  }
+  cancelLabel="No, Keep It"
+  confirmLabel="Yes, Deactivate"
+  busyLabel="Deactivating..."
+  busy={deleting}
+  error={deleteError}
+  iconClassName="bi bi-trash"
+  onCancel={() => {
+    if (!deleting) {
+      setDeleteTarget(null);
+      setDeleteError("");
+    }
+  }}
+  onConfirm={confirmDeleteFeature}
+/>
 
-            <h2 id="delete-feature-title">Deactivate Feature?</h2>
-
-            <p>
-             Are you sure you want to deactivate{" "}
-              <strong>{deleteTarget.name}</strong>?
-            </p>
-
-            <p className="features-delete-final-warning">
-             The record will remain visible and can be activated again later.
-             </p>
-            <div className="features-delete-actions">
-              <button
-                type="button"
-                className="features-delete-keep-button"
-                onClick={() => setDeleteTarget(null)}
-              >
-                No, Keep it
-              </button>
-
-              <button
-                type="button"
-                className="features-delete-confirm-button"
-                onClick={confirmDeleteFeature}
-              >
-                Yes, Deactivate
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
     </div>
   );

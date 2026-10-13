@@ -700,11 +700,9 @@ export default function Merchants({ localMerchants = [], onLocalDelete, onSaveEm
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState('');
   const [notice, setNotice] = useState('');
-  const deleteDialog = useRef(null);
   const deleteInFlight = useRef(false);
   const mounted = useRef(false);
   useEffect(() => { mounted.current = true; return () => { mounted.current = false; }; }, []);
-  useEffect(() => { if (deleteTarget && deleteDialog.current && !deleteDialog.current.open) deleteDialog.current.showModal(); }, [deleteTarget]);
   async function confirmDelete() {
     if (deleteInFlight.current || !deleteTarget) return;
     deleteInFlight.current = true; setDeleting(true); setDeleteError('');
@@ -1236,72 +1234,25 @@ export default function Merchants({ localMerchants = [], onLocalDelete, onSaveEm
     showWhenEmpty={true} 
 />
       </div>
-      {deleteTarget && (
-  <dialog
-    className="merchant-deactivate-dialog"
-    ref={deleteDialog}
-    aria-labelledby="merchant-deactivate-title"
-    onCancel={(event) => {
-      event.preventDefault();
+{deleteTarget && (
+  <DeleteConfirmationDialog
+    isOpen={!!deleteTarget}
+    title="Deactivate Merchant?"
+    message={`Are you sure you want to deactivate ${deleteTarget.name}?`}
+    cancelLabel="Cancel"
+    confirmLabel="Deactivate Merchant"
+    busyLabel="Deactivating..."
+    busy={deleting}
+    error={deleteError}
+    iconClassName="bi bi-trash3"
+    onCancel={() => {
       if (!deleting) {
         setDeleteTarget(null);
+        setDeleteError("");
       }
     }}
-  >
-    <div className="merchant-deactivate-content">
-
-      {/* Red trash icon */}
-      <div className="merchant-deactivate-icon">
-        <i className="bi bi-trash3"></i>
-      </div>
-
-      {/* Title */}
-      <h2 id="merchant-deactivate-title">
-        Deactivate Merchant?
-      </h2>
-
-      {/* Confirmation text */}
-      <p className="merchant-deactivate-message">
-        Are you sure you want to deactivate{" "}
-        <strong>{deleteTarget.name}</strong>?
-      </p>
-
-      {/* Warning */}
-      <p className="merchant-deactivate-warning">
-        This action cannot be undone.
-      </p>
-
-      {/* API error */}
-      {deleteError && (
-        <p className="merchant-deactivate-error" role="alert">
-          {deleteError}
-        </p>
-      )}
-
-      {/* Buttons */}
-      <div className="merchant-deactivate-actions">
-        <button
-          type="button"
-          className="merchant-deactivate-cancel"
-          autoFocus
-          disabled={deleting}
-          onClick={() => setDeleteTarget(null)}
-        >
-          Cancel
-        </button>
-
-        <button
-          type="button"
-          className="merchant-deactivate-confirm"
-          disabled={deleting}
-          onClick={confirmDelete}
-        >
-          {deleting ? "Deactivating…" : "Deactivate Merchant"}
-        </button>
-      </div>
-
-    </div>
-  </dialog>
+    onConfirm={confirmDelete}
+  />
 )}
     </div>
   );
@@ -1341,7 +1292,27 @@ function MerchantEmployeeList({employees,merchantName,onAdd,onRefresh,onEdit}) {
   const pages=Math.max(1,Math.ceil(filtered.length/10)),current=Math.min(page,pages);
   return <div className="mel">
     <EmployeeToast message={notice} onClose={()=>setNotice("")} />
-    {deleteTarget && <EmployeeDeleteDialog title="Delete Employee?" description={`Are you sure you want to delete ${employeeName(deleteTarget)}?`} busy={deleteBusy} onCancel={()=>{if(!deleteBusy)setDeleteTarget(null);}} onConfirm={confirmDelete} />}
+
+{deleteTarget && (
+  <DeleteConfirmationDialog
+    isOpen={!!deleteTarget}
+    title="Delete Employee?"
+    message={`Are you sure you want to delete ${employeeName(deleteTarget)}? This action cannot be undone.`}
+    cancelLabel="Cancel"
+    confirmLabel="Delete Employee"
+    busyLabel="Deleting..."
+    busy={deleteBusy}
+    error=""
+    iconClassName="bi bi-trash3"
+    onCancel={() => {
+      if (!deleteBusy) {
+        setDeleteTarget(null);
+      }
+    }}
+    onConfirm={confirmDelete}
+  />
+)}
+
     <header className="mel-card mel-heading"><div><h2>Employees</h2><p>These are the employees connected to this merchant.</p></div><button className="mel-primary" onClick={onAdd}>＋ Add Employee</button></header>
     <section className="mel-card"><h3>Employee List</h3><div className="mel-search"><input aria-label="Search employees" placeholder="Search employee, ID, username, phone or email…" value={filters.query} onChange={e=>update('query',e.target.value)}/><button type="button" onClick={()=>{setFilters(blank);setPage(1);}}><i className="bi bi-arrow-counterclockwise" aria-hidden="true" />Clear</button></div>
    <div className="mel-scroll"><table><thead><tr>{['Employee','Email','Phone','Login PIN','Gender','Status','Actions'].map(title=><th key={title}>{title}</th>)}</tr></thead><tbody>
@@ -1393,7 +1364,7 @@ function MerchantDeviceList({devices,storeName,onAdd,loading=false,error=''}) {
   const badge=value=>['online','active'].includes(String(value).toLowerCase())?'mdl-good':['offline','inactive'].includes(String(value).toLowerCase())?'mdl-off':'mdl-unknown';
   return <div className="mdl"><header className="mdl-card mdl-header"><div><h2>Devices</h2><p>These are the devices connected to this merchant.</p></div><button className="mdl-primary" onClick={onAdd}>＋ Add Device</button></header>
     <section className="mdl-card"><h3>Device List</h3>{error&&<p role="alert" className="alert alert-danger">{error}</p>}<div className="mdl-toolbar"><input aria-label="Search devices" placeholder="Search devices by name, type or serial…" value={query} onChange={e=>{setQuery(e.target.value);setPage(1);}}/><button type="button" onClick={()=>{setQuery('');setPage(1);setSort({key:'name',direction:1});}}><i className="bi bi-arrow-counterclockwise" aria-hidden="true" />Clear</button></div>
-    <div className="mdl-scroll"><table><thead><tr>{[['deviceIdentifier','Device ID'],['deviceCode','Device Code'],['name','Device Name'],['type','Type'],['storeLabel','Store'],['serial','Serial No.'],['status','Status']].map(([key,title])=><th key={key} aria-sort={sort.key===key?(sort.direction===1?'ascending':'descending'):'none'}><button className="mdl-sort" onClick={()=>setSort(old=>({key,direction:old.key===key?-old.direction:1}))}>{title} {sort.key===key?(sort.direction===1?'↑':'↓'):'↕'}</button></th>)}<th>Actions</th></tr></thead><tbody>{loading&&<tr><td colSpan={8} role="status">Loading merchant devices…</td></tr>}{!loading&&rows.slice((current-1)*10,current*10).map((d,index)=><tr key={d.id || d.deviceId || index}><td>{d.deviceIdentifier}</td><td>{d.deviceCode}</td><td><span className="mdl-name"><span className="mdl-icon" aria-hidden="true">▣</span><strong>{d.name}</strong></span></td><td>{d.type}</td><td>{d.storeLabel}</td><td>{d.serial}</td><td><span className={'mdl-badge '+badge(d.status)}>● {d.status}</span></td><td><ListActions viewLabel={'View '+d.name} onView={e=>{lastFocus.current=e.currentTarget;setView(d);}} /></td></tr>)}{!loading&&!rows.length&&<tr><td colSpan={8}>No devices found for this merchant.</td></tr>}</tbody></table></div>
+    <div className="mdl-scroll"><table><thead><tr>{[['deviceIdentifier','Device ID'],['deviceCode','Device Code'],['name','Device Name'],['type','Type'],['storeLabel','Store'],['serial','Serial No.'],['status','Status']].map(([key,title])=><th key={key} aria-sort={sort.key===key?(sort.direction===1?'ascending':'descending'):'none'}><button className="mdl-sort" onClick={()=>setSort(old=>({key,direction:old.key===key?-old.direction:1}))}>{title} </button></th>)}<th>Actions</th></tr></thead><tbody>{loading&&<tr><td colSpan={8} role="status">Loading merchant devices…</td></tr>}{!loading&&rows.slice((current-1)*10,current*10).map((d,index)=><tr key={d.id || d.deviceId || index}><td>{d.deviceIdentifier}</td><td>{d.deviceCode}</td><td><span className="mdl-name"><strong>{d.name}</strong></span></td><td>{d.type}</td><td>{d.storeLabel}</td><td>{d.serial}</td><td><span className={'mdl-badge '+badge(d.status)}>● {d.status}</span></td><td><ListActions viewLabel={'View '+d.name} onView={e=>{lastFocus.current=e.currentTarget;setView(d);}} /></td></tr>)}{!loading&&!rows.length&&<tr><td colSpan={8}>No devices found for this merchant.</td></tr>}</tbody></table></div>
     <footer><span>Showing {rows.length?(current-1)*10+1:0} to {Math.min(current*10,rows.length)} of {rows.length} entries</span><div><button type="button" className="pagination-arrow" aria-label="Previous page" disabled={current===1} onClick={()=>setPage(current-1)}><i className="bi bi-chevron-left" aria-hidden="true" /></button><div className="pagination-pages"><button type="button" className="pagination-page active" aria-current="page" onClick={()=>setPage(current)}>{current}</button></div><button type="button" className="pagination-arrow" aria-label="Next page" disabled={current===pages} onClick={()=>setPage(current+1)}><i className="bi bi-chevron-right" aria-hidden="true" /></button></div></footer></section>
     <dialog className="mdl-dialog" ref={dialog} aria-labelledby="mdl-title" onCancel={e=>{e.preventDefault();setView(null);}}><header className="mdl-header"><h2 id="mdl-title">Device Details</h2><button aria-label="Close device details" onClick={()=>setView(null)}>×</button></header>{view&&<dl>{Object.entries({Device:view.name,Type:view.type,Store:view.storeLabel,'Serial No.':view.serial,Status:view.status,'Device ID':view.deviceIdentifier,'Device Code':view.deviceCode}).map(([key,value])=><div key={key}><dt>{key}</dt><dd>{value || '—'}</dd></div>)}</dl>}</dialog>
   </div>;

@@ -1,6 +1,7 @@
 import { pendingStoreRead } from "../api/http";
 import { useEffect, useRef, useState } from "react";
 import { Eye, Trash2 } from "lucide-react";
+import DeleteConfirmationDialog from "../components/DeleteConfirmationDialog";
 import "../styles/merchant-vendors.css";
 import Vendors from "./Vendors";
 
@@ -272,14 +273,22 @@ export default function MerchantVendors({
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [mappingId, storeScope]);
 
-    useEffect(() => {
-        if (modal && modal.type !== "create") {
-            if (!dialog.current?.open) dialog.current?.showModal();
-        } else if (dialog.current?.open) {
-            dialog.current.close();
-            addButton.current?.focus();
+    
+useEffect(() => {
+    if (
+        modal &&
+        modal.type !== "create" &&
+        modal.type !== "remove"
+    ) {
+        if (!dialog.current?.open) {
+            dialog.current?.showModal();
         }
-    }, [modal]);
+    } else if (dialog.current?.open) {
+        dialog.current.close();
+        addButton.current?.focus();
+    }
+}, [modal]);
+
 
     /* =========================================================
        MASTER VENDORS
@@ -1370,29 +1379,6 @@ export default function MerchantVendors({
                                 </button>
                             )}
 
-                            {modal?.type === "remove" && (
-                                <button
-                                    type="button"
-                                    className="mv-primary"
-                                    disabled={busy}
-                                    onClick={() =>
-                                        save(
-                                            ids.filter(
-                                                (id) =>
-                                                    id !==
-                                                    modal
-                                                        .vendor
-                                                        .id
-                                            )
-                                        )
-                                    }
-                                >
-                                    {busy
-                                        ? "Saving…"
-                                        : "Remove Assignment"}
-                                </button>
-                            )}
-
                         </div>
 
                     </footer>}
@@ -1400,6 +1386,30 @@ export default function MerchantVendors({
                 </div>
 
             </dialog>
+
+            
+<DeleteConfirmationDialog
+    isOpen={modal?.type === "remove"}
+    title="Remove Vendor Assignment?"
+    message={`Are you sure you want to remove ${
+        modal?.vendor?.name || "this vendor"
+    } from this ${entityName}? The vendor will remain available in Master Data.`}
+    cancelLabel="Cancel"
+    confirmLabel="Remove Assignment"
+    busyLabel="Removing..."
+    busy={busy}
+    error={saveError}
+    iconClassName="bi bi-trash3"
+    onCancel={close}
+    onConfirm={() =>
+        save(
+            ids.filter(
+                (id) => id !== modal?.vendor?.id
+            )
+        )
+    }
+/>
+
 
         </div>
     );

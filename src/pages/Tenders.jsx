@@ -2,6 +2,7 @@ import FilterDropdown from "../components/FilterDropdown";
 import { useEffect, useMemo, useState } from "react";
 import { storeTypesApi } from "../api/storeTypes";
 import Pagination from "../components/Pagination";
+import DeleteConfirmationDialog from "../components/DeleteConfirmationDialog";
 import { tendorsApi } from "../api/tendors";
 import { useNavigate } from "react-router-dom";
 
@@ -170,6 +171,7 @@ const [currentPage, setCurrentPage] = useState(1);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [deleteConfirmTender, setDeleteConfirmTender] = useState(null);
+  const [deleteError, setDeleteError] = useState("");
 
   useEffect(() => {
     fetchTendors();
@@ -345,73 +347,84 @@ useEffect(() => {
     });
   }
 
-  function requestDeleteTender(tender) {
-    if (deleting) {
-      return;
-    }
+  
+function requestDeleteTender(tender) {
+  if (deleting) return;
 
-    setDeleteConfirmTender(tender);
+  setDeleteError("");
+  setDeleteConfirmTender(tender);
+}
+
+function cancelDeleteTender() {
+  if (deleting) return;
+
+  setDeleteConfirmTender(null);
+  setDeleteError("");
+}
+
+async function confirmDeleteTender() {
+  if (!deleteConfirmTender || deleting) return;
+
+  const tender = deleteConfirmTender;
+
+  if (
+    tender.id === undefined ||
+    tender.id === null ||
+    String(tender.id).trim() === ""
+  ) {
+    setDeleteError("Tender ID is missing. Cannot deactivate.");
+    return;
   }
 
-  function cancelDeleteTender() {
-    if (deleting) {
-      return;
+  try {
+    setDeleting(true);
+    setDeletingId(tender.id);
+    setDeleteError("");
+
+    const response = await tendorsApi.update(tender.id, {
+      tendorCode: tender.code,
+      tendorName: tender.name,
+      status: "INACTIVE",
+    });
+
+    const updatedTendor = getTendorData(response);
+
+    setTenders((current) =>
+      current.map((item) =>
+        item.id === tender.id
+          ? {
+              ...item,
+              status: "Inactive",
+              updatedAt:
+                updatedTendor?.updatedAt ||
+                updatedTendor?.updated_at ||
+                new Date().toISOString(),
+            }
+          : item,
+      ),
+    );
+
+    if (editingId === tender.id) {
+      resetForm();
     }
 
     setDeleteConfirmTender(null);
+    setDeleteError("");
+  } catch (error) {
+    console.error("Failed to deactivate tendor:", error);
+
+    setDeleteError(
+      error?.response?.data?.message ||
+        error?.response?.data?.error ||
+        error?.message ||
+        "Failed to deactivate tender.",
+    );
+  } finally {
+    setDeleting(false);
+    setDeletingId(null);
   }
+}
 
-  async function confirmDeleteTender() {
-    if (!deleteConfirmTender) {
-      return;
-    }
-
-    const tender = deleteConfirmTender;
-
-    try {
-      setDeleting(true);
-      setDeletingId(tender.id);
-
-      const response = await tendorsApi.update(tender.id, {
-        tendorCode: tender.code,
-        tendorName: tender.name,
-        status: "INACTIVE",
-      });
-      const updatedTendor = getTendorData(response);
-
-      setTenders((current) =>
-        current.map((item) =>
-          item.id === tender.id
-            ? {
-                ...item,
-                status: "Inactive",
-                updatedAt:
-                  updatedTendor?.updatedAt ||
-                  updatedTendor?.updated_at ||
-                  new Date().toISOString(),
-              }
-            : item,
-        ),
-      );
-
-      if (editingId === tender.id) {
-        resetForm();
-      }
-
-      setDeleteConfirmTender(null);
-    } catch (error) {
-      console.error("Failed to deactivate tendor:", error);
-
-      alert(
-        error?.response?.data?.message ||
-          error?.message ||
-          "Failed to deactivate tender.",
-      );
-    } finally {
-      setDeleting(false);
-      setDeletingId(null);
-    }
-  }
 
   return (
     <section className="tenders-page">
@@ -716,59 +729,28 @@ useEffect(() => {
   itemLabel="tenders"
   showWhenEmpty={false}
 />
-
-
       </div>
 
-   
-      {deleteConfirmTender && (
-        <div className="tenders-confirm-backdrop" onClick={cancelDeleteTender}>
-          <div
-            className="tenders-confirm-modal"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="delete-tender-title"
-            onClick={(event) => event.stopPropagation()}
-          >
-            <div className="tenders-confirm-icon">
-              <i className="bi bi-exclamation-triangle" />
-            </div>
+<DeleteConfirmationDialog
+  isOpen={Boolean(deleteConfirmTender)}
+  title="Deactivate Tender?"
+  message={
+    deleteConfirmTender
+      ? `Are you sure you want to deactivate "${
+          deleteConfirmTender.name || "this tender"
+        }"?`
+      : ""
+  }
+  cancelLabel="No, Keep It"
+  confirmLabel="Yes, Deactivate"
+  busyLabel="Deactivating..."
+  busy={deleting}
+  error={deleteError}
+  iconClassName="bi bi-exclamation-triangle"
+  onCancel={cancelDeleteTender}
+  onConfirm={confirmDeleteTender}
+/>
 
-            <div className="tenders-confirm-content">
-              <h2 id="delete-tender-title">Deactivate Tender?</h2>
-
-              <p>
-                Are you sure you want to deactivate{" "}
-                <strong>{deleteConfirmTender.name}</strong>?
-              </p>
-
-              <span className="tenders-confirm-warning">
-                This tender will remain in the list with Inactive status.
-              </span>
-            </div>
-
-            <div className="tenders-confirm-actions">
-              <button
-                type="button"
-                className="tenders-confirm-cancel"
-                onClick={cancelDeleteTender}
-                disabled={deleting}
-              >
-                No, Keep it
-              </button>
-
-              <button
-                type="button"
-                className="tenders-confirm-delete"
-                onClick={confirmDeleteTender}
-                disabled={deleting}
-              >
-                {deleting ? "Deactivating..." : "Yes, Deactivate"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </section>
   );
 }

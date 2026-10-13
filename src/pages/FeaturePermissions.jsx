@@ -2,6 +2,7 @@ import FilterDropdown from "../components/FilterDropdown";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Pagination from "../components/Pagination";
+import DeleteConfirmationDialog from "../components/DeleteConfirmationDialog";
 import { listFeatures } from "../api/features";
 import {
   listFeaturePermissions,
@@ -117,13 +118,11 @@ export default function FeaturePermissions() {
   const [editingId, setEditingId] =
     useState(null);
 
-  const [
-    permissionToDelete,
-    setPermissionToDelete,
-  ] = useState(null);
+  
+const [permissionToDelete, setPermissionToDelete,] = useState(null);
+const [isDeleting, setIsDeleting] = useState(false);
+const [deleteError, setDeleteError] = useState("");
 
-  const [isDeleting, setIsDeleting] =
-    useState(false);
 
   const [search, setSearch] =
     useState("");
@@ -807,89 +806,70 @@ export default function FeaturePermissions() {
      DELETE PERMISSION
      ========================================================= */
 
-  const openDeleteConfirmation = (
-    permission,
-  ) => {
-    setPermissionToDelete(
-      permission,
-    );
-  };
+  const openDeleteConfirmation = (permission) => {
+  setDeleteError("");
+  setPermissionToDelete(permission);
+};
 
-  const closeDeleteConfirmation = () => {
-    if (isDeleting) return;
+ const closeDeleteConfirmation = () => {
+  if (isDeleting) return;
+
+  setPermissionToDelete(null);
+  setDeleteError("");
+};
+  const confirmDeletePermission = async () => {
+  const permission = permissionToDelete;
+
+  if (!permission || isDeleting) return;
+
+  const permissionId = permission.id;
+  const featureId = permission.featureId;
+
+  if (
+    permissionId === undefined ||
+    permissionId === null ||
+    featureId === undefined ||
+    featureId === null ||
+    String(permissionId).trim() === "" ||
+    String(featureId).trim() === ""
+  ) {
+    setDeleteError("Permission ID or feature ID is missing.");
+    return;
+  }
+
+  setIsDeleting(true);
+  setDeleteError("");
+
+  try {
+    await deleteFeaturePermission(featureId, permissionId);
+
+    setPermissions((current) =>
+      current.map((item) =>
+        String(item.id) === String(permissionId)
+          ? {
+              ...item,
+              status: "Inactive",
+              updatedAt: new Date().toISOString(),
+            }
+          : item
+      )
+    );
+
+    if (String(editingId) === String(permissionId)) {
+      clearForm();
+    }
 
     setPermissionToDelete(null);
-  };
+  } catch (error) {
+    console.error("Delete permission failed:", error);
 
-  const confirmDeletePermission =
-    async () => {
-      const permission =
-        permissionToDelete;
-
-      if (!permission) return;
-
-      const permissionId =
-        permission.id;
-
-      const featureId =
-        permission.featureId;
-
-      if (
-        permissionId ===
-          undefined ||
-        permissionId === null ||
-        featureId === undefined ||
-        featureId === null ||
-        String(
-          permissionId,
-        ).trim() === "" ||
-        String(
-          featureId,
-        ).trim() === ""
-      ) {
-        window.alert(
-          "Permission ID or feature ID is missing.",
-        );
-
-        return;
-      }
-
-      setIsDeleting(true);
-
-      try {
-        await deleteFeaturePermission(
-          featureId,
-          permissionId,
-        );
-
-        setPermissions((current) => current.map((item) =>
-          String(item.id) === String(permissionId)
-            ? { ...item, status: "Inactive", updatedAt: new Date().toISOString() }
-            : item,
-        ));
-
-        if (
-          String(editingId) ===
-          String(permissionId)
-        ) {
-          clearForm();
-        }
-
-        setPermissionToDelete(null);
-      } catch (error) {
-        console.error(
-          "Delete permission failed:",
-          error,
-        );
-
-        window.alert(
-          error?.message ||
-            "Unable to delete permission.",
-        );
-      } finally {
-        setIsDeleting(false);
-      }
-    };
+    setDeleteError(
+      error?.message || "Unable to deactivate permission."
+    );
+  } finally {
+    setIsDeleting(false);
+  }
+};
 
   /* =========================================================
      RESET FILTERS
@@ -1762,78 +1742,31 @@ const paginatedPermissions = filteredPermissions.slice(
           DELETE MODAL
           ===================================================== */}
 
-      {permissionToDelete && (
-        <div
-          className="fp-delete-modal-backdrop"
-          onMouseDown={(event) => {
-            if (
-              event.target ===
-              event.currentTarget
-            ) {
-              closeDeleteConfirmation();
-            }
-          }}
-        >
-          <div
-            className="fp-delete-modal"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="fp-delete-modal-title"
-          >
-            <div className="fp-delete-modal-icon">
-              <i className="bi bi-trash3" />
-            </div>
+      
+{/* DELETE CONFIRMATION DIALOG */}
 
-            <h2 id="fp-delete-modal-title">
-              Deactivate Permission?
-            </h2>
+<DeleteConfirmationDialog
+  isOpen={Boolean(permissionToDelete)}
+  title="Deactivate Permission?"
+  message={
+    permissionToDelete
+      ? `Are you sure you want to mark "${
+          permissionToDelete.name ||
+          permissionToDelete.key ||
+          "this permission"
+        }" as inactive?`
+      : ""
+  }
+  cancelLabel="No, Keep It"
+  confirmLabel="Yes, Deactivate"
+  busyLabel="Deactivating..."
+  busy={isDeleting}
+  error={deleteError}
+  iconClassName="bi bi-trash3"
+  onCancel={closeDeleteConfirmation}
+  onConfirm={confirmDeletePermission}
+/>
 
-            <p className="fp-delete-modal-message">
-              Are you sure you want to mark{" "}
-              <strong>
-                {permissionToDelete.name ||
-                  permissionToDelete.key ||
-                  "this permission"}
-              </strong>
-              as inactive?
-            </p>
-
-            <p className="fp-delete-modal-warning">
-              The permission will remain in the list with Inactive status.
-            </p>
-
-            <div className="fp-delete-modal-actions">
-              <button
-                type="button"
-                className="fp-delete-cancel-btn"
-                onClick={
-                  closeDeleteConfirmation
-                }
-                disabled={
-                  isDeleting
-                }
-              >
-               No, Keep it
-              </button>
-
-              <button
-                type="button"
-                className="fp-delete-confirm-btn"
-                onClick={
-                  confirmDeletePermission
-                }
-                disabled={
-                  isDeleting
-                }
-              >
-                {isDeleting
-                  ? "Deactivating..."
-                  : "Yes, Deactivate"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

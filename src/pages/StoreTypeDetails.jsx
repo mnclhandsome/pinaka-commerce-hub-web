@@ -81,7 +81,6 @@ export default function StoreTypeDetails() {
   <div className="store-type-details-heading">
     <div className="store-type-title-line">
       <h1>{form.name}</h1>
-
     </div>
 
     <p>{form.description}</p>
