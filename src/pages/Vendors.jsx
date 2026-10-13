@@ -965,6 +965,7 @@ export default function Vendors({
               disabled={saving || viewingId !== null}
               aria-invalid={Boolean(validationErrors.name)}
             />
+            {validationErrors.name && <small className="vendors-field-error">Vendor Name is required.</small>}
 
           </label>
 
@@ -995,6 +996,7 @@ export default function Vendors({
                 Organizer
               </option>
             </select>
+            {validationErrors.vendorType && <small className="vendors-field-error">Select a vendor type.</small>}
 
           </label>
 
@@ -1025,6 +1027,7 @@ export default function Vendors({
                 disabled={saving || viewingId !== null}
                 aria-invalid={Boolean(validationErrors.contactPerson)}
               />
+              {validationErrors.contactPerson && <small className="vendors-field-error">Contact Person Name is required for an Organizer.</small>}
 
             </label>
           )}
@@ -1052,6 +1055,7 @@ export default function Vendors({
               disabled={saving || viewingId !== null}
               aria-invalid={Boolean(validationErrors.phone) || (Boolean(form.phone) && !/^\d{10}$/.test(form.phone))}
             />
+            {validationErrors.phone && <small className="vendors-field-error">{form.phone.trim() ? "Phone Number must contain exactly 10 digits." : "Phone Number is required."}</small>}
 
           </label>
 
@@ -1075,6 +1079,7 @@ export default function Vendors({
               disabled={saving || viewingId !== null}
               aria-invalid={Boolean(validationErrors.email) || (Boolean(form.email) && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim()))}
             />
+            {validationErrors.email && <small className="vendors-field-error">{form.email.trim() ? "Enter a valid email address." : "Email Address is required."}</small>}
 
           </label>
 
@@ -1100,6 +1105,7 @@ export default function Vendors({
               disabled={saving || viewingId !== null}
               aria-invalid={Boolean(validationErrors.category)}
             />
+            {validationErrors.category && <small className="vendors-field-error">Products Supplied is required.</small>}
 
           </label>
 
@@ -1125,6 +1131,7 @@ export default function Vendors({
               disabled={saving || viewingId !== null}
               aria-invalid={Boolean(validationErrors.addressLine1)}
             />
+            {validationErrors.addressLine1 && <small className="vendors-field-error">Address Line 1 is required.</small>}
 
           </label>
 
@@ -1171,6 +1178,7 @@ export default function Vendors({
               disabled={saving || viewingId !== null}
               aria-invalid={Boolean(validationErrors.city)}
             />
+            {validationErrors.city && <small className="vendors-field-error">City is required.</small>}
 
           </label>
 
@@ -1194,6 +1202,7 @@ export default function Vendors({
               <option value="">{form.country ? "Select state or province" : "Select country first"}</option>
               {locationOptions.states.map((state) => <option key={state} value={state}>{state}</option>)}
             </select>
+            {validationErrors.state && <small className="vendors-field-error">State is required.</small>}
 
           </label>
 
@@ -1219,6 +1228,7 @@ export default function Vendors({
               disabled={saving || viewingId !== null}
               aria-invalid={Boolean(validationErrors.zipCode)}
             />
+            {validationErrors.zipCode && <small className="vendors-field-error">ZIP Code is required.</small>}
 
           </label>
 
@@ -1242,6 +1252,7 @@ export default function Vendors({
               <option value="">Select country</option>
               {locationOptions.countries.map((country) => <option key={country} value={country}>{country}</option>)}
             </select>
+            {validationErrors.country && <small className="vendors-field-error">Country is required.</small>}
 
           </label>
 

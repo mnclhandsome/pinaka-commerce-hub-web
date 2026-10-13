@@ -164,7 +164,7 @@ export default function AddDevice({ merchantId: scopedMerchantId = "", merchant:
 
           <div className="device-form-grid">
             {/* DEVICE NAME */}
-            <FormField label="Device Name" required invalid={validationErrors.deviceName}>
+            <FormField label="Device Name" required invalid={validationErrors.deviceName} error={validationErrors.deviceName && "Device Name is required."}>
               <input
                 name="deviceName"
                 value={formData.deviceName}
@@ -197,7 +197,7 @@ export default function AddDevice({ merchantId: scopedMerchantId = "", merchant:
             </FormField>
 
             {/* SERIAL NUMBER */}
-            <FormField label="Device Serial Number" required invalid={validationErrors.serialNumber}>
+            <FormField label="Device Serial Number" required invalid={validationErrors.serialNumber} error={validationErrors.serialNumber && "Device Serial Number is required."}>
               <input
                 name="serialNumber"
                 value={formData.serialNumber}
@@ -209,7 +209,7 @@ export default function AddDevice({ merchantId: scopedMerchantId = "", merchant:
             </FormField>
 
             {/* DEVICE TYPE */}
-            <FormField label="Device Type" required invalid={validationErrors.deviceType}>
+            <FormField label="Device Type" required invalid={validationErrors.deviceType} error={validationErrors.deviceType && "Device Type is required."}>
               <SelectField
                 name="deviceType"
                 value={formData.deviceType}
@@ -223,7 +223,7 @@ export default function AddDevice({ merchantId: scopedMerchantId = "", merchant:
             </FormField>
 
             {/* MERCHANT */}
-            <FormField label="Merchant" required invalid={validationErrors.merchantId}>
+            <FormField label="Merchant" required invalid={validationErrors.merchantId} error={validationErrors.merchantId && "Merchant is required."}>
               <SelectField
                 name="merchantId"
                 value={formData.merchantId}
@@ -310,7 +310,7 @@ function CardHeader({ icon, title, subtitle }) {
    FORM FIELD
 ========================================================= */
 
-function FormField({ label, required, invalid, children }) {
+function FormField({ label, required, invalid, error, children }) {
   return (
     <div className={`device-field${invalid ? " device-field-invalid" : ""}`}>
       <label>
@@ -320,6 +320,7 @@ function FormField({ label, required, invalid, children }) {
       </label>
 
       {children}
+      {error && <span className="device-field-error">{error}</span>}
     </div>
   );
 }
