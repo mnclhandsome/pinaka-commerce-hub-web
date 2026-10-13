@@ -1,7 +1,9 @@
+import { pendingStoreRead } from "../api/http";
 import FilterDropdown from "../components/FilterDropdown";
 import React, { useMemo, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import Pagination from "../components/Pagination";
+import DeleteConfirmationDialog from "../components/DeleteConfirmationDialog";
 import {
   Search,
   Trash2,
@@ -24,6 +26,7 @@ import "../styles/feature-detail-header.css";
 const FeaturePermissions = () => {
   const navigate = useNavigate();
   const { featureId } = useParams();
+  const suppliedFeature = useLocation().state?.feature;
 
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
@@ -33,7 +36,7 @@ const FeaturePermissions = () => {
   const [error, setError] = useState("");
 
   React.useEffect(() => {
-    Promise.all([getFeature(featureId), listFeaturePermissions(featureId)])
+    Promise.all([suppliedFeature ? Promise.resolve(suppliedFeature) : getFeature(featureId), pendingStoreRead(`feature-permissions:${featureId}`, () => listFeaturePermissions(featureId))])
       .then(([f, list]) => {
         setFeature(f);
 
@@ -69,7 +72,8 @@ const FeaturePermissions = () => {
   });
 
   const [deleteTarget, setDeleteTarget] = useState(null);
-  const [deleting, setDeleting] = useState(false);
+const [deleting, setDeleting] = useState(false);
+const [deleteError, setDeleteError] = useState("");
 
   /* =====================================================
      FILTER PERMISSIONS
@@ -114,42 +118,49 @@ React.useEffect(() => {
   }
 }, [currentPage, totalPages]);
 
-React.useEffect(() => {
-  if (currentPage > totalPages) {
-    setCurrentPage(totalPages);
-  }
-}, [currentPage, totalPages]);
-
   /* =====================================================
      DELETE PERMISSION
   ====================================================== */
 
-  const confirmDeletePermission = async () => {
-    if (!deleteTarget?.id || deleting) return;
+  
+const confirmDeletePermission = async () => {
+  if (!deleteTarget?.id || deleting) return;
 
-    try {
-      setDeleting(true);
-      setError("");
+  try {
+    setDeleting(true);
+    setDeleteError("");
+    setError("");
 
-      await deleteFeaturePermission(featureId, deleteTarget.id);
-      const latest = await listFeaturePermissions(featureId);
-      setPermissions(latest.map((p) => ({
+    await deleteFeaturePermission(featureId, deleteTarget.id);
+
+    const latest = await listFeaturePermissions(featureId);
+
+    setPermissions(
+      (Array.isArray(latest) ? latest : []).map((p) => ({
         ...p,
         id: p.permission_id ?? p.id,
-        key: p.permission_code || p.permission_key || p.permissionKey || "",
+        key:
+          p.permission_code ||
+          p.permission_key ||
+          p.permissionKey ||
+          "",
         name: p.permission_name || p.name || "",
-        feature: feature?.name || "",
-        description: p.permission_description || p.description || "",
-        active: String(p.status || "ACTIVE").toUpperCase() === "ACTIVE",
-      })));
+        feature: feature?.name || p.feature?.feature_name || "",
+        description:
+          p.permission_description || p.description || "",
+        active:
+          String(p.status || "ACTIVE").toUpperCase() === "ACTIVE",
+      }))
+    );
 
-      setDeleteTarget(null);
-    } catch (e) {
-      setError(e.message || "Unable to delete permission.");
-    } finally {
-      setDeleting(false);
-    }
-  };
+    setDeleteTarget(null);
+  } catch (e) {
+    setDeleteError(e.message || "Unable to delete permission.");
+  } finally {
+    setDeleting(false);
+  }
+};
+
 
   /* =====================================================
      CREATE PERMISSION
@@ -248,7 +259,7 @@ React.useEffect(() => {
           <button
             type="button"
             className="feature-detail-tab"
-            onClick={() => navigate(`/features/${featureId}/store-types`)}
+            onClick={() => navigate(`/features/${featureId}/store-types`, { state: { feature } })}
           >
             Applicable Store Types
           </button>
@@ -312,10 +323,7 @@ React.useEffect(() => {
             <div className="fp-filter-wrapper">
               <FilterDropdown preserveToolbarLayout
                 value={filter}
-                onChange={(event) => {
-                   setSearch(event.target.value);
-                   setCurrentPage(1);
-                   }}
+                 onChange={(event) => { setFilter(event.target.value); setCurrentPage(1);}}
                 className="fp-filter"
               >
                 <option value="all">All Permissions</option>
@@ -386,7 +394,7 @@ React.useEffect(() => {
                       type="button"
                       className="fp-delete"
                       title="Remove Assignment"
-                      onClick={() => setDeleteTarget(permission)}
+                      onClick={() => { setDeleteError(""); setDeleteTarget(permission);}}
                       aria-label={`Delete ${permission.name}`}
                     >
                       <Trash2 size={15} strokeWidth={2} />
@@ -555,53 +563,30 @@ React.useEffect(() => {
           DELETE CONFIRMATION
       ====================================================== */}
 
-      {deleteTarget && (
-        <div
-          className="fp-delete-overlay"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="fp-delete-title"
-          onMouseDown={() => !deleting && setDeleteTarget(null)}
-        >
-          <div
-            className="fp-delete-modal"
-            onMouseDown={(event) => event.stopPropagation()}
-          >
-            <div className="fp-delete-modal-icon">
-              <Trash2 size={23} strokeWidth={2} />
-            </div>
+      
+<DeleteConfirmationDialog
+  isOpen={Boolean(deleteTarget)}
+  title="Delete Permission?"
+  message={
+    deleteTarget
+      ? `Are you sure you want to delete "${deleteTarget.name || deleteTarget.key}"? This action cannot be undone.`
+      : ""
+  }
+  cancelLabel="Cancel"
+  confirmLabel="Delete"
+  busyLabel="Deleting..."
+  busy={deleting}
+  error={deleteError}
+  iconClassName="bi bi-trash"
+  onCancel={() => {
+    if (!deleting) {
+      setDeleteTarget(null);
+      setDeleteError("");
+    }
+  }}
+  onConfirm={confirmDeletePermission}
+/>
 
-            <h2 id="fp-delete-title">Delete Permission?</h2>
-
-            <p>
-              Are you sure you want to delete{" "}
-              <strong>{deleteTarget.name || deleteTarget.key}</strong>?
-            </p>
-
-            <p className="fp-delete-warning">This action cannot be undone.</p>
-
-            <div className="fp-delete-modal-actions">
-              <button
-                type="button"
-                className="fp-delete-cancel-button"
-                onClick={() => setDeleteTarget(null)}
-                disabled={deleting}
-              >
-                Cancel
-              </button>
-
-              <button
-                type="button"
-                className="fp-delete-confirm-button"
-                onClick={confirmDeletePermission}
-                disabled={deleting}
-              >
-                {deleting ? "Deleting..." : "Delete"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

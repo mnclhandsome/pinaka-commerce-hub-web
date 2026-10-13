@@ -1,4 +1,6 @@
-import { api } from "./http";
+import { api, pendingStoreRead } from "./http";
+
+const readStoreType = path => pendingStoreRead(`store-type-read:${path}`, () => api.get(path));
 
 export function normalizeStoreType(item) {
   if (!item) return item;
@@ -48,14 +50,14 @@ const payload = (form) => ({
 });
 
 export const listStoreTypes = async () => {
-  const res = await api.get("/store-types");
+  const res = await readStoreType("/store-types");
   const items =
     res?.storeTypes || res?.data?.storeTypes || (Array.isArray(res) ? res : []);
   return items.map(normalizeStoreType);
 };
 
 export const getStoreType = async (id) => {
-  const res = await api.get(path(id));
+  const res = await readStoreType(path(id));
   return normalizeStoreType(res?.storeType || res?.data?.storeType || res);
 };
 
@@ -73,7 +75,7 @@ export const deleteStoreType = (id) => api.delete(path(id));
 
 export const storeTypesApi = {
   getAll: async () => {
-    const res = await api.get("/store-types");
+    const res = await readStoreType("/store-types");
     const storeTypes = (
       res?.storeTypes ||
       res?.data?.storeTypes ||
@@ -87,7 +89,7 @@ export const storeTypesApi = {
     };
   },
   getForMerchant: async (merchantId) => {
-    const res = await api.get(
+    const res = await readStoreType(
       `/merchants/${encodeURIComponent(merchantId)}/store-types`,
     );
     const source =
@@ -103,7 +105,7 @@ export const storeTypesApi = {
     return { success: true, storeTypes, data: storeTypes };
   },
   getById: async (id) => {
-    const res = await api.get(path(id));
+    const res = await readStoreType(path(id));
     const storeType = normalizeStoreType(
       res?.storeType || res?.data?.storeType || res,
     );
@@ -127,16 +129,16 @@ export const storeTypesApi = {
     return api.delete(path(id));
   },
   getFeatures: async (storeTypeId) => {
-    return api.get(`/store-types/${encodeURIComponent(storeTypeId)}/features`);
+    return readStoreType(`/store-types/${encodeURIComponent(storeTypeId)}/features`);
   },
   getAvailableFeatures: async (storeTypeId, unmappedOnly = false) => {
     const query = unmappedOnly ? "?unmappedOnly=true" : "";
-    return api.get(
+    return readStoreType(
       `/store-types/${encodeURIComponent(storeTypeId)}/features/by-category${query}`,
     );
   },
   getMerchantFeatures: async (merchantId, storeTypeId) => {
-    return api.get(
+    return readStoreType(
       `/merchants/${encodeURIComponent(merchantId)}/store-types/${encodeURIComponent(storeTypeId)}/features`,
     );
   },
@@ -158,13 +160,13 @@ export const storeTypesApi = {
     );
   },
   getRoleTemplates: async (storeTypeId) => {
-    return api.get(
+    return readStoreType(
       `/store-types/${encodeURIComponent(storeTypeId)}/role-templates`,
     );
   },
   getAvailableRoleTemplates: async (storeTypeId, unmappedOnly = false) => {
     const query = unmappedOnly ? "?unmappedOnly=true" : "";
-    return api.get(
+    return readStoreType(
       `/store-types/${encodeURIComponent(storeTypeId)}/role-templates/available${query}`,
     );
   },

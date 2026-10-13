@@ -120,6 +120,14 @@ export async function syncWordpressCatalog(storeId) {
   return api.post(`/stores/${encodeURIComponent(storeId)}/catalog/sync`);
 }
 
+export async function getStoreCatalogTaxonomies(storeId, { signal } = {}) {
+  if (!storeId) return { categories: [], tags: [], attributes: [] };
+  return api.get(
+    `/stores/${encodeURIComponent(storeId)}/catalog/taxonomies`,
+    { signal },
+  );
+}
+
 async function postStoreSync(storeId, step) {
   if (!storeId) throw new Error("Store ID is required.");
   const path = `/stores/${encodeURIComponent(storeId)}/catalog/sync/${step}`;

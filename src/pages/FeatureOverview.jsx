@@ -38,8 +38,8 @@ const FeatureOverview = () => {
       </div>
       <nav className="feature-detail-tabs" aria-label="Feature sections">
         <button className="feature-detail-tab active" type="button">Overview</button>
-        <button className="feature-detail-tab" type="button" onClick={() => navigate(`/features/${featureId}/store-types`)}>Applicable Store Types</button>
-        <button className="feature-detail-tab" type="button" onClick={() => navigate(`/features/${featureId}/permissions`)}>Permissions</button>
+        <button className="feature-detail-tab" type="button" onClick={() => navigate(`/features/${featureId}/store-types`, { state: { feature } })}>Applicable Store Types</button>
+        <button className="feature-detail-tab" type="button" onClick={() => navigate(`/features/${featureId}/permissions`, { state: { feature } })}>Permissions</button>
       </nav>
     </section>
     <section className="feature-info-card">

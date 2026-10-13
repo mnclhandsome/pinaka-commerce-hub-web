@@ -171,8 +171,7 @@ useEffect(() => {
           {" "}
           {/* ================================================= PAGE HEADING ================================================= */}{" "}
           <div className="plan-details-heading">
-            {" "}
-            <div className="plan-details-title-line">
+            <div className="plan-details-details-top">
               <button
                 type="button"
                 className="plan-details-back"
@@ -182,17 +181,18 @@ useEffect(() => {
                 <span className="plan-details-back-icon">
                   <i className="bi bi-arrow-left" />
                 </span>
-              </button>{" "}
-              <h1> {plan.name || "Unnamed plan"} </h1>{" "}
-              {/* <span
-                className={`plan-details-active-badge ${plan.status === "Inactive" ? "plan-details-inactive-badge" : ""}`}
-              >
-                {" "}
-                <i className="bi bi-circle-fill" /> {plan.status || "—"}{" "}
-              </span>{" "} */}
-            </div>{" "}
-            <p> {plan.description || "No description provided."} </p>{" "}
-          </div>{" "}
+              </button>
+                <div className="plan-details-heading">
+                     <div className="plan-details-title-line">
+                           <h1> {plan.name || "Unnamed plan"} </h1>
+                     </div>
+
+                     <p> {plan.description || "No description provided."} </p>
+                </div>
+                   
+            </div>  
+           
+          </div>
           {/* ================================================= TABS ================================================= */}{" "}
           <nav className="plan-details-tabs" aria-label="Plan sections">
             {" "}

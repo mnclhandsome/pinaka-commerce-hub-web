@@ -6,6 +6,7 @@ import { useReferenceData } from "../api/referenceData";
 import Pagination from "../components/Pagination";
 import ListActions from "../components/ListActions";
 import FiltersBar from "../components/FiltersBar";
+import DeleteConfirmationDialog from "../components/DeleteConfirmationDialog";
 
 const title = (value) =>
   String(value || "")
@@ -542,74 +543,56 @@ useEffect(() => {
 
       </div>
 
-      {deleteTarget && (
-        <div
-          className="pch-delete-overlay"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="delete-store-title"
-          onClick={(event) => {
-            if (event.target === event.currentTarget) {
-              setDeleteTarget(null);
-            }
-          }}
-        >
-          <div className="pch-delete-modal">
-            <div className="pch-delete-icon" aria-hidden="true">
-              <i className="bi bi-trash3" />
-            </div>
+            <DeleteConfirmationDialog
+        isOpen={Boolean(deleteTarget)}
+        title="Deactivate Store?"
+        message={`Are you sure you want to deactivate ${
+          deleteTarget?.storeName ||
+          deleteTarget?.name ||
+          "this store"
+        }? The store will remain in the system with inactive status.`}
+        cancelLabel="Cancel"
+        confirmLabel="Deactivate Store"
+        busyLabel="Deactivating..."
+        busy={deleting}
+        error={deleteError}
+        iconClassName="bi bi-trash3"
+        onCancel={() => {
+          if (!deleting) {
+            setDeleteTarget(null);
+            setDeleteError("");
+          }
+        }}
+        onConfirm={async () => {
+          if (!deleteTarget || deleting) return;
 
-            <h2 id="delete-store-title">Deactivate Store?</h2>
+          setDeleting(true);
+          setDeleteError("");
 
-            <p className="pch-delete-message">
-              Are you sure you want to deactivate{" "}
-              <strong>
-                {deleteTarget.storeName || deleteTarget.name || "this store"}
-              </strong>
-              ?
-            </p>
+          try {
+            await deactivateStore(
+              deleteTarget.storeCode || deleteTarget.id,
+              deleteTarget
+            );
 
-            <p className="pch-delete-warning">The store will remain in the system with inactive status.</p>
+            setStores((current) =>
+              current.map((store) =>
+                String(store.id) === String(deleteTarget.id)
+                  ? { ...store, status: "INACTIVE" }
+                  : store
+              )
+            );
 
-            {deleteError && <p role="alert" className="stores-feedback">{deleteError}</p>}
-
-            <div className="pch-delete-actions">
-              <button
-                type="button"
-                className="pch-delete-cancel"
-                onClick={() => setDeleteTarget(null)}
-              >
-                Cancel
-              </button>
-
-              <button
-                type="button"
-                className="pch-delete-confirm"
-                disabled={deleting}
-                onClick={async () => {
-                  setDeleting(true);
-                  setDeleteError("");
-                  try {
-                    await deactivateStore(deleteTarget.storeCode || deleteTarget.id, deleteTarget);
-                    setStores((current) => current.map((store) =>
-                      String(store.id) === String(deleteTarget.id)
-                        ? { ...store, status: "INACTIVE" }
-                        : store,
-                    ));
-                    setDeleteTarget(null);
-                  } catch (failure) {
-                    setDeleteError(failure.message || "Unable to deactivate store.");
-                  } finally {
-                    setDeleting(false);
-                  }
-                }}
-              >
-                {deleting ? "Deactivating…" : "Deactivate Store"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+            setDeleteTarget(null);
+          } catch (failure) {
+            setDeleteError(
+              failure.message || "Unable to deactivate store."
+            );
+          } finally {
+            setDeleting(false);
+          }
+        }}
+      />
     </div>
   );
 }
