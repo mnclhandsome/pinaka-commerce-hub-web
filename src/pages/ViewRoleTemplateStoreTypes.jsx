@@ -432,15 +432,6 @@ export default function ViewRoleTemplateStoreTypes() {
           <div className="role-details-actions">
             <button
               type="button"
-              className="role-details-secondary-btn"
-              onClick={handleBack}
-              disabled={saving}
-            >
-              Back
-            </button>
-
-            <button
-              type="button"
               className="role-details-primary-btn"
               onClick={handleSaveAndContinue}
               disabled={saving}

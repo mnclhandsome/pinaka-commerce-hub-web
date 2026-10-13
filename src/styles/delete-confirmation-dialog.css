@@ -75,35 +75,36 @@
 
 .delete-confirmation-cancel,
 .delete-confirmation-confirm {
-  min-width: 120px;
-  height: 44px;
-  padding: 0 24px;
-  border-radius: 9px;
-  font-size: 15px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.15s ease;
+  min-width: 120px !important;
+  height: 44px !important;
+  padding: 0 24px !important;
+  border-radius: 9px !important;
+  font-size: 15px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease !important;
+
 }
 
 .delete-confirmation-cancel {
-  border: 1px solid #cfd5df;
-  background: #fff;
-  color: #3d485c;
+  border: 1px solid #cfd5df !important;
+  background: #fff !important;
+  color: #3d485c !important;
 }
 
 .delete-confirmation-cancel:hover:not(:disabled) {
-  background: #f7f8fa;
+  background: #f7f8fa !important;
 }
 
 .delete-confirmation-confirm {
-  border: 1px solid #ef2626;
-  background: #ef2626;
-  color: #fff;
+  border: 1px solid #ef2626 !important;
+  background: #ef2626 !important;
+  color: #fff !important;
 }
 
 .delete-confirmation-confirm:hover:not(:disabled) {
-  border-color: #d91f1f;
-  background: #d91f1f;
+  border-color: #d91f1f !important;
+  background: #d91f1f !important;
 }
 
 .delete-confirmation-cancel:disabled,

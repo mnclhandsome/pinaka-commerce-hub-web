@@ -839,6 +839,20 @@ function extractStoreVendorMappings(data) {
   return [];
 }
 
+function isStoreVendorAssigned(mapping) {
+  const flags = [mapping.assigned, mapping.is_mapped, mapping.isMapped]
+    .filter((value) => value !== undefined && value !== null)
+    .map((value) => value === true || value === 1 || /^(true|1|yes)$/i.test(String(value).trim()));
+  if (flags.length && !flags.every(Boolean)) return false;
+
+  const status = mapping.mapping_status ?? mapping.mappingStatus;
+  if (status !== undefined && status !== null && String(status).trim()) {
+    return String(status).trim().toUpperCase() === "ACTIVE" && (!flags.length || flags.every(Boolean));
+  }
+
+  return flags.length ? flags.every(Boolean) : true;
+}
+
 /* Store-level mappings use the store-vendor-mappings collection API. */
 export async function getMappedStoreVendors(storeId, { token, signal } = {}) {
   if (!storeId) throw new Error("Store ID is required.");
@@ -846,6 +860,7 @@ export async function getMappedStoreVendors(storeId, { token, signal } = {}) {
   params.set("store_id", storeId);
   const data = await request(`${endpoints.storeVendorMappings}?${params.toString()}`, { method: "GET", token, signal });
   return extractStoreVendorMappings(data).filter((mapping) => {
+    if (!isStoreVendorAssigned(mapping)) return false;
     const storeValue = mapping.storeId || mapping.store_id || mapping.storeUUID || mapping.store_uuid || mapping.store?.id || mapping.store?._id || mapping.store;
     const mappedStoreId = storeValue && typeof storeValue === "object" ? storeValue.id || storeValue._id || storeValue.storeId || storeValue.store_id : storeValue;
     return !mappedStoreId || String(mappedStoreId) === String(storeId);
@@ -880,9 +895,17 @@ export async function addStoreVendors(storeId, vendorIds, { token, signal } = {}
   return created;
 }
 
-export async function unmapStoreVendor(mappingId, { token, signal } = {}) {
-  if (!mappingId) throw new Error("The store-vendor API response did not include a mapping ID, so this assignment cannot be removed.");
-  return request(`${endpoints.storeVendorMappings}/${encodeURIComponent(mappingId)}`, { method: "DELETE", token, signal });
+export async function unmapStoreVendor(mappingId, { token, signal, storeId, vendorId } = {}) {
+  if (mappingId) {
+    return request(`${endpoints.storeVendorMappings}/${encodeURIComponent(mappingId)}`, { method: "DELETE", token, signal });
+  }
+
+  if (!storeId || !vendorId) {
+    throw new Error("Store ID and vendor ID are required to remove this assignment when its mapping ID is unavailable.");
+  }
+
+  const params = new URLSearchParams({ store_id: storeId, vendor_id: vendorId });
+  return request(`${endpoints.storeVendorMappings}?${params.toString()}`, { method: "DELETE", token, signal });
 }
 
 /*

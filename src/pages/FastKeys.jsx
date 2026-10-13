@@ -642,59 +642,24 @@ Product #43225`}
         </div>
       )}
 
-      {/* ================= DELETE CONFIRMATION ================= */}
+      
+{/* ================= DELETE CONFIRMATION ================= */}
 
-      {deleteTarget && (
-        <div className="fast-key-modal-backdrop">
-
-          <div
-            className="fast-key-delete-modal"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="delete-fast-key-title"
-          >
-
-            <div className="delete-icon">
-              <i className="bi bi-trash" />
-            </div>
-
-            <h2 id="delete-fast-key-title">
-              Delete Fast Key?
-            </h2>
-
-            <p>
-              Are you sure you want to delete{" "}
-              <strong>{deleteTarget.title}</strong>?
-
-              <br />
-
-              This action cannot be undone.
-            </p>
-
-            <div className="delete-actions">
-
-              <button
-                type="button"
-                className="store-edit-btn"
-                onClick={cancelDelete}
-              >
-                Cancel
-              </button>
-
-              <button
-                type="button"
-                className="delete-confirm-btn"
-                onClick={confirmDelete}
-              >
-                Delete
-              </button>
-
-            </div>
-
-          </div>
-        </div>
-      )}
-
+<DeleteConfirmationDialog
+  isOpen={Boolean(deleteTarget)}
+  title="Delete Fast Key?"
+  message={
+    deleteTarget
+      ? `Are you sure you want to delete "${deleteTarget.title}"?`
+      : ""
+  }
+  cancelLabel="Cancel"
+  confirmLabel="Delete"
+  busyLabel="Deleting..."
+  iconClassName="bi bi-trash3"
+  onCancel={cancelDelete}
+  onConfirm={confirmDelete}
+/>
     </div>
   );
 }

@@ -1,10 +1,8 @@
 import FilterDropdown from "../components/FilterDropdown";
 import { useEffect, useMemo, useState } from "react";
-
 import { useNavigate } from "react-router-dom";
-
 import Pagination from "../components/Pagination";
-
+import DeleteConfirmationDialog from "../components/DeleteConfirmationDialog";
 import { storeTypesApi } from "../api/storeTypes";
 
 function getStoreTypesForScreen() {
@@ -153,6 +151,8 @@ export default function CreateStoreType() {
 
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
 
   async function loadStoreTypes() {
 
@@ -559,52 +559,40 @@ const paginatedStoreTypes = filteredStoreTypes.slice(
   }
 
   async function confirmDelete() {
+  if (!deleteTarget) return;
 
-    if (!deleteTarget) return;
+  setDeleting(true);
+  setDeleteError("");
 
-    setSaving(true);
+  try {
+    const rawResponse = await storeTypesApi.delete(deleteTarget.id);
+    const data = rawResponse?.data ?? rawResponse;
 
-    setError("");
-
-    try {
-
-      const rawResponse = await storeTypesApi.delete(deleteTarget.id);
-
-      const data = rawResponse?.data ?? rawResponse;
-
-      if (data?.success === false) {
-
-        throw new Error(data.message || "Failed to deactivate store type.");
-
-      }
-
-      setMessage(data?.message || "Store type deactivated successfully.");
-
-      if (String(editingId) === String(deleteTarget.id)) {
-
-        resetForm();
-
-      }
-
-      setDeleteTarget(null);
-
-      // Re-fetch the updated list from the API
-
-      await loadStoreTypes();
-
-    } catch (err) {
-
-      setError(err.message || "An error occurred while deactivating.");
-
-      setDeleteTarget(null);
-
-    } finally {
-
-      setSaving(false);
-
+    if (data?.success === false) {
+      throw new Error(
+        data.message || "Failed to deactivate store type."
+      );
     }
 
+    setMessage(
+      data?.message || "Store type deactivated successfully."
+    );
+
+    if (String(editingId) === String(deleteTarget.id)) {
+      resetForm();
+    }
+
+    setDeleteTarget(null);
+
+    await loadStoreTypes();
+  } catch (err) {
+    setDeleteError(
+      err.message || "An error occurred while deactivating."
+    );
+  } finally {
+    setDeleting(false);
   }
+}
 
   return (
     <section className="store-types-page">
@@ -989,13 +977,11 @@ const paginatedStoreTypes = filteredStoreTypes.slice(
                     className="store-type-delete-icon"
 
                     onClick={(e) => {
-
-                      e.stopPropagation();
-
-                      setDeleteTarget(item);
-
-                    }}
-                  >
+                         e.stopPropagation();
+                          setDeleteError("");
+                           setDeleteTarget(item);
+                             }}
+                        >
                     <i className="bi bi-trash3" />
                   </button>
                 </div>
@@ -1029,80 +1015,38 @@ const paginatedStoreTypes = filteredStoreTypes.slice(
 />
       </section>
 
-      {deleteTarget && (
-        <div
+      
+<DeleteConfirmationDialog
+  isOpen={Boolean(deleteTarget)}
+  title="Deactivate Store Type?"
+  message={
+    deleteTarget
+      ? `Are you sure you want to deactivate "${deleteTarget.name}"?${
+          Number(deleteTarget.assignedStores) > 0
+            ? ` This store type is assigned to ${deleteTarget.assignedStores} ${
+                Number(deleteTarget.assignedStores) === 1
+                  ? "store"
+                  : "stores"
+              }, and deactivating it may affect their configuration.`
+            : ""
+        } The record will remain visible and can be activated again later.`
+      : ""
+  }
+  cancelLabel="No, Keep It"
+  confirmLabel="Yes, Deactivate"
+  busyLabel="Deactivating..."
+  busy={deleting}
+  error={deleteError}
+  iconClassName="bi bi-exclamation-triangle"
+  onCancel={() => {
+    if (!deleting) {
+      setDeleteTarget(null);
+      setDeleteError("");
+    }
+  }}
+  onConfirm={confirmDelete}
+/>
 
-          className="delete-storetype-overlay"
-
-          onClick={() => setDeleteTarget(null)}
-        >
-          <div
-
-            className="delete-storetype-modal"
-
-            onClick={(event) => event.stopPropagation()}
-          >
-            <div className="delete-storetype-icon">
-              <i className="bi bi-exclamation-triangle" />
-            </div>
-
-            <h2>Deactivate Store Type?</h2>
-
-            <p>
-              Are you sure you want to deactivate{" "}
-              <strong>{deleteTarget.name}</strong>?
-            </p>
-
-            {deleteTarget.assignedStores > 0 && (
-              <div className="delete-impact-warning">
-                <i className="bi bi-exclamation-circle-fill" />
-
-                This store type is assigned to{" "}
-                <strong>{deleteTarget.assignedStores}</strong>{" "}
-
-                {deleteTarget.assignedStores === 1 ? "store" : "stores"}.
-
-                Deactivating it may affect their configuration.
-              </div>
-
-            )}
-
-            <p className="delete-final-warning">
-
-              The record will remain visible and can be activated again later.
-            </p>
-
-            <div className="delete-storetype-actions">
-              <button
-
-                type="button"
-
-                className="delete-keep-button"
-
-                onClick={() => setDeleteTarget(null)}
-              >
-
-                No, Keep It
-              </button>
-
-              <button
-
-                type="button"
-
-                className="delete-confirm-button"
-
-                onClick={confirmDelete}
-
-                disabled={saving}
-              >
-
-                Yes, Deactivate
-              </button>
-            </div>
-          </div>
-        </div>
-
-      )}
 
       {message && (
         <div className="store-type-toast">

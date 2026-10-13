@@ -1,6 +1,8 @@
+import { pendingStoreRead } from "../api/http";
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import Pagination from "../components/Pagination";
+import DeleteConfirmationDialog from "../components/DeleteConfirmationDialog";
 import {
   readRoleTemplatesList,
   roleTemplatesApi,
@@ -63,8 +65,10 @@ export default function StoreTypeRoleTemplates() {
   const [loadingAvailableRoles, setLoadingAvailableRoles] = useState(false);
   const [roleListError, setRoleListError] = useState("");
   const [savingRoles, setSavingRoles] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
 
   useEffect(() => {
+    if (initialState) return;
     let cancelled = false;
 
     storeTypesApi
@@ -75,6 +79,7 @@ export default function StoreTypeRoleTemplates() {
         if (!item || typeof item !== "object" || cancelled) return;
 
         setStoreType({
+          ...item,
           name: item.name ?? initialStoreType.name,
           description: item.description ?? initialStoreType.description,
           status: item.status ?? initialStoreType.status,
@@ -92,8 +97,7 @@ export default function StoreTypeRoleTemplates() {
   useEffect(() => {
     let cancelled = false;
 
-    roleTemplatesApi
-      .getForStoreType(storeTypeId)
+    pendingStoreRead(`store-type-roles:${storeTypeId}`, () => roleTemplatesApi.getForStoreType(storeTypeId))
       .then((response) => {
         if (cancelled) return;
 
@@ -178,7 +182,7 @@ useEffect(() => {
 
     setLoadingAvailableRoles(true);
     try {
-      const response = await roleTemplatesApi.getAll();
+      const response = await pendingStoreRead("store-type-role-catalog", () => roleTemplatesApi.getAll());
       const apiRoles = readRoleTemplatesList(response).map(normalizeRole);
 
       setAvailableRoles(apiRoles);
@@ -232,24 +236,33 @@ useEffect(() => {
     }
   }
 
-  async function confirmDeleteRole() {
-    if (!deleteTarget || !storeTypeId) return;
+  
+async function confirmDeleteRole() {
+  if (!deleteTarget || !storeTypeId) return;
 
-    setSavingRoles(true);
-    setRoleListError("");
+  setSavingRoles(true);
+  setDeleteError("");
 
-    try {
-      await roleTemplatesApi.removeFromStoreType(storeTypeId, deleteTarget.id);
-      setRoles((current) =>
-        current.filter((role) => role.id !== deleteTarget.id)
-      );
-      setDeleteTarget(null);
-    } catch (err) {
-      setRoleListError(err.message || "Unable to delete role template.");
-    } finally {
-      setSavingRoles(false);
-    }
+  try {
+    await roleTemplatesApi.removeFromStoreType(
+      storeTypeId,
+      deleteTarget.id
+    );
+
+    setRoles((current) =>
+      current.filter((role) => role.id !== deleteTarget.id)
+    );
+
+    setDeleteTarget(null);
+  } catch (err) {
+    setDeleteError(
+      err.message || "Unable to remove role template assignment."
+    );
+  } finally {
+    setSavingRoles(false);
   }
+}
+
 
   return (
     <section className="role-templates-page">
@@ -292,7 +305,7 @@ useEffect(() => {
 
         <button
           type="button"
-          onClick={() => navigate(`/store-types/${storeTypeId}/features`)}
+          onClick={() => navigate(`/store-types/${storeTypeId}/features`, { state: { storeType } })}
         >
           Assigned Features
         </button>
@@ -358,7 +371,7 @@ useEffect(() => {
             className="role-template-delete-button"
             title={`Remove ${role.name} assignment`}
             aria-label={`Remove ${role.name} assignment`}
-            onClick={() => setDeleteTarget(role)}
+            onClick={() => {setDeleteError(""); setDeleteTarget(role);}}
           >
             <i className="bi bi-trash3" aria-hidden="true" />
           </button>
@@ -498,53 +511,30 @@ useEffect(() => {
         </div>
       )}
 
-      {deleteTarget && (
-        <div
-          className="delete-roletemplate-overlay"
-          onClick={() => setDeleteTarget(null)}
-        >
-          <div
-            className="delete-roletemplate-modal"
-            onClick={(event) => event.stopPropagation()}
-          >
-            <div className="delete-roletemplate-icon">
-              <i className="bi bi-exclamation-triangle" />
-            </div>
+      
+<DeleteConfirmationDialog
+  isOpen={Boolean(deleteTarget)}
+  title="Remove Role Template Assignment?"
+  message={
+    deleteTarget
+      ? `Are you sure you want to remove "${deleteTarget.name}" from this store type?`
+      : ""
+  }
+  cancelLabel="No, Keep It"
+  confirmLabel="Yes, Remove"
+  busyLabel="Removing..."
+  busy={savingRoles}
+  error={deleteError}
+  iconClassName="bi bi-exclamation-triangle"
+  onCancel={() => {
+    if (!savingRoles) {
+      setDeleteTarget(null);
+      setDeleteError("");
+    }
+  }}
+  onConfirm={confirmDeleteRole}
+/>
 
-            <h2>Delete Role Template?</h2>
-
-            <p>
-              Are you sure you want to delete <strong>{deleteTarget.name}</strong>?
-            </p>
-
-            <p className="delete-roletemplate-warning">
-              This action cannot be undone.
-            </p>
-
-            {roleListError && <p role="alert">{roleListError}</p>}
-
-            <div className="delete-roletemplate-actions">
-              <button
-                type="button"
-                className="delete-roletemplate-keep-button"
-                onClick={() => setDeleteTarget(null)}
-                disabled={savingRoles}
-              >
-                No, Keep It
-              </button>
-
-              <button
-                type="button"
-                className="delete-roletemplate-confirm-button"
-                onClick={confirmDeleteRole}
-                disabled={savingRoles}
-              >
-                {savingRoles ? "Deleting..." : "Yes, Delete"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </section>
   );
 }

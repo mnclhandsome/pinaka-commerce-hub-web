@@ -38,11 +38,19 @@
 .plan-details-heading {
   margin: 8px 0 18px;
 }
+ 
+.plan-details-heading{ margin: 1px 0 0;}
+
+.plan-details-details-top{
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 20px;}
 
 .plan-details-title-line {
   display: flex;
   align-items: center;
-  gap: 13px;
+  gap: 12px;
 }
 
 .plan-details-title-line h1,
@@ -50,8 +58,7 @@
   margin: 0;
   color: #10254a;
   font-size: 25px;
-  font-weight: 650;
-  letter-spacing: -0.5px;
+  font-weight: 600;
 }
 
 .plan-details-heading > p {
@@ -102,9 +109,7 @@
   white-space: nowrap;
 }
 
-.plan-details-tabs button:hover {
-  color: #684ee3;
-}
+
 
 .plan-details-tabs button.active {
   color: #684ee3;
@@ -168,7 +173,7 @@
 .plan-details-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 22px;
+  gap: 20px;
 }
 
 .plan-details-field {
@@ -198,12 +203,12 @@
 }
 
 .plan-details-field input {
-  height: 36px;
+  height: 40px;
   padding: 0 12px;
 }
 
 .plan-details-field textarea {
-  min-height: 72px;
+ height: 40px;
   padding: 9px 12px;
   line-height: 1.4;
 }
