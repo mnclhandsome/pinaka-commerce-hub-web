@@ -67,7 +67,7 @@ export default function StorePaymentRecords({ store, storeId: storeIdProp, merch
     const controller = new AbortController();
     setLoading(true);
     setError("");
-    listStorePosPayments(storeId, { signal: controller.signal })
+    listStorePosPayments(storeId, { signal: controller.signal, merchantId })
       .then((response) => {
         const rows = Array.isArray(response?.payments) ? response.payments : [];
         setPayments(rows.map((row) => mapPaymentRecord(row, employeeNames)));
@@ -83,7 +83,7 @@ export default function StorePaymentRecords({ store, storeId: storeIdProp, merch
       });
 
     return () => controller.abort();
-  }, [storeId, employeeNames]);
+  }, [storeId, merchantId, employeeNames]);
 
   const filteredPayments = useMemo(() => {
     const query = search.trim().toLowerCase();

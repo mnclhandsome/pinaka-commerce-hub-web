@@ -1,7 +1,11 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Pagination from "../components/Pagination";
 import ViewDetailsModal from "../components/ViewDetailsModal";
-import { getStoreCatalogTaxonomies } from "../api/storeConnector";
+import {
+  getStoreCatalogTaxonomies,
+  syncWordpressAttributes,
+  syncWordpressTags,
+} from "../api/storeConnector";
 import "../styles/store-categories.css";
 
 
@@ -100,6 +104,47 @@ export default function StoreCategories({
   const [attributes, setAttributes] = useState([]);
   const [taxonomyLoading, setTaxonomyLoading] = useState(Boolean(storeId));
   const [taxonomyError, setTaxonomyError] = useState("");
+  const [taxonomySyncing, setTaxonomySyncing] = useState(false);
+  const [taxonomySyncMessage, setTaxonomySyncMessage] = useState("");
+
+  const applyTaxonomies = useCallback((response) => {
+    const data = response?.taxonomies || response?.data?.taxonomies || response?.data || response || {};
+    const categoryRows = Array.isArray(data.categories) ? data.categories : [];
+    const categoryNames = new Map(categoryRows.map((item) => [String(item.id), item.name || ""]));
+
+    setCategories(categoryRows.map((item) => ({
+      ...item,
+      id: item.id ?? item.wordpressId ?? item.wordpress_id ?? item.slug ?? item.name,
+      name: item.name || item.title || "Unnamed category",
+      slug: item.slug || "—",
+      parent: categoryNames.get(String(item.parent)) || item.parent_name || item.parent?.name || "",
+      productCount: Number(item.productCount ?? item.product_count ?? item.count ?? 0),
+      status: item.status || "Active",
+    })));
+    setTags((Array.isArray(data.tags) ? data.tags : []).map((item) => ({
+      ...item,
+      id: item.id ?? item.wordpressId ?? item.wordpress_id ?? item.slug ?? item.name,
+      name: item.name || item.title || "Unnamed tag",
+      slug: item.slug || "—",
+      productCount: Number(item.productCount ?? item.product_count ?? item.count ?? 0),
+      status: item.status || "Active",
+    })));
+    setAttributes((Array.isArray(data.attributes) ? data.attributes : []).map((item) => ({
+      ...item,
+      id: item.id ?? item.wordpressId ?? item.wordpress_id ?? item.slug ?? item.name,
+      name: item.name || item.title || "Unnamed attribute",
+      slug: item.slug || "—",
+      productCount: Number(item.productCount ?? item.product_count ?? item.count ?? 0),
+      terms: Array.isArray(item.terms) ? item.terms.map((term) => typeof term === "object" ? term.name || term.slug : String(term)) : [],
+      status: item.status || "Active",
+    })));
+  }, []);
+
+  const refreshTaxonomies = useCallback(async (signal) => {
+    const response = await getStoreCatalogTaxonomies(storeId, { signal });
+    applyTaxonomies(response);
+    return response;
+  }, [applyTaxonomies, storeId]);
 
   useEffect(() => {
     if (!storeId) {
@@ -114,39 +159,7 @@ export default function StoreCategories({
     const controller = new AbortController();
     setTaxonomyLoading(true);
     setTaxonomyError("");
-    getStoreCatalogTaxonomies(storeId, { signal: controller.signal })
-      .then((response) => {
-        const data = response?.taxonomies || response?.data?.taxonomies || response?.data || response || {};
-        const categoryRows = Array.isArray(data.categories) ? data.categories : [];
-        const categoryNames = new Map(categoryRows.map((item) => [String(item.id), item.name || ""]));
-
-        setCategories(categoryRows.map((item) => ({
-          ...item,
-          id: item.id ?? item.wordpressId ?? item.wordpress_id ?? item.slug ?? item.name,
-          name: item.name || item.title || "Unnamed category",
-          slug: item.slug || "—",
-          parent: categoryNames.get(String(item.parent)) || item.parent_name || item.parent?.name || "",
-          productCount: Number(item.productCount ?? item.product_count ?? item.count ?? 0),
-          status: item.status || "Active",
-        })));
-        setTags((Array.isArray(data.tags) ? data.tags : []).map((item) => ({
-          ...item,
-          id: item.id ?? item.wordpressId ?? item.wordpress_id ?? item.slug ?? item.name,
-          name: item.name || item.title || "Unnamed tag",
-          slug: item.slug || "—",
-          productCount: Number(item.productCount ?? item.product_count ?? item.count ?? 0),
-          status: item.status || "Active",
-        })));
-        setAttributes((Array.isArray(data.attributes) ? data.attributes : []).map((item) => ({
-          ...item,
-          id: item.id ?? item.wordpressId ?? item.wordpress_id ?? item.slug ?? item.name,
-          name: item.name || item.title || "Unnamed attribute",
-          slug: item.slug || "—",
-          productCount: Number(item.productCount ?? item.product_count ?? item.count ?? 0),
-          terms: Array.isArray(item.terms) ? item.terms.map((term) => typeof term === "object" ? term.name || term.slug : String(term)) : [],
-          status: item.status || "Active",
-        })));
-      })
+    refreshTaxonomies(controller.signal)
       .catch((error) => {
         if (error?.name !== "AbortError") {
           setTaxonomyError(error?.message || "Could not load this store’s categories, tags, and attributes.");
@@ -160,7 +173,26 @@ export default function StoreCategories({
       });
 
     return () => controller.abort();
-  }, [storeId]);
+  }, [refreshTaxonomies, storeId]);
+
+  const handleSyncTaxonomies = async () => {
+    if (!storeId || taxonomySyncing) return;
+    setTaxonomySyncing(true);
+    setTaxonomyError("");
+    setTaxonomySyncMessage("");
+    try {
+      const tagResult = await syncWordpressTags(storeId);
+      const attributeResult = await syncWordpressAttributes(storeId);
+      await refreshTaxonomies();
+      setTaxonomySyncMessage(
+        `Synced ${Number(tagResult?.tagCount ?? 0)} tags and ${Number(attributeResult?.attributeCount ?? 0)} attributes from WooCommerce.`,
+      );
+    } catch (error) {
+      setTaxonomyError(error?.message || "Could not sync tags and attributes from WooCommerce.");
+    } finally {
+      setTaxonomySyncing(false);
+    }
+  };
 
 
   /* =========================================================
@@ -1368,7 +1400,23 @@ export default function StoreCategories({
 
         </div>
 
+        <button
+          type="button"
+          className="taxonomy-sync-button"
+          onClick={handleSyncTaxonomies}
+          disabled={!storeId || taxonomySyncing}
+        >
+          <i className={`bi ${taxonomySyncing ? "bi-arrow-repeat taxonomy-sync-spinning" : "bi-cloud-download"}`} />
+          {taxonomySyncing ? "Syncing…" : "Sync Tags & Attributes"}
+        </button>
+
       </div>
+
+      {taxonomySyncMessage ? (
+        <div className="taxonomy-sync-message" role="status">
+          {taxonomySyncMessage}
+        </div>
+      ) : null}
 
 
       {/* =====================================================
