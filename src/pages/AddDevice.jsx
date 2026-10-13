@@ -27,6 +27,7 @@ export default function AddDevice({ merchantId: scopedMerchantId = "", merchant:
 
   const [saving, setSaving] = useState(false);
   const [apiError, setApiError] = useState("");
+  const [validationErrors, setValidationErrors] = useState({});
   const [merchants, setMerchants] = useState([]);
   const [loadingOptions, setLoadingOptions] = useState(true);
 
@@ -65,12 +66,24 @@ export default function AddDevice({ merchantId: scopedMerchantId = "", merchant:
       ...prev,
       [name]: type === "checkbox" ? checked : value,
     }));
+    setValidationErrors((current) => {
+      if (!current[name]) return current;
+      const next = { ...current };
+      delete next[name];
+      return next;
+    });
   };
 
   const handleMerchantChange = async (e) => {
     const merchantId = e.target.value;
     const merchantName = merchants.find((merchant) => merchant.value === merchantId)?.label || "";
     setFormData((prev) => ({ ...prev, merchantId, merchantName }));
+    setValidationErrors((current) => {
+      if (!current.merchantId) return current;
+      const next = { ...current };
+      delete next.merchantId;
+      return next;
+    });
   };
 
   const handleSave = async (e) => {
@@ -80,24 +93,19 @@ export default function AddDevice({ merchantId: scopedMerchantId = "", merchant:
 
     setApiError("");
 
-    // Basic frontend validation
-    if (!formData.deviceName.trim()) {
-      setApiError("Device name is required.");
-      return;
-    }
-
-    if (!formData.deviceType) {
-      setApiError("Device type is required.");
-      return;
-    }
-
-    if (!formData.serialNumber.trim()) {
-      setApiError("Device serial number is required.");
-      return;
-    }
-
-    if (!formData.merchantId) {
-      setApiError("Merchant is required.");
+    const nextValidationErrors = {
+      ...(!formData.deviceName.trim() && { deviceName: true }),
+      ...(!formData.deviceType && { deviceType: true }),
+      ...(!formData.serialNumber.trim() && { serialNumber: true }),
+      ...(!formData.merchantId && { merchantId: true }),
+    };
+    setValidationErrors(nextValidationErrors);
+    if (Object.keys(nextValidationErrors).length) {
+      requestAnimationFrame(() => {
+        const firstInvalid = document.querySelector(".device-field-invalid input, .device-field-invalid select");
+        firstInvalid?.focus?.();
+        firstInvalid?.scrollIntoView?.({ behavior: "smooth", block: "center" });
+      });
       return;
     }
 
@@ -145,6 +153,7 @@ export default function AddDevice({ merchantId: scopedMerchantId = "", merchant:
         id="add-device-form"
         className="add-device-form"
         onSubmit={handleSave}
+        noValidate
       >
         <section className="device-card">
           <CardHeader
@@ -155,13 +164,14 @@ export default function AddDevice({ merchantId: scopedMerchantId = "", merchant:
 
           <div className="device-form-grid">
             {/* DEVICE NAME */}
-            <FormField label="Device Name" required>
+            <FormField label="Device Name" required invalid={validationErrors.deviceName}>
               <input
                 name="deviceName"
                 value={formData.deviceName}
                 onChange={handleChange}
                 placeholder="Enter device name (e.g. POS Terminal 01)"
                 required
+                aria-invalid={Boolean(validationErrors.deviceName)}
               />
             </FormField>
 
@@ -187,18 +197,19 @@ export default function AddDevice({ merchantId: scopedMerchantId = "", merchant:
             </FormField>
 
             {/* SERIAL NUMBER */}
-            <FormField label="Device Serial Number" required>
+            <FormField label="Device Serial Number" required invalid={validationErrors.serialNumber}>
               <input
                 name="serialNumber"
                 value={formData.serialNumber}
                 onChange={handleChange}
                 placeholder="Enter device serial number"
                 required
+                aria-invalid={Boolean(validationErrors.serialNumber)}
               />
             </FormField>
 
             {/* DEVICE TYPE */}
-            <FormField label="Device Type" required>
+            <FormField label="Device Type" required invalid={validationErrors.deviceType}>
               <SelectField
                 name="deviceType"
                 value={formData.deviceType}
@@ -207,11 +218,12 @@ export default function AddDevice({ merchantId: scopedMerchantId = "", merchant:
                 options={deviceTypes}
                 disabled={!deviceTypes.length}
                 required
+                invalid={validationErrors.deviceType}
               />
             </FormField>
 
             {/* MERCHANT */}
-            <FormField label="Merchant" required>
+            <FormField label="Merchant" required invalid={validationErrors.merchantId}>
               <SelectField
                 name="merchantId"
                 value={formData.merchantId}
@@ -220,6 +232,7 @@ export default function AddDevice({ merchantId: scopedMerchantId = "", merchant:
                 options={merchants}
                 disabled={loadingOptions || !merchants.length}
                 required
+                invalid={validationErrors.merchantId}
               />
             </FormField>
 
@@ -297,9 +310,9 @@ function CardHeader({ icon, title, subtitle }) {
    FORM FIELD
 ========================================================= */
 
-function FormField({ label, required, children }) {
+function FormField({ label, required, invalid, children }) {
   return (
-    <div className="device-field">
+    <div className={`device-field${invalid ? " device-field-invalid" : ""}`}>
       <label>
         {label}
 
@@ -323,10 +336,11 @@ function SelectField({
   options,
   required,
   disabled,
+  invalid,
 }) {
   return (
     <div className="device-select-wrapper">
-      <select name={name} value={value} onChange={onChange} required={required} disabled={disabled}>
+      <select name={name} value={value} onChange={onChange} required={required} disabled={disabled} aria-invalid={Boolean(invalid)}>
         {placeholder && <option value="">{placeholder}</option>}
 
         {options.map((option) => {

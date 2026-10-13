@@ -5,7 +5,7 @@ import { listStorePosPayments } from "../api/storePosPayments";
 import { listStoreEmployees } from "../api/employees";
 import { isUuid } from "../api/storeDetails";
 import "../styles/store-payment-records.css";
-
+ 
 export default function StorePaymentRecords({ store, storeId: storeIdProp, merchantId }) {
   const storeId = [
     store?.uuid,
@@ -24,14 +24,14 @@ export default function StorePaymentRecords({ store, storeId: storeIdProp, merch
   const [search, setSearch] = useState("");
   const [dateFilter, setDateFilter] = useState("");
   const [selectedPayment, setSelectedPayment] = useState(null);
-
+ 
   useEffect(() => {
     let cancelled = false;
     if (!merchantId || !storeId) {
       setEmployeeNames({});
       return undefined;
     }
-
+ 
     listStoreEmployees(merchantId, storeId)
       .then((response) => {
         if (cancelled) return;
@@ -52,10 +52,10 @@ export default function StorePaymentRecords({ store, storeId: storeIdProp, merch
       .catch(() => {
         if (!cancelled) setEmployeeNames({});
       });
-
+ 
     return () => { cancelled = true; };
   }, [merchantId, storeId]);
-
+ 
   useEffect(() => {
     if (!storeId) {
       setPayments([]);
@@ -63,11 +63,11 @@ export default function StorePaymentRecords({ store, storeId: storeIdProp, merch
       setError("This store’s database ID is unavailable, so payment records cannot be loaded.");
       return undefined;
     }
-
+ 
     const controller = new AbortController();
     setLoading(true);
     setError("");
-    listStorePosPayments(storeId, { signal: controller.signal, merchantId })
+    listStorePosPayments(storeId, { signal: controller.signal })
       .then((response) => {
         const rows = Array.isArray(response?.payments) ? response.payments : [];
         setPayments(rows.map((row) => mapPaymentRecord(row, employeeNames)));
@@ -81,13 +81,13 @@ export default function StorePaymentRecords({ store, storeId: storeIdProp, merch
       .finally(() => {
         if (!controller.signal.aborted) setLoading(false);
       });
-
+ 
     return () => controller.abort();
-  }, [storeId, merchantId, employeeNames]);
-
+  }, [storeId, employeeNames]);
+ 
   const filteredPayments = useMemo(() => {
     const query = search.trim().toLowerCase();
-
+ 
     return payments.filter((payment) => {
       const matchesSearch =
         !query ||
@@ -102,13 +102,13 @@ export default function StorePaymentRecords({ store, storeId: storeIdProp, merch
           .join(" ")
           .toLowerCase()
           .includes(query);
-
+ 
       const matchesDate =
         !dateFilter ||
         payment.date.startsWith(
           dateFilter.replaceAll("-", "/")
         );
-
+ 
       return matchesSearch && matchesDate;
     });
   }, [payments, search, dateFilter]);
@@ -117,12 +117,12 @@ export default function StorePaymentRecords({ store, storeId: storeIdProp, merch
       .filter((date) => date.length === 10),
     [payments],
   );
-
+ 
   const clearFilters = () => {
     setSearch("");
     setDateFilter("");
   };
-
+ 
   return (
     <div className="store-payment-records-page">
       <div className="store-payment-records-header">
@@ -130,15 +130,15 @@ export default function StorePaymentRecords({ store, storeId: storeIdProp, merch
           <div className="store-payment-records-title-icon">
             <i className="bi bi-credit-card" />
           </div>
-
+ 
           <div>
             <h1>Payment Records</h1>
             <p>View payment transactions associated with this store.</p>
           </div>
         </div>
-
+ 
       </div>
-
+ 
       <div className="store-payment-records-card">
         <div className="store-payment-records-top">
           <div className="store-payment-records-tabs">
@@ -148,7 +148,7 @@ export default function StorePaymentRecords({ store, storeId: storeIdProp, merch
             <span>|</span>
             <button type="button">Published ({payments.length})</button>
           </div>
-
+ 
           <div className="store-payment-records-search">
             <input
               type="text"
@@ -161,15 +161,15 @@ export default function StorePaymentRecords({ store, storeId: storeIdProp, merch
             </button>
           </div>
         </div>
-
+ 
         <div className="store-payment-records-toolbar">
           <FilterDropdown defaultValue="" className="store-payment-records-bulk-select">
             <option value="">Bulk actions</option>
             <option value="export">Export</option>
           </FilterDropdown>
-
+ 
           <button type="button">Apply</button>
-
+ 
           <FilterDropdown
             value={dateFilter}
             onChange={(event) => setDateFilter(event.target.value)}
@@ -184,18 +184,18 @@ export default function StorePaymentRecords({ store, storeId: storeIdProp, merch
               </option>
             ))}
           </FilterDropdown>
-
+ 
           <button type="button" onClick={clearFilters}>
             Filter
           </button>
-
+ 
           <button type="button">Export CSV</button>
           <button type="button">Print</button>
-
+ 
           <span className="store-payment-records-count">
             {filteredPayments.length} items
           </span>
-
+ 
           <div className="store-payment-records-pagination">
             <button type="button" disabled>«</button>
             <button type="button" disabled>‹</button>
@@ -205,7 +205,7 @@ export default function StorePaymentRecords({ store, storeId: storeIdProp, merch
             <button type="button" disabled>»</button>
           </div>
         </div>
-
+ 
         <div className="store-payment-records-table-wrapper">
           <table className="store-payment-records-table">
             <thead>
@@ -225,7 +225,7 @@ export default function StorePaymentRecords({ store, storeId: storeIdProp, merch
                 <th>Date</th>
               </tr>
             </thead>
-
+ 
             <tbody>
               {loading ? (
                 <tr><td colSpan="11" className="store-payment-records-empty">Loading payment records…</td></tr>
@@ -249,12 +249,12 @@ export default function StorePaymentRecords({ store, storeId: storeIdProp, merch
             </tbody>
           </table>
         </div>
-
+ 
         <div className="store-payment-records-footer">
           Payment data synced from Pinaka POS
         </div>
       </div>
-
+ 
       <ViewDetailsModal
         open={Boolean(selectedPayment)}
         title="Payment Details"
@@ -311,12 +311,12 @@ export default function StorePaymentRecords({ store, storeId: storeIdProp, merch
     </div>
   );
 }
-
+ 
 function mapPaymentRecord(payment, employeeNames = {}) {
   const orderId = payment.order_number || "—";
   const clientOrderId = payment.client_order_id || "—";
   const method = payment.payment_method_title || payment.payment_method || "Payment";
-
+ 
   return {
     id: payment.id,
     title: `${method} Payment for Order ${orderId}`,
@@ -336,7 +336,7 @@ function mapPaymentRecord(payment, employeeNames = {}) {
     notes: payment.notes || "",
   };
 }
-
+ 
 function employeeIdKeys(value) {
   if (value === undefined || value === null || value === "") return [];
   const exact = String(value).trim();
@@ -345,11 +345,11 @@ function employeeIdKeys(value) {
   if (codeNumber) keys.push(String(Number(codeNumber)));
   return [...new Set(keys)];
 }
-
+ 
 function findEmployeeName(names, value) {
   return employeeIdKeys(value).map((key) => names[key]).find(Boolean);
 }
-
+ 
 function formatPaymentDate(value) {
   if (!value) return "—";
   const date = new Date(value);
@@ -361,7 +361,7 @@ function formatPaymentDate(value) {
   }).format(date).toLowerCase();
   return `${datePart} at ${timePart}`;
 }
-
+ 
 function PaymentRecordRow({ payment, onView }) {
   return (
     <tr
@@ -382,7 +382,7 @@ function PaymentRecordRow({ payment, onView }) {
           onClick={(event) => event.stopPropagation()}
         />
       </td>
-
+ 
       <td>
         <button
           type="button"
@@ -395,7 +395,7 @@ function PaymentRecordRow({ payment, onView }) {
           {payment.title}
         </button>
       </td>
-
+ 
       <td>{payment.orderId}</td>
       <td>{payment.clientOrderId}</td>
       <td>{money(payment.orderTotal)}</td>
@@ -413,7 +413,9 @@ function PaymentRecordRow({ payment, onView }) {
     </tr>
   );
 }
-
+ 
 function money(value) {
   return `$${Number(value || 0).toFixed(2)}`;
 }
+ 
+ 

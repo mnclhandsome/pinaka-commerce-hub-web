@@ -199,6 +199,52 @@ export default function Orders({
     setCurrentPage(1);
   }
 
+  const ordersToolbar = (
+    <FiltersBar
+      searchValue={search}
+      onSearchChange={setSearch}
+      searchPlaceholder="Search order ID, client order ID, customer..."
+      filters={[
+        {
+          key: "date",
+          label: "Date",
+          value: dateFilter,
+          options: [
+            { label: "All Dates", value: "" },
+            { label: "Today", value: "today" },
+            { label: "Last 7 Days", value: "7days" },
+            { label: "Last 30 Days", value: "30days" },
+          ],
+          onChange: setDateFilter,
+        },
+        {
+          key: "author",
+          label: "Customer",
+          value: authorFilter,
+          options: [
+            { label: "All Customers", value: "" },
+            ...authors.map((author) => ({ label: author, value: author })),
+          ],
+          onChange: setAuthorFilter,
+        },
+        {
+          key: "status",
+          label: "Status",
+          value: statusFilter,
+          options: [
+            { label: "All Status", value: "" },
+            ...[...new Set(orders.map((order) => order.status).filter(Boolean))].map((status) => ({
+              label: status,
+              value: status,
+            })),
+          ],
+          onChange: setStatusFilter,
+        },
+      ]}
+      onClear={clearFilters}
+    />
+  );
+
   return (
     <div className="page-content orders-page">
       <div className="orders-header">
@@ -216,6 +262,8 @@ export default function Orders({
         <SummaryCard icon="bi-clock-fill" tone="orange" label="Pending Payment" value={pendingCount} meta={`${orderPercentage(pendingCount)}% of total`} metaTone="warning" />
         <SummaryCard icon="bi-cash-stack" tone="blue" label="Total Value" value={`$${totalAmount.toFixed(2)}`} meta="Across loaded orders" metaTone="info" />
       </div>
+
+      {embedded && ordersToolbar}
 
       <div className="orders-card">
         {!embedded && (
@@ -257,49 +305,7 @@ export default function Orders({
           />
         )}
 
-        <FiltersBar
-          searchValue={search}
-          onSearchChange={setSearch}
-          searchPlaceholder="Search order ID, client order ID, customer..."
-          filters={[
-            {
-              key: "date",
-              label: "Date",
-              value: dateFilter,
-              options: [
-                { label: "All Dates", value: "" },
-                { label: "Today", value: "today" },
-                { label: "Last 7 Days", value: "7days" },
-                { label: "Last 30 Days", value: "30days" },
-              ],
-              onChange: setDateFilter,
-            },
-            {
-              key: "author",
-              label: "Customer",
-              value: authorFilter,
-              options: [
-                { label: "All Customers", value: "" },
-                ...authors.map((author) => ({ label: author, value: author })),
-              ],
-              onChange: setAuthorFilter,
-            },
-            {
-              key: "status",
-              label: "Status",
-              value: statusFilter,
-              options: [
-                { label: "All Status", value: "" },
-                ...[...new Set(orders.map((order) => order.status).filter(Boolean))].map((status) => ({
-                  label: status,
-                  value: status,
-                })),
-              ],
-              onChange: setStatusFilter,
-            },
-          ]}
-          onClear={clearFilters}
-        />
+        {!embedded && ordersToolbar}
 
         {error && <div className="orders-banner error">{error}</div>}
         {loading && <div className="orders-banner">Loading orders...</div>}
