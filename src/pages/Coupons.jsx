@@ -275,28 +275,6 @@ export default function Coupons({
                         )}
                     </button>
 
-                    {/* STORE CONTEXT */}
-
-                    {store && (
-                        <div className="coupons-store-context">
-
-                            <i className="bi bi-shop" />
-
-                            <div>
-                                <span>STORE</span>
-
-                                <strong>
-                                    {store.name}
-                                </strong>
-
-                                <small>
-                                    {store.id}
-                                </small>
-                            </div>
-
-                        </div>
-                    )}
-
                 </div>
 
             </div>

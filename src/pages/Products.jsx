@@ -1,3 +1,4 @@
+import { pendingStoreRead } from "../api/http";
 import FilterDropdown from "../components/FilterDropdown";
 import { useEffect, useMemo, useState } from "react";
 import Pagination from "../components/Pagination";
@@ -70,7 +71,7 @@ export default function Products({
             }
 
             const response =
-                await productsApi.getCatalog(storeId);
+                await pendingStoreRead(`store-products:${storeId}`, () => productsApi.getCatalog(storeId));
 
             const catalog =
                 normalizeCatalog(response);
@@ -452,24 +453,6 @@ export default function Products({
                             </>
                         )}
                     </button>
-
-                    {/* STORE CONTEXT */}
-
-                    {store && (
-                        <div className="products-store-context">
-
-                            <i className="bi bi-shop" />
-
-                            <div>
-                                <span>STORE</span>
-
-                                <strong>
-                                    {store.name}
-                                </strong>
-                            </div>
-
-                        </div>
-                    )}
 
                 </div>
             </div>
