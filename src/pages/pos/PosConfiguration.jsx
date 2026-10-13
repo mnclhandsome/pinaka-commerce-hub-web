@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import "../../styles/pos-configuration.css";
-import { ApiError } from "../../api/http";
+import { ApiError, pendingStoreRead } from "../../api/http";
 import { CashRegisterIcon, PosSettingsContext, SettingsChangeDialog, snapshotKey } from "./shared";
 import { OpeningBalanceSettings } from "./opening-balance/OpeningBalanceSettings";
 import { TaxConfiguration } from "./currency-tax/TaxConfiguration";
@@ -135,14 +135,14 @@ export default function PosConfiguration({ merchantId, storeId, store, embedded 
     useEffect(() => {
         if (!storeId) return undefined;
         let active = true;
-        getPosCashRegisters(storeId)
+        pendingStoreRead(`pos-cash-registers:${storeId}`, () => getPosCashRegisters(storeId))
             .then((record) => {
                 if (active && record?.registers) setRegisters(registerRows(record.registers));
             })
             .catch((error) => {
                 if (error instanceof ApiError && error.status === 404) return;
             });
-        getPosTerminalMappings(storeId)
+        pendingStoreRead(`pos-terminal-mappings:${storeId}`, () => getPosTerminalMappings(storeId))
             .then((record) => {
                 if (active && record?.mappings) setMappings(mappingRows(record.mappings));
             })
