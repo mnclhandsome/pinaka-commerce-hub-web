@@ -1,6 +1,7 @@
+import { pendingStoreRead } from "../api/http";
 import FilterDropdown from "../components/FilterDropdown";
 import React, { useMemo, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import Pagination from "../components/Pagination";
 import DeleteConfirmationDialog from "../components/DeleteConfirmationDialog";
 import {
@@ -25,6 +26,7 @@ import "../styles/feature-detail-header.css";
 const FeaturePermissions = () => {
   const navigate = useNavigate();
   const { featureId } = useParams();
+  const suppliedFeature = useLocation().state?.feature;
 
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
@@ -34,7 +36,7 @@ const FeaturePermissions = () => {
   const [error, setError] = useState("");
 
   React.useEffect(() => {
-    Promise.all([getFeature(featureId), listFeaturePermissions(featureId)])
+    Promise.all([suppliedFeature ? Promise.resolve(suppliedFeature) : getFeature(featureId), pendingStoreRead(`feature-permissions:${featureId}`, () => listFeaturePermissions(featureId))])
       .then(([f, list]) => {
         setFeature(f);
 
@@ -257,7 +259,7 @@ const confirmDeletePermission = async () => {
           <button
             type="button"
             className="feature-detail-tab"
-            onClick={() => navigate(`/features/${featureId}/store-types`)}
+            onClick={() => navigate(`/features/${featureId}/store-types`, { state: { feature } })}
           >
             Applicable Store Types
           </button>

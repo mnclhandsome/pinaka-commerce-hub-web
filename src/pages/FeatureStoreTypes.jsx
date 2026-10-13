@@ -1,6 +1,7 @@
+import { pendingStoreRead } from "../api/http";
 import React, { useEffect, useMemo, useState } from 'react';
  
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import Pagination from '../components/Pagination';
 import DeleteConfirmationDialog from "../components/DeleteConfirmationDialog";
  
@@ -232,6 +233,7 @@ const FeatureStoreTypes = () => {
   const navigate = useNavigate();
  
   const { featureId } = useParams();
+  const suppliedFeature = useLocation().state?.feature;
  
   const [feature, setFeature] = useState(null);
  
@@ -281,9 +283,9 @@ const FeatureStoreTypes = () => {
  
       const [f, featureStoreTypes] = await Promise.all([
  
-        getFeature(featureId),
+        suppliedFeature ? Promise.resolve(suppliedFeature) : getFeature(featureId),
  
-        listMappedStoreTypes(featureId),
+        pendingStoreRead(`feature-store-types:${featureId}`, () => listMappedStoreTypes(featureId)),
  
       ]);
  
@@ -832,7 +834,7 @@ useEffect(() => {
  
               navigate(
  
-                `/features/${featureId}/permissions`
+                `/features/${featureId}/permissions`, { state: { feature } }
  
               )
  
