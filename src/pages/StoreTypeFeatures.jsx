@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Pagination from "../components/Pagination";
+import DeleteConfirmationDialog from "../components/DeleteConfirmationDialog";
 import { listFeatures } from "../api/features";
 import { storeTypesApi } from "../api/storeTypes";
 
@@ -132,6 +133,7 @@ export default function StoreTypeFeatures() {
   const [loadingCatalog, setLoadingCatalog] = useState(false);
   const [error, setError] = useState("");
   const [modalError, setModalError] = useState("");
+  const [deleteError, setDeleteError] = useState("");
 
   useEffect(() => {
     let cancelled = false;
@@ -356,33 +358,41 @@ useEffect(() => {
     }
   }
 
-  async function confirmDeleteFeature() {
-    if (!deleteTarget) return;
+  
+async function confirmDeleteFeature() {
+  if (!deleteTarget) return;
 
-    const featureId =
-      deleteTarget.storeTypeFeatureId ??
-      (typeof deleteTarget.id === "string" ? deleteTarget.id : null);
+  const featureId =
+    deleteTarget.storeTypeFeatureId ??
+    (typeof deleteTarget.id === "string" ? deleteTarget.id : null);
 
-    if (!storeTypeId || !featureId) {
-      setError("This feature is missing its store-type assignment ID.");
-      return;
-    }
-
-    setSaving(true);
-    setError("");
-
-    try {
-      await storeTypesApi.removeFeature(storeTypeId, featureId);
-      setFeatures((current) =>
-        current.filter((feature) => feature.id !== deleteTarget.id),
-      );
-      setDeleteTarget(null);
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setSaving(false);
-    }
+  if (!storeTypeId || !featureId) {
+    setDeleteError(
+      "This feature is missing its store-type assignment ID."
+    );
+    return;
   }
+
+  setSaving(true);
+  setDeleteError("");
+
+  try {
+    await storeTypesApi.removeFeature(storeTypeId, featureId);
+
+    setFeatures((current) =>
+      current.filter((feature) => feature.id !== deleteTarget.id)
+    );
+
+    setDeleteTarget(null);
+  } catch (err) {
+    setDeleteError(
+      err.message || "Failed to remove the feature assignment."
+    );
+  } finally {
+    setSaving(false);
+  }
+}
+
 
   return (
     <section className="store-features-page">
@@ -481,7 +491,7 @@ useEffect(() => {
             className="feature-delete-button"
             title={`Remove ${feature.name} assignment`}
             aria-label={`Remove ${feature.name} assignment`}
-            onClick={() => setDeleteTarget(feature)}
+            onClick={() => {setDeleteError(""); setDeleteTarget(feature);}}
           >
             <i className="bi bi-trash3" aria-hidden="true" />
           </button>
@@ -647,53 +657,30 @@ useEffect(() => {
         </div>
       )}
 
-      {deleteTarget && (
-        <div
-          className="delete-feature-overlay"
-          onClick={() => setDeleteTarget(null)}
-        >
-          <div
-            className="delete-feature-modal"
-            onClick={(event) => event.stopPropagation()}
-          >
-            <div className="delete-feature-icon">
-              <i className="bi bi-exclamation-triangle" />
-            </div>
+     
+<DeleteConfirmationDialog
+  isOpen={Boolean(deleteTarget)}
+  title="Remove Feature Assignment?"
+  message={
+    deleteTarget
+      ? `Are you sure you want to remove "${deleteTarget.name}" from this store type?`
+      : ""
+  }
+  cancelLabel="No, Keep It"
+  confirmLabel="Yes, Remove"
+  busyLabel="Removing..."
+  busy={saving}
+  error={deleteError}
+  iconClassName="bi bi-exclamation-triangle"
+  onCancel={() => {
+    if (!saving) {
+      setDeleteTarget(null);
+      setDeleteError("");
+    }
+  }}
+  onConfirm={confirmDeleteFeature}
+/>
 
-            <h2>Delete Feature?</h2>
-
-            <p>
-              Are you sure you want to delete{" "}
-              <strong>{deleteTarget.name}</strong>?
-            </p>
-
-            <p className="delete-feature-warning">
-              This action cannot be undone.
-            </p>
-
-            {error && <p role="alert">{error}</p>}
-
-            <div className="delete-feature-actions">
-              <button
-                type="button"
-                className="delete-feature-keep-button"
-                onClick={() => setDeleteTarget(null)}
-              >
-                No, Keep It
-              </button>
-
-              <button
-                type="button"
-                className="delete-feature-confirm-button"
-                onClick={confirmDeleteFeature}
-                disabled={saving}
-              >
-                {saving ? "Deleting..." : "Yes, Delete"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </section>
   );
 }

@@ -2,6 +2,7 @@ import FilterDropdown from "../components/FilterDropdown";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Pagination from "../components/Pagination";
+import DeleteConfirmationDialog from "../components/DeleteConfirmationDialog";
 import { storeTypesApi } from "../api/storeTypes";
 import { createPlan, deletePlan, listPlans, updatePlan } from "../api/plans";
 
@@ -177,6 +178,7 @@ export default function CreatePlan() {
   const [billingFilter, setBillingFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [deleteError, setDeleteError] = useState("");
   const [message, setMessage] = useState("");
 
   const [currentPage, setCurrentPage] = useState(1);
@@ -583,25 +585,51 @@ useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
-  async function confirmDelete() {
-    if (!deleteTarget?.id || deletingPlan) return;
+  
+function openDeleteConfirmation(plan) {
+  setDeleteTarget(plan);
+  setDeleteError("");
+}
 
-    try {
-      setDeletingPlan(true);
-      setMessage("");
+function closeDeleteConfirmation() {
+  if (deletingPlan) return;
 
-      await deletePlan(deleteTarget.id);
+  setDeleteTarget(null);
+  setDeleteError("");
+}
 
-      const refreshedPlans = await listPlans();
-      setPlans(Array.isArray(refreshedPlans) ? refreshedPlans : []);
-      setMessage(`${deleteTarget.name} deleted successfully.`);
-      setDeleteTarget(null);
-    } catch (error) {
-      setMessage(error?.message || "Failed to delete plan.");
-    } finally {
-      setDeletingPlan(false);
-    }
+async function confirmDelete() {
+  const planId = deleteTarget?.id ?? deleteTarget?._id;
+
+  if (
+    planId === undefined ||
+    planId === null ||
+    String(planId).trim() === "" ||
+    deletingPlan
+  ) {
+    return;
   }
+
+  try {
+    setDeletingPlan(true);
+    setDeleteError("");
+    setMessage("");
+
+    await deletePlan(planId);
+
+    const refreshedPlans = await listPlans();
+    setPlans(Array.isArray(refreshedPlans) ? refreshedPlans : []);
+
+    setMessage(`${deleteTarget.name} deactivated successfully.`);
+    setDeleteTarget(null);
+    setDeleteError("");
+  } catch (error) {
+    setDeleteError(error?.message || "Failed to deactivate plan.");
+  } finally {
+    setDeletingPlan(false);
+  }
+}
+
 
   return (
     <section className="plans-page">
@@ -1434,17 +1462,17 @@ useEffect(() => {
                       <i className="bi bi-pencil" />
                     </button>
 
-                    <button
-                      type="button"
+                  <button
+                     type="button"
                       className="plan-delete-icon"
-                      title="Delete plan"
-                      onClick={(e) => {
+                      title="Deactivate plan"
+                       onClick={(e) => {
                         e.stopPropagation();
-                        setDeleteTarget(plan);
-                      }}
-                    >
-                      <i className="bi bi-trash3" />
-                    </button>
+                        openDeleteConfirmation(plan);
+                           }}
+                              >
+                             <i className="bi bi-trash3" />
+                           </button>
                   </div>
                 </div>
               );
@@ -1466,51 +1494,25 @@ useEffect(() => {
 </div>
       </section>
 
-      {deleteTarget && (
-        <div
-          className="delete-plan-overlay"
-          onClick={() => setDeleteTarget(null)}
-        >
-          <div
-            className="delete-plan-modal"
-            onClick={(event) => event.stopPropagation()}
-          >
-            <div className="delete-plan-icon">
-              <i className="bi bi-trash3" />
-            </div>
+      
+<DeleteConfirmationDialog
+  isOpen={Boolean(deleteTarget)}
+  title="Deactivate Plan?"
+  message={
+    deleteTarget
+      ? `Are you sure you want to deactivate "${deleteTarget.name || "this plan"}"?`
+      : ""
+  }
+  cancelLabel="No, Keep It"
+  confirmLabel="Yes, Deactivate"
+  busyLabel="Deactivating..."
+  busy={deletingPlan}
+  error={deleteError}
+  iconClassName="bi bi-trash3"
+  onCancel={closeDeleteConfirmation}
+  onConfirm={confirmDelete}
+/>
 
-            <h2>Deactivate Plan?</h2>
-
-            <p>
-               Are you sure you want to deactivate{" "}
-              <strong>{deleteTarget.name}</strong>? <p className="delete-final-warning">
-
-              The record will remain visible and can be activated again later.
-            </p>
-            </p>
-
-            <div className="delete-plan-actions">
-              <button
-                type="button"
-                className="delete-plan-keep-button"
-                onClick={() => setDeleteTarget(null)}
-              >
-                No, Keep It
-              </button>
-
-              <button
-                type="button"
-                className="delete-plan-confirm-button"
-                disabled={deletingPlan}
-                onClick={confirmDelete}
-
-              >
-                {deletingPlan ? "Deleting..." : "Yes, Deactivate"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {message && (
         <div className="plan-toast">

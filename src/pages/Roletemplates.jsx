@@ -2,6 +2,8 @@ import FilterDropdown from "../components/FilterDropdown";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Pagination from "../components/Pagination";
+import DeleteConfirmationDialog from "../components/DeleteConfirmationDialog";
+
 import {
   roleTemplatesApi,
   readRoleTemplatesList,
@@ -290,64 +292,75 @@ const paginatedTemplates = useMemo(() => {
    *  Delete (soft‑deactivate) helpers
    * -------------------------------------------------------------- */
   function openDeletePopup(template) {
-    setTemplateToDelete(template);
-    setDeletePopup(true);
-    setDeleteError("");
-  }
- 
+  setTemplateToDelete(template);
+  setDeletePopup(true);
+  setDeleteError("");
+}
   function closeDeletePopup() {
-    if (saving) return;
+  if (saving) return;
+
+  setDeletePopup(false);
+  setTemplateToDelete(null);
+  setDeleteError("");
+}
+
+async function confirmDeleteTemplate() {
+  if (!templateToDelete || saving) return;
+
+  const targetId =
+    templateToDelete.id ??
+    templateToDelete._id ??
+    templateToDelete.roleTemplateId;
+
+  if (
+    targetId === undefined ||
+    targetId === null ||
+    String(targetId).trim() === ""
+  ) {
+    setDeleteError(
+      "Role Template ID is missing. Cannot deactivate."
+    );
+    return;
+  }
+
+  setSaving(true);
+  setDeleteError("");
+
+  try {
+    await roleTemplatesApi.update(targetId, {
+      roleCode: templateToDelete.roleCode || "",
+      name: templateToDelete.name || "",
+      description: templateToDelete.description || "",
+      status: "INACTIVE",
+    });
+
+    await loadTemplates();
+
+    if (
+      editingId !== null &&
+      String(editingId) === String(targetId)
+    ) {
+      resetForm();
+    }
+
     setDeletePopup(false);
     setTemplateToDelete(null);
-  }
- 
-  async function confirmDeleteTemplate() {
-    if (!templateToDelete) return;
- 
-    const targetId =
-      templateToDelete.id ??
-      templateToDelete._id ??
-      templateToDelete.roleTemplateId;
- 
-    if (!targetId) {
-      setDeleteError("Role Template ID is missing. Cannot deactivate.");
-      return;
-    }
- 
-    setSaving(true);
     setDeleteError("");
- 
-    try {
-      await roleTemplatesApi.update(targetId, {
-        roleCode: templateToDelete.roleCode || "",
-        name: templateToDelete.name || "",
-        description: templateToDelete.description || "",
-        status: "INACTIVE",
-      });
+  } catch (err) {
+    console.error("Role Template deactivate failed:", err);
 
-      await loadTemplates();
+    const errorMsg =
+      err?.response?.data?.message ||
+      err?.response?.data?.error ||
+      err?.response?.data?.errors?.[0]?.message ||
+      err?.message ||
+      "Unable to deactivate role template.";
 
-      if (editingId !== null && String(editingId) === String(targetId))
-        resetForm();
-
-      setDeletePopup(false);
-      setTemplateToDelete(null);
-      setDeleteError("");
-    } catch (err) {
-      console.error("Role Template deactivate failed:", err);
- 
-      const errorMsg =
-        err?.response?.data?.message ||
-        err?.response?.data?.error ||
-        err?.response?.data?.errors?.[0]?.message ||
-        err?.message ||
-        "Unable to deactivate role template.";
- 
-      setDeleteError(errorMsg);
-    } finally {
-      setSaving(false);
-    }
+    setDeleteError(errorMsg);
+  } finally {
+    setSaving(false);
   }
+}
 
   function resetFilters() {
     setSearch("");
@@ -526,8 +539,8 @@ const paginatedTemplates = useMemo(() => {
                 maxLength={500}
               />
               <div className="role-description-meta">
-                <small> </small>
-                <span>{form.description.length}/500</span>
+                
+                
               </div>
             </label>
           </div>
@@ -787,64 +800,32 @@ const paginatedTemplates = useMemo(() => {
       </section>
 
       {/* ------------------ DELETE (Deactivate) MODAL ------------------ */}
-      {deletePopup && templateToDelete && (
-        <div
-          className="role-delete-overlay"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="delete-role-template-title"
-        >
-          <div className="role-delete-modal">
-            <div className="role-delete-icon">
-              <i className="bi bi-trash" />
-            </div>
+     
+{/* ------------------ DELETE CONFIRMATION DIALOG ------------------ */}
 
-            <h3 id="delete-role-template-title">Deactivate Role Template?</h3>
- 
-            <p>
-              Are you sure you want to deactivate{" "}
-              <strong>
-                {templateToDelete.name || templateToDelete.roleCode}
-              </strong>
-              ?
-            </p>
- 
-            <p>This action cannot be undone.</p>
-
-            {deleteError && (
-              <p
-                className="role-error-message"
-                style={{ margin: "12px 0", color: "#dc2626" }}
-                role="alert"
-              >
-                {deleteError}
-              </p>
-            )}
- 
-            <div className="role-delete-actions">
-              <button
-                type="button"
-                className="role-secondary-btn"
-                onClick={closeDeletePopup}
-                disabled={saving}
-              >
-                No,keep it.
-              </button>
- 
-              <button
-                type="button"
-                className="role-delete-confirm-btn"
-                onClick={confirmDeleteTemplate}
-                disabled={saving}
-              >
-                {saving ? "Deactivating…" : "Yes, Deactivate"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </>
-  );
+<DeleteConfirmationDialog
+  isOpen={deletePopup && Boolean(templateToDelete)}
+  title="Deactivate Role Template?"
+  message={
+    templateToDelete
+      ? `Are you sure you want to deactivate "${
+          templateToDelete.name ||
+          templateToDelete.roleCode ||
+          "this role template"
+        }"?`
+      : ""
+  }
+  cancelLabel="No, Keep It"
+  confirmLabel="Yes, Deactivate"
+  busyLabel="Deactivating..."
+  busy={saving}
+  error={deleteError}
+  iconClassName="bi bi-trash"
+  onCancel={closeDeletePopup}
+  onConfirm={confirmDeleteTemplate}
+/>
+</>
+);
 }
 
  

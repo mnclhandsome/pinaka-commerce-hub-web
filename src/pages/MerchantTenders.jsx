@@ -1,5 +1,6 @@
 import { pendingStoreRead } from "../api/http";
 import { useEffect, useRef, useState } from "react";
+import DeleteConfirmationDialog from "../components/DeleteConfirmationDialog";
 import "../styles/merchant-tenders.css";
 import { tendorsApi } from "../api/tendors";
 
@@ -206,14 +207,18 @@ export default function MerchantTenders({
     };
   }, [merchantId]);
 
-  useEffect(() => {
-    if (modal) {
+ 
+useEffect(() => {
+  if (modal && modal.type !== "remove") {
+    if (!dialog.current?.open) {
       dialog.current?.showModal();
-    } else if (dialog.current?.open) {
-      dialog.current.close();
-      addButton.current?.focus();
     }
-  }, [modal]);
+  } else if (dialog.current?.open) {
+    dialog.current.close();
+    addButton.current?.focus();
+  }
+}, [modal]);
+
 
   const tenders = Array.from(
     new Map(
@@ -382,7 +387,7 @@ export default function MerchantTenders({
                 {key === "name"
                   ? "Tender"
                   : key[0].toUpperCase() + key.slice(1)}{" "}
-                {sort.key === key ? (sort.direction === 1 ? "↑" : "↓") : "↕"}
+               
               </button>
             )}
           </th>
@@ -706,19 +711,33 @@ export default function MerchantTenders({
                 </button>
               )}
 
-              {modal?.type === "remove" && (
-                <button
-                  className="mt-primary"
-                  disabled={busy}
-                  onClick={() => removeTender(modal.tender.id)}
-                >
-                  {busy ? "Saving…" : "Remove Assignment"}
-                </button>
-              )}
+             
             </div>
           </footer>
         </div>
+      
       </dialog>
+
+      <DeleteConfirmationDialog
+        isOpen={modal?.type === "remove"}
+        title="Remove Tender Assignment?"
+        message={`Are you sure you want to remove ${
+          modal?.tender?.name || "this tender"
+        } from this merchant? The tender will remain available in Master Data.`}
+        cancelLabel="Cancel"
+        confirmLabel="Remove Assignment"
+        busyLabel="Removing..."
+        busy={busy}
+        error={saveError}
+        iconClassName="bi bi-trash3"
+        onCancel={close}
+        onConfirm={() => {
+          if (modal?.tender?.id) {
+            removeTender(modal.tender.id);
+          }
+        }}
+      />
     </div>
   );
 }
+

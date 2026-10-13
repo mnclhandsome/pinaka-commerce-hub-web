@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
  
 import { useNavigate, useParams } from 'react-router-dom';
 import Pagination from '../components/Pagination';
+import DeleteConfirmationDialog from "../components/DeleteConfirmationDialog";
  
 import { Store, Search, Plus, X, Trash2 } from 'lucide-react';
  
@@ -254,6 +255,7 @@ const FeatureStoreTypes = () => {
  
   const [removingId, setRemovingId] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [deleteError, setDeleteError] = useState("");
  
   const [error, setError] = useState('');
  
@@ -1053,12 +1055,7 @@ useEffect(() => {
                           type="button"
  
                           className="st-delete-button"
- 
-                          onClick={() =>
- 
-                            setDeleteTarget(s)
- 
-                          }
+                           onClick={() => {setDeleteError(""); setDeleteTarget(s);}}
  
                           disabled={isRemoving}
  
@@ -1158,61 +1155,48 @@ useEffect(() => {
       {/** =========================
           DELETE CONFIRMATION
       ========================== */}
-      {deleteTarget && (
-        <div
-          className="st-delete-overlay"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="st-delete-title"
-          onMouseDown={() => !removingId && setDeleteTarget(null)}
-        >
-          <div
-            className="st-delete-modal"
-            onMouseDown={(event) => event.stopPropagation()}
-          >
-            <div className="st-delete-modal-icon">
-              <Trash2 size={23} strokeWidth={2} />
-            </div>
- 
-            <h2 id="st-delete-title">Unassign Store Type?</h2>
- 
-            <p>
-              Are you sure you want to delete{" "}
-              <strong>{deleteTarget.name || deleteTarget.code}</strong>?
-            </p>
- 
-            <p className="st-delete-warning">The store type will remain available and can be assigned again.</p>
- 
-            <div className="st-delete-modal-actions">
-              <button
-                type="button"
-                className="st-delete-cancel-button"
-                onClick={() => setDeleteTarget(null)}
-                disabled={Boolean(removingId)}
-              >
-                Cancel
-              </button>
- 
-              <button
-                type="button"
-                className="st-delete-confirm-button"
-                onClick={async () => {
-                  const removed = await remove(deleteTarget);
-                  if (removed) {
-                    setDeleteTarget(null);
-                    setSelected([]);
-                    setModalSearch('');
-                    setShowAddModal(true);
-                  }
-                }}
-                disabled={Boolean(removingId)}
-              >
-                {removingId ? 'Unassigning...' : 'Unassign'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      
+<DeleteConfirmationDialog
+  isOpen={Boolean(deleteTarget)}
+  title="Unassign Store Type?"
+  message={
+    deleteTarget
+      ? `Are you sure you want to unassign "${deleteTarget.name || deleteTarget.code}" from this feature?`
+      : ""
+  }
+  cancelLabel="Cancel"
+  confirmLabel="Unassign"
+  busyLabel="Unassigning..."
+  busy={Boolean(removingId)}
+  error={deleteError}
+  iconClassName="bi bi-exclamation-triangle"
+  onCancel={() => {
+    if (!removingId) {
+      setDeleteTarget(null);
+      setDeleteError("");
+    }
+  }}
+  onConfirm={async () => {
+    if (!deleteTarget || removingId) return;
+
+    setDeleteError("");
+
+    const removed = await remove(deleteTarget);
+
+    if (removed) {
+      setDeleteTarget(null);
+      setDeleteError("");
+      setSelected([]);
+      setModalSearch("");
+      setShowAddModal(true);
+    } else {
+      setDeleteError(
+        "Unable to unassign this store type. Please try again."
+      );
+    }
+  }}
+/>
+
  
       {/* =========================
  

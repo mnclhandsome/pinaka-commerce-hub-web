@@ -1,8 +1,9 @@
-import { EmployeeToast, EmployeeDeleteDialog } from "../components/EmployeeFeedback";
+import { EmployeeToast } from "../components/EmployeeFeedback";
 import React, { useEffect, useMemo, useState } from "react";
 import { listEmployees } from "../api/employees";
 import Pagination from "../components/Pagination";
 import FiltersBar from "../components/FiltersBar";
+import DeleteConfirmationDialog from "../components/DeleteConfirmationDialog";
 import { useNavigate, useLocation } from "react-router-dom";
 import { getEmployeeList, deleteEmployee } from "../api/employees";
 
@@ -251,23 +252,42 @@ const [roleFilter, setRoleFilter] = useState("");
 const [statusFilter, setStatusFilter] = useState("");
 const [storeFilter, setStoreFilter] = useState("");
 
-  async function handleDelete(employee) {
-    if (deletingId) return;
-    setDeletingId(employee.id);
-    setDeleteError("");
-    try {
-      await deleteEmployee(employee.id);
-      const result = await getEmployeeList();
-      setEmployeeRows(result.employees);
-      setStatistics(result.statistics);
-      setDeleteTarget(null);
-      setNotice("Employee deleted successfully.");
-    } catch (error) {
-      setDeleteError(error.message || "Unable to delete employee.");
-    } finally {
-      setDeletingId(null);
-    }
+ 
+async function handleDelete(employee) {
+  if (deletingId) return;
+
+  if (
+    employee.id === undefined ||
+    employee.id === null ||
+    String(employee.id).trim() === ""
+  ) {
+    setDeleteError("Employee ID is missing. Cannot delete employee.");
+    return;
   }
+
+  setDeletingId(employee.id);
+  setDeleteError("");
+
+  try {
+    await deleteEmployee(employee.id);
+
+    const result = await getEmployeeList();
+    setEmployeeRows(result.employees);
+    setStatistics(result.statistics);
+
+    setDeleteTarget(null);
+    setNotice("Employee deleted successfully.");
+  } catch (error) {
+    setDeleteError(
+      error?.response?.data?.message ||
+      error?.message ||
+      "Unable to delete employee."
+    );
+  } finally {
+    setDeletingId(null);
+  }
+}
+
 
   function displayTimestamp(value) {
     if (!value) return "—";
@@ -527,15 +547,33 @@ const handlePageSizeChange = (size) => {
         ================================================= */}
 
         <EmployeeToast message={deleteError || notice} onClose={() => { setDeleteError(""); setNotice(""); }} />
-        {deleteTarget && (
-          <EmployeeDeleteDialog
-    title="Deactivate Employee?"
-    description={`Are you sure you want to deactivate ${deleteTarget.name}?`}
-    busy={Boolean(deletingId)}
-    onCancel={() => setDeleteTarget(null)}
-    onConfirm={() => handleDelete(deleteTarget)}
-  />
-)}
+        
+<DeleteConfirmationDialog
+  isOpen={Boolean(deleteTarget)}
+  title="Delete Employee?"
+  message={
+    deleteTarget
+      ? `Are you sure you want to delete "${deleteTarget.name}"?`
+      : ""
+  }
+  cancelLabel="No, Keep It"
+  confirmLabel="Yes, Delete"
+  busyLabel="Deleting..."
+  busy={Boolean(deletingId)}
+  error={deleteError}
+  iconClassName="bi bi-trash3"
+  onCancel={() => {
+    if (deletingId) return;
+    setDeleteTarget(null);
+    setDeleteError("");
+  }}
+  onConfirm={() => {
+    if (deleteTarget) {
+      handleDelete(deleteTarget);
+    }
+  }}
+/>
+
         <div className="employees-table-wrap">
           <table className="employees-table">
             <thead>
