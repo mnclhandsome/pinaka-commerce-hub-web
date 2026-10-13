@@ -1,11 +1,7 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Pagination from "../components/Pagination";
 import ViewDetailsModal from "../components/ViewDetailsModal";
-import {
-  categoriesSeed,
-  tagsSeed,
-  attributesSeed,
-} from "../data/data";
+import { getStoreCatalogTaxonomies } from "../api/storeConnector";
 import "../styles/store-categories.css";
 
 
@@ -99,6 +95,73 @@ export default function StoreCategories({
   const [attributePageSize, setAttributePageSize] =
     useState(10);
 
+  const [categories, setCategories] = useState([]);
+  const [tags, setTags] = useState([]);
+  const [attributes, setAttributes] = useState([]);
+  const [taxonomyLoading, setTaxonomyLoading] = useState(Boolean(storeId));
+  const [taxonomyError, setTaxonomyError] = useState("");
+
+  useEffect(() => {
+    if (!storeId) {
+      setCategories([]);
+      setTags([]);
+      setAttributes([]);
+      setTaxonomyLoading(false);
+      setTaxonomyError("Select a store to view its catalog data.");
+      return undefined;
+    }
+
+    const controller = new AbortController();
+    setTaxonomyLoading(true);
+    setTaxonomyError("");
+    getStoreCatalogTaxonomies(storeId, { signal: controller.signal })
+      .then((response) => {
+        const data = response?.taxonomies || response?.data?.taxonomies || response?.data || response || {};
+        const categoryRows = Array.isArray(data.categories) ? data.categories : [];
+        const categoryNames = new Map(categoryRows.map((item) => [String(item.id), item.name || ""]));
+
+        setCategories(categoryRows.map((item) => ({
+          ...item,
+          id: item.id ?? item.wordpressId ?? item.wordpress_id ?? item.slug ?? item.name,
+          name: item.name || item.title || "Unnamed category",
+          slug: item.slug || "—",
+          parent: categoryNames.get(String(item.parent)) || item.parent_name || item.parent?.name || "",
+          productCount: Number(item.productCount ?? item.product_count ?? item.count ?? 0),
+          status: item.status || "Active",
+        })));
+        setTags((Array.isArray(data.tags) ? data.tags : []).map((item) => ({
+          ...item,
+          id: item.id ?? item.wordpressId ?? item.wordpress_id ?? item.slug ?? item.name,
+          name: item.name || item.title || "Unnamed tag",
+          slug: item.slug || "—",
+          productCount: Number(item.productCount ?? item.product_count ?? item.count ?? 0),
+          status: item.status || "Active",
+        })));
+        setAttributes((Array.isArray(data.attributes) ? data.attributes : []).map((item) => ({
+          ...item,
+          id: item.id ?? item.wordpressId ?? item.wordpress_id ?? item.slug ?? item.name,
+          name: item.name || item.title || "Unnamed attribute",
+          slug: item.slug || "—",
+          productCount: Number(item.productCount ?? item.product_count ?? item.count ?? 0),
+          terms: Array.isArray(item.terms) ? item.terms.map((term) => typeof term === "object" ? term.name || term.slug : String(term)) : [],
+          status: item.status || "Active",
+        })));
+      })
+      .catch((error) => {
+        if (error?.name !== "AbortError") {
+          setTaxonomyError(error?.message || "Could not load this store’s categories, tags, and attributes.");
+          setCategories([]);
+          setTags([]);
+          setAttributes([]);
+        }
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setTaxonomyLoading(false);
+      });
+
+    return () => controller.abort();
+  }, [storeId]);
+
 
   /* =========================================================
      FILTER CATEGORIES
@@ -110,10 +173,10 @@ export default function StoreCategories({
       search.trim().toLowerCase();
 
     if (!value) {
-      return categoriesSeed;
+      return categories;
     }
 
-    return categoriesSeed.filter(
+    return categories.filter(
       (item) =>
         [
           item.name,
@@ -127,7 +190,7 @@ export default function StoreCategories({
         )
     );
 
-  }, [search]);
+  }, [categories, search]);
 
 
   /* =========================================================
@@ -140,10 +203,10 @@ export default function StoreCategories({
       search.trim().toLowerCase();
 
     if (!value) {
-      return tagsSeed;
+      return tags;
     }
 
-    return tagsSeed.filter(
+    return tags.filter(
       (item) =>
         [
           item.name,
@@ -156,7 +219,7 @@ export default function StoreCategories({
         )
     );
 
-  }, [search]);
+  }, [search, tags]);
 
 
   /* =========================================================
@@ -169,10 +232,10 @@ export default function StoreCategories({
       search.trim().toLowerCase();
 
     if (!value) {
-      return attributesSeed;
+      return attributes;
     }
 
-    return attributesSeed.filter(
+    return attributes.filter(
       (item) =>
         [
           item.name,
@@ -185,7 +248,7 @@ export default function StoreCategories({
         )
     );
 
-  }, [search]);
+  }, [attributes, search]);
 
 
   /* =========================================================
@@ -1383,6 +1446,16 @@ export default function StoreCategories({
         {/* ===================================================
            CONTENT
         =================================================== */}
+
+        {taxonomyLoading ? (
+          <div className="categories-empty-state" role="status">
+            Loading categories, tags, and attributes…
+          </div>
+        ) : taxonomyError ? (
+          <div className="categories-empty-state" role="alert">
+            {taxonomyError}
+          </div>
+        ) : null}
 
         {activeTab ===
           "categories" &&
