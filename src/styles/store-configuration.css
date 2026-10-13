@@ -1511,6 +1511,10 @@
     padding: 16px 12px;
   }
 
+  .store-workspace-page .store-workspace-main:has(.merchant-vendors) {
+    padding: 16px;
+  }
+
   .store-subnav-group-header {
     min-height: 38px;
   }

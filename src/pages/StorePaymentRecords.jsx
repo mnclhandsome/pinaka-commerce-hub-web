@@ -161,16 +161,6 @@ export default function StorePaymentRecords({ store }) {
           </div>
         </div>
 
-        {store && (
-          <div className="store-payment-records-context">
-            <i className="bi bi-shop" />
-            <div>
-              <span>STORE</span>
-              <strong>{store.name}</strong>
-              <small>{store.id}</small>
-            </div>
-          </div>
-        )}
       </div>
 
       <div className="store-payment-records-card">
