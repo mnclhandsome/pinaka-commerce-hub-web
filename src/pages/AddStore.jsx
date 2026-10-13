@@ -1824,11 +1824,14 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
   };
   const setEmployeeSelected = (employee, checked) => {
     const employeeId = String(employee.id ?? employee.employeeId ?? "");
+    const empPin = [employee.loginPin, employee.login_pin, employee.employeeLoginPin, employee.employee_login_pin, employee.pin]
+      .map((v) => String(v ?? ""))
+      .find((v) => /^\d{6}$/.test(v)) || "";
     setEmployeeAssignments((current) =>
       checked
         ? current.some((item) => item.employeeId === employeeId)
           ? current
-          : [...current, { employeeId, role: roles[0] || "", pin: "" }]
+          : [...current, { employeeId, role: roles[0] || "", pin: empPin, savedPin: empPin }]
         : current.filter((item) => item.employeeId !== employeeId),
     );
     if (!checked && pinEditorId === employeeId) {
@@ -1851,15 +1854,22 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
 
       const assignedIds = new Set(current.map((item) => item.employeeId));
       const newAssignments = activeEmployees
-        .map((employee) =>
-          String(employee.id ?? employee.employeeId ?? ""),
-        )
-        .filter((employeeId) => employeeId && !assignedIds.has(employeeId))
-        .map((employeeId) => ({
-          employeeId,
-          role: roles[0] || "",
-          pin: "",
-        }));
+        .filter((employee) => {
+          const id = String(employee.id ?? employee.employeeId ?? "");
+          return id && !assignedIds.has(id);
+        })
+        .map((employee) => {
+          const employeeId = String(employee.id ?? employee.employeeId ?? "");
+          const empPin = [employee.loginPin, employee.login_pin, employee.employeeLoginPin, employee.employee_login_pin, employee.pin]
+            .map((v) => String(v ?? ""))
+            .find((v) => /^\d{6}$/.test(v)) || "";
+          return {
+            employeeId,
+            role: roles[0] || "",
+            pin: empPin,
+            savedPin: empPin,
+          };
+        });
       return [...current, ...newAssignments];
     });
 
