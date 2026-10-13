@@ -243,6 +243,7 @@ export default function Vendors({
 
   const [error, setError] =
     useState("");
+  const [validationErrors, setValidationErrors] = useState({});
 
   const nextVendorCode = useMemo(
     () => generateNextVendorCode(vendors),
@@ -418,6 +419,12 @@ export default function Vendors({
       name,
       value,
     } = event.target;
+    setValidationErrors((current) => {
+      const next = { ...current };
+      delete next[name];
+      if (name === "vendorType" && value === "Supplier") delete next.contactPerson;
+      return next;
+    });
 
     setForm((current) => {
       const updated = {
@@ -477,6 +484,7 @@ export default function Vendors({
       ...emptyForm,
     });
     setError("");
+    setValidationErrors({});
     setShowForm(false);
   }
 
@@ -541,34 +549,6 @@ export default function Vendors({
     };
   }
 
-  /*
-  |--------------------------------------------------------------------------
-  | FORM COMPLETION
-  |--------------------------------------------------------------------------
-  | Keep the primary action disabled until all required data is entered.
-  |--------------------------------------------------------------------------
-  */
-
-  const isFormComplete =
-    Boolean(
-      form.name.trim() &&
-      form.vendorType &&
-      form.phone.trim() &&
-      form.email.trim() &&
-      form.category.trim() &&
-      form.addressLine1.trim() &&
-      form.city.trim() &&
-      form.state.trim() &&
-      form.zipCode.trim() &&
-      form.country.trim() &&
-      (form.vendorType !== "Organizer" ||
-        form.contactPerson.trim())
-    ) &&
-    /^\d{10}$/.test(form.phone.trim()) &&
-    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
-      form.email.trim()
-    );
-
   const isEditDirty =
     editingId !== null &&
     Object.keys(emptyForm).some(
@@ -587,112 +567,20 @@ export default function Vendors({
     event.preventDefault();
 
     setError("");
-
-    /*
-    |--------------------------------------------------------------------------
-    | BASIC REQUIRED VALIDATION
-    |--------------------------------------------------------------------------
-    */
-
-    if (
-      !form.name.trim() ||
-      !form.vendorType ||
-      !form.phone.trim() ||
-      !form.email.trim() ||
-      !form.category.trim() ||
-      !form.addressLine1.trim() ||
-      !form.city.trim() ||
-      !form.state.trim() ||
-      !form.zipCode.trim() ||
-      !form.country.trim()
-    ) {
-      setError(
-        "Please fill all mandatory fields. Address Line 2 is optional."
-      );
-
-      return;
+    const nextValidationErrors = {};
+    for (const field of ["name", "vendorType", "phone", "email", "category", "addressLine1", "city", "state", "zipCode", "country"]) {
+      if (!String(form[field] || "").trim()) nextValidationErrors[field] = true;
     }
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | ORGANIZER CONTACT PERSON VALIDATION
-    |--------------------------------------------------------------------------
-    */
-
-    if (
-      form.vendorType ===
-        "Organizer" &&
-      !form.contactPerson.trim()
-    ) {
-      setError(
-        "Contact Person Name is required for an Organizer."
-      );
-
-      return;
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | PHONE REQUIRED
-    |--------------------------------------------------------------------------
-    */
-
-    if (!form.phone.trim()) {
-      setError(
-        "Phone Number is required."
-      );
-
-      return;
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | PHONE 10 DIGIT VALIDATION
-    |--------------------------------------------------------------------------
-    */
-
-    if (
-      !/^\d{10}$/.test(
-        form.phone
-      )
-    ) {
-      setError(
-        "Phone Number must contain exactly 10 digits."
-      );
-
-      return;
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | EMAIL REQUIRED
-    |--------------------------------------------------------------------------
-    */
-
-    if (!form.email.trim()) {
-      setError(
-        "Email is required."
-      );
-
-      return;
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | EMAIL FORMAT VALIDATION
-    |--------------------------------------------------------------------------
-    */
-
-    if (
-      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
-        form.email.trim()
-      )
-    ) {
-      setError(
-        "Please enter a valid email address."
-      );
-
+    if (form.vendorType === "Organizer" && !form.contactPerson.trim()) nextValidationErrors.contactPerson = true;
+    if (form.phone.trim() && !/^\d{10}$/.test(form.phone)) nextValidationErrors.phone = true;
+    if (form.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) nextValidationErrors.email = true;
+    setValidationErrors(nextValidationErrors);
+    if (Object.keys(nextValidationErrors).length) {
+      requestAnimationFrame(() => {
+        const firstInvalid = document.querySelector(".vendors-form [aria-invalid='true']");
+        firstInvalid?.focus?.();
+        firstInvalid?.scrollIntoView?.({ behavior: "smooth", block: "center" });
+      });
       return;
     }
 
@@ -996,6 +884,7 @@ export default function Vendors({
         }`}
         onSubmit={saveVendor}
         autoComplete="off"
+        noValidate
       >
 
         <div className="vendors-form-heading">
@@ -1074,6 +963,7 @@ export default function Vendors({
               autoComplete="off"
               required
               disabled={saving || viewingId !== null}
+              aria-invalid={Boolean(validationErrors.name)}
             />
 
           </label>
@@ -1095,6 +985,7 @@ export default function Vendors({
               onChange={handleChange}
               required
               disabled={saving || viewingId !== null}
+              aria-invalid={Boolean(validationErrors.vendorType)}
             >
               <option value="Supplier">
                 Supplier
@@ -1132,6 +1023,7 @@ export default function Vendors({
                 autoComplete="off"
                 required
                 disabled={saving || viewingId !== null}
+                aria-invalid={Boolean(validationErrors.contactPerson)}
               />
 
             </label>
@@ -1158,16 +1050,9 @@ export default function Vendors({
               autoComplete="off"
               required
               disabled={saving || viewingId !== null}
-              aria-invalid={
-                Boolean(form.phone) &&
-                !/^\d{10}$/.test(form.phone)
-              }
+              aria-invalid={Boolean(validationErrors.phone) || (Boolean(form.phone) && !/^\d{10}$/.test(form.phone))}
             />
 
-            {form.phone && !/^\d{10}$/.test(form.phone) ? (
-              <small className="vendors-field-error">
-              </small>
-            ) : null}
           </label>
 
           {/* =================================================
@@ -1188,18 +1073,9 @@ export default function Vendors({
               autoComplete="off"
               required
               disabled={saving || viewingId !== null}
-              aria-invalid={
-                Boolean(form.email) &&
-                !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
-                  form.email.trim()
-                )
-              }
+              aria-invalid={Boolean(validationErrors.email) || (Boolean(form.email) && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim()))}
             />
 
-            {form.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim()) ? (
-              <small className="vendors-field-error">
-              </small>
-            ) : null}
           </label>
 
           {/* =================================================
@@ -1222,6 +1098,7 @@ export default function Vendors({
               autoComplete="off"
               required
               disabled={saving || viewingId !== null}
+              aria-invalid={Boolean(validationErrors.category)}
             />
 
           </label>
@@ -1246,6 +1123,7 @@ export default function Vendors({
               autoComplete="off"
               required
               disabled={saving || viewingId !== null}
+              aria-invalid={Boolean(validationErrors.addressLine1)}
             />
 
           </label>
@@ -1291,6 +1169,7 @@ export default function Vendors({
               autoComplete="off"
               required
               disabled={saving || viewingId !== null}
+              aria-invalid={Boolean(validationErrors.city)}
             />
 
           </label>
@@ -1310,6 +1189,7 @@ export default function Vendors({
               onChange={handleChange}
               required
               disabled={saving || viewingId !== null}
+              aria-invalid={Boolean(validationErrors.state)}
             >
               <option value="">{form.country ? "Select state or province" : "Select country first"}</option>
               {locationOptions.states.map((state) => <option key={state} value={state}>{state}</option>)}
@@ -1337,6 +1217,7 @@ export default function Vendors({
               autoComplete="off"
               required
               disabled={saving || viewingId !== null}
+              aria-invalid={Boolean(validationErrors.zipCode)}
             />
 
           </label>
@@ -1356,6 +1237,7 @@ export default function Vendors({
               onChange={handleChange}
               required
               disabled={saving || viewingId !== null}
+              aria-invalid={Boolean(validationErrors.country)}
             >
               <option value="">Select country</option>
               {locationOptions.countries.map((country) => <option key={country} value={country}>{country}</option>)}
@@ -1421,7 +1303,6 @@ export default function Vendors({
         disabled={
           saving ||
           viewingId !== null ||
-          !isFormComplete ||
           (editingId !== null && !isEditDirty)
         }
       >

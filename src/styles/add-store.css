@@ -569,6 +569,48 @@
   color: #a6afc0;
 }
 
+.sf-field-invalid input,
+.sf-field-invalid select,
+.sf-field-invalid .pch-filter-dropdown {
+  border-color: #ef4456 !important;
+  background-color: #fffafb !important;
+  box-shadow: 0 0 0 1px rgba(239, 68, 86, 0.08) !important;
+}
+
+.sf-field-invalid .pch-filter-trigger {
+  border-color: #ef4456 !important;
+  background-color: #fffafb !important;
+  box-shadow: 0 0 0 1px rgba(239, 68, 86, 0.08) !important;
+}
+
+.sf-field-invalid input:focus,
+.sf-field-invalid select:focus,
+.sf-field-invalid .pch-filter-trigger:focus-visible,
+.sf-field-invalid .pch-filter-trigger[aria-expanded="true"] {
+  border-color: #ef4456 !important;
+  box-shadow: 0 0 0 1px rgba(239, 68, 86, 0.08) !important;
+  outline: none !important;
+}
+
+.sf-footer-right > .sf-outline,
+.sf-footer-right > .sf-primary {
+  box-sizing: border-box;
+  height: 40px;
+  min-height: 40px;
+}
+
+.sf-hours-table [aria-invalid="true"] {
+  border-color: #ef4456 !important;
+  background-color: #fffafb !important;
+  box-shadow: 0 0 0 1px rgba(239, 68, 86, 0.08) !important;
+}
+
+.sf-hours-table .pch-filter-dropdown:has(select[aria-invalid="true"]) .pch-filter-trigger {
+  border-color: #ef4456 !important;
+  background-color: #fffafb !important;
+  box-shadow: 0 0 0 1px rgba(239, 68, 86, 0.08) !important;
+}
+
 /* =========================
    DETAILS
 ========================= */

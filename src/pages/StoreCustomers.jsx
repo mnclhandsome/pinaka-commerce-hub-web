@@ -204,28 +204,6 @@ export default function StoreCustomers({
 
         </div>
 
-        {/* STORE CONTEXT */}
-
-        {store && (
-          <div className="store-customers-context">
-
-            <i className="bi bi-shop" />
-
-            <div>
-              <span>STORE</span>
-
-              <strong>
-                {store.name}
-              </strong>
-
-              <small>
-                {store.id}
-              </small>
-            </div>
-
-          </div>
-        )}
-
       </div>
 
       {/* =====================================================
@@ -312,106 +290,48 @@ export default function StoreCustomers({
           MAIN CARD
       ===================================================== */}
 
-      <div className="store-customers-card">
+      {/* ===================================================
+          TOOLBAR
+      =================================================== */}
 
-        {/* ===================================================
-            TOOLBAR
-        =================================================== */}
-
-        <div className="store-customers-toolbar">
-
-          {/* SEARCH */}
-
+      <div className="store-customers-toolbar">
           <div className="store-customers-search">
-
             <i className="bi bi-search" />
-
             <input
               type="text"
               placeholder="Search customer name, email or phone..."
               value={search}
-              onChange={(event) =>
-                setSearch(event.target.value)
-              }
+              onChange={(event) => setSearch(event.target.value)}
             />
-
           </div>
-
-          {/* CUSTOMER TYPE */}
-
           <FilterDropdown
             value={customerTypeFilter}
-            onChange={(event) =>
-              setCustomerTypeFilter(
-                event.target.value
-              )
-            }
+            onChange={(event) => setCustomerTypeFilter(event.target.value)}
           >
-            <option value="">
-              All Customer Types
-            </option>
-
+            <option value="">All Customer Types</option>
             {customerTypes.map((type) => (
-              <option
-                key={type}
-                value={type}
-              >
-                {type}
-              </option>
+              <option key={type} value={type}>{type}</option>
             ))}
           </FilterDropdown>
-
-          {/* STATUS */}
-
           <FilterDropdown
             value={statusFilter}
-            onChange={(event) =>
-              setStatusFilter(
-                event.target.value
-              )
-            }
+            onChange={(event) => setStatusFilter(event.target.value)}
           >
-            <option value="">
-              All Status
-            </option>
-
-            <option value="Active">
-              Active
-            </option>
-
-            <option value="Inactive">
-              Inactive
-            </option>
+            <option value="">All Status</option>
+            <option value="Active">Active</option>
+            <option value="Inactive">Inactive</option>
           </FilterDropdown>
-
-          {/* CLEAR */}
-
           <button
             type="button"
             className="store-customers-clear-btn"
             onClick={clearFilters}
           >
             <i className="bi bi-arrow-counterclockwise" />
-            Clear
+            Reset
           </button>
+      </div>
 
-        </div>
-
-        {/* ===================================================
-            TABLE HEADER
-        =================================================== */}
-
-        <div className="store-customers-table-heading">
-
-          <div>
-            Customers
-
-            <span>
-              {filteredCustomers.length}
-            </span>
-          </div>
-
-        </div>
+      <div className="store-customers-card">
 
         {/* ===================================================
             TABLE

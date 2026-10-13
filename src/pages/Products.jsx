@@ -608,13 +608,11 @@ export default function Products({
                 PRODUCTS CARD
             ================================================= */}
 
-            <div className="products-card">
+            {/* =================================================
+                TOOLBAR
+            ================================================= */}
 
-                {/* =================================================
-                    TOOLBAR
-                ================================================= */}
-
-                <div className="products-toolbar">
+            <div className="products-toolbar">
 
                     {/* SEARCH */}
 
@@ -727,7 +725,9 @@ export default function Products({
                         Clear
                     </button>
 
-                </div>
+            </div>
+
+            <div className="products-card">
 
                 {/* =================================================
                     TABLE HEADER
