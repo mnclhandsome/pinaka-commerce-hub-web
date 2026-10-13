@@ -532,7 +532,7 @@ const Detail = ({ label, children }) => (
   </div>
 );
 
-export default function AddStore({ embeddedStep = null, readOnly = false, onEdit, onDone } = {}) {
+export default function AddStore({ embeddedStep = null, readOnly = false, onEdit, onDone, existingStore = null } = {}) {
   const navigate = useNavigate();
   const location = useLocation();
   const { merchantId: routeMerchantId, storeId } = useParams();
@@ -543,6 +543,9 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
   const [merchantInfo, setMerchantInfo] = useState(null);
   const [subscription, setSubscription] = useState(null);
   const featuresOnly = embeddedStep === 2;
+  const embeddedAccess = embeddedStep !== null;
+  const needsEmployees = !embeddedAccess || embeddedStep === 4;
+  const roleResponses = useRef(new Map());
   const [merchantStores, setMerchantStores] = useState([]);
   const [storeTypes, setStoreTypes] = useState([]);
   const [storeTypesLoading, setStoreTypesLoading] = useState(false);
@@ -807,7 +810,7 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
       }
     }
     return unique;
-  }, [subscription, plan, catalog, typeFeatures]);
+  }, [subscription, plan, matchedPlan, catalog, typeFeatures]);
 
   const featureRows = useMemo(() => {
     const source = activeStoreTypeId ? typeFeatures : catalog;
@@ -991,8 +994,8 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
       try {
         const [result, featuresResult, plansResult] = await Promise.all([
           embeddedStep !== null ? Promise.resolve([]) : pendingStoreRead("store-setup-merchants", () => listMerchants()).catch(() => []),
-          pendingStoreRead("store-setup-features", () => listFeatures()).catch(() => []),
-          pendingStoreRead("store-setup-plans", () => listPlans()).catch(() => []),
+          embeddedAccess ? Promise.resolve([]) : pendingStoreRead("store-setup-features", () => listFeatures()).catch(() => []),
+          embeddedAccess ? Promise.resolve([]) : pendingStoreRead("store-setup-plans", () => listPlans()).catch(() => []),
         ]);
         if (!cancelled) {
           setMerchants(
@@ -1012,7 +1015,7 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
           setMasterPlans(Array.isArray(plansResult) ? plansResult : []);
         }
         if (storeId) {
-          const response = await pendingStoreRead(`store:${storeId}`, () => api.get(endpoints.store(encodeURIComponent(storeId))));
+          const response = existingStore || await pendingStoreRead(`store:${storeId}`, () => api.get(endpoints.store(encodeURIComponent(storeId))));
           const saved = response?.store || response;
           if (!cancelled) {
             const address =
@@ -1097,6 +1100,10 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
 
   useEffect(() => {
     let cancelled = false;
+    if (embeddedAccess && (loading || merchantLoading || activeStoreTypeId)) {
+      setStoreTypesLoading(false);
+      return;
+    }
     setStoreTypesLoading(true);
 
     async function loadStoreTypes() {
@@ -1147,7 +1154,7 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
     return () => {
       cancelled = true;
     };
-  }, [merchantId, reload]);
+  }, [merchantId, reload, featuresOnly, embeddedAccess && loading, embeddedAccess && merchantLoading, embeddedAccess && activeStoreTypeId]);
 
   useEffect(() => {
     if (!storeTypes.length) return;
@@ -1201,8 +1208,8 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
       try {
         const [result, employeeResult, storesResult] = await Promise.all([
           pendingStoreRead(`merchant:${merchantId}`, () => getMerchant(merchantId)),
-          featuresOnly ? Promise.resolve([]) : listMerchantEmployees(merchantId),
-          featuresOnly ? Promise.resolve(null) : api.get(endpoints.merchantStores(merchantId)).catch(() => null),
+          !needsEmployees ? Promise.resolve([]) : pendingStoreRead(`employees:${merchantId}`, () => listMerchantEmployees(merchantId)),
+          embeddedAccess ? Promise.resolve(null) : api.get(endpoints.merchantStores(merchantId)).catch(() => null),
         ]);
         if (cancelled) return;
 
@@ -1246,17 +1253,13 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
             .filter((employee) => employee.id),
         );
         if (!featuresOnly) {
-        let roleResult = await merchantRoleTemplatesApi
-          .getAvailable(merchantId)
+        let roleResult = await pendingStoreRead(`merchant-available-roles:${merchantId}`, () => merchantRoleTemplatesApi.getAvailable(merchantId))
           .catch(() => null);
         let templates = roleResult
           ? readMerchantSelectedTemplates(roleResult)
           : [];
         if (!templates.length) {
-          roleResult = await merchantRoleTemplatesApi.list(
-            merchantId,
-            "ACTIVE",
-          );
+          roleResult = await pendingStoreRead(`merchant-active-roles:${merchantId}`, () => merchantRoleTemplatesApi.list(merchantId, "ACTIVE"));
           templates = readMerchantSelectedTemplates(roleResult);
         }
         setRoleDefinitions(templates);
@@ -1313,8 +1316,7 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
       };
     }
     setStoreTypeRolesLoading(true);
-    roleTemplatesApi
-      .getForStoreType(activeStoreTypeId)
+    pendingStoreRead(`store-type-roles:${activeStoreTypeId}`, () => roleTemplatesApi.getForStoreType(activeStoreTypeId))
       .then((response) => {
         if (cancelled) return;
         const ids = readRoleTemplatesList(response)
@@ -1378,8 +1380,8 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
   // Load Store-Type Features
   useEffect(() => {
     let cancelled = false;
-    if (featuresOnly || !editing || !merchantId || !storeId) return;
-    listStoreEmployees(merchantId, storeId)
+    if (!needsEmployees || !editing || !merchantId || !storeId) return;
+    pendingStoreRead(`store-employees:${merchantId}:${storeId}`, () => listStoreEmployees(merchantId, storeId))
       .then((response) => {
         if (cancelled) return;
         const rows = Array.isArray(response) ? response : response?.employees ?? response?.data?.employees ?? [];
@@ -1413,7 +1415,7 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
       setSavedRolePermissions([]);
       return;
     }
-    listStoreRolePermissions(merchantId, storeId)
+    pendingStoreRead(`store-role-permissions:${merchantId}:${storeId}`, () => listStoreRolePermissions(merchantId, storeId))
       .then((response) => {
         if (cancelled) return;
         const rows =
@@ -1433,8 +1435,7 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
     if (featuresOnly || !editing || !merchantId || !storeId) return;
     setRolesLoading(true);
     setRolesError("");
-    storeRoleTemplatesApi
-      .list(merchantId, storeId)
+    pendingStoreRead(`store-role-templates:${merchantId}:${storeId}`, () => storeRoleTemplatesApi.list(merchantId, storeId))
       .then((response) => {
         if (cancelled) return;
         const rows = readStoreRoleTemplates(response);
@@ -1488,8 +1489,13 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
     if (featuresOnly || !activeRole || !roles.includes(activeRole)) return;
     if (editedPermissionRoles.current.has(activeRole)) return;
     setPermissionsLoading(true);
-    roleTemplatesApi
-      .getFeatures(activeRole, store.storeTypeId ? [store.storeTypeId] : [])
+    const roleScope = JSON.stringify([activeRole, store.storeTypeId, reload]);
+    if (!roleResponses.current.has(roleScope)) {
+      roleResponses.current.set(roleScope,
+        pendingStoreRead(`role-features:${roleScope}`, () => roleTemplatesApi.getFeatures(activeRole, store.storeTypeId ? [store.storeTypeId] : []))
+          .catch(error => { roleResponses.current.delete(roleScope); throw error; }));
+    }
+    roleResponses.current.get(roleScope)
       .then((response) => {
         if (cancelled) return;
         const built = buildRolePermissionState(response, enabledFeatures);
@@ -1567,6 +1573,19 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
     };
   }, [merchantId, activeStoreTypeId, reload]);
 
+  // Embedded Features only needs the plan catalog when entitlement data is absent.
+  useEffect(() => {
+    if (!embeddedAccess || loading || merchantLoading || !merchantInfo) return;
+    const hasEntitlements = subscription?.entitlements != null ||
+      subscription?.includedFeatures != null || subscription?.included_features != null ||
+      plan?.includedFeatures != null || plan?.included_features != null || plan?.features != null;
+    if (hasEntitlements) return;
+    let active = true;
+    pendingStoreRead("store-setup-plans", () => listPlans())
+      .then(rows => { if (active) setMasterPlans(Array.isArray(rows) ? rows : []); })
+      .catch(error => { if (active) setLoadError(error.message || "Unable to load plan entitlements."); });
+    return () => { active = false; };
+  }, [featuresOnly, loading, merchantLoading, merchantInfo, subscription, plan]);
   // Default Enable Entitled Features
   useEffect(() => {
     if (

@@ -213,6 +213,7 @@ export default function StoreConfiguration() {
      ======================================================= */
 
   const [merchant, setMerchant] = useState(null);
+  const [storeResponse, setStoreResponse] = useState(null);
   const [store, setStore] = useState(null);
 
   const [loading, setLoading] = useState(true);
@@ -290,7 +291,7 @@ export default function StoreConfiguration() {
         const result = owner && !hasMerchantName
           ? await pendingStoreRead(`merchant:${owner}`, () => getMerchant(owner)).catch(() => null)
           : null;
-        if (!cancelled) { setStore(found); setMerchant(result?.merchant || {name:found.merchantName || found.merchant?.name || "",id:owner}); }
+        if (!cancelled) { setStoreResponse(raw); setStore(found); setMerchant(result?.merchant || {name:found.merchantName || found.merchant?.name || "",id:owner}); }
       } catch (err) {
         if (!cancelled) {
           setError(
@@ -677,7 +678,7 @@ export default function StoreConfiguration() {
                 <StoreSubscriptionSummary merchantId={merchantId || store.merchantId || merchant?.id} />
               ) : ["features", "roles", "users"].includes(section) ? (
                 <div>
-                  <AddStore key={section + ":" + revision + ":" + editingSection} embeddedStep={{features:2,roles:3,users:4}[section]} readOnly={!editingSection} onEdit={() => setEditingSection(true)} onDone={() => {setEditingSection(false);setRevision(v => v + 1);}} />
+                  <AddStore existingStore={storeResponse} key={section + ":" + revision + ":" + editingSection} embeddedStep={{features:2,roles:3,users:4}[section]} readOnly={!editingSection} onEdit={() => setEditingSection(true)} onDone={() => {setEditingSection(false);setRevision(v => v + 1);}} />
                 </div>
               ) : section === "overview" ? (
                 <div className="store-panel">

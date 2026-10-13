@@ -1,3 +1,4 @@
+import { pendingStoreRead } from "../api/http";
 import { useEffect, useMemo, useState } from "react";
 import { Link, useLocation, useSearchParams } from "react-router-dom";
 import Pagination from "../components/Pagination";
@@ -117,7 +118,7 @@ export default function Orders({
     let active = true;
     setLoading(true);
     setError("");
-    listOrders(selectedStore)
+    pendingStoreRead(`store-orders:${selectedStore}`, () => listOrders(selectedStore))
       .then((rows) => {
         if (!active) return;
         const merchantOrders = selectedMerchant
