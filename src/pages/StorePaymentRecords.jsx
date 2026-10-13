@@ -1,118 +1,89 @@
 import FilterDropdown from "../components/FilterDropdown";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import ViewDetailsModal from "../components/ViewDetailsModal";
+import { listStorePosPayments } from "../api/storePosPayments";
+import { listStoreEmployees } from "../api/employees";
+import { isUuid } from "../api/storeDetails";
 import "../styles/store-payment-records.css";
 
-const paymentRecordsSeed = [
-  {
-    id: "PAY-001",
-    title: "Cash Payment for Order 33141",
-    orderId: "33141",
-    orderTotal: 27.20,
-    tenderAmount: 27.20,
-    balanceAmount: 0,
-    changeAmount: 0,
-    transactionId: "33142",
-    paymentAcceptedBy: "merchant 1",
-    status: "Published",
-    date: "2026/09/16 at 2:40 am",
-    paymentMethod: "Cash",
-    paymentType: "Cash",
-    shiftId: "SHIFT-001",
-    notes: "",
-  },
-  {
-    id: "PAY-002",
-    title: "Cash Payment for Order 33139",
-    orderId: "33139",
-    orderTotal: 6.52,
-    tenderAmount: 5.98,
-    balanceAmount: 0.54,
-    changeAmount: 0,
-    transactionId: "33140",
-    paymentAcceptedBy: "merchant 1",
-    status: "Published",
-    date: "2026/09/16 at 2:40 am",
-    paymentMethod: "Cash",
-    paymentType: "Cash",
-    shiftId: "SHIFT-001",
-    notes: "",
-  },
-  {
-    id: "PAY-003",
-    title: "Cash Payment for Order 33135",
-    orderId: "33135",
-    orderTotal: 26.11,
-    tenderAmount: 30.00,
-    balanceAmount: 0,
-    changeAmount: 3.89,
-    transactionId: "33136",
-    paymentAcceptedBy: "merchant 1",
-    status: "Published",
-    date: "2026/09/16 at 1:16 am",
-    paymentMethod: "Cash",
-    paymentType: "Cash",
-    shiftId: "SHIFT-001",
-    notes: "",
-  },
-  {
-    id: "PAY-004",
-    title: "Cash Payment for Order 33132",
-    orderId: "33132",
-    orderTotal: 124.37,
-    tenderAmount: 114.00,
-    balanceAmount: 10.37,
-    changeAmount: 0,
-    transactionId: "33133",
-    paymentAcceptedBy: "manager 1",
-    status: "Published",
-    date: "2026/09/16 at 1:06 am",
-    paymentMethod: "Cash",
-    paymentType: "Cash",
-    shiftId: "SHIFT-002",
-    notes: "",
-  },
-  {
-    id: "PAY-005",
-    title: "Cash Payment for Order 33130",
-    orderId: "33130",
-    orderTotal: 6.52,
-    tenderAmount: 6.52,
-    balanceAmount: 0,
-    changeAmount: 0,
-    transactionId: "33131",
-    paymentAcceptedBy: "manager 1",
-    status: "Published",
-    date: "2026/09/16 at 1:06 am",
-    paymentMethod: "Cash",
-    paymentType: "Cash",
-    shiftId: "SHIFT-002",
-    notes: "",
-  },
-  {
-    id: "PAY-006",
-    title: "Cash Payment for Order 33128",
-    orderId: "33128",
-    orderTotal: 10.87,
-    tenderAmount: 10.87,
-    balanceAmount: 0,
-    changeAmount: 0,
-    transactionId: "33129",
-    paymentAcceptedBy: "manager 1",
-    status: "Published",
-    date: "2026/09/16 at 1:06 am",
-    paymentMethod: "Cash",
-    paymentType: "Cash",
-    shiftId: "SHIFT-002",
-    notes: "",
-  },
-];
-
-export default function StorePaymentRecords({ store }) {
-  const [payments] = useState(paymentRecordsSeed);
+export default function StorePaymentRecords({ store, storeId: storeIdProp, merchantId }) {
+  const storeId = [
+    store?.uuid,
+    store?.storeUUID,
+    store?.storeUuid,
+    store?.store_uuid,
+    store?.id,
+    storeIdProp,
+    store?.storeId,
+    store?.storeID,
+  ].find(isUuid);
+  const [payments, setPayments] = useState([]);
+  const [employeeNames, setEmployeeNames] = useState({});
+  const [loading, setLoading] = useState(Boolean(storeId));
+  const [error, setError] = useState("");
   const [search, setSearch] = useState("");
   const [dateFilter, setDateFilter] = useState("");
   const [selectedPayment, setSelectedPayment] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    if (!merchantId || !storeId) {
+      setEmployeeNames({});
+      return undefined;
+    }
+
+    listStoreEmployees(merchantId, storeId)
+      .then((response) => {
+        if (cancelled) return;
+        const names = {};
+        const employees = Array.isArray(response)
+          ? response
+          : response?.employees ?? response?.data?.employees ?? response?.data ?? [];
+        for (const employee of Array.isArray(employees) ? employees : []) {
+          const name = employee.name || employee.fullName ||
+            [employee.firstName ?? employee.first_name, employee.lastName ?? employee.last_name].filter(Boolean).join(" ");
+          if (!name) continue;
+          for (const id of [employee.id, employee.employeeId, employee.employeeCode, employee.userId, employee.user_id]) {
+            for (const key of employeeIdKeys(id)) names[key] = name;
+          }
+        }
+        setEmployeeNames(names);
+      })
+      .catch(() => {
+        if (!cancelled) setEmployeeNames({});
+      });
+
+    return () => { cancelled = true; };
+  }, [merchantId, storeId]);
+
+  useEffect(() => {
+    if (!storeId) {
+      setPayments([]);
+      setLoading(false);
+      setError("This store’s database ID is unavailable, so payment records cannot be loaded.");
+      return undefined;
+    }
+
+    const controller = new AbortController();
+    setLoading(true);
+    setError("");
+    listStorePosPayments(storeId, { signal: controller.signal })
+      .then((response) => {
+        const rows = Array.isArray(response?.payments) ? response.payments : [];
+        setPayments(rows.map((row) => mapPaymentRecord(row, employeeNames)));
+      })
+      .catch((requestError) => {
+        if (requestError?.name !== "AbortError") {
+          setError(requestError?.message || "Could not load payment records.");
+          setPayments([]);
+        }
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setLoading(false);
+      });
+
+    return () => controller.abort();
+  }, [storeId, employeeNames]);
 
   const filteredPayments = useMemo(() => {
     const query = search.trim().toLowerCase();
@@ -141,6 +112,11 @@ export default function StorePaymentRecords({ store }) {
       return matchesSearch && matchesDate;
     });
   }, [payments, search, dateFilter]);
+  const availableDates = useMemo(
+    () => Array.from(new Set(payments.map((payment) => payment.date.slice(0, 10).replaceAll("/", "-"))))
+      .filter((date) => date.length === 10),
+    [payments],
+  );
 
   const clearFilters = () => {
     setSearch("");
@@ -199,7 +175,14 @@ export default function StorePaymentRecords({ store }) {
             onChange={(event) => setDateFilter(event.target.value)}
           >
             <option value="">All dates</option>
-            <option value="2026-09-16">September 16, 2026</option>
+            {availableDates.map((date) => (
+              <option key={date} value={date}>
+                {new Intl.DateTimeFormat("en-US", {
+                  dateStyle: "long",
+                  timeZone: "UTC",
+                }).format(new Date(`${date}T00:00:00Z`))}
+              </option>
+            ))}
           </FilterDropdown>
 
           <button type="button" onClick={clearFilters}>
@@ -231,7 +214,8 @@ export default function StorePaymentRecords({ store }) {
                   <input type="checkbox" />
                 </th>
                 <th>Title</th>
-                <th>Order Id</th>
+                <th>Order ID</th>
+                <th>Client Order ID</th>
                 <th>Order Total</th>
                 <th>Tender Amount</th>
                 <th>Balance Amount</th>
@@ -243,7 +227,11 @@ export default function StorePaymentRecords({ store }) {
             </thead>
 
             <tbody>
-              {filteredPayments.length ? (
+              {loading ? (
+                <tr><td colSpan="11" className="store-payment-records-empty">Loading payment records…</td></tr>
+              ) : error ? (
+                <tr><td colSpan="11" className="store-payment-records-empty">{error}</td></tr>
+              ) : filteredPayments.length ? (
                 filteredPayments.map((payment) => (
                   <PaymentRecordRow
                     key={payment.id}
@@ -253,7 +241,7 @@ export default function StorePaymentRecords({ store }) {
                 ))
               ) : (
                 <tr>
-                  <td colSpan="10" className="store-payment-records-empty">
+                  <td colSpan="11" className="store-payment-records-empty">
                     No payment records found.
                   </td>
                 </tr>
@@ -281,6 +269,7 @@ export default function StorePaymentRecords({ store }) {
           { key: "id", label: "Payment ID" },
           { key: "title", label: "Payment Title", fullWidth: true },
           { key: "orderId", label: "Order ID" },
+          { key: "clientOrderId", label: "Client Order ID" },
           {
             key: "orderTotal",
             label: "Order Total",
@@ -323,6 +312,56 @@ export default function StorePaymentRecords({ store }) {
   );
 }
 
+function mapPaymentRecord(payment, employeeNames = {}) {
+  const orderId = payment.order_number || "—";
+  const clientOrderId = payment.client_order_id || "—";
+  const method = payment.payment_method_title || payment.payment_method || "Payment";
+
+  return {
+    id: payment.id,
+    title: `${method} Payment for Order ${orderId}`,
+    orderId,
+    clientOrderId,
+    orderTotal: Number(payment.order_total || 0),
+    tenderAmount: Number(payment.amount || 0),
+    balanceAmount: Number(payment.remaining || 0),
+    changeAmount: Number(payment.change_amount || 0),
+    transactionId: payment.provider_transaction_id || payment.local_id || "—",
+    paymentAcceptedBy: findEmployeeName(employeeNames, payment.user_id) || payment.user_id || "—",
+    status: payment.status || "—",
+    date: formatPaymentDate(payment.payment_at),
+    paymentMethod: method,
+    paymentType: payment.payment_type || "—",
+    shiftId: payment.shift_id || "—",
+    notes: payment.notes || "",
+  };
+}
+
+function employeeIdKeys(value) {
+  if (value === undefined || value === null || value === "") return [];
+  const exact = String(value).trim();
+  const keys = [exact, exact.toLowerCase()];
+  const codeNumber = exact.match(/(?:^|\D)(\d+)$/)?.[1];
+  if (codeNumber) keys.push(String(Number(codeNumber)));
+  return [...new Set(keys)];
+}
+
+function findEmployeeName(names, value) {
+  return employeeIdKeys(value).map((key) => names[key]).find(Boolean);
+}
+
+function formatPaymentDate(value) {
+  if (!value) return "—";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return String(value);
+  const datePart = new Intl.DateTimeFormat("en-CA").format(date).replaceAll("-", "/");
+  const timePart = new Intl.DateTimeFormat("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(date).toLowerCase();
+  return `${datePart} at ${timePart}`;
+}
+
 function PaymentRecordRow({ payment, onView }) {
   return (
     <tr
@@ -358,6 +397,7 @@ function PaymentRecordRow({ payment, onView }) {
       </td>
 
       <td>{payment.orderId}</td>
+      <td>{payment.clientOrderId}</td>
       <td>{money(payment.orderTotal)}</td>
       <td>{money(payment.tenderAmount)}</td>
       <td>{money(payment.balanceAmount)}</td>
