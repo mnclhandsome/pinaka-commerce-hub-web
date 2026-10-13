@@ -2114,8 +2114,8 @@
   border-radius: 12px;
   font: 14px/1.5 Inter, Arial, sans-serif;
 }
-.store-section-editor > .store-panel-heading { margin-bottom: 24px; }
-.store-section-editor .sf-panel { margin-bottom: 20px; border-color: var(--store-border); border-radius: 10px; box-shadow: none; }
+.store-section-editor > .store-panel-heading { margin-bottom: 8px; }
+.store-section-editor .sf-panel { margin-bottom: 16px; border-color: var(--store-border); border-radius: 10px; box-shadow: none; }
 .store-section-editor .sf-panel-head { padding: 16px 20px; min-height: 64px; }
 .store-section-editor .sf-panel-head h2 { font-size: 16px; font-weight: 600; color: var(--store-heading); }
 .store-section-editor .sf-panel-head p { font-size: 13px; line-height: 1.5; color: var(--store-muted); }
