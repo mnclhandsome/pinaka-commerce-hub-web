@@ -520,9 +520,9 @@ const Panel = ({ title, subtitle, action, children, className = "" }) => (
         className="sf-panel-head"
         style={className.includes("sf-permissions-panel") ? {
           display: "grid",
-          gridTemplateColumns: "minmax(0, 1fr)",
+          gridTemplateColumns: "minmax(0, 1fr) auto",
           alignItems: "center",
-          gap: 12,
+          gap: 32,
         } : undefined}
       >
         <div>
@@ -659,6 +659,8 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
   const [employeePageSize, setEmployeePageSize] = useState(10);
   const [featureSearch, setFeatureSearch] = useState("");
   const [featureCategory, setFeatureCategory] = useState("All Features");
+  const [featurePage, setFeaturePage] = useState(1);
+  const [featurePageSize, setFeaturePageSize] = useState(10);
 
   useEffect(() => {
     if (!error) return undefined;
@@ -997,6 +999,12 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
         .includes(featureSearch.toLowerCase())
     );
   });
+  const featurePageCount = Math.max(1, Math.ceil(filteredFeatures.length / featurePageSize));
+  const currentFeaturePage = Math.min(featurePage, featurePageCount);
+  const pagedFeatures = filteredFeatures.slice(
+    (currentFeaturePage - 1) * featurePageSize,
+    currentFeaturePage * featurePageSize,
+  );
   const selectableFeatureNames = filteredFeatures.filter((row) => entitled(row.name)).map((row) => row.name);
   const allVisibleFeaturesSelected = selectableFeatureNames.length > 0 && selectableFeatureNames.every((name) => enabledFeatures.includes(name));
   const roleAvailableForStoreType = (role) => storeTypeRoleIds === null || roleTemplateKeys(role).some((key) => storeTypeRoleIds.has(key));
@@ -1706,6 +1714,7 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
     setEmployeePage(1);
     setFeatureSearch("");
     setFeatureCategory("All Features");
+    setFeaturePage(1);
     setCopyFromRole("");
     setError("");
     setStep(0);
@@ -2966,6 +2975,7 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
         <Panel
           title="Features"
           subtitle={readOnly ? "Features available to this store and their saved selection status." : "Select the features you want to enable for this store."}
+          className="sf-feature-list-panel"
           action={<label className="sf-select-all-label sf-panel-select-all"><input type="checkbox" disabled={readOnly || mastersLoading || !selectableFeatureNames.length} checked={allVisibleFeaturesSelected} onChange={(event) => setEnabledFeatures((current) => event.target.checked ? [...new Set([...current, ...selectableFeatureNames])] : current.filter((name) => !selectableFeatureNames.includes(name)))} />Select all eligible</label>}
         >
           <div className="sf-feature-tools">
@@ -2981,7 +2991,10 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
                     key={category}
                     type="button"
                     className={featureCategory === category ? "active" : ""}
-                    onClick={() => setFeatureCategory(category)}
+                    onClick={() => {
+                      setFeatureCategory(category);
+                      setFeaturePage(1);
+                    }}
                   >
                     {category} ({count})
                   </button>
@@ -2993,11 +3006,14 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
               <input
                 placeholder="Search features..."
                 value={featureSearch}
-                onChange={(event) => setFeatureSearch(event.target.value)}
+                onChange={(event) => {
+                  setFeatureSearch(event.target.value);
+                  setFeaturePage(1);
+                }}
               />
             </label>
           </div>
-          <div className="sf-table-wrap">
+          <div className="sf-table-wrap sf-feature-table-wrap">
             <table className="sf-table sf-feature-table">
               <thead>
                 <tr>
@@ -3009,12 +3025,12 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
                 </tr>
               </thead>
               <tbody>
-                {filteredFeatures.map((feature, index) => {
+                {pagedFeatures.map((feature, index) => {
                   const hasPlan = entitled(feature.name);
                   const checked = enabledFeatures.includes(feature.name);
                   return (
                     <tr key={feature.id || feature.name}>
-                      <td>{index + 1}</td>
+                      <td>{(currentFeaturePage - 1) * featurePageSize + index + 1}</td>
                       <td>{feature.name}</td>
                       <td>{feature.description || "—"}</td>
                       <td>
@@ -3040,7 +3056,7 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
                     </tr>
                   );
                 })}
-                {!filteredFeatures.length && (
+                {!pagedFeatures.length && (
                   <tr>
                     <td colSpan="5" className="sf-empty">
                       No features match this search.
@@ -3049,6 +3065,63 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
                 )}
               </tbody>
             </table>
+          </div>
+          <div className="pagination-container sf-feature-pagination">
+            <span className="pagination-info">
+              Showing <strong>{filteredFeatures.length ? (currentFeaturePage - 1) * featurePageSize + 1 : 0}</strong> to{" "}
+              <strong>{Math.min(currentFeaturePage * featurePageSize, filteredFeatures.length)}</strong> of{" "}
+              <strong>{filteredFeatures.length}</strong> items
+            </span>
+            <div className="pagination-controls">
+              <label className="pagination-page-size">
+                <span>Rows per page:</span>
+                <span className="pagination-select-wrapper">
+                  <FilterDropdown
+                    aria-label="Rows per page"
+                    value={featurePageSize}
+                    onChange={(event) => {
+                      setFeaturePageSize(Number(event.target.value));
+                      setFeaturePage(1);
+                    }}
+                  >
+                    {[5, 10, 25, 50, 100].map((size) => (
+                      <option key={size} value={size}>{size}</option>
+                    ))}
+                  </FilterDropdown>
+                </span>
+              </label>
+              <button
+                type="button"
+                className="pagination-arrow"
+                disabled={currentFeaturePage <= 1}
+                onClick={() => setFeaturePage((page) => Math.max(1, page - 1))}
+              >
+                ‹
+              </button>
+              <div className="pagination-pages">
+                {Array.from({ length: featurePageCount }, (_, index) => index + 1)
+                  .slice(0, 5)
+                  .map((page) => (
+                    <button
+                      type="button"
+                      key={page}
+                      className={`pagination-page ${currentFeaturePage === page ? "active" : ""}`}
+                      disabled={!filteredFeatures.length}
+                      onClick={() => setFeaturePage(page)}
+                    >
+                      {page}
+                    </button>
+                  ))}
+              </div>
+              <button
+                type="button"
+                className="pagination-arrow"
+                disabled={currentFeaturePage >= featurePageCount}
+                onClick={() => setFeaturePage((page) => Math.min(featurePageCount, page + 1))}
+              >
+                ›
+              </button>
+            </div>
           </div>
         </Panel>
       </>
@@ -3163,8 +3236,10 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
                 className="sf-copy-permissions"
                 style={{
                   display: "grid",
-                  width: "100%",
-                  gridTemplateColumns: "max-content 220px minmax(0, 1fr)",
+                  width: "max-content",
+                  justifySelf: "end",
+                  marginRight: 0,
+                  gridTemplateColumns: "max-content 220px",
                   alignItems: "end",
                   gap: 12,
                 }}
@@ -3185,7 +3260,6 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
                   Select all permissions
                 </label>
                 <label style={{ width: 220 }}>
-                  Copy from
                   <FilterDropdown
                     value={copyFromRole}
                     onChange={(event) => setCopyFromRole(event.target.value)}
@@ -3200,28 +3274,6 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
                       ))}
                   </FilterDropdown>
                 </label>
-                <button
-                  type="button"
-                  className="sf-outline"
-                  style={{ justifySelf: "end" }}
-                  disabled={readOnly || !active || !copyFromRole}
-                  onClick={() => {
-                    setPermissions((current) => ({
-                      ...current,
-                      [active]: { ...(current[copyFromRole] || {}) },
-                    }));
-                    setPermissionAvailability((current) => ({
-                      ...current,
-                      [active]: { ...(current[copyFromRole] || {}) },
-                    }));
-                    setRoleFeatureRows((current) => ({
-                      ...current,
-                      [active]: [...(current[copyFromRole] || [])],
-                    }));
-                  }}
-                >
-                  Apply
-                </button>
               </div>
             }
           >

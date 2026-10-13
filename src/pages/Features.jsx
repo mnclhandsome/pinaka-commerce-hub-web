@@ -60,7 +60,7 @@ export default function Features() {
   const [formErrors, setFormErrors] = useState({});
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5;
+  const [itemsPerPage, setItemsPerPage] = useState(5);
 
   const isEditing = editingId !== null;
   const editingFeature = features.find((item) => item.id === editingId);
@@ -622,15 +622,19 @@ export default function Features() {
         </div>
 
         <div className="feature-pagination-row">
-  <Pagination
-    currentPage={currentPage}
-    totalPages={totalPages}
-    totalItems={totalEntries}
-    pageSize={itemsPerPage}
-    onPageChange={setCurrentPage}
-    itemLabel="features"
-  />
-</div>
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalItems={totalEntries}
+            pageSize={itemsPerPage}
+            onPageChange={setCurrentPage}
+            onPageSizeChange={(pageSize) => {
+              setItemsPerPage(pageSize);
+              setCurrentPage(1);
+            }}
+            itemLabel="features"
+          />
+        </div>
       </section>
 
       {deleteTarget && (
