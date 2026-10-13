@@ -76,7 +76,7 @@
 }
 
 .merchant-readonly .merchant-view-tabs button[aria-selected="true"] {
-  background: #5937e8;
+  background: #5143bc;
   color: #fff;
   font-weight: 600;
 }
@@ -90,11 +90,11 @@
   min-width: 0;
   min-height: 0;
   overflow: auto;
-  padding: 24px;
+  padding: 12px;
 }
 
 .merchant-readonly .merchant-view-main > .page-header {
-  margin-bottom: 20px;
+  margin-bottom: 4px;
 }
 
 .merchant-readonly .merchant-view-main > [role="tabpanel"] {
@@ -114,8 +114,8 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  margin: 16px 0;
-  padding: 12px 16px;
+  margin: 12px 0;
+  padding: 10px;
   border: 1px solid #dfe4ee;
   border-radius: 10px;
   background: #fff;

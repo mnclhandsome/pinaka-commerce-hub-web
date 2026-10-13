@@ -2,6 +2,8 @@ import { pendingStoreRead } from "../api/http";
 import { useEffect, useRef, useState } from "react";
 import DeleteConfirmationDialog from "../components/DeleteConfirmationDialog";
 import "../styles/merchant-tenders.css";
+import Pagination from "../components/Pagination";
+import FiltersBar from "../components/FiltersBar";
 import { tendorsApi } from "../api/tendors";
 
 const idOf = (value) =>
@@ -109,13 +111,14 @@ export default function MerchantTenders({
   const [masterError, setMasterError] = useState("");
 
   const [query, setQuery] = useState("");
-  const [page, setPage] = useState(1);
+const [page, setPage] = useState(1);
+const [pageSize, setPageSize] = useState(10);
 
   const [sort, setSort] = useState({
     key: "name",
     direction: 1,
   });
-
+ 
   const [modal, setModal] = useState(null);
   const [selection, setSelection] = useState([]);
   const [search, setSearch] = useState("");
@@ -242,15 +245,26 @@ useEffect(() => {
   );
 
   const rows = assigned
-    .filter((value) => matches(value, query))
-    .sort(
-      (a, b) =>
-        String(a[sort.key]).localeCompare(String(b[sort.key])) * sort.direction,
-    );
+  .filter((value) => matches(value, query))
+  .sort(
+    (a, b) =>
+      String(a[sort.key]).localeCompare(String(b[sort.key])) *
+      sort.direction
+  );
+ const totalPages = Math.max(1, Math.ceil(rows.length / pageSize));
+const currentPage = Math.min(page, totalPages);
+const paginatedRows = rows.slice(
+  (currentPage - 1) * pageSize,
+  currentPage * pageSize
+);
 
-  const pages = Math.max(1, Math.ceil(rows.length / 10));
+useEffect(() => {
+  setPage(1);
+}, [query]);
 
-  const current = Math.min(page, pages);
+useEffect(() => {
+  setPage((previous) => Math.min(previous, totalPages));
+}, [totalPages]);
 
   const available = tenders.filter(
     (value) => !ids.includes(value.id) && matches(value, search),
@@ -421,49 +435,39 @@ useEffect(() => {
   }
   return (
     <div className="merchant-tenders">
-      <header className="mt-card mt-header">
-        <div>
-          <h2>Tenders</h2>
-          <p>These are the tenders connected to this merchant.</p>
-        </div>
+  <section className="mt-card">
+   <div className="mt-header">
+  <div>
+    <h3>Tender List</h3>
+    <p>These are the tenders connected to this merchant.</p>
+  </div>
 
-        <button
-          ref={addButton}
-          className="mt-primary"
-          disabled={loading || !!error || masterLoading}
-          onClick={openAddTenderModal}
-        >
-          {masterLoading ? "Loading Tenders…" : "＋ Add Tender"}
-        </button>
-      </header>
+  <button
+    ref={addButton}
+    className="mt-primary"
+    disabled={loading || !!error || masterLoading}
+    onClick={openAddTenderModal}
+  >
+    {masterLoading ? "Loading Tenders…" : "＋ Add Tender"}
+  </button>
+</div>
 
-      <section className="mt-card">
-        <h3>Tender List</h3>
+    <FiltersBar
+      searchValue={query}
+      onSearchChange={(value) => {
+        setQuery(value);
+        setPage(1);
+      }}
+      searchPlaceholder="Search tenders by name or code…"
+      onClear={() => {
+        setQuery("");
+        setPage(1);
+        setSort({ key: "name", direction: 1 });
+      }}
+      showClear={true}
+    />
 
-        <div className="mt-toolbar">
-          <input
-            aria-label="Search assigned tenders"
-            placeholder="Search tenders by name or code…"
-            value={query}
-            onChange={(event) => {
-              setQuery(event.target.value);
-              setPage(1);
-            }}
-          />
-
-          <button
-            onClick={() => {
-              setQuery("");
-              setPage(1);
-              setSort({
-                key: "name",
-                direction: 1,
-              });
-            }}
-          >
-            ↺ Reset
-          </button>
-        </div>
+    {/* Keep your existing tender table and pagination below */}
 
         {loading || assignmentsLoading ? (
           <p role="status">Loading tenders…</p>
@@ -476,9 +480,7 @@ useEffect(() => {
                 <thead>{headings()}</thead>
 
                 <tbody>
-                  {rows
-                    .slice((current - 1) * 10, current * 10)
-                    .map((tender) => (
+                  {paginatedRows.map((tender) => (
                       <tr key={tender.id}>
                         <td>{name(tender)}</td>
                         <td>{tender.code}</td>
@@ -527,34 +529,19 @@ useEffect(() => {
               </table>
             </div>
 
-            <footer className="mt-footer">
-              <span>
-                Showing {rows.length ? (current - 1) * 10 + 1 : 0} to{" "}
-                {Math.min(current * 10, rows.length)} of {rows.length} entries
-              </span>
-
-              <div>
-                <button
-                  disabled={current === 1}
-                  onClick={() => setPage(current - 1)}
-                  aria-label="Previous page"
-                >
-                  ‹
-                </button>
-
-                <span className="mt-page">
-                  {current} / {pages}
-                </span>
-
-                <button
-                  disabled={current === pages}
-                  onClick={() => setPage(current + 1)}
-                  aria-label="Next page"
-                >
-                  ›
-                </button>
-              </div>
-            </footer>
+            <Pagination
+  currentPage={currentPage}
+  totalPages={totalPages}
+  totalItems={rows.length}
+  pageSize={pageSize}
+  onPageChange={setPage}
+  onPageSizeChange={(size) => {
+    setPageSize(size);
+    setPage(1);
+  }}
+  itemLabel="tenders"
+  showWhenEmpty={true}
+/>
           </>
         )}
       </section>
@@ -725,7 +712,7 @@ useEffect(() => {
           modal?.tender?.name || "this tender"
         } from this merchant? The tender will remain available in Master Data.`}
         cancelLabel="Cancel"
-        confirmLabel="Remove Assignment"
+        confirmLabel="Remove"
         busyLabel="Removing..."
         busy={busy}
         error={saveError}

@@ -567,7 +567,7 @@ const confirmDeletePermission = async () => {
   title="Delete Permission?"
   message={
     deleteTarget
-      ? `Are you sure you want to delete "${deleteTarget.name || deleteTarget.key}"? This action cannot be undone.`
+      ? `Are you sure you want to delete "${deleteTarget.name || deleteTarget.key}"?`
       : ""
   }
   cancelLabel="Cancel"

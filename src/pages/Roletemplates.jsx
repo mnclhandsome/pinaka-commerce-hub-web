@@ -815,8 +815,8 @@ async function confirmDeleteTemplate() {
         }"?`
       : ""
   }
-  cancelLabel="No, Keep It"
-  confirmLabel="Yes, Deactivate"
+  cancelLabel="Cancel"
+  confirmLabel="Deactivate"
   busyLabel="Deactivating..."
   busy={saving}
   error={deleteError}

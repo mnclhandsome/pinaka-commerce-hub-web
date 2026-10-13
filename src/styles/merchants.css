@@ -1587,8 +1587,10 @@ dialog.merchant-delete-dialog::backdrop {
 
 .merchant-table-card > .filter-bar {
   min-height: 48px;
-  padding: 12px 12px 16px;
-  gap: 10px;
+    padding: 12px 12px 16px;
+    gap: 10px;
+    margin: 0;
+    border-bottom: 0;
 }
 .merchant-table-card > .merchant-pagination {
     width: calc(100% - 24px);
@@ -1662,7 +1664,7 @@ dialog.merchant-delete-dialog::backdrop {
 .mel .mel-heading{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:18px}.mel h2{font-size:22px;margin:0;padding:0;border:0}
 .mel button{font:inherit;padding:8px 12px;border:1px solid #dfe3eb;border-radius:6px;background:white;color:#5143bc;cursor:pointer}.mel button:disabled{opacity:.45;cursor:not-allowed}.mel .mel-primary{background:#5143bc;color:white;border-color:#5143bc}
 .mel .mel-card{padding:16px;background:white;border:1px solid #e1e4eb;border-radius:8px;margin-bottom:16px}.mel .mel-search{display:flex;gap:12px;margin-bottom:14px}.mel input,.mel select{height:40px;border:1px solid #dfe3eb;border-radius:6px;padding:8px 12px;font:inherit;color:#43506a;background:white;min-width:0;width:100%}.mel input[readonly]{background:#f6f7fb}.mel input::placeholder{color:#9aa2b3}
-.mel .mel-filters{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px}.mel .mel-scroll{overflow:auto}.mel table{width:100%;border-collapse:collapse;white-space:nowrap;font-size:13px}.mel th,.mel td{height:52px;text-align:left;padding:10px 14px;border-bottom:1px solid #edf0f4;vertical-align:middle}.mel th{height:44px;background:#f1f3fd;font-size:12px;font-weight:600}.mel td small{display:block;color:#81899a;margin-top:4px}.mel footer{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:16px;font-size:13px;color:#81899a}.mel .mel-pages{display:flex;align-items:center;gap:10px}
+.mel .mel-filters{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px}.mel .mel-scroll{width: 100%;margin: 0;box-sizing: border-box;}.mel table{width:100%;border-collapse:collapse;white-space:nowrap;font-size:13px}.mel th,.mel td{height:52px;text-align:left;padding:10px 14px;border-bottom:1px solid #edf0f4;vertical-align:middle}.mel th{height:44px;background:#f1f3fd;font-size:12px;font-weight:600}.mel td small{display:block;color:#81899a;margin-top:4px}.mel footer{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:16px;font-size:13px;color:#81899a}.mel .mel-pages{display:flex;align-items:center;gap:10px}
 .mel-dialog{position:fixed;inset:0;margin:auto;width:min(600px,calc(100vw - 32px));max-height:85vh;overflow:auto;border:1px solid #e1e4eb;border-radius:10px;padding:24px;color:#17233e}.mel-dialog::backdrop{background:#17233e66}.mel-dialog dl{display:grid;grid-template-columns:1fr 1fr;gap:20px}.mel-dialog dt{color:#81899a}.mel-dialog dd{margin:5px 0;overflow-wrap:anywhere}.mel :focus-visible{outline:2px solid #5143bc;outline-offset:2px}
 @media(max-width:1000px){.mel .mel-filters{grid-template-columns:repeat(3,minmax(0,1fr))}}@media(max-width:600px){.mel .mel-filters{grid-template-columns:1fr 1fr}.mel .mel-heading,.mel footer{flex-wrap:wrap}.mel-dialog dl{grid-template-columns:1fr}}
 .mdl{font-family:"Inter",sans-serif;font-size:14px;line-height:1.5;color:#17233e;min-width:0}
@@ -1675,7 +1677,7 @@ dialog.merchant-delete-dialog::backdrop {
 .mdl button:disabled{opacity:.5;cursor:not-allowed}
 .mdl .mdl-primary{background:#5143bc;color:white;border-color:#5143bc;white-space:nowrap}
 .mdl .mdl-toolbar,.mdl .mdl-footer{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:14px 0}
-.mdl input:not([type=checkbox]){height:40px;border:1px solid #dfe3eb;border-radius:6px;padding:10px 12px;font:inherit;width:100%;min-width:0}
+/* .mdl input:not([type=checkbox]){height:40px;border:1px solid #dfe3eb;border-radius:6px;padding:10px 12px;font:inherit;width:100%;min-width:0} */
 .mdl .mdl-toolbar input{max-width:460px}
 .mdl .mdl-scroll{overflow:auto;border:1px solid #e5ebf4;border-radius:6px}
 .mdl table{border-collapse:collapse;width:100%;white-space:nowrap;font-size:13px}
@@ -1705,8 +1707,22 @@ dialog.merchant-delete-dialog::backdrop {
 .mel .mel-heading{margin-bottom:16px;}
 .mel h2,.mel h3{margin:0;padding:0;border:0;font-size:18px;}
 .mel .mel-heading p{margin:4px 0 0;font-size:13px;color:#81899a;}
-.mel .mel-search{align-items:center;justify-content:space-between;gap:16px;margin:16px 0;}
-.mel .mel-search input{max-width:460px;}
+.mel .mel-search {
+    width: 100%;
+    margin: 16px 0;
+    padding: 0;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+.mel .mel-search input{ 
+    flex: 1;
+    width: 100%;
+    max-width: none;
+    min-width: 0;
+}
 .mel .mel-search button,.mel .mel-primary{white-space:nowrap;flex-shrink:0;}
 .mel .mel-scroll{border:1px solid #e7ebf2;border-radius:6px;}
 .mel th{background:#f1f3fd;}

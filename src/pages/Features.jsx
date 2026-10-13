@@ -652,8 +652,8 @@ const confirmDeleteFeature = async () => {
       ? `Are you sure you want to deactivate "${deleteTarget.name}"?`
       : ""
   }
-  cancelLabel="No, Keep It"
-  confirmLabel="Yes, Deactivate"
+  cancelLabel="Cancel"
+  confirmLabel="Deactivate"
   busyLabel="Deactivating..."
   busy={deleting}
   error={deleteError}

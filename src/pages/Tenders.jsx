@@ -741,8 +741,8 @@ async function confirmDeleteTender() {
         }"?`
       : ""
   }
-  cancelLabel="No, Keep It"
-  confirmLabel="Yes, Deactivate"
+  cancelLabel="Cancel"
+  confirmLabel="Deactivate"
   busyLabel="Deactivating..."
   busy={deleting}
   error={deleteError}

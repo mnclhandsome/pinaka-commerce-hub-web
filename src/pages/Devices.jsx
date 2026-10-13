@@ -582,7 +582,7 @@ export default function Devices() {
           : ""}
         busy={deleting}
         cancelLabel="Cancel"
-        confirmLabel="Yes, Deactivate"
+        confirmLabel="Deactivate"
         busyLabel="Deactivating..."
         onCancel={() => (deleting ? null : setDeleteDevice(null))}
         onConfirm={handleDeactivateDevice}
