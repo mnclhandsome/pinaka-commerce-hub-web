@@ -513,7 +513,15 @@ const SelectField = ({
 const Panel = ({ title, subtitle, action, children, className = "" }) => (
   <section className={`sf-panel ${className}`}>
     {(title || action) && (
-      <div className="sf-panel-head">
+      <div
+        className="sf-panel-head"
+        style={className.includes("sf-permissions-panel") ? {
+          display: "grid",
+          gridTemplateColumns: "minmax(0, 1fr)",
+          alignItems: "center",
+          gap: 12,
+        } : undefined}
+      >
         <div>
           {title && <h2>{title}</h2>}
           {subtitle && <p>{subtitle}</p>}
@@ -599,6 +607,7 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
   const [employeeSearch, setEmployeeSearch] = useState("");
   const [employeeFilter, setEmployeeFilter] = useState("All");
   const [employeePage, setEmployeePage] = useState(1);
+  const [employeePageSize, setEmployeePageSize] = useState(10);
   const [featureSearch, setFeatureSearch] = useState("");
   const [featureCategory, setFeatureCategory] = useState("All Features");
 
@@ -956,7 +965,7 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
     );
   });
 
-  const pageSize = 10;
+  const pageSize = employeePageSize;
   const pageCount = Math.max(1, Math.ceil(employeeRows.length / pageSize));
   const currentEmployeePage = Math.min(employeePage, pageCount);
   const pagedEmployees = employeeRows.slice(
@@ -3074,11 +3083,6 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
                 </span>
                 <span>
                   <strong>{role.name}</strong>
-                  <small>
-                    {role.description ||
-                      role.roleCode ||
-                      "Merchant role template"}
-                  </small>
                 </span>
               </label>
             ))}
@@ -3124,8 +3128,18 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
           <Panel
             title={`Permissions for ${activeName}`}
             subtitle={readOnly ? "Saved access for the selected role." : "Set what this role can view, create, edit or delete."}
+            className="sf-permissions-panel"
             action={
-              <div className="sf-copy-permissions">
+              <div
+                className="sf-copy-permissions"
+                style={{
+                  display: "grid",
+                  width: "100%",
+                  gridTemplateColumns: "max-content 220px minmax(0, 1fr)",
+                  alignItems: "end",
+                  gap: 12,
+                }}
+              >
                 <label className="sf-select-all-label">
                   <input type="checkbox" disabled={readOnly || !active || !matrixRows.length} checked={Boolean(active && matrixRows.length && matrixRows.every((item) => STANDARD_ACTIONS.every((action) => Boolean(permissions[active]?.[item.name]?.[action]))))} onChange={(event) => {
                     if (!active) return;
@@ -3141,7 +3155,7 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
                   }} />
                   Select all permissions
                 </label>
-                <label>
+                <label style={{ width: 220 }}>
                   Copy from
                   <FilterDropdown
                     value={copyFromRole}
@@ -3160,6 +3174,7 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
                 <button
                   type="button"
                   className="sf-outline"
+                  style={{ justifySelf: "end" }}
                   disabled={readOnly || !active || !copyFromRole}
                   onClick={() => {
                     setPermissions((current) => ({
@@ -3333,7 +3348,7 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
               Duplicate login PINs are assigned to {duplicatePinNames.join(", ")}. Change one PIN for this store before continuing.
             </div>
           )}
-          <div className="sf-table-wrap">
+          <div className="sf-table-wrap sf-employees-table-wrap">
             <table className="sf-table sf-employees-table">
               <thead>
                 <tr>
@@ -3489,35 +3504,57 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
               </tbody>
             </table>
           </div>
-          <div className="sf-pagination">
-            <span>
+          <div className="pagination-container employee-pagination-container">
+            <span className="pagination-info">
               Showing{" "}
               {employeeRows.length ? (employeePage - 1) * pageSize + 1 : 0}–
               {Math.min(employeePage * pageSize, employeeRows.length)} of{" "}
               {employeeRows.length} employees
             </span>
-            <div>
+            <div className="pagination-controls">
+              <label className="pagination-page-size">
+                <span>Rows per page:</span>
+                <span className="pagination-select-wrapper">
+                  <FilterDropdown
+                    aria-label="Rows per page"
+                    value={pageSize}
+                    onChange={(event) => {
+                      setEmployeePageSize(Number(event.target.value));
+                      setEmployeePage(1);
+                    }}
+                  >
+                    {[5, 10, 25, 50, 100].map((size) => (
+                      <option key={size} value={size}>{size}</option>
+                    ))}
+                  </FilterDropdown>
+                </span>
+              </label>
               <button
                 type="button"
+                className="pagination-arrow"
                 disabled={employeePage <= 1}
                 onClick={() => setEmployeePage((page) => Math.max(1, page - 1))}
               >
                 ‹
               </button>
-              {Array.from({ length: pageCount }, (_, index) => index + 1)
-                .slice(0, 5)
-                .map((page) => (
-                  <button
-                    type="button"
-                    key={page}
-                    className={employeePage === page ? "active" : ""}
-                    onClick={() => setEmployeePage(page)}
-                  >
-                    {page}
-                  </button>
-                ))}
+              <div className="pagination-pages">
+                {Array.from({ length: pageCount }, (_, index) => index + 1)
+                  .slice(0, 5)
+                  .map((page) => (
+                    <button
+                      type="button"
+                      key={page}
+                      className={`pagination-page ${employeePage === page ? "active" : ""}`}
+                      disabled={!employeeRows.length}
+                      onClick={() => setEmployeePage(page)}
+                    >
+                      {page}
+                    </button>
+                  ))}
+              </div>
               <button
                 type="button"
+                className="pagination-arrow"
                 disabled={employeePage >= pageCount}
                 onClick={() =>
                   setEmployeePage((page) => Math.min(pageCount, page + 1))

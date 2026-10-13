@@ -2135,6 +2135,13 @@
 }
 .store-section-editor .sf-feature-tools { justify-content: space-between; }
 .store-section-editor .sf-employee-tools { justify-content: flex-end; }
+.store-section-editor .sf-employee-tools {
+  box-sizing: border-box;
+  width: calc(100% - 24px);
+  margin: 0 12px;
+  padding-right: 22px;
+  padding-left: 0;
+}
 .store-section-editor .sf-tabs { gap: 8px; }
 .store-section-editor .sf-feature-tools .sf-tabs { flex: 1 1 auto; min-width: 0; }
 .store-section-editor .sf-tabs button { min-height: 36px; padding: 8px 12px; border-radius: 7px; color: var(--store-muted); font-size: 13px; line-height: 1.4; }
@@ -2155,6 +2162,19 @@
 .store-section-editor .sf-employee-tools .sf-field { margin: 0; }
 .store-section-editor .sf-employee-tools .sf-field select { width: 125px; height: 40px; }
 .store-section-editor .sf-table { font-size: 13px; }
+.store-section-editor .sf-employees-table-wrap {
+  box-sizing: border-box;
+  width: calc(100% - 24px);
+  margin: 0 12px;
+  border: 1px solid #dfe9f4;
+  border-radius: 8px;
+  background: #fff;
+}
+.store-section-editor .employee-pagination-container {
+  box-sizing: border-box;
+  width: calc(100% - 24px);
+  margin: 0 12px;
+}
 .store-section-editor .sf-table th { height: 44px; padding: 0 14px; font-size: 12px; font-weight: 600; line-height: 18px; color: #58677e; background: #f1f3fd; }
 .store-section-editor .sf-table td { height: 52px; padding: 10px 14px; font-size: 13px; line-height: 18px; color: var(--store-text); }
 .store-section-editor .sf-feature-table td:nth-child(3) { color: var(--store-muted); }
@@ -2175,6 +2195,9 @@
 .store-section-editor .sf-pin-set { font-size: 12px; }
 .store-section-editor .sf-pagination { padding: 16px 20px; font-size: 13px; color: var(--store-muted); flex-wrap: wrap; }
 .store-section-editor .sf-pagination button { min-width: 34px; height: 34px; font-size: 13px; border-radius: 7px; }
+.store-section-editor .sf-pagination-page-size { display: flex; align-items: center; gap: 8px; margin-right: 8px; white-space: nowrap; }
+.store-section-editor .sf-pagination-page-size .pch-filter-dropdown,
+.store-section-editor .sf-pagination-page-size .pch-filter-sizing { width: 64px; min-width: 64px; height: 34px; }
 .store-section-editor .sf-footer { position: static; margin: 20px 0 0; padding: 20px 0 0; justify-content: flex-end; background: #fff; }
 .store-section-editor .sf-info-banner,
 .store-section-editor .sf-empty { font-size: 13px; }
@@ -2183,6 +2206,9 @@
 .store-workspace-page .store-overview-card dt { color: var(--store-muted); }
 .store-workspace-page .store-overview-card dd { font-size: 14px; color: var(--store-text); }
 @media (max-width: 900px) {
+  .store-section-editor .sf-employees-table-wrap { width: calc(100% - 20px); margin-right: 10px; margin-left: 10px; }
+  .store-section-editor .employee-pagination-container { width: calc(100% - 20px); margin-right: 10px; margin-left: 10px; }
+  .store-section-editor .sf-employee-tools { width: calc(100% - 20px); margin-right: 10px; margin-left: 10px; padding-right: 22px; }
   .store-section-editor .sf-plan-summary,
   .store-section-editor .sf-employee-summary { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 16px; }
   .store-section-editor .sf-plan-summary > div,
@@ -2193,8 +2219,8 @@
   .store-workspace-page .store-panel-heading { flex-direction: row; align-items: center; }
   .store-workspace-page .store-panel-heading h2 { font-size: 18px; }
   .store-section-editor .sf-panel-head,
-  .store-section-editor .sf-feature-tools,
-  .store-section-editor .sf-employee-tools { padding: 14px; }
+  .store-section-editor .sf-feature-tools { padding: 14px; }
+  .store-section-editor .sf-employee-tools { padding: 14px 22px 14px 0; }
   .store-section-editor .sf-search { width: 100%; min-width: 0; }
   .store-section-editor .sf-employee-tools .sf-field { width: 100%; }
   .store-section-editor .sf-employee-tools .sf-field select { width: 100%; }
@@ -2211,6 +2237,39 @@
 .store-workspace-page .store-panel-actions .sf-outline:disabled {
   opacity: 0.65;
   cursor: not-allowed;
+}
+
+.store-section-editor .sf-permissions-panel .sf-panel-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 16px;
+}
+.store-section-editor .sf-permissions-panel .sf-copy-permissions {
+  display: grid;
+  grid-template-columns: max-content 170px auto;
+  align-items: center;
+  gap: 8px;
+}
+.store-section-editor .sf-permissions-panel .sf-copy-permissions > label:nth-child(2) {
+  width: 220px;
+}
+.store-section-editor .sf-permissions-panel .sf-copy-permissions > label:nth-child(2) > .pch-filter-dropdown {
+  width: 100%;
+  height: 40px;
+}
+.store-section-editor .sf-permissions-panel .sf-copy-permissions > label:nth-child(2) .pch-filter-sizing,
+.store-section-editor .sf-permissions-panel .sf-copy-permissions > label:nth-child(2) .pch-filter-trigger {
+  height: 40px;
+}
+.store-section-editor .sf-permissions-panel .sf-copy-permissions > .sf-select-all-label {
+  box-sizing: border-box;
+  height: 40px;
+}
+.store-section-editor .sf-permissions-panel .sf-copy-permissions > .sf-outline {
+  box-sizing: border-box;
+  height: 40px;
+  min-height: 40px;
 }
 
 /* Store sub-screen spacing follows Customers: 24px, or 16px on mobile. */
@@ -2297,6 +2356,7 @@
   .store-payment-records-search,
   .store-payment-records-toolbar,
   .ea-toolbar,
+  .sm-filter-card,
   .shift-filter-bar,
   .shift-bottom-toolbar,
   .categories-toolbar,
@@ -2313,11 +2373,12 @@
 .store-workspace-page .store-workspace-card :is(
   .filter-search,
   .ea-search,
+  .sm-search-control,
   .sf-search
 ) {
   box-sizing: border-box;
-  height: 35px;
-  min-height: 35px;
+  height: 40px;
+  min-height: 40px;
   border-color: #e1e4eb;
   border-radius: 5px;
   background: #fff;
@@ -2337,7 +2398,7 @@
   .fast-key-toolbar input
 ) {
   box-sizing: border-box;
-  height: 35px;
+  height: 40px;
   border: 1px solid #e1e4eb;
   border-radius: 5px;
   background: #fff;
@@ -2405,13 +2466,14 @@
   .store-customers-toolbar select,
   .store-payment-records-toolbar select,
   .ea-inline-filter select,
+  .sm-filter-card select,
   .shift-filter-bar select,
   .shift-bottom-toolbar select,
   .pch-master-toolbar.pch-master-control select
 ) {
   box-sizing: border-box;
-  height: 35px;
-  min-height: 35px;
+  height: 40px;
+  min-height: 40px;
   border-color: #e1e4eb;
   border-radius: 6px;
   background-color: #fff;
@@ -2501,14 +2563,15 @@
   .coupons-clear-btn,
   .store-customers-clear-btn,
   .ea-reset,
+  .sm-reset-button,
   .shift-small-btn,
   .reset-filter,
   .fp-reset-btn,
   .role-reset-icon-btn
 ) {
   box-sizing: border-box;
-  height: 35px;
-  min-height: 35px;
+  height: 40px;
+  min-height: 40px;
   padding: 0 12px;
   border: 1px solid #e1e4eb;
   border-radius: 6px;
@@ -2562,6 +2625,7 @@
 .store-workspace-page .store-workspace-card .ea-toolbar .ea-search {
   flex: 1 1 250px;
   min-width: 190px;
+  height: 40px;
 }
 
 .store-workspace-page .store-workspace-card .ea-toolbar .ea-inline-filter {
@@ -2569,7 +2633,96 @@
   min-width: 120px;
 }
 
+.store-workspace-page .store-workspace-card .ea-toolbar .ea-inline-filter select {
+  height: 40px;
+  min-height: 40px;
+}
+
 .store-workspace-page .store-workspace-card .ea-toolbar .ea-reset {
+  flex: 0 0 auto;
+}
+
+/* Keep embedded listing search and filters in the same row pattern as attendance. */
+.store-workspace-page .store-workspace-card :is(
+  .coupons-toolbar,
+  .products-toolbar,
+  .store-customers-toolbar,
+  .orders-page .filters-bar
+) {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.store-workspace-page .store-workspace-card .coupons-toolbar {
+  margin-bottom: 16px;
+  padding-right: 0;
+  padding-left: 0;
+  border-bottom: 0;
+  background: transparent;
+}
+
+.store-workspace-page .store-workspace-card .orders-page > .filters-bar {
+  min-height: 0;
+  margin-bottom: 16px;
+  padding: 0 12px;
+  border: 0;
+  background: transparent;
+}
+
+.store-workspace-page .store-workspace-card :is(
+  .coupons-search,
+  .products-search,
+  .store-customers-search,
+  .orders-page .filters-bar .filter-search
+) {
+  box-sizing: border-box;
+  flex: 1 1 250px;
+  min-width: min(190px, 100%);
+  max-width: 100%;
+}
+
+.store-workspace-page .store-workspace-card :is(
+  .coupons-toolbar > .pch-filter-dropdown,
+  .products-toolbar > .pch-filter-dropdown,
+  .store-customers-toolbar > .pch-filter-dropdown,
+  .orders-page .filters-bar .filter-select-wrapper
+) {
+  box-sizing: border-box;
+  flex: 0 1 145px;
+  width: auto;
+  min-width: 120px;
+  max-width: 100%;
+}
+
+.store-workspace-page .store-workspace-card .orders-page .filters-bar .filter-options {
+  display: flex;
+  flex: 0 1 auto;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.store-workspace-page .store-workspace-card .orders-page .filters-bar .filter-select-wrapper {
+  flex-basis: 130px;
+  width: 130px;
+}
+
+@media (min-width: 1000px) {
+  .store-workspace-page .store-workspace-card .orders-page .filters-bar .filter-options {
+    flex-wrap: nowrap;
+  }
+}
+
+.store-workspace-page .store-workspace-card :is(
+  .coupons-clear-btn,
+  .products-clear-btn,
+  .store-customers-clear-btn,
+  .orders-page .filters-bar .filter-reset-btn
+) {
   flex: 0 0 auto;
 }
 
@@ -2582,7 +2735,7 @@
   box-sizing: border-box;
   flex: 0 1 280px;
   min-width: 180px;
-  height: 35px;
+  height: 40px;
   padding: 0 9px;
   gap: 7px;
   border: 1px solid #e1e4eb;
@@ -2627,8 +2780,8 @@
 .store-workspace-page .store-section-editor .sf-employee-tools > .sf-field select {
   box-sizing: border-box;
   width: 145px;
-  height: 35px;
-  min-height: 35px;
+  height: 40px;
+  min-height: 40px;
   padding: 0 30px 0 10px;
   border: 1px solid #e1e4eb;
   border-radius: 6px;
@@ -2775,7 +2928,7 @@
 
 .store-workspace-page .store-workspace-card .store-payment-records-search input {
   box-sizing: border-box;
-  height: 35px;
+  height: 40px;
   padding: 0 10px;
   border: 1px solid #e1e4eb;
   border-radius: 5px;
@@ -2784,6 +2937,12 @@
   color: #3c465a;
   font-size: 12px;
   box-shadow: none;
+}
+
+.store-workspace-page .store-workspace-card .store-payment-records-search > button,
+.store-workspace-page .store-workspace-card .store-payment-records-toolbar > button {
+  height: 40px;
+  min-height: 40px;
 }
 
 .store-workspace-page .store-workspace-card .store-payment-records-search input:focus {
@@ -3057,3 +3216,4 @@
   outline: none;
   box-shadow: 0 0 0 2px rgba(81, 67, 188, 0.08);
 }
+

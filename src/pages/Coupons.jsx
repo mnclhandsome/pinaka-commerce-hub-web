@@ -399,16 +399,10 @@ export default function Coupons({
             </div>
 
             {/* =================================================
-                MAIN CARD
+                TOOLBAR
             ================================================= */}
 
-            <div className="coupons-card">
-
-                {/* =================================================
-                    TOOLBAR
-                ================================================= */}
-
-                <div className="coupons-toolbar">
+            <div className="coupons-toolbar">
 
                     {/* SEARCH */}
 
@@ -487,7 +481,12 @@ export default function Coupons({
                         Clear
                     </button>
 
-                </div>
+            </div>
+
+            {/* =================================================
+                MAIN CARD
+            ================================================= */}
+            <div className="coupons-card">
 
                 {/* =================================================
                     TABLE HEADER

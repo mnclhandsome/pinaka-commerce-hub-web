@@ -1281,28 +1281,6 @@ export default function StoreCategories({
           </p>
 
 
-          {store ? (
-
-            <div className="categories-store-context">
-
-              <i className="bi bi-shop" />
-
-              <span>
-                {store.name}
-              </span>
-
-              <span className="context-separator">
-                •
-              </span>
-
-              <span>
-                {store.id}
-              </span>
-
-            </div>
-
-          ) : null}
-
         </div>
 
       </div>
