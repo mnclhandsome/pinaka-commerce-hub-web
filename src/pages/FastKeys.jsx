@@ -1,5 +1,6 @@
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import Pagination from "../components/Pagination";
 
 const initialFastKeys = [
   {
@@ -74,6 +75,8 @@ export default function FastKeys() {
 
   const [search, setSearch] = useState("");
   const [tab, setTab] = useState("all");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   const [editing, setEditing] = useState(null);
   const [formOpen, setFormOpen] = useState(false);
@@ -102,6 +105,20 @@ export default function FastKeys() {
       return matchesTab && matchesSearch;
     });
   }, [items, search, tab]);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / itemsPerPage));
+  const pageItems = filtered.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, tab]);
+
+  useEffect(() => {
+    setCurrentPage((page) => Math.min(page, totalPages));
+  }, [totalPages]);
 
   const publishedCount = items.filter(
     (item) => item.status === "Published"
@@ -347,7 +364,7 @@ export default function FastKeys() {
           </thead>
 
           <tbody>
-            {filtered.map((item) => (
+            {pageItems.map((item) => (
               <tr key={item.id}>
 
                 {/* Image */}
@@ -416,6 +433,7 @@ export default function FastKeys() {
                     {/* Edit */}
                     <button
                       type="button"
+                      className="edit-button"
                       aria-label={`Edit ${item.title}`}
                       onClick={() => openForm(item)}
                     >
@@ -426,7 +444,7 @@ export default function FastKeys() {
                     <button
                       type="button"
                       aria-label={`Delete ${item.title}`}
-                      className="danger"
+                      className="delete-button"
                       onClick={() => remove(item)}
                     >
                       <i className="bi bi-trash" />
@@ -450,9 +468,19 @@ export default function FastKeys() {
       {/* ================= FOOTER ================= */}
 
       <div className="fast-key-footer">
-        Showing {filtered.length} of {items.length} items
-
-        <span>1 / 1</span>
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalItems={filtered.length}
+          pageSize={itemsPerPage}
+          onPageChange={setCurrentPage}
+          onPageSizeChange={(pageSize) => {
+            setItemsPerPage(pageSize);
+            setCurrentPage(1);
+          }}
+          itemLabel="fast keys"
+          showWhenEmpty
+        />
       </div>
 
       {/* ================= ADD / EDIT POPUP ================= */}
