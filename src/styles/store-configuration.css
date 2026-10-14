@@ -3611,9 +3611,24 @@
   padding: 0 0 14px;
 }
 .store-workspace-page .store-workspace-card .merchant-vendors .mv-toolbar input {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
   height: 40px;
   max-width: none;
+  padding: 0 14px;
+  border: 1px solid #d9e2ef;
+  border-radius: 7px;
+  outline: none;
+  background: #fff;
+  color: #263550;
   font-size: 13px;
+}
+.store-workspace-page .store-workspace-card .merchant-vendors .mv-toolbar input:focus,
+.store-workspace-page .store-workspace-card .merchant-vendors .mv-toolbar input:focus-visible {
+  border-color: #8c7cf0;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(81, 67, 188, 0.1);
 }
 .store-workspace-page .store-workspace-card .merchant-vendors .mv-toolbar button { height: 40px; }
 .store-workspace-page .store-workspace-card .merchant-vendors .mv-scroll {
