@@ -451,6 +451,16 @@
     font-weight: 600;
 }
 
+.coupon-form-field > span {
+    transform-origin: left center;
+    transition: color 0.18s ease, transform 0.18s ease;
+}
+
+.coupon-form-field:focus-within > span {
+    color: #5143bc;
+    transform: translateY(-2px);
+}
+
 .coupon-form-field input,
 .coupon-form-field select,
 .coupon-form-field textarea {
@@ -464,6 +474,28 @@
     color: #263650;
     font: inherit;
     font-weight: 400;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.18s ease;
+}
+
+.coupon-form-field > .pch-filter-dropdown {
+    display: grid;
+    width: 100%;
+}
+
+.coupon-form-field > .pch-filter-dropdown > .pch-filter-sizing {
+    width: 100%;
+}
+
+.coupon-form-field > .pch-filter-dropdown > .pch-filter-trigger {
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.18s ease;
+}
+
+.coupon-form-field:focus-within > .pch-filter-dropdown > .pch-filter-trigger,
+.coupon-form-field input:focus,
+.coupon-form-field textarea:focus {
+    transform: translateY(-1px);
+    border-color: #5143bc;
+    box-shadow: 0 0 0 3px rgba(81, 67, 188, 0.08);
 }
 
 .coupon-form-field textarea {

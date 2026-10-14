@@ -2618,6 +2618,10 @@
     margin-top: 10px;
 }
 
+.service-charge-tiers-card > .pagination-container {
+    margin-top: 10px;
+}
+
 .service-charge-table-footer > span {
     color: #7c8799;
 
@@ -3221,6 +3225,10 @@
     align-items: center;
     justify-content: space-between;
 
+    margin-top: 10px;
+}
+
+.cashback-tiers-card > .pagination-container {
     margin-top: 10px;
 }
 
