@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation, useParams, useSearchParams } from "react-router-dom";
 import { formatMoney, getOrder } from "../api/orders";
+import { extractProducts, normalizeProduct, productsApi } from "../api/products";
 import "../styles/orders.css";
 
 function metaValue(entries, key) {
@@ -31,6 +32,52 @@ function titleCase(value) {
   return text.toLowerCase().replace(/\b\w/g, (letter) => letter.toUpperCase());
 }
 
+function lineItemSku(item) {
+  const metadata = asArray(item.meta_data || item.metaData);
+  const metadataSku = metadata.find((entry) =>
+    ["sku", "product_sku", "productsku"].includes(String(entry?.key || "").toLowerCase()),
+  )?.value;
+  return item.sku
+    || item.productSku
+    || item.product_sku
+    || item.product?.sku
+    || item.productDetails?.sku
+    || item.product_details?.sku
+    || metadataSku
+    || "";
+}
+
+function productSkuMap(response) {
+  const products = extractProducts(response).map((product) => normalizeProduct(product));
+  const skuById = new Map();
+  products.forEach((product) => {
+    if (!product.sku) return;
+    [product.id, product.wordpressId].filter(Boolean).forEach((id) => {
+      skuById.set(String(id), product.sku);
+    });
+  });
+  return skuById;
+}
+
+function catalogSkuForLineItem(item, skuById) {
+  const product = item.product || item.productDetails || item.product_details || {};
+  const ids = [
+    item.productId,
+    item.product_id,
+    product.id,
+    product.productId,
+    product.product_id,
+    item.variationId,
+    item.variation_id,
+  ];
+  for (const id of ids) {
+    if (id !== undefined && id !== null && skuById.has(String(id))) {
+      return skuById.get(String(id));
+    }
+  }
+  return "";
+}
+
 function buildView(payload) {
   // The API may return the order directly or wrap it in `data` / `order`.
   const response = payload?.data && typeof payload.data === "object" ? payload.data : payload;
@@ -52,7 +99,7 @@ function buildView(payload) {
   const lineItems = rawLineItems.map((item) => ({
     ...item,
     name: item.name || item.productName || item.product_name || item.title || "Item",
-    sku: item.sku || item.productSku || item.product_sku || "",
+    sku: lineItemSku(item),
     quantity: item.quantity ?? item.qty,
     subtotal: item.subtotal ?? item.totalPrice ?? item.total_price ?? item.total,
     total: item.total ?? item.totalPrice ?? item.total_price ?? item.subtotal,
@@ -134,9 +181,25 @@ export default function OrderDetail() {
     setLoading(true);
     setError("");
     getOrder(orderId, storeId)
-      .then((payload) => {
+      .then(async (payload) => {
+        if (!active) return;
+        let nextView = buildView(payload);
+        if (storeId && nextView.lineItems.some((item) => !item.sku)) {
+          try {
+            const catalog = await productsApi.getCatalog(storeId);
+            const skuById = productSkuMap(catalog);
+            nextView = {
+              ...nextView,
+              lineItems: nextView.lineItems.map((item) => ({
+                ...item,
+                sku: item.sku || catalogSkuForLineItem(item, skuById),
+              })),
+            };
+          } catch {
+            // Keep the order details available when the catalog cannot be read.
+          }
+        }
         if (active) {
-          const nextView = buildView(payload);
           setView(orderNumber ? { ...nextView, number: orderNumber.replace(/^#/, "") } : nextView);
         }
       })
