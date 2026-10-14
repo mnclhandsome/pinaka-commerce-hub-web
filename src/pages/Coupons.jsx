@@ -1,9 +1,9 @@
 import FilterDropdown from "../components/FilterDropdown";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Pagination from "../components/Pagination";
 import ViewDetailsModal from "../components/ViewDetailsModal";
 import DeleteConfirmationDialog from "../components/DeleteConfirmationDialog";
-import { couponsSeed } from "../data/data";
+import { api, pendingStoreRead } from "../api/http";
 import "../styles/coupons.css";
 
 const emptyCoupon = {
@@ -16,6 +16,7 @@ const emptyCoupon = {
     exclude_sale_items: false,
     free_shipping: false,
     product_ids: "",
+    required_product_ids: "",
     excluded_product_ids: "",
     product_categories: "",
     excluded_product_categories: "",
@@ -72,6 +73,10 @@ function couponToForm(coupon = {}) {
         amount: String(coupon.amount ?? "").replace(/[$,%]/g, "").trim(),
         date_expires: coupon.date_expires ? String(coupon.date_expires).slice(0, 10) : coupon.expiryDate || "",
         product_ids: csv(coupon.product_ids || coupon.productIds),
+        required_product_ids: csv(coupon.required_product_ids || coupon.requiredProductIds),
+        individual_use: coupon.individual_use ?? coupon.individualUse ?? false,
+        free_shipping: coupon.free_shipping ?? coupon.freeShipping ?? false,
+        exclude_sale_items: coupon.exclude_sale_items ?? coupon.excludeSaleItems ?? false,
         excluded_product_ids: csv(coupon.excluded_product_ids || coupon.excludedProductIds),
         product_categories: csv(coupon.product_categories || coupon.productCategories),
         excluded_product_categories: csv(coupon.excluded_product_categories || coupon.excludedProductCategories),
@@ -107,10 +112,41 @@ export default function Coupons({
 
     const [selectedCoupon, setSelectedCoupon] = useState(null);
 
-    const [coupons] = useState(() => (couponsSeed || []).map(normalizeCoupon));
+    const [coupons, setCoupons] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [loadError, setLoadError] = useState("");
+    const [attempt, setAttempt] = useState(0);
+    const ownerId = merchantId || store?.merchantId || store?.merchant_id || store?.merchant?.id;
+    useEffect(() => {
+        let active = true;
+        setCoupons([]);
+        if (!storeId || !ownerId) return;
+        setLoading(true);
+        setLoadError("");
+        pendingStoreRead(`store-coupons:${ownerId}:${storeId}`, async () => {
+            const rows = [];
+            let page = 1;
+            while (true) {
+                const query = new URLSearchParams({ merchantId: String(ownerId), storeId: String(storeId), page: String(page), perPage: "25" });
+                const response = await api.get(`/coupons?${query}`);
+                const data = response?.data || response;
+                if (data?.success === false) throw new Error(data.message || "Unable to load coupons.");
+                if (!Array.isArray(data?.coupons)) throw new Error("Coupons API did not return a coupons array.");
+                rows.push(...data.coupons);
+                if (!data.coupons.length || rows.length >= Number(data.total ?? rows.length)) break;
+                page += 1;
+            }
+            return rows.map(normalizeCoupon);
+        }).then(rows => { if (active) setCoupons(rows); })
+          .catch(error => { if (active) setLoadError(error.message || "Unable to load coupons."); })
+          .finally(() => { if (active) setLoading(false); });
+        return () => { active = false; };
+    }, [ownerId, storeId, attempt]);
     const [editorMode, setEditorMode] = useState("");
     const [couponForm, setCouponForm] = useState(emptyCoupon);
     const [formError, setFormError] = useState("");
+    const [savingCoupon, setSavingCoupon] = useState(false);
+    const couponSaveLock = useRef(false);
     const [deleteTarget, setDeleteTarget] = useState(null);
     const [deleteError, setDeleteError] = useState("");
 
@@ -287,7 +323,7 @@ export default function Coupons({
         setEditorMode("edit");
     };
 
-    const handleSaveCoupon = (event) => {
+    const handleSaveCoupon = async (event) => {
         event.preventDefault();
         if (!storeId) {
             setFormError("Select a store before creating or editing a coupon.");
@@ -301,12 +337,63 @@ export default function Coupons({
             setFormError("Enter a valid discount amount.");
             return;
         }
-        setFormError("Saving will be enabled after the coupon API is implemented.");
+        if (couponSaveLock.current) return;
+        if (editorMode === "edit" && !couponForm.id) { setFormError("Coupon ID is missing."); return; }
+        if (!ownerId) { setFormError("Merchant ID is missing for this store."); return; }
+        couponSaveLock.current = true;
+        setSavingCoupon(true);
+        setFormError("");
+        try {
+            const csv = value => String(value || "").split(",").map(item => item.trim()).filter(Boolean);
+            const ids = value => csv(value).map(item => {
+                const id = Number(item);
+                if (!Number.isSafeInteger(id) || id <= 0) throw new Error("Product and category IDs must be positive integers.");
+                return id;
+            });
+            const limit = value => {
+                if (value === "" || value == null) return null;
+                const n = Number(value);
+                if (!Number.isSafeInteger(n) || n < 0) throw new Error("Usage limits must be non-negative integers.");
+                return n;
+            };
+            const payload = {
+                merchantId: ownerId, storeId, code: couponForm.code.trim(),
+                amount: String(couponForm.amount), discountType: couponForm.discount_type,
+                description: couponForm.description || "", individualUse: Boolean(couponForm.individual_use),
+                productIds: ids(couponForm.product_ids), requiredProductIds: ids(couponForm.required_product_ids),
+                excludedProductIds: ids(couponForm.excluded_product_ids),
+                usageLimit: limit(couponForm.usage_limit), usageLimitPerUser: limit(couponForm.usage_limit_per_user),
+                limitUsageToXItems: limit(couponForm.limit_usage_to_x_items),
+                freeShipping: Boolean(couponForm.free_shipping), productCategories: ids(couponForm.product_categories),
+                excludedProductCategories: ids(couponForm.excluded_product_categories), excludeSaleItems: Boolean(couponForm.exclude_sale_items),
+                minimumAmount: couponForm.minimum_amount || "0.00", maximumAmount: couponForm.maximum_amount || "0.00",
+                emailRestrictions: csv(couponForm.email_restrictions), dateExpires: couponForm.date_expires || null,
+            };
+            const response = editorMode === "edit"
+                ? await api.put(`/coupons/${encodeURIComponent(couponForm.id)}`, payload)
+                : await api.post("/coupons", payload);
+            if (response?.success === false) throw new Error(response.message || "Unable to create coupon.");
+            setEditorMode("");
+            setSyncMessage(editorMode === "edit" ? "Coupon updated successfully." : "Coupon created successfully.");
+            setAttempt(value => value + 1);
+        } catch (error) { setFormError(error.message || "Unable to create coupon."); }
+        finally { couponSaveLock.current = false; setSavingCoupon(false); }
     };
 
-    const handleDeleteCoupon = () => {
-        if (!deleteTarget || !storeId) return;
-        setDeleteError("Deleting will be enabled after the coupon API is implemented.");
+    const handleDeleteCoupon = async () => {
+        if (!deleteTarget?.id || !storeId || couponSaveLock.current) return;
+        couponSaveLock.current = true;
+        setSavingCoupon(true);
+        setDeleteError("");
+        try {
+            const response = await api.delete(`/coupons/${encodeURIComponent(deleteTarget.id)}`);
+            if (response?.success === false) throw new Error(response.message || "Unable to delete coupon.");
+            setDeleteTarget(null);
+            setSelectedCoupon(null);
+            setSyncMessage("Coupon deleted successfully.");
+            setAttempt(value => value + 1);
+        } catch (error) { setDeleteError(error.message || "Unable to delete coupon."); }
+        finally { couponSaveLock.current = false; setSavingCoupon(false); }
     };
 
     if (editorMode) {
@@ -316,9 +403,9 @@ export default function Coupons({
                 form={couponForm}
                 setForm={setCouponForm}
                 error={formError}
-                busy={false}
+                busy={savingCoupon}
                 onSubmit={handleSaveCoupon}
-                onClose={() => setEditorMode("")}
+                onClose={() => { if (!couponSaveLock.current) setEditorMode(""); }}
             />
         );
     }
@@ -329,6 +416,8 @@ export default function Coupons({
 
     return (
         <div className="coupons-page">
+            {loading && <p role="status">Loading coupons…</p>}
+            {loadError && <p role="alert">{loadError} <button type="button" onClick={() => setAttempt(value => value + 1)}>Retry</button></p>}
 
             {/* =================================================
                 HEADER
@@ -862,9 +951,9 @@ export default function Coupons({
                 isOpen={Boolean(deleteTarget)}
                 title="Delete coupon?"
                 message={deleteTarget ? `Delete “${deleteTarget.code}” from this store and sync the change to WooCommerce?` : "This coupon will be removed from this store and synced to WooCommerce."}
-                busy={false}
+                busy={savingCoupon}
                 error={deleteError}
-                onCancel={() => setDeleteTarget(null)}
+                onCancel={() => { if (!couponSaveLock.current) setDeleteTarget(null); }}
                 onConfirm={handleDeleteCoupon}
             />
 
@@ -944,6 +1033,7 @@ function CouponEditor({ mode, form, setForm, error, busy, onSubmit, onClose }) {
                                     {field("Minimum spend", "minimum_amount", { type: "number", min: "0", step: "0.01" })}
                                     {field("Maximum spend", "maximum_amount", { type: "number", min: "0", step: "0.01" })}
                                     {field("Product IDs", "product_ids", { help: "Comma-separated WooCommerce product IDs." })}
+                                    {field("Required product IDs", "required_product_ids", { help: "Comma-separated WooCommerce product IDs." })}
                                     {field("Excluded product IDs", "excluded_product_ids", { help: "Comma-separated WooCommerce product IDs." })}
                                     {field("Product category IDs", "product_categories", { help: "Comma-separated category IDs." })}
                                     {field("Excluded category IDs", "excluded_product_categories", { help: "Comma-separated category IDs." })}
