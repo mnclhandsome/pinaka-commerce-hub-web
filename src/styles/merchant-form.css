@@ -254,6 +254,23 @@
     border-color: #e2dcff;
 }
 
+#pch-new .pch-rail button.pch-current:hover:not(:disabled) {
+    background: #5143bc;
+    border-color: #e2dcff;
+    color: #fff;
+    box-shadow: 0 3px 10px rgba(49, 39, 135, 0.18);
+}
+
+#pch-new .pch-rail button.pch-current:hover .pch-number {
+    background: #f7f6ff;
+    border-color: #f7f6ff;
+    color: #5937e8;
+}
+
+#pch-new .pch-rail button.pch-current:hover .pch-rail-description {
+    color: #eff0f0;
+}
+
 #pch-new .pch-rail .pch-number {
     border: 1px solid #dce2ed;
     border-radius: 50%;

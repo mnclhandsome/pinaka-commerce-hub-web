@@ -97,7 +97,7 @@ table thead th {
     align-items: center;
     justify-content: space-between;
     gap: 24px;
-    padding: 16px 0;
+    padding: 16px 14px;
     box-sizing: border-box;
     background: #fff;
 }

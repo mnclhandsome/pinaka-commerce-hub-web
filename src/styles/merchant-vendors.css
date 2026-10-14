@@ -92,7 +92,7 @@
     font-size: 14px;
     line-height: 20px;
     font-weight: 500;
-    padding: 0 14px;
+    padding: 10px 14px;
     border: 1px solid #d9deea;
     border-radius: 7px;
     background: #ffffff;
@@ -1068,6 +1068,39 @@
 .mv-existing-content .mv-location-filters { margin-top: 16px; }
 .mv-device-picker .mv-device-scope { margin: 0 0 16px; color: #63708a; font-size: 13px; }
 .mv-device-picker .mv-device-toolbar { grid-template-columns: minmax(260px, 1fr) auto; }
+.mv-device-picker .filters-bar,
+.mv-device-mapped-page .mv-device-list-card > .filters-bar {
+    width: 100%;
+    min-width: 0;
+    margin: 0;
+    padding: 16px 0;
+    box-sizing: border-box;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+.mv-device-picker .filters-bar .filter-search,
+.mv-device-mapped-page .mv-device-list-card > .filters-bar .filter-search {
+    min-width: min(260px, 100%);
+    max-width: 100%;
+    height: 38px;
+}
+.mv-device-picker .filters-bar .filter-options,
+.mv-device-mapped-page .mv-device-list-card > .filters-bar .filter-options {
+    max-width: 100%;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+.mv-device-picker .filters-bar .filter-select-wrapper,
+.mv-device-mapped-page .mv-device-list-card > .filters-bar .filter-select-wrapper {
+    width: 150px;
+    flex-basis: 150px;
+}
+.mv-device-picker .filters-bar .filter-select-wrapper select,
+.mv-device-mapped-page .mv-device-list-card > .filters-bar .filter-select-wrapper select,
+.mv-device-picker .filters-bar .filter-reset-btn,
+.mv-device-mapped-page .mv-device-list-card > .filters-bar .filter-reset-btn {
+    height: 38px;
+}
 .mv-device-picker .mv-existing-table-wrap table { min-width: 820px; }
 .mv-device-picker .mv-existing-table-wrap th:nth-child(1), .mv-device-picker .mv-existing-table-wrap td:nth-child(1) { width: 9%; }
 .mv-device-picker .mv-existing-table-wrap th:nth-child(2), .mv-device-picker .mv-existing-table-wrap td:nth-child(2) { width: 18%; text-align: left; }
