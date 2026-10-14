@@ -42,11 +42,11 @@
     padding: 0;
     border: 0;
     color: #17233e;
-    font-weight: 600;
+    font-weight: 500;
 }
 
 .merchant-vendors h2 {
-    font-size: 20px;
+    font-size: 18px;
     line-height: 28px;
 }
 
@@ -71,8 +71,8 @@
     align-items: center;
     justify-content: space-between;
     gap: 20px;
-    padding: 24px;
-    margin-bottom: 18px;
+    padding: 18px 18px 10px;
+  
 }
 
 .merchant-vendors .mv-card > h3 {
@@ -92,18 +92,12 @@
     font-size: 14px;
     line-height: 20px;
     font-weight: 500;
-
-    height: 40px;
     padding: 0 14px;
-
     border: 1px solid #d9deea;
     border-radius: 7px;
-
     background: #ffffff;
     color: #5143bc;
-
     cursor: pointer;
-
     transition:
         background-color 0.15s ease,
         border-color 0.15s ease,
@@ -125,22 +119,73 @@
 ========================================================= */
 
 .merchant-vendors .mv-primary {
-    height: 42px;
-    padding: 0 18px;
-
+    padding: 8px 12px;
     border: 1px solid #5143bc;
-    border-radius: 7px;
-
+    border-radius: 5px;
     background: #5143bc;
     color: #ffffff;
-
-    font-weight: 600;
     white-space: nowrap;
 }
 
 .merchant-vendors .mv-primary:hover:not(:disabled) {
     background: #4538a6;
     border-color: #4538a6;
+}
+
+.merchant-vendors .mv-list-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+    min-width: 0;
+}
+
+.merchant-vendors .mv-list-actions button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.merchant-vendors .mv-secondary {
+    padding:8px 12px;
+    border: 1px solid #5143bc;
+    border-radius: 5px;
+    background: #fff;
+    color: #5143bc;
+    white-space: nowrap;
+}
+
+.merchant-vendors .mv-list-actions .mv-secondary:hover:not(:disabled) {
+    background: #f7f5ff;
+    border-color: #4538a6;
+    color: #4538a6;
+}
+
+.merchant-vendors .mv-list-card > .filters-bar {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    margin: 0;
+    padding: 16px 24px;
+    box-sizing: border-box;
+}
+
+.merchant-vendors .mv-list-card > .filters-bar .filter-search {
+    width: auto;
+    max-width: none;
+    min-width: 0;
+    flex: 1 1 0;
+}
+
+.merchant-vendors .mv-list-card > .pagination-container {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    height: auto;
+    margin: 0;
+    padding: 16px 24px 12px;
+    box-sizing: border-box;
 }
 
 /* =========================================================
@@ -169,34 +214,6 @@
 /* =========================================================
    SEARCH INPUT
 ========================================================= */
-
-.merchant-vendors input:not([type="checkbox"]) {
-    width: 100%;
-    min-width: 0;
-    height: 42px;
-
-    padding: 0 13px;
-
-    border: 1px solid #d9e0ec;
-    border-radius: 7px;
-
-    background: #ffffff;
-    color: #17233e;
-
-    font-family: "Inter", sans-serif;
-    font-size: 14px;
-
-    outline: none;
-
-    transition:
-        border-color 0.15s ease,
-        box-shadow 0.15s ease;
-}
-
-.merchant-vendors input:not([type="checkbox"]):focus {
-    border-color: #5143bc;
-    box-shadow: 0 0 0 3px rgba(81, 67, 188, 0.10);
-}
 
 .merchant-vendors input::placeholder {
     color: #9aa2b3;
@@ -259,27 +276,27 @@
 
 .merchant-vendors th:nth-child(1),
 .merchant-vendors td:nth-child(1) {
-    width: 14%;
+    width: 10%;
 }
 
 .merchant-vendors th:nth-child(2),
 .merchant-vendors td:nth-child(2) {
-    width: 16%;
+    width: 12%;
 }
 
 .merchant-vendors th:nth-child(3),
 .merchant-vendors td:nth-child(3) {
-    width: 11%;
+    width: 10%;
 }
 
 .merchant-vendors th:nth-child(4),
 .merchant-vendors td:nth-child(4) {
-    width: 17%;
+    width: 12%;
 }
 
 .merchant-vendors th:nth-child(5),
 .merchant-vendors td:nth-child(5) {
-    width: 14%;
+    width: 10%;
 }
 
 .merchant-vendors th:nth-child(6),
@@ -289,12 +306,12 @@
 
 .merchant-vendors th:nth-child(7),
 .merchant-vendors td:nth-child(7) {
-    width: 9%;
+    width: 8%;
 }
 
 .merchant-vendors th:nth-child(8),
 .merchant-vendors td:nth-child(8) {
-    width: 9%;
+    width: 8%;
 }
 
 /* =========================================================
@@ -824,6 +841,10 @@
     .merchant-vendors .mv-toolbar input {
         max-width: 100%;
     }
+
+    .merchant-vendors .mv-list-actions {
+        flex-wrap: wrap;
+    }
 }
 
 @media (max-width: 600px) {
@@ -861,8 +882,29 @@
         align-items: flex-start;
     }
 
+    .merchant-vendors .mv-list-actions {
+        width: 100%;
+    }
+
     .merchant-vendors .mv-primary {
         width: 100%;
+    }
+
+    .merchant-vendors .mv-list-actions button {
+        flex: 1 1 auto;
+    }
+
+    .merchant-vendors .mv-list-card > .filters-bar {
+        flex-wrap: wrap;
+        padding: 14px;
+    }
+
+    .merchant-vendors .mv-list-card > .filters-bar .filter-search {
+        flex-basis: 100%;
+    }
+
+    .merchant-vendors .mv-list-card > .pagination-container {
+        padding: 14px;
     }
 
     .merchant-vendors .mv-toolbar {

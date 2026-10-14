@@ -2,6 +2,8 @@ import { pendingStoreRead } from "../api/http";
 import { useEffect, useRef, useState } from "react";
 import { Eye, Trash2 } from "lucide-react";
 import DeleteConfirmationDialog from "../components/DeleteConfirmationDialog";
+import FiltersBar from "../components/FiltersBar";
+import Pagination from "../components/Pagination";
 import "../styles/merchant-vendors.css";
 import Vendors from "./Vendors";
 
@@ -145,6 +147,7 @@ export default function MerchantVendors({
     const [query, setQuery] = useState("");
 
     const [page, setPage] = useState(1);
+    const [pageSize, setPageSize] = useState(10);
     const [pickerPage, setPickerPage] = useState(1);
     const pickerPageSize = 25;
 
@@ -346,7 +349,7 @@ useEffect(() => {
 
     const pages = Math.max(
         1,
-        Math.ceil(rows.length / 10)
+        Math.ceil(rows.length / pageSize)
     );
 
     const current = Math.min(page, pages);
@@ -796,79 +799,72 @@ useEffect(() => {
 
     return (
         <div className="merchant-vendors">
-
-            {/* =================================================
-                HEADER
-            ================================================= */}
-
-            <header className="mv-card mv-header">
-                <div>
-                    <h2>Vendors</h2>
-
-                    <p>
-                        These are the vendors connected
-                        to this {entityName}.
-                    </p>
-                </div>
-
-                <div className="mv-popup-actions">
-                {!storeScope && <button type="button" className="mv-primary" disabled={!mappingId || busy} onClick={() => { pendingNewVendor.current = null; setSaveError(""); setModal({ type: "create" }); }}>＋ Add New Vendor</button>}
-                <button
-                    ref={addButton}
-                    type="button"
-                    className="mv-primary"
-                    disabled={
-                        loading ||
-                        !!error ||
-                        masterLoading ||
-                        !mappingId
-                    }
-                    onClick={openAddVendorModal}
-                >
-                    {masterLoading
-                        ? "Loading Vendors…"
-                        : "＋ Add Existing Vendor"}
-                </button>
-                </div>
-            </header>
-
-            {/* =================================================
-                VENDOR LIST
-            ================================================= */}
-
-            <section className="mv-card">
-
-                <h3>Vendor List</h3>
-
-                <div className="mv-toolbar">
-
-                    <input
-                        aria-label="Search assigned vendors"
-                        placeholder="Search vendors by code, name, type or phone…"
-                        value={query}
-                        onChange={(e) => {
-                            setQuery(e.target.value);
-                            setPage(1);
-                        }}
-                    />
-
-                    <button
-                        type="button"
-                        onClick={() => {
+            {storeScope && (
+                <header className="mv-card mv-header">
+                    <div>
+                        <h2>Vendors</h2>
+                        <p>These are the vendors connected to this {entityName}.</p>
+                    </div>
+                    <div className="mv-popup-actions">
+                        <button ref={addButton} type="button" className="mv-primary"
+                            disabled={loading || !!error || masterLoading || !mappingId}
+                            onClick={openAddVendorModal}>
+                            Add Existing Vendor
+                        </button>
+                    </div>
+                </header>
+            )}
+            <section className={`mv-card${storeScope ? "" : " mv-list-card"}`}>
+                {storeScope ? <h3>Vendor List</h3> : (
+                    <header className="mv-header">
+                        <div>
+                            <h2>Vendor List</h2>
+                            <p>These are the vendors connected to this {entityName}.</p>
+                        </div>
+                        <div className="mv-list-actions">
+                            <button ref={addButton} type="button" className="mv-secondary"
+                                disabled={loading || !!error || masterLoading || !mappingId}
+                                onClick={openAddVendorModal}>
+                                <i className="bi bi-plus-lg" aria-hidden="true" />
+                                {masterLoading ? "Loading Vendors\u2026" : "Add Existing Vendor"}
+                            </button>
+                            <button type="button" className="mv-primary" disabled={!mappingId || busy}
+                                onClick={() => {
+                                    pendingNewVendor.current = null;
+                                    setSaveError("");
+                                    setModal({ type: "create" });
+                                }}>
+                                <i className="bi bi-plus-lg" aria-hidden="true" /> Add New Vendor
+                            </button>
+                        </div>
+                    </header>
+                )}
+                {storeScope ? (
+                    <div className="mv-toolbar">
+                        <input aria-label="Search assigned vendors"
+                            placeholder="Search vendors by code, name, type or phone\u2026"
+                            value={query}
+                            onChange={(event) => { setQuery(event.target.value); setPage(1); }} />
+                        <button type="button" onClick={() => {
                             setQuery("");
                             setPage(1);
-
-                            setSort({
-                                key: "name",
-                                direction: 1,
-                            });
+                            setSort({ key: "name", direction: 1 });
+                        }}>
+                            <i className="bi bi-arrow-counterclockwise" aria-hidden="true" /> Clear
+                        </button>
+                    </div>
+                ) : (
+                    <FiltersBar
+                        searchValue={query}
+                        onSearchChange={(value) => { setQuery(value); setPage(1); }}
+                        searchPlaceholder={"Search vendors by code, name, type or phone\u2026"}
+                        onClear={() => {
+                            setQuery("");
+                            setPage(1);
+                            setSort({ key: "name", direction: 1 });
                         }}
-                    >
-                        <i className="bi bi-arrow-counterclockwise" aria-hidden="true" />
-                        Clear
-                    </button>
-
-                </div>
+                    />
+                )}
 
                 {(loading || mappedLoading) && !rows.length ? (
                     <p role="status">
@@ -892,8 +888,8 @@ useEffect(() => {
 
                                     {rows
                                         .slice(
-                                            (current - 1) * 10,
-                                            current * 10
+                                            (current - 1) * pageSize,
+                                            current * pageSize
                                         )
                                         .map((vendor) => (
                                             <tr
@@ -979,7 +975,7 @@ useEffect(() => {
 
                                     {!rows.length && (
                                         <tr>
-                                            <td colSpan={7}>
+                                            <td colSpan={storeScope ? 7 : 8}>
                                                 No assigned vendors
                                                 match. Use Add Existing Vendor
                                                 to select from master
@@ -994,74 +990,40 @@ useEffect(() => {
 
                         </div>
 
-                        {/* =================================================
-                            PAGINATION
-                            ONLY SHOW WHEN MORE THAN ONE PAGE
-                        ================================================= */}
-
-                        <footer className="mv-footer">
-
-                            <span>
-                                Showing{" "}
-                                {rows.length
-                                    ? (current - 1) * 10 + 1
-                                    : 0}{" "}
-                                to{" "}
-                                {Math.min(
-                                    current * 10,
-                                    rows.length
-                                )}{" "}
-                                of {rows.length} entries
-                            </span>
-
-                            <div className="mv-pagination">
-
-                                <button
-                                    type="button"
-                                    className="pagination-arrow"
-                                    disabled={
-                                        current === 1
-                                    }
-                                    onClick={() =>
-                                        setPage(
-                                            current - 1
-                                        )
-                                    }
-                                    aria-label="Previous page"
-                                >
-                                    <i className="bi bi-chevron-left" aria-hidden="true" />
-                                </button>
-
-                                <div className="pagination-pages">
-                                    <button
-                                        type="button"
-                                        className="pagination-page active"
-                                        aria-current="page"
-                                        onClick={() => setPage(current)}
-                                    >
-                                        {current}
+                        {storeScope ? (
+                            <footer className="mv-footer">
+                                <span>
+                                    Showing {rows.length ? (current - 1) * pageSize + 1 : 0} to {Math.min(current * pageSize, rows.length)} of {rows.length} entries
+                                </span>
+                                <div className="mv-pagination">
+                                    <button type="button" className="pagination-arrow" disabled={current === 1}
+                                        onClick={() => setPage(current - 1)} aria-label="Previous page">
+                                        <i className="bi bi-chevron-left" aria-hidden="true" />
+                                    </button>
+                                    <div className="pagination-pages">
+                                        <button type="button" className="pagination-page active" aria-current="page" onClick={() => setPage(current)}>
+                                            {current}
+                                        </button>
+                                    </div>
+                                    <button type="button" className="pagination-arrow" disabled={current === pages}
+                                        onClick={() => setPage(current + 1)} aria-label="Next page">
+                                        <i className="bi bi-chevron-right" aria-hidden="true" />
                                     </button>
                                 </div>
+                            </footer>
+                        ) : (
+                            <Pagination
+                                currentPage={current}
+                                totalPages={pages}
+                                totalItems={rows.length}
+                                pageSize={pageSize}
+                                onPageChange={setPage}
+                                onPageSizeChange={(size) => { setPageSize(size); setPage(1); }}
+                                itemLabel="vendors"
+                                showWhenEmpty={true}
+                            />
+                        )}
 
-                                <button
-                                    type="button"
-                                    className="pagination-arrow"
-                                    disabled={
-                                        current === pages
-                                    }
-                                    onClick={() =>
-                                        setPage(
-                                            current + 1
-                                        )
-                                    }
-                                    aria-label="Next page"
-                                >
-                                    <i className="bi bi-chevron-right" aria-hidden="true" />
-                                </button>
-
-                            </div>
-
-                        </footer>
                     </>
                 )}
 
