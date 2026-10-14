@@ -1,0 +1,345 @@
+.discounts-page {
+  min-width: 0;
+}
+
+.discounts-page .coupons-header {
+  margin-bottom: 18px;
+}
+
+.discounts-summary .coupon-summary-card {
+  min-width: 0;
+}
+
+.discounts-card .coupons-toolbar {
+  border-bottom: 0;
+  background: #fff;
+}
+
+.discounts-table {
+  min-width: 1400px;
+}
+
+.discounts-table th,
+.discounts-table td {
+  white-space: nowrap;
+}
+
+.discount-name-cell strong {
+  white-space: nowrap;
+}
+
+.discounts-table th:last-child,
+.discounts-table td:last-child {
+  text-align: right;
+}
+
+.discount-name-cell strong,
+.discount-name-cell small {
+  display: block;
+}
+
+.discount-name-cell strong,
+.discount-product-cell,
+.discount-amount {
+  color: #202124;
+}
+
+.discount-name-cell small {
+  margin-top: 4px;
+  color: #727d91;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.discount-type-pill {
+  display: inline-flex;
+  white-space: nowrap;
+  padding: 6px 9px;
+  border-radius: 6px;
+  background: #e8f6ed;
+  color: #247447;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.discount-status {
+  display: inline-flex;
+  padding: 5px 9px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.discount-status.active {
+  background: #e8f6ed;
+  color: #247447;
+}
+
+.discount-status.scheduled {
+  background: #e8f3fb;
+  color: #17638c;
+}
+
+.discount-status.expired {
+  background: #fde8e8;
+  color: #bd3131;
+}
+
+.discount-product-cell {
+  display: block;
+  width: 260px;
+  max-width: 260px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: #c7ceda transparent;
+  white-space: nowrap;
+}
+
+.discount-product-cell::-webkit-scrollbar {
+  height: 5px;
+}
+
+.discount-product-cell::-webkit-scrollbar-thumb {
+  border-radius: 5px;
+  background: #c7ceda;
+}
+
+.discounts-empty {
+  display: flex;
+  min-height: 250px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  color: #77839a;
+  text-align: center;
+}
+
+.discounts-empty .coupons-empty-icon {
+  display: grid;
+  width: 48px;
+  height: 48px;
+  place-items: center;
+  border-radius: 12px;
+  background: #f0ebff;
+  color: #5c45d5;
+  font-size: 20px;
+}
+
+.discounts-empty h3 {
+  margin: 12px 0 5px;
+  color: #263650;
+  font-size: 16px;
+}
+
+.discounts-empty p {
+  margin: 0 0 16px;
+  font-size: 13px;
+}
+
+.discount-notice {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 14px;
+  padding: 11px 13px;
+  border: 1px solid #cfe8d7;
+  border-radius: 8px;
+  background: #eff9f2;
+  color: #276b42;
+  font-size: 13px;
+}
+
+.discount-notice button {
+  margin-left: auto;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font-size: 17px;
+  cursor: pointer;
+}
+
+.discount-editor-title {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.discount-back {
+  align-self: flex-start;
+  margin-bottom: 2px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: #5143bc;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.discount-back i {
+  margin-right: 6px;
+}
+
+.discount-editor-title h1,
+.discount-editor-title p {
+  margin: 0;
+}
+
+.discount-editor-layout {
+  display: grid;
+  grid-template-columns: 230px minmax(0, 1fr);
+  min-height: 490px;
+  overflow: hidden;
+  border: 1px solid #e0e4ec;
+  border-radius: 11px;
+  background: #fff;
+}
+
+.discount-editor-tabs {
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid #e5e8ef;
+  background: #fafbfc;
+}
+
+.discount-editor-tabs button {
+  display: flex;
+  min-height: 52px;
+  align-items: center;
+  gap: 11px;
+  padding: 0 17px;
+  border: 0;
+  border-bottom: 1px solid #eceef3;
+  background: transparent;
+  color: #53627a;
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+}
+
+.discount-editor-tabs button.active {
+  background: #f0edff;
+  color: #5143bc;
+  font-weight: 600;
+}
+
+.discount-editor-tabs button:disabled {
+  color: #9aa3b2;
+  cursor: not-allowed;
+}
+
+.discount-editor-main {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+}
+
+.discount-editor-body {
+  flex: 1;
+  padding: 26px;
+}
+
+.discount-editor-body h2 {
+  margin: 3px 0 22px;
+  color: #263650;
+  font-size: 18px;
+}
+
+.discount-editor-body .coupon-editor-grid {
+  gap: 18px;
+}
+
+.discount-select-hint {
+  grid-column: 1 / -1;
+  align-self: center;
+  margin: 0;
+  color: #7b879b;
+  font-size: 13px;
+}
+
+.discount-editor-body .coupon-form-field {
+  position: relative;
+}
+
+.discount-editor-body .coupon-form-field input[type="checkbox"] {
+  width: 16px;
+  min-height: 16px;
+}
+
+.discount-required {
+  display: inline-block;
+  margin-left: 0;
+  color: #b42318;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.discount-field-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 18px;
+}
+
+.discount-program-readonly {
+  box-sizing: border-box;
+  display: flex;
+  min-height: 40px;
+  align-items: center;
+  padding: 9px 11px;
+  border: 1px solid #e2e6ee;
+  border-radius: 7px;
+  background: #f7f8fb;
+  color: #53627a;
+  font-weight: 500;
+}
+
+.discount-auto-toggle {
+  flex-direction: row;
+  align-items: center;
+  align-self: center;
+  min-height: 40px;
+}
+
+.discount-full-width {
+  grid-column: 1 / -1;
+}
+
+.discount-editor-main .coupon-editor-actions {
+  margin-top: auto;
+}
+
+@media (max-width: 760px) {
+  .discounts-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .discount-editor-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .discount-editor-tabs {
+    flex-direction: row;
+    overflow-x: auto;
+    border-right: 0;
+    border-bottom: 1px solid #e5e8ef;
+  }
+
+  .discount-editor-tabs button {
+    flex: 0 0 auto;
+    padding: 0 13px;
+  }
+
+  .discount-editor-body {
+    padding: 19px;
+  }
+}
+
+@media (max-width: 520px) {
+  .discounts-summary {
+    grid-template-columns: 1fr;
+  }
+}
