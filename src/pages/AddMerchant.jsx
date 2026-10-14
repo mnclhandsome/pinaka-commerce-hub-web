@@ -207,7 +207,7 @@ function MerchantEditor({ merchantId, localMerchants, onSave }) {
     listPlans().then((items) => active && setPlans(items.filter((item) => String(item.status).toUpperCase() === "ACTIVE")))
       .catch((failure) => active && setError(failure.message || "Unable to load plans."))
       .finally(() => active && setPlansLoading(false));
-    storeTypesApi.getAll().then((response) => active && setStoreTypes(response.storeTypes || [])).catch(() => {});
+    if (!editing) storeTypesApi.getAll().then((response) => active && setStoreTypes(response.storeTypes || [])).catch(() => {});
     return () => { active = false; };
   }, []);
 

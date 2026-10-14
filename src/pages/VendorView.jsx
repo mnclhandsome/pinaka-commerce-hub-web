@@ -23,17 +23,16 @@ export default function VendorView() {
   const [vendor, setVendor] = useState(cached);
   const [message, setMessage] = useState(cached ? "" : "Loading vendor...");
   useEffect(() => {
-    if (cached) { setVendor(cached); setMessage(""); return; }
-    const controller = new AbortController();
+    let active = true;
     setVendor(null);
     setMessage("Loading vendor...");
-    getVendor(vendorId, { signal: controller.signal }).then((data) => {
-      if (!controller.signal.aborted) { setVendor(data); setMessage(data?.id ? "" : "Vendor not found."); }
+    getVendor(vendorId).then((data) => {
+      if (active) { setVendor(data); setMessage(data?.id ? "" : "Vendor not found."); }
     }).catch((error) => {
-      if (!controller.signal.aborted) setMessage(error?.message || "Failed to load vendor.");
+      if (active) setMessage(error?.message || "Failed to load vendor.");
     });
-    return () => controller.abort();
-  }, [vendorId, cached]);
+    return () => { active = false; };
+  }, [vendorId]);
   return <ReadOnlyDetails title="View Vendor"
     subtitle="View vendor information, contact details, and business information."
     listLabel="Vendors" onBack={() => navigate(location.state?.backTo || "/vendors")}

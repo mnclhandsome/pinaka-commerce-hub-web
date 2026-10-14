@@ -1,3 +1,4 @@
+import { pendingStoreRead } from "../api/http";
 import React, { useEffect, useState } from "react";
 import DeviceNavigation from "../components/DeviceNavigation";
 import { useNavigate } from "react-router-dom";
@@ -40,7 +41,7 @@ export default function AddDevice({ merchantId: scopedMerchantId = "", merchant:
       return undefined;
     }
     let active = true;
-    listMerchants()
+    pendingStoreRead("device-create-merchants", () => listMerchants())
       .then((merchantList) => {
         if (!active) return;
         const options = merchantList

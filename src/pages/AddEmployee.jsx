@@ -1,3 +1,4 @@
+import { pendingStoreRead } from "../api/http";
 import { loadLocations } from "../data/locations";
 import { EmployeeToast } from "../components/EmployeeFeedback";
 import React, { useEffect, useState } from "react";
@@ -479,7 +480,7 @@ export default function AddEmployee() {
   useEffect(() => {
     let active = true;
 
-    listMerchants()
+    pendingStoreRead("employee-create-merchants", () => listMerchants())
       .then((merchants) => {
         if (active) setMerchantOptions(merchants);
       })

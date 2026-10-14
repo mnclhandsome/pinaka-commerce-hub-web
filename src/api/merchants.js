@@ -1,4 +1,4 @@
-import { api } from "./http";
+import { api, pendingStoreRead } from "./http";
 import { endpoints } from "./endpoints";
 function isUuid(val) {
   return (
@@ -534,7 +534,7 @@ export function mapMerchantToRow(item) {
 }
 
 export async function getMerchant(id) {
-  const data = await api.get(endpoints.merchant(id));
+  const data = await pendingStoreRead(`merchant-detail:${id}`, () => api.get(endpoints.merchant(id)));
   const merchant = data?.merchant || data?.data?.merchant || data?.data || data;
   const stores = Array.isArray(data?.stores)
     ? data.stores

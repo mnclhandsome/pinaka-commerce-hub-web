@@ -2,7 +2,6 @@ import { useLocationOptions } from "../data/useLocationOptions";
 import { EmployeeToast, EmployeeDeleteDialog } from "../components/EmployeeFeedback";
 import React, { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { listMerchants } from "../api/merchants";
 
 import {
   User,
@@ -184,30 +183,6 @@ export default function EditEmployee({ employee: employeeProp, onBack: onBackPro
   const [notice, setNotice] = useState("");
   const [confirmPhotoDelete, setConfirmPhotoDelete] = useState(false);
 
-  // DYNAMIC MERCHANTS STATE
-  const [merchants, setMerchants] = useState([]);
-  const [loadingMerchants, setLoadingMerchants] = useState(true);
-
-  // FETCH MERCHANTS FROM API ON MOUNT
-  useEffect(() => {
-    let active = true;
-
-    listMerchants()
-      .then((data) => {
-        if (active) {
-          setMerchants(data);
-          setLoadingMerchants(false);
-        }
-      })
-      .catch((err) => {
-        console.error("Failed to load merchants:", err);
-        if (active) setLoadingMerchants(false);
-      });
-
-    return () => {
-      active = false;
-    };
-  }, []);
 
   const [profileImage, setProfileImage] = useState(
     employee.profileImageUrl || employee.profileImage || null,

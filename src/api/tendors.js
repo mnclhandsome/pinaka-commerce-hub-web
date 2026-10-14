@@ -1,15 +1,17 @@
-import { api } from "./http";
+import { api, pendingStoreRead } from "./http";
 import { endpoints } from "./endpoints";
+
+const readTendor = path => pendingStoreRead(`tendor-read:${path}`, () => api.get(path));
 
 export const tendorsApi = {
   // Get all tendors
-  getAll: () => api.get(endpoints.tendors),
+  getAll: () => readTendor(endpoints.tendors),
 
   // Get only active tendors
-  getActive: () => api.get(`${endpoints.tendors}?status=ACTIVE`),
+  getActive: () => readTendor(`${endpoints.tendors}?status=ACTIVE`),
 
   // Get single tendor
-  getById: (id) => api.get(endpoints.tendor(id)),
+  getById: (id) => readTendor(endpoints.tendor(id)),
 
   // Create tendor
   create: (data) => api.post(endpoints.tendors, data),
@@ -25,7 +27,7 @@ export const tendorsApi = {
 
   // Get tendors assigned to a merchant
   getMerchantTendors: (merchantId) =>
-    api.get(endpoints.merchantTendors(merchantId)),
+    readTendor(endpoints.merchantTendors(merchantId)),
 
   // Assign tendors to a merchant
   assignToMerchant: (merchantId, tendorIds) =>

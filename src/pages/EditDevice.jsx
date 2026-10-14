@@ -10,7 +10,6 @@ import {
 import { useNavigate, useParams } from "react-router-dom";
 
 import { devicesApi } from "../api/devices";
-import { listMerchants } from "../api/merchants";
 import "../styles/device-view.css";
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -54,37 +53,19 @@ export default function EditDevice() {
     setApiError("");
 
     try {
-      const [data, merchants] = await Promise.all([
-        devicesApi.get(deviceId),
-        listMerchants().catch(() => []),
-      ]);
-      const merchantOptions = merchants
-        .map((merchant) => ({
-          value: UUID_PATTERN.test(String(merchant.id || "")) ? merchant.id : merchant.uuid,
-          label: merchant.businessDisplayName || merchant.name,
-        }))
-        .filter((merchant) => UUID_PATTERN.test(String(merchant.value || "")) && merchant.label);
+      const data = await devicesApi.get(deviceId);
       if (!data) {
         throw new Error("Device not found.");
       }
 
-      const assignedMerchant = merchants.find((merchant) =>
-        [merchant.id, merchant.uuid, merchant.merchantId, merchant.merchantCode]
-          .some((value) => String(value || "") === String(data.merchantId || "")),
-      );
-      const assignedMerchantUuid = [assignedMerchant?.id, assignedMerchant?.uuid, data.merchantId]
-        .find((value) => UUID_PATTERN.test(String(value || "")));
-      const selectedMerchant = merchantOptions.find(
-        (merchant) => String(merchant.value) === String(assignedMerchantUuid || ""),
-      );
       setForm({
         deviceName: data.name || "",
         deviceCode: data.code || "",
         deviceId: data.deviceId || "",
         deviceType: data.type || "",
         serialNumber: data.serial || "",
-        merchantId: selectedMerchant?.value || data.merchantId || "",
-        merchantName: selectedMerchant?.label || data.merchant || data.merchantName || "",
+        merchantId: data.merchantId || "",
+        merchantName: data.merchantName || (typeof data.merchant === "string" ? data.merchant : data.merchant?.name) || "",
         status: String(data.status || "ACTIVE").toUpperCase() === "INACTIVE" ? "Inactive" : "Active",
         notes: data.notes || "",
       });

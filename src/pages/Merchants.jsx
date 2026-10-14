@@ -14,7 +14,6 @@ import MerchantRoles from "./MerchantRoles";
 import AddMerchantDevice from "./AddMerchantDevice";
 import EditEmployee from "./EditEmployee";
 import { MerchantEmployeeForm } from "./AddMerchantEmployee";
-import { useReferenceData } from "../api/referenceData";
 import { formatDate, listSubscriptions } from "../api/subscriptions";
 import { listPlans } from "../api/plans";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -788,25 +787,7 @@ const [statusFilter, setStatusFilter] = useState("");
       setError(error.message || 'Unable to activate merchant.');
     }
   }
-  const { data: reference } = useReferenceData();
-  const [masterPlans, setMasterPlans] = useState([]);
-  useEffect(() => {
-    let active = true;
-    listPlans()
-      .then((plans) => {
-        if (active) {
-          setMasterPlans(
-            (Array.isArray(plans) ? plans : []).filter(
-              (item) => String(item.status || "").toUpperCase() === "ACTIVE",
-            ),
-          );
-        }
-      })
-      .catch(e => { if (active) setError(e.message); });
-    return () => {
-      active = false;
-    };
-  }, []);
+  const masterPlans = [];
   const [q, setQ] = useState("");
   const [status, setStatus] = useState("");
   const [plan, setPlan] = useState("");
@@ -839,11 +820,13 @@ const [statusFilter, setStatusFilter] = useState("");
   useEffect(() => {
     let cancelled = false;
 
+    if (viewedId) return;
+
     async function loadMerchants() {
       setLoading(true);
       setError("");
       try {
-        const rows = await listMerchants();
+        const rows = await pendingStoreRead("merchant-list", () => listMerchants());
         if (!cancelled) setMerchants(rows);
       } catch (err) {
         if (!cancelled) {
@@ -862,7 +845,7 @@ const [statusFilter, setStatusFilter] = useState("");
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [viewedId]);
 
   const rows = useMemo(
     () =>
@@ -952,8 +935,8 @@ const [statusFilter, setStatusFilter] = useState("");
 
   const plans = [
     ...new Set(
-      masterPlans
-        .map((item) => item.planName || item.name)
+      merchants
+        .map((item) => item.planName || item.plan)
         .filter(Boolean),
     ),
   ];
@@ -1627,7 +1610,7 @@ return (
                     <td>{d.storeLabel}</td>
                     <td>{d.serial}</td>
                     <td>
-                      <span className={'mdl-badge ' + badge(d.status)}>
+                      <span className={'mdl-badge ' + (['active', 'online'].includes(String(d.status || '').toLowerCase()) ? 'mdl-active' : 'mdl-inactive')}>
                         ● {d.status}
                       </span>
                     </td>

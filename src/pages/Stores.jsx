@@ -1,8 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { activateStore, deactivateStore, listStores } from "../api/stores";
-import { listMerchants } from "../api/merchants";
-import { useReferenceData } from "../api/referenceData";
 import Pagination from "../components/Pagination";
 import ListActions from "../components/ListActions";
 import FiltersBar from "../components/FiltersBar";
@@ -106,7 +104,7 @@ const merchantNameOf = (store, merchants) => {
 export default function Stores() {
   const nav = useNavigate();
   const openView = (store) => nav(`/stores/${encodeURIComponent(store.id)}`);
-  const { data: reference, error: referenceError } = useReferenceData();
+
   const [stores, setStores] = useState([]),
     [merchants, setMerchants] = useState([]);
   const [query, setQuery] = useState(""),
@@ -131,11 +129,11 @@ const handlePageSizeChange = (size) => {
     let active = true;
     setLoading(true);
     setError("");
-    Promise.all([listStores(), listMerchants()])
-      .then(([data, rows]) => {
+    listStores()
+      .then((data) => {
         if (active) {
           setStores(Array.isArray(data.stores) ? data.stores : []);
-          setMerchants(rows);
+          setMerchants([...new Map((data.stores || []).filter(store => store.merchantId).map(store => [String(store.merchantId), { id: store.merchantId, name: store.merchantName || String(store.merchantId) }])).values()]);
         }
       })
       .catch((e) => {
@@ -231,7 +229,7 @@ useEffect(() => {
   ];
   const statuses = [
     ...new Set([
-      ...(reference.storeStatuses || []).map((s) => s.toUpperCase()),
+      ...["ACTIVE", "INACTIVE"],
       ...stores.map((s) => s.status),
     ]),
   ];
@@ -361,11 +359,6 @@ useEffect(() => {
         setCurrentPage(1);
     }}
 />
-        {referenceError && (
-          <p className="stores-feedback" role="alert">
-            Could not load status options: {referenceError}
-          </p>
-        )}
         <div className="table-responsive">
           <table className="table stores-table">
             <thead>

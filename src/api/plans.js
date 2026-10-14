@@ -1,6 +1,6 @@
-import { listStoreTypes } from "./storeTypes";
+import { getStoreType } from "./storeTypes";
 import { listFeatures } from "./features";
-import { api } from "./http";
+import { api, pendingStoreRead } from "./http";
 import { endpoints } from "./endpoints";
 
 
@@ -702,7 +702,7 @@ export async function getMerchantFormPlans() {
  * GET /plans
  */
 export async function listPlans() {
-  const response = await api.get(endpoints.plans);
+  const response = await pendingStoreRead("plans-list", () => api.get(endpoints.plans));
   return extractPlans(response).map(normalizePlan).filter(Boolean);
 }
 
@@ -738,7 +738,7 @@ async function loadPlan(id) {
   const needsStoreType = !storeTypeName && isUuid(plan.storeType);
   const needsFeatures = plan.includedFeatures.some(entry => !entry.name || isUuid(entry.name) || !entry.category);
   const [types, features] = await Promise.allSettled([
-    needsStoreType ? listStoreTypes() : Promise.resolve([]),
+    needsStoreType ? getStoreType(plan.storeType).then(type => [type]) : Promise.resolve([]),
     needsFeatures ? listFeatures() : Promise.resolve([]),
   ]);
   if (needsStoreType && types.status === "fulfilled") {

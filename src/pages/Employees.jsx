@@ -1,3 +1,5 @@
+import { listStores } from "../api/stores";
+import { pendingStoreRead } from "../api/http";
 import { EmployeeToast } from "../components/EmployeeFeedback";
 import React, { useEffect, useMemo, useState } from "react";
 import { listEmployees } from "../api/employees";
@@ -243,6 +245,14 @@ export default function Employees() {
     if (location.state?.employeeMessage) navigate(location.pathname, { replace: true, state: null });
   }, [location.state, location.pathname, navigate]);
   const [employeeRows, setEmployeeRows] = useState([]);
+  const [storeOptions, setStoreOptions] = useState([]);
+  useEffect(() => {
+    let active = true;
+    pendingStoreRead("employee-filter-stores", () => listStores())
+      .then(rows => { if (active) setStoreOptions(Array.isArray(rows) ? rows : rows?.stores || []); })
+      .catch(error => { if (active) setLoadError(error.message || "Unable to load stores."); });
+    return () => { active = false; };
+  }, []);
   const [statistics, setStatistics] = useState(null);
   const [loadError, setLoadError] = useState("");
   const [deleteError, setDeleteError] = useState("");
@@ -481,16 +491,7 @@ const handlePageSizeChange = (size) => {
             value: roleFilter,
             options: [
                 { label: "All Roles", value: "" },
-                ...[
-                    ...new Set(
-                        employees
-                            .map((employee) => employee.role)
-                            .filter(Boolean)
-                    ),
-                ].map((role) => ({
-                    label: role,
-                    value: role,
-                })),
+                ...[...new Set(employeeRows.map(employee => employee.role).filter(role => typeof role === "string" && role !== "—"))].map(role => ({ label: role, value: role })),
             ],
             onChange: (value) => {
                 setRoleFilter(value);
@@ -517,16 +518,10 @@ const handlePageSizeChange = (size) => {
             value: storeFilter,
             options: [
                 { label: "All Stores", value: "" },
-                ...[
-                    ...new Set(
-                        employees
-                            .map((employee) => employee.store)
-                            .filter(Boolean)
-                    ),
-                ].map((store) => ({
-                    label: store,
-                    value: store,
-                })),
+                ...storeOptions.map(store => ({
+                    label: store.storeName || store.name || store.storeCode || String(store.id),
+                    value: store.storeName || store.name || store.storeCode || String(store.id),
+                })), 
             ],
             onChange: (value) => {
                 setStoreFilter(value);
