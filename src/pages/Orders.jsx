@@ -29,16 +29,6 @@ function matchesDate(createdAt, dateFilter) {
   return orderDate >= from;
 }
 
-function getInitials(name = "") {
-  return String(name)
-    .split(" ")
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0])
-    .join("")
-    .toUpperCase();
-}
-
 export default function Orders({
   embedded = false,
   merchantId,
@@ -314,6 +304,10 @@ export default function Orders({
         )}
 
         {selectedStore && !loading && filteredOrders.length > 0 && (
+          <>
+          <div className="orders-table-heading">
+            <div>Orders<span>{filteredOrders.length}</span></div>
+          </div>
           <div className="orders-table-wrapper">
             <table className="orders-table">
               <thead>
@@ -362,7 +356,6 @@ export default function Orders({
                     </td>
                     <td>
                       <div className="order-author">
-                        <div className="author-avatar">{getInitials(order.author)}</div>
                         <span>{order.author}</span>
                       </div>
                     </td>
@@ -372,6 +365,7 @@ export default function Orders({
               </tbody>
             </table>
           </div>
+          </>
         )}
 
         {selectedStore && !loading && filteredOrders.length === 0 && (
