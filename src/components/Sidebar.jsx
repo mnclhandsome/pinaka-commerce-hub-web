@@ -65,6 +65,19 @@ export default function Sidebar({
   setMobileOpen,
 }) {
   const location = useLocation();
+  const originPath = location.state?.from?.split("?")[0] || "";
+
+  function isContextActive(path, isRouteActive) {
+    // Order details are routed through /orders/:id even when opened from an
+    // embedded merchant or store view. Keep the originating sidebar section
+    // selected while the detail page is open.
+    if (location.pathname.startsWith("/orders/") && originPath) {
+      if (path === "/merchants") return originPath.startsWith("/merchants");
+      if (path === "/stores") return originPath.startsWith("/stores");
+      if (path === "/orders") return originPath.startsWith("/orders");
+    }
+    return isRouteActive;
+  }
 
   const isMasterSetupRoute =
     location.pathname.startsWith("/store-types") ||
@@ -225,7 +238,7 @@ className={({ isActive }) => {
                     to={to}
                     onClick={() => setMobileOpen(false)}
                     className={({ isActive }) =>
-                      `menu-item ${isActive ? "active" : ""}`
+                      `menu-item ${isContextActive(to, isActive) ? "active" : ""}`
                     }
                   >
                     <i className={`bi ${icon}`} />

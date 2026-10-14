@@ -36,43 +36,6 @@
   font-size: 13px;
 }
 
-.taxonomy-sync-button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  flex: 0 0 auto;
-  min-height: 40px;
-  padding: 0 14px;
-  border: 1px solid #5941c8;
-  border-radius: 7px;
-  background: #5941c8;
-  color: #fff;
-  font: inherit;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.taxonomy-sync-button:disabled {
-  opacity: 0.65;
-  cursor: not-allowed;
-}
-
-.taxonomy-sync-spinning {
-  animation: taxonomy-sync-spin 1s linear infinite;
-}
-
-.taxonomy-sync-message {
-  margin: -6px 0 14px;
-  color: #28704b;
-  font-size: 13px;
-}
-
-@keyframes taxonomy-sync-spin {
-  to { transform: rotate(360deg); }
-}
-
 .categories-store-context {
   display: flex;
   align-items: center;

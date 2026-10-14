@@ -176,11 +176,6 @@ export default function Orders({
   const pendingCount = orders.filter((order) => statusClass(order.status) === "pending").length;
   const totalAmount = orders.reduce((sum, order) => sum + Number(order.totalValue || 0), 0);
   const orderPercentage = (count) => (orders.length ? ((count / orders.length) * 100).toFixed(1) : "0.0");
-  const detailSearch = new URLSearchParams();
-  if (selectedMerchant) detailSearch.set("merchant", selectedMerchant);
-  if (selectedStore) detailSearch.set("store", selectedStore);
-  const detailQuery = detailSearch.toString();
-
   function rememberFilters(nextMerchant, nextStore) {
     if (embedded) return;
     const next = new URLSearchParams(searchParams);
@@ -339,7 +334,11 @@ export default function Orders({
                         <div>
                           <Link
                             className="order-id-link"
-                            to={`/orders/${encodeURIComponent(order.id)}${detailQuery ? `?${detailQuery}` : ""}`}
+                            to={`/orders/${encodeURIComponent(order.id)}?${new URLSearchParams({
+                              ...(selectedMerchant ? { merchant: selectedMerchant } : {}),
+                              ...(selectedStore ? { store: selectedStore } : {}),
+                              number: order.wooOrderId,
+                            }).toString()}`}
                             state={{ from: `${location.pathname}${location.search}` }}
                           >
                             <strong>{order.wooOrderId}</strong>
