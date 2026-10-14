@@ -890,9 +890,9 @@ function CouponEditor({ mode, form, setForm, error, busy, onSubmit, onClose }) {
             {options.textarea ? (
                 <textarea name={name} value={form[name] || ""} onChange={change} rows={3} />
             ) : options.select ? (
-                <select name={name} value={form[name] || ""} onChange={change} required={options.required}>
+                <FilterDropdown name={name} value={form[name] || ""} onChange={change} required={options.required}>
                     {options.select.map(([value, text]) => <option key={value} value={value}>{text}</option>)}
-                </select>
+                </FilterDropdown>
             ) : (
                 <input name={name} type={options.type || "text"} value={form[name] ?? ""} onChange={change} required={options.required} min={options.min} step={options.step} />
             )}

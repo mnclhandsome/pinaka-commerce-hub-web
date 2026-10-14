@@ -476,7 +476,9 @@
 .store-customer-status {
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: 6px;
+    width: 84px;
     min-height: 24px;
     padding: 0 9px;
     box-sizing: border-box;

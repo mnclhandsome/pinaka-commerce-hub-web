@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import Pagination from "../../../components/Pagination";
 import { ApiError } from "../../../api/http";
 import {
   ConfigBadge, ConfigField, ConfigFooter, ConfigHeader, ConfigSwitch,
@@ -35,6 +36,8 @@ export function CashbackSettings() {
 
     const [maxCashback, setMaxCashback] =
         useConfigState("maxCashback", "");
+    const [currentPage, setCurrentPage] = useState(1);
+    const [pageSize, setPageSize] = useState(10);
 
     const [tiers, setTiers] = useConfigState("tiers", [
         {
@@ -50,6 +53,9 @@ export function CashbackSettings() {
             fee: "10",
         },
     ]);
+    const pageCount = Math.max(1, Math.ceil(tiers.length / pageSize));
+    const safePage = Math.min(currentPage, pageCount);
+    const paginatedTiers = tiers.slice((safePage - 1) * pageSize, safePage * pageSize);
 
     const addTier = () => {
         setTiers((items) => [
@@ -293,7 +299,7 @@ export function CashbackSettings() {
 
                         <tbody>
 
-                            {tiers.map((tier) => (
+                            {paginatedTiers.map((tier) => (
 
                                 <tr key={tier.id}>
 
@@ -407,36 +413,17 @@ export function CashbackSettings() {
 
                 {/* TABLE FOOTER */}
 
-                <div className="cashback-table-footer">
-
-                    <span>
-                        Showing 1 to {tiers.length} of{" "}
-                        {tiers.length} entries
-                    </span>
-
-                    <div className="cashback-pagination">
-
-                        <button
-                            type="button"
-                            disabled
-                        >
-                            <i className="bi bi-chevron-left" />
-                        </button>
-
-                        <button
-                            type="button"
-                            className="active"
-                        >
-                            1
-                        </button>
-
-                        <button type="button">
-                            <i className="bi bi-chevron-right" />
-                        </button>
-
-                    </div>
-
-                </div>
+                <Pagination
+                    currentPage={safePage}
+                    totalPages={pageCount}
+                    totalItems={tiers.length}
+                    pageSize={pageSize}
+                    onPageChange={setCurrentPage}
+                    onPageSizeChange={(size) => { setPageSize(size); setCurrentPage(1); }}
+                    itemLabel="entries"
+                    showWhenEmpty
+                    pageSizeOptions={[10, 25, 50, 100]}
+                />
 
             </div>
 

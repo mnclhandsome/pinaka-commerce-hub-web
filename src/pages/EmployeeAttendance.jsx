@@ -1,4 +1,5 @@
 import FilterDropdown from "../components/FilterDropdown";
+import ListActions from "../components/ListActions";
 import Pagination from "../components/Pagination";
 import { useMemo, useState } from "react";
 import "../styles/employee-attendance.css";
@@ -145,7 +146,7 @@ export default function EmployeeAttendance({ store, embedded = false, onViewReco
       </div>}
 
       <div className="ea-table-wrap"><table className="ea-table"><thead><tr><th>Date</th><th>Employee Code</th><th>Employee Name</th><th>Clock In</th><th>Clock Out</th><th>Total Hours</th><th>Status</th><th>Actions</th></tr></thead>
-        <tbody>{pageRows.map((row) => <tr key={row.id}><td>{displayDate(row.date)}</td><td>{row.code}</td><td>{row.name}</td><td>{displayTime(row.clockIn)}</td><td>{displayTime(row.clockOut)}</td><td>{row.total}</td><td><span className={`ea-status ${row.status.toLowerCase()}`}>{row.status}</span></td><td><div className="ea-row-actions"><button type="button" title={`View ${row.name} attendance`} aria-label={`View ${row.name} attendance`} onClick={() => onViewRecord?.(row)}><i className="bi bi-eye" /></button></div></td></tr>)}
+        <tbody>{pageRows.map((row) => <tr key={row.id}><td>{displayDate(row.date)}</td><td>{row.code}</td><td>{row.name}</td><td>{displayTime(row.clockIn)}</td><td>{displayTime(row.clockOut)}</td><td>{row.total}</td><td><span className={`ea-status ${row.status.toLowerCase()}`}>{row.status}</span></td><td><ListActions onView={() => onViewRecord?.(row)} viewLabel={`View ${row.name} attendance`} /></td></tr>)}
           {!pageRows.length && <tr><td colSpan={8} className="ea-empty">No attendance records match these filters.</td></tr>}
         </tbody></table></div>
       <Pagination
