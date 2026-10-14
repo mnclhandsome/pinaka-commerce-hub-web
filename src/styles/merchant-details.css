@@ -101,6 +101,79 @@
   min-width: 0;
 }
 
+/* Merchant detail list cards share a content edge for the toolbar, table and
+   pagination. FiltersBar's default inner padding caused it to sit farther in
+   than the table; keep its controls on the card's existing content edge. */
+.merchant-readonly .merchant-view-main :is(
+  .store-list-card,
+  .mt-card,
+  .mel-card,
+  .mdl-card,
+  .mv-card
+) {
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.merchant-readonly .merchant-view-main :is(
+  .store-list-card,
+  .mt-card,
+  .mel-card,
+  .mdl-card
+) > .filters-bar {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  padding: 0;
+  margin-bottom: 12px;
+  box-sizing: border-box;
+}
+
+.merchant-readonly .merchant-view-main :is(
+  .store-list-card,
+  .mt-card,
+  .mel-card,
+  .mdl-card
+) > .pagination-container {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  margin-inline: 0;
+  padding-inline: 0;
+  box-sizing: border-box;
+}
+
+.merchant-readonly .merchant-view-main :is(
+  .store-list-card,
+  .mt-card,
+  .mel-card,
+  .mdl-card
+) > .pagination-container > * {
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.merchant-readonly .merchant-view-main :is(
+  .store-table-wrapper,
+  .mt-scroll,
+  .mel-scroll,
+  .mdl-scroll,
+  .mv-scroll
+) {
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+/* This tab's legacy layout padded the whole component in addition to its
+   card and toolbar/table insets. The card already supplies the content inset. */
+.merchant-readonly .merchant-view-main [role="tabpanel"] > .merchant-vendors {
+  width: 100%;
+  min-width: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
 .merchant-readonly .merchant-view-main:only-child {
   grid-column: 1 / -1;
   grid-row: 1 / -1;
@@ -240,7 +313,7 @@
   gap: 8px;
 }
 
-.merchant-readonly .merchant-view-main .pagination-pages .pagination-page {
+/* .merchant-readonly .merchant-view-main .pagination-pages .pagination-page {
   width: 42px;
   height: 42px;
   flex: 0 0 42px;
@@ -251,7 +324,7 @@
   background: #5143bc;
   font-size: 14px;
   font-weight: 600;
-}
+} */
 
 .merchant-readonly .merchant-view-main .pagination-arrow:hover:not(:disabled) {
   border-color: #cbd5e1;

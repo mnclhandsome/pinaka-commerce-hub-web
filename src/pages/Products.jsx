@@ -953,17 +953,17 @@ function ProductRow({
     const normalizedStockStatus =
         String(
             product.stockStatus || ""
-        ).toLowerCase();
+        ).toLowerCase().replace(/[\s_-]+/g, "");
 
     const stockClass =
         normalizedStockStatus ===
-        "in stock"
+        "instock"
             ? "in-stock"
             : normalizedStockStatus ===
-              "low stock"
+              "lowstock"
             ? "low-stock"
             : normalizedStockStatus ===
-              "out of stock"
+              "outofstock"
             ? "out-stock"
             : "out-stock";
 

@@ -592,6 +592,13 @@
   outline: none !important;
 }
 
+.sf-field-error {
+  color: #ef3340 !important;
+  font-size: 11px !important;
+  font-weight: 400 !important;
+  line-height: 15px;
+}
+
 .sf-footer-right > .sf-outline,
 .sf-footer-right > .sf-primary {
   box-sizing: border-box;
@@ -2001,6 +2008,8 @@
 .sf-copy-permissions .sf-select-all-label { padding: 7px 9px; border: 1px solid #e2e6ef; border-radius: 6px; background: #faf9ff; }
 .sf-copy-permissions .sf-select-all-label + label { margin-left: 2px; }
 .sf-access-excluded { background: #fff2df; color: #b57520; }
+.sf-feature-table .sf-access-included,
+.sf-feature-table .sf-access-excluded { width: 102px; box-sizing: border-box; text-align: center; }
 .sf-plan-details-card .sf-panel-head { min-height: 50px; padding: 10px 17px; border-bottom-color: #e6e5fb; background: #f6f4ff; }
 .sf-plan-details-card .sf-panel-head h2 { color: #293b69; font-size: 14px; }
 .sf-plan-details { display: grid; grid-template-columns: minmax(190px, .9fr) minmax(500px, 2fr) minmax(190px, .8fr); align-items: center; gap: 20px; min-height: 108px; padding: 12px 18px; background: linear-gradient(105deg, #faf8ff 0%, #f7faff 100%); }
@@ -2349,3 +2358,27 @@
 .sf-perm-na { color: #c0c6d2; font-size: 14px; }
 .sf-permission-table td { text-align: center; }
 .sf-permission-table td:first-child { text-align: left; }
+
+.sf-field .sf-field-error,
+.sf-hours-table .sf-field-error {
+  display: block;
+  margin: 0;
+  color: #d92d42;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.35;
+}
+
+.sf-feature-table .sf-access-included,
+.sf-feature-table .sf-access-excluded {
+  display: inline-flex;
+  box-sizing: border-box;
+  width: 104px;
+  min-height: 28px;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 8px;
+  font-size: 11px;
+  line-height: 16px;
+  text-align: center;
+}

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import FilterDropdown from "../../../components/FilterDropdown";
 import { ApiError } from "../../../api/http";
 import {
   ConfigBadge, ConfigField, ConfigFooter, ConfigHeader, ConfigSwitch,
@@ -121,7 +122,7 @@ export function RegisterConfiguration({ value, mappings, onSave, onBack }) {
                 <ConfigField label="Register"><input autoFocus required value={editor.name} onChange={(e) => update("name", e.target.value)} placeholder="REG-04" /></ConfigField>
                 <ConfigField label="Assigned POS"><input required value={editor.pos} onChange={(e) => update("pos", e.target.value)} placeholder="SUNMI-D3-004" /></ConfigField>
                 <ConfigField label={`Maximum Cash (${currency})`}><input required type="number" min="0.01" step="0.01" value={editor.maxCash} onChange={(e) => update("maxCash", e.target.value)} /></ConfigField>
-                <ConfigField label="Status"><select value={editor.status} onChange={(e) => update("status", e.target.value)}><option>Active</option><option>Inactive</option></select></ConfigField>
+                <ConfigField label="Status"><FilterDropdown value={editor.status} onChange={(e) => update("status", e.target.value)}><option>Active</option><option>Inactive</option></FilterDropdown></ConfigField>
                 <ConfigSwitch label="Safe Drop Enabled" checked={editor.safeDrop} onChange={(next) => update("safeDrop", next)} />
             </div>
             <div className="pc-editor-actions pos-form-actions"><button type="button" className="pc-button" onClick={() => settings.requestLeave(null)}>Cancel</button><button className="pc-button pc-primary" type="submit">Apply Register</button></div>
@@ -129,7 +130,7 @@ export function RegisterConfiguration({ value, mappings, onSave, onBack }) {
         {error && <p className="pc-error" role="alert">{error}</p>}
         <div className="pc-table-wrap"><table className="pc-table"><caption className="pc-sr-only">Configured cash registers</caption>
             <thead><tr>{["Register", "Assigned POS", "Max Cash", "Safe Drop", "Status", "Actions"].map((heading) => <th scope="col" key={heading}>{heading}</th>)}</tr></thead>
-            <tbody>{rows.map((row) => <tr key={row.id}><th scope="row">{row.name}</th><td>{row.pos}</td><td>{new Intl.NumberFormat("en-US", { style: "currency", currency }).format(Number(row.maxCash))}</td><td>{row.safeDrop ? "Enabled" : "Disabled"}</td><td><ConfigBadge>{row.status}</ConfigBadge></td><td><div className="pc-row-actions"><button type="button" disabled={!!editor} aria-label={`Edit ${row.name}`} onClick={() => openEditor(row)}>Edit</button><button type="button" disabled={!!editor} className="pc-danger" aria-label={`Remove ${row.name}`} onClick={() => remove(row)}>Remove</button></div></td></tr>)}
+            <tbody>{rows.map((row) => <tr key={row.id}><th scope="row">{row.name}</th><td>{row.pos}</td><td>{new Intl.NumberFormat("en-US", { style: "currency", currency }).format(Number(row.maxCash))}</td><td>{row.safeDrop ? "Enabled" : "Disabled"}</td><td><ConfigBadge>{row.status}</ConfigBadge></td><td><div className="pc-row-actions"><button type="button" disabled={!!editor} aria-label={`Edit ${row.name}`} title="Edit" onClick={() => openEditor(row)}><i className="bi bi-pencil" aria-hidden="true" /></button><button type="button" disabled={!!editor} className="pc-danger" aria-label={`Remove ${row.name}`} title="Delete" onClick={() => remove(row)}><i className="bi bi-trash3" aria-hidden="true" /></button></div></td></tr>)}
             {!rows.length && <tr><td colSpan="6" className="pc-empty">No registers yet. Add your first register.</td></tr>}</tbody>
         </table></div>
         <ConfigFooter onBack={onBack} message={message} onSave={saveChanges} />

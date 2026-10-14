@@ -1,6 +1,19 @@
 /* Reuse the existing employee page base styles. */
 @import "./add-employee.css";
 
+/* Keep empty sample text readable in the merchant-embedded employee form. */
+.merchant-employee-embedded .employee-field input::placeholder,
+.merchant-employee-embedded .employee-login-pin-field input::placeholder,
+.merchant-employee-embedded .employee-phone-field .form-control::placeholder {
+  color: #8b9bb2;
+  opacity: 1;
+}
+
+.merchant-employee-embedded .employee-select select.employee-select-placeholder {
+  color: #8b9bb2;
+  opacity: 1;
+}
+
 .field-error {
     display: block;
     margin-top: 5px;

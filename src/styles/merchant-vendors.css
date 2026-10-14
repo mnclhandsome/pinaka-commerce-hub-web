@@ -42,11 +42,11 @@
     padding: 0;
     border: 0;
     color: #17233e;
-    font-weight: 600;
+    font-weight: 500;
 }
 
 .merchant-vendors h2 {
-    font-size: 20px;
+    font-size: 18px;
     line-height: 28px;
 }
 
@@ -71,8 +71,8 @@
     align-items: center;
     justify-content: space-between;
     gap: 20px;
-    padding: 24px;
-    margin-bottom: 18px;
+    padding: 18px 18px 10px;
+  
 }
 
 .merchant-vendors .mv-card > h3 {
@@ -92,18 +92,12 @@
     font-size: 14px;
     line-height: 20px;
     font-weight: 500;
-
-    height: 40px;
-    padding: 0 14px;
-
+    padding: 10px 14px;
     border: 1px solid #d9deea;
     border-radius: 7px;
-
     background: #ffffff;
     color: #5143bc;
-
     cursor: pointer;
-
     transition:
         background-color 0.15s ease,
         border-color 0.15s ease,
@@ -125,22 +119,73 @@
 ========================================================= */
 
 .merchant-vendors .mv-primary {
-    height: 42px;
-    padding: 0 18px;
-
+    padding: 8px 12px;
     border: 1px solid #5143bc;
-    border-radius: 7px;
-
+    border-radius: 5px;
     background: #5143bc;
     color: #ffffff;
-
-    font-weight: 600;
     white-space: nowrap;
 }
 
 .merchant-vendors .mv-primary:hover:not(:disabled) {
     background: #4538a6;
     border-color: #4538a6;
+}
+
+.merchant-vendors .mv-list-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+    min-width: 0;
+}
+
+.merchant-vendors .mv-list-actions button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.merchant-vendors .mv-secondary {
+    padding:8px 12px;
+    border: 1px solid #5143bc;
+    border-radius: 5px;
+    background: #fff;
+    color: #5143bc;
+    white-space: nowrap;
+}
+
+.merchant-vendors .mv-list-actions .mv-secondary:hover:not(:disabled) {
+    background: #f7f5ff;
+    border-color: #4538a6;
+    color: #4538a6;
+}
+
+.merchant-vendors .mv-list-card > .filters-bar {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    margin: 0;
+    padding: 16px 24px;
+    box-sizing: border-box;
+}
+
+.merchant-vendors .mv-list-card > .filters-bar .filter-search {
+    width: auto;
+    max-width: none;
+    min-width: 0;
+    flex: 1 1 0;
+}
+
+.merchant-vendors .mv-list-card > .pagination-container {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    height: auto;
+    margin: 0;
+    padding: 16px 24px 12px;
+    box-sizing: border-box;
 }
 
 /* =========================================================
@@ -169,34 +214,6 @@
 /* =========================================================
    SEARCH INPUT
 ========================================================= */
-
-.merchant-vendors input:not([type="checkbox"]) {
-    width: 100%;
-    min-width: 0;
-    height: 42px;
-
-    padding: 0 13px;
-
-    border: 1px solid #d9e0ec;
-    border-radius: 7px;
-
-    background: #ffffff;
-    color: #17233e;
-
-    font-family: "Inter", sans-serif;
-    font-size: 14px;
-
-    outline: none;
-
-    transition:
-        border-color 0.15s ease,
-        box-shadow 0.15s ease;
-}
-
-.merchant-vendors input:not([type="checkbox"]):focus {
-    border-color: #5143bc;
-    box-shadow: 0 0 0 3px rgba(81, 67, 188, 0.10);
-}
 
 .merchant-vendors input::placeholder {
     color: #9aa2b3;
@@ -259,27 +276,27 @@
 
 .merchant-vendors th:nth-child(1),
 .merchant-vendors td:nth-child(1) {
-    width: 14%;
+    width: 10%;
 }
 
 .merchant-vendors th:nth-child(2),
 .merchant-vendors td:nth-child(2) {
-    width: 16%;
+    width: 12%;
 }
 
 .merchant-vendors th:nth-child(3),
 .merchant-vendors td:nth-child(3) {
-    width: 11%;
+    width: 10%;
 }
 
 .merchant-vendors th:nth-child(4),
 .merchant-vendors td:nth-child(4) {
-    width: 17%;
+    width: 12%;
 }
 
 .merchant-vendors th:nth-child(5),
 .merchant-vendors td:nth-child(5) {
-    width: 14%;
+    width: 10%;
 }
 
 .merchant-vendors th:nth-child(6),
@@ -289,12 +306,12 @@
 
 .merchant-vendors th:nth-child(7),
 .merchant-vendors td:nth-child(7) {
-    width: 9%;
+    width: 8%;
 }
 
 .merchant-vendors th:nth-child(8),
 .merchant-vendors td:nth-child(8) {
-    width: 9%;
+    width: 8%;
 }
 
 /* =========================================================
@@ -824,6 +841,10 @@
     .merchant-vendors .mv-toolbar input {
         max-width: 100%;
     }
+
+    .merchant-vendors .mv-list-actions {
+        flex-wrap: wrap;
+    }
 }
 
 @media (max-width: 600px) {
@@ -861,8 +882,29 @@
         align-items: flex-start;
     }
 
+    .merchant-vendors .mv-list-actions {
+        width: 100%;
+    }
+
     .merchant-vendors .mv-primary {
         width: 100%;
+    }
+
+    .merchant-vendors .mv-list-actions button {
+        flex: 1 1 auto;
+    }
+
+    .merchant-vendors .mv-list-card > .filters-bar {
+        flex-wrap: wrap;
+        padding: 14px;
+    }
+
+    .merchant-vendors .mv-list-card > .filters-bar .filter-search {
+        flex-basis: 100%;
+    }
+
+    .merchant-vendors .mv-list-card > .pagination-container {
+        padding: 14px;
     }
 
     .merchant-vendors .mv-toolbar {
@@ -1026,6 +1068,39 @@
 .mv-existing-content .mv-location-filters { margin-top: 16px; }
 .mv-device-picker .mv-device-scope { margin: 0 0 16px; color: #63708a; font-size: 13px; }
 .mv-device-picker .mv-device-toolbar { grid-template-columns: minmax(260px, 1fr) auto; }
+.mv-device-picker .filters-bar,
+.mv-device-mapped-page .mv-device-list-card > .filters-bar {
+    width: 100%;
+    min-width: 0;
+    margin: 0;
+    padding: 16px 0;
+    box-sizing: border-box;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+.mv-device-picker .filters-bar .filter-search,
+.mv-device-mapped-page .mv-device-list-card > .filters-bar .filter-search {
+    min-width: min(260px, 100%);
+    max-width: 100%;
+    height: 38px;
+}
+.mv-device-picker .filters-bar .filter-options,
+.mv-device-mapped-page .mv-device-list-card > .filters-bar .filter-options {
+    max-width: 100%;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+.mv-device-picker .filters-bar .filter-select-wrapper,
+.mv-device-mapped-page .mv-device-list-card > .filters-bar .filter-select-wrapper {
+    width: 150px;
+    flex-basis: 150px;
+}
+.mv-device-picker .filters-bar .filter-select-wrapper select,
+.mv-device-mapped-page .mv-device-list-card > .filters-bar .filter-select-wrapper select,
+.mv-device-picker .filters-bar .filter-reset-btn,
+.mv-device-mapped-page .mv-device-list-card > .filters-bar .filter-reset-btn {
+    height: 38px;
+}
 .mv-device-picker .mv-existing-table-wrap table { min-width: 820px; }
 .mv-device-picker .mv-existing-table-wrap th:nth-child(1), .mv-device-picker .mv-existing-table-wrap td:nth-child(1) { width: 9%; }
 .mv-device-picker .mv-existing-table-wrap th:nth-child(2), .mv-device-picker .mv-existing-table-wrap td:nth-child(2) { width: 18%; text-align: left; }
@@ -1040,8 +1115,49 @@
 .mv-device-mapped-page > .mv-header { margin: 0; }
 .mv-device-mapped-page .mv-device-list-card { padding: 24px; }
 .mv-device-mapped-page .mv-device-list-card h3 { margin: 0; }
-.mv-device-mapped-page .mv-device-list-card .mv-scroll { margin-top: 0; }
+.mv-device-mapped-page .mv-device-list-card > .mv-toolbar { padding: 16px 0; }
+.mv-device-mapped-page .mv-device-list-card .mv-scroll { width: 100%; margin: 0; }
+.mv-device-mapped-page .pagination-container,
+.mv-device-picker .pagination-container { margin-top: 16px; }
+.mv-device-mapped-page .pagination-container :is(.pagination-arrow, .pagination-page),
+.mv-device-picker .pagination-container :is(.pagination-arrow, .pagination-page) {
+    width: 36px;
+    height: 36px;
+    flex: 0 0 36px;
+    padding: 0;
+    border: 1px solid #d8dee9;
+    border-radius: 7px;
+    background: #fff;
+    color: #64748b;
+    font-size: 14px;
+    line-height: 1;
+}
+.mv-device-mapped-page .pagination-container .pagination-page.active,
+.mv-device-picker .pagination-container .pagination-page.active { background: #5143bc; color: #fff; }
+.mv-device-mapped-page .mv-device-list-card .mv-scroll table { width: 100%; min-width: 1200px; }
+.mv-device-mapped-page .mv-device-list-card .mv-scroll th:nth-child(1),
+.mv-device-mapped-page .mv-device-list-card .mv-scroll td:nth-child(1) { width: 14%; }
+.mv-device-mapped-page .mv-device-list-card .mv-scroll th:nth-child(2),
+.mv-device-mapped-page .mv-device-list-card .mv-scroll td:nth-child(2) { width: 16%; }
+.mv-device-mapped-page .mv-device-list-card .mv-scroll th:nth-child(3),
+.mv-device-mapped-page .mv-device-list-card .mv-scroll td:nth-child(3) { width: 23%; }
+.mv-device-mapped-page .mv-device-list-card .mv-scroll th:nth-child(4),
+.mv-device-mapped-page .mv-device-list-card .mv-scroll td:nth-child(4) { width: 18%; }
+.mv-device-mapped-page .mv-device-list-card .mv-scroll th:nth-child(5),
+.mv-device-mapped-page .mv-device-list-card .mv-scroll td:nth-child(5) { width: 16%; }
+.mv-device-mapped-page .mv-device-list-card .mv-scroll th:nth-child(6),
+.mv-device-mapped-page .mv-device-list-card .mv-scroll td:nth-child(6) { width: 13%; }
 .mv-device-mapped-page .mv-device-remove { border: 0; background: transparent; color: #b42318; cursor: pointer; }
+.mv-device-mapped-page .mv-device-list-card .mv-scroll table { min-width: 900px; }
+.mv-device-mapped-page .mv-device-list-card .mv-scroll th,
+.mv-device-mapped-page .mv-device-list-card .mv-scroll td { padding: 8px 10px; }
+.mv-device-mapped-page .mv-device-save-note {
+  margin: 16px 0 0;
+  padding-top: 16px;
+  border-top: 1px solid #e6ebf3;
+  color: #73809a;
+  font-size: 13px;
+}
 .mv-device-mapped-page .pc-footer { margin-top: 18px; }
 .mv-dialog[open]:not(.mv-dialog-create):not(.mv-dialog-select) { display: flex; flex-direction: column; height: min(90vh, 760px); max-height: 90vh; overflow: hidden; }
 .mv-dialog[open]:not(.mv-dialog-create):not(.mv-dialog-select) > .merchant-vendors { display: flex; flex: 1; min-height: 0; flex-direction: column; }

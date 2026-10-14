@@ -438,7 +438,7 @@ export function MerchantEmployeeForm({
           {saveError}
         </p>
       )}
-      <form onSubmit={handleSave} autoComplete="off">
+      <form onSubmit={handleSave} autoComplete="off" noValidate>
         <fieldset
           disabled={saving || Boolean(contextError)}
           className="merchant-employee-fieldset"
@@ -854,7 +854,7 @@ function SelectField({
           disabled={disabled}
           value={value}
           onChange={onChange}
-          className={error ? "field-invalid" : ""}
+          className={`${error ? "field-invalid" : ""}${!value ? " employee-select-placeholder" : ""}`}
         >
           <option value="">{placeholder}</option>
 

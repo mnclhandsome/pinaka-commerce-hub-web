@@ -420,26 +420,6 @@ export default function StoreCustomers({
           />
         )}
 
-        {/* ===================================================
-            SOURCE FOOTER
-        =================================================== */}
-
-        <div className="store-customers-footer">
-
-          <div>
-            <i className="bi bi-wordpress" />
-
-            <span>
-              Customer data synced from WooCommerce
-            </span>
-          </div>
-
-          <span className="store-customers-readonly">
-            Read Only
-          </span>
-
-        </div>
-
       </div>
 
       <ViewDetailsModal

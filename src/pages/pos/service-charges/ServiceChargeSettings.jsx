@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from "react";
+import FilterDropdown from "../../../components/FilterDropdown";
+import Pagination from "../../../components/Pagination";
 import { ApiError } from "../../../api/http";
 import {
   ConfigBadge, ConfigField, ConfigFooter, ConfigHeader, ConfigSwitch,
@@ -43,6 +45,8 @@ export function ServiceChargeSettings() {
         useConfigState("defaultType", "percentage");
 
     const [maxLimit, setMaxLimit] = useConfigState("maxLimit", "10");
+    const [currentPage, setCurrentPage] = useState(1);
+    const [pageSize, setPageSize] = useState(10);
 
     const [tiers, setTiers] = useConfigState("tiers", [
         {
@@ -70,6 +74,9 @@ export function ServiceChargeSettings() {
             appliesTo: "Takeaway",
         },
     ]);
+    const pageCount = Math.max(1, Math.ceil(tiers.length / pageSize));
+    const safePage = Math.min(currentPage, pageCount);
+    const paginatedTiers = tiers.slice((safePage - 1) * pageSize, safePage * pageSize);
 
     const addTier = () => {
         setTiers((items) => [
@@ -232,7 +239,7 @@ export function ServiceChargeSettings() {
 
                         <div className="service-charge-select">
 
-                            <select
+                            <FilterDropdown
                                 value={applyTo}
                                 onChange={(event) =>
                                     setApplyTo(
@@ -247,7 +254,7 @@ export function ServiceChargeSettings() {
                                 <option value="line-item">
                                     Each Line Item
                                 </option>
-                            </select>
+                            </FilterDropdown>
 
                             <i className="bi bi-chevron-down" />
 
@@ -266,7 +273,7 @@ export function ServiceChargeSettings() {
 
                         <div className="service-charge-select">
 
-                            <select
+                            <FilterDropdown
                                 value={defaultType}
                                 onChange={(event) =>
                                     setDefaultType(
@@ -281,7 +288,7 @@ export function ServiceChargeSettings() {
                                 <option value="fixed">
                                     Fixed
                                 </option>
-                            </select>
+                            </FilterDropdown>
 
                             <i className="bi bi-chevron-down" />
 
@@ -401,7 +408,7 @@ export function ServiceChargeSettings() {
 
                         <tbody>
 
-                            {tiers.map((tier) => (
+                            {paginatedTiers.map((tier) => (
 
                                 <tr key={tier.id}>
 
@@ -477,7 +484,7 @@ export function ServiceChargeSettings() {
 
                                         <div className="service-charge-table-select">
 
-                                            <select
+                                            <FilterDropdown
                                                 value={
                                                     tier.feeType
                                                 }
@@ -496,7 +503,7 @@ export function ServiceChargeSettings() {
                                                 <option value="Fixed">
                                                     Fixed
                                                 </option>
-                                            </select>
+                                            </FilterDropdown>
 
                                             <i className="bi bi-chevron-down" />
 
@@ -511,7 +518,7 @@ export function ServiceChargeSettings() {
 
                                         <div className="service-charge-table-select">
 
-                                            <select
+                                            <FilterDropdown
                                                 value={
                                                     tier.appliesTo
                                                 }
@@ -538,7 +545,7 @@ export function ServiceChargeSettings() {
                                                 <option value="All">
                                                     All
                                                 </option>
-                                            </select>
+                                            </FilterDropdown>
 
                                             <i className="bi bi-chevron-down" />
 
@@ -591,36 +598,17 @@ export function ServiceChargeSettings() {
 
                 {/* FOOTER */}
 
-                <div className="service-charge-table-footer">
-
-                    <span>
-                        Showing 1 to {tiers.length} of{" "}
-                        {tiers.length} entries
-                    </span>
-
-                    <div className="service-charge-pagination">
-
-                        <button
-                            type="button"
-                            disabled
-                        >
-                            <i className="bi bi-chevron-left" />
-                        </button>
-
-                        <button
-                            type="button"
-                            className="active"
-                        >
-                            1
-                        </button>
-
-                        <button type="button">
-                            <i className="bi bi-chevron-right" />
-                        </button>
-
-                    </div>
-
-                </div>
+                <Pagination
+                    currentPage={safePage}
+                    totalPages={pageCount}
+                    totalItems={tiers.length}
+                    pageSize={pageSize}
+                    onPageChange={setCurrentPage}
+                    onPageSizeChange={(size) => { setPageSize(size); setCurrentPage(1); }}
+                    itemLabel="entries"
+                    showWhenEmpty
+                    pageSizeOptions={[10, 25, 50, 100]}
+                />
 
             </div>
 

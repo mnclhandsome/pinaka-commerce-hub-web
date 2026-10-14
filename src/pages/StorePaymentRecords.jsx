@@ -1,4 +1,5 @@
 import FilterDropdown from "../components/FilterDropdown";
+import Pagination from "../components/Pagination";
 import { useEffect, useMemo, useState } from "react";
 import ViewDetailsModal from "../components/ViewDetailsModal";
 import { listStorePosPayments } from "../api/storePosPayments";
@@ -24,6 +25,8 @@ export default function StorePaymentRecords({ store, storeId: storeIdProp, merch
   const [search, setSearch] = useState("");
   const [dateFilter, setDateFilter] = useState("");
   const [selectedPayment, setSelectedPayment] = useState(null);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [currentPage, setCurrentPage] = useState(1);
  
   useEffect(() => {
     let cancelled = false;
@@ -117,6 +120,11 @@ export default function StorePaymentRecords({ store, storeId: storeIdProp, merch
       .filter((date) => date.length === 10),
     [payments],
   );
+  const pageCount = Math.max(1, Math.ceil(filteredPayments.length / rowsPerPage));
+  const pageStart = (currentPage - 1) * rowsPerPage;
+  const paginatedPayments = filteredPayments.slice(pageStart, pageStart + rowsPerPage);
+
+  useEffect(() => setCurrentPage(1), [search, dateFilter, rowsPerPage]);
  
   const clearFilters = () => {
     setSearch("");
@@ -199,8 +207,8 @@ export default function StorePaymentRecords({ store, storeId: storeIdProp, merch
           <div className="store-payment-records-pagination">
             <button type="button" disabled>«</button>
             <button type="button" disabled>‹</button>
-            <button type="button" className="active">1</button>
-            <span>of 1</span>
+            <button type="button" className="active">{currentPage}</button>
+            <span>of {pageCount}</span>
             <button type="button" disabled>›</button>
             <button type="button" disabled>»</button>
           </div>
@@ -210,9 +218,6 @@ export default function StorePaymentRecords({ store, storeId: storeIdProp, merch
           <table className="store-payment-records-table">
             <thead>
               <tr>
-                <th className="check-column">
-                  <input type="checkbox" />
-                </th>
                 <th>Title</th>
                 <th>Order ID</th>
                 <th>Client Order ID</th>
@@ -232,7 +237,7 @@ export default function StorePaymentRecords({ store, storeId: storeIdProp, merch
               ) : error ? (
                 <tr><td colSpan="11" className="store-payment-records-empty">{error}</td></tr>
               ) : filteredPayments.length ? (
-                filteredPayments.map((payment) => (
+                paginatedPayments.map((payment) => (
                   <PaymentRecordRow
                     key={payment.id}
                     payment={payment}
@@ -241,7 +246,7 @@ export default function StorePaymentRecords({ store, storeId: storeIdProp, merch
                 ))
               ) : (
                 <tr>
-                  <td colSpan="11" className="store-payment-records-empty">
+                  <td colSpan="10" className="store-payment-records-empty">
                     No payment records found.
                   </td>
                 </tr>
@@ -250,9 +255,17 @@ export default function StorePaymentRecords({ store, storeId: storeIdProp, merch
           </table>
         </div>
  
-        <div className="store-payment-records-footer">
-          Payment data synced from Pinaka POS
-        </div>
+        <Pagination
+          currentPage={currentPage}
+          totalPages={pageCount}
+          totalItems={filteredPayments.length}
+          pageSize={rowsPerPage}
+          onPageChange={setCurrentPage}
+          onPageSizeChange={setRowsPerPage}
+          itemLabel="payments"
+          showWhenEmpty
+          pageSizeOptions={[10, 25, 50, 100]}
+        />
       </div>
  
       <ViewDetailsModal
@@ -376,13 +389,6 @@ function PaymentRecordRow({ payment, onView }) {
         }
       }}
     >
-      <td className="check-column">
-        <input
-          type="checkbox"
-          onClick={(event) => event.stopPropagation()}
-        />
-      </td>
- 
       <td>
         <button
           type="button"

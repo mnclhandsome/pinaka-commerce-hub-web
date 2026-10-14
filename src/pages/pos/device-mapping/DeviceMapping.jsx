@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import Pagination from "../../../components/Pagination";
+import FiltersBar from "../../../components/FiltersBar";
 import { devicesApi } from "../../../api/devices";
 import { createStoreDeviceMapping, deleteStoreDeviceMapping, getStoreDeviceMappings } from "../../../api/storeDeviceMappings";
 import "../../../styles/merchant-vendors.css";
-import { ConfigFooter, useConfigState, usePosSettings, useSaveAction } from "../shared";
-
-const pageSize = 10;
+import { useConfigState, usePosSettings, useSaveAction } from "../shared";
 
 async function combineMappings(rows, devices) {
   const deviceById = new Map(devices.map((device) => [String(device.id), device]));
@@ -43,8 +43,13 @@ export function DeviceMapping() {
   const [selection, setSelection] = useState([]);
   const [search, setSearch] = useState("");
   const [mappedSearch, setMappedSearch] = useState("");
+  const [deviceTypeFilter, setDeviceTypeFilter] = useState("all");
+  const [deviceStatusFilter, setDeviceStatusFilter] = useState("all");
+  const [mappedTypeFilter, setMappedTypeFilter] = useState("all");
+  const [mappedStatusFilter, setMappedStatusFilter] = useState("all");
   const [page, setPage] = useState(1);
   const [mappedPage, setMappedPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
 
@@ -78,14 +83,17 @@ export function DeviceMapping() {
 
   const safeMappings = Array.isArray(mappings) ? mappings : [];
   const mappedIds = useMemo(() => new Set(safeMappings.map((item) => String(item.deviceId))), [safeMappings]);
-  const available = useMemo(() => devices.filter((device) => !mappedIds.has(String(device.id)) && [device.name, device.type, device.serial, device.code, device.deviceCode, device.status].join(" ").toLowerCase().includes(search.trim().toLowerCase())), [devices, mappedIds, search]);
-  const filteredMappings = useMemo(() => safeMappings.filter((device) => [device.name, device.type, device.serial, device.code].join(" ").toLowerCase().includes(mappedSearch.trim().toLowerCase())), [safeMappings, mappedSearch]);
+  const availableTypes = useMemo(() => [...new Set(devices.map((device) => String(device.type || "").trim()).filter(Boolean))].sort((a, b) => a.localeCompare(b)), [devices]);
+  const mappedTypes = useMemo(() => [...new Set(safeMappings.map((device) => String(device.type || "").trim()).filter(Boolean))].sort((a, b) => a.localeCompare(b)), [safeMappings]);
+  const available = useMemo(() => devices.filter((device) => !mappedIds.has(String(device.id)) && [device.name, device.type, device.serial, device.code, device.deviceCode, device.status].join(" ").toLowerCase().includes(search.trim().toLowerCase()) && (deviceTypeFilter === "all" || String(device.type || "") === deviceTypeFilter) && (deviceStatusFilter === "all" || String(device.status || "Active").toLowerCase() === deviceStatusFilter)), [devices, mappedIds, search, deviceTypeFilter, deviceStatusFilter]);
+  const filteredMappings = useMemo(() => safeMappings.filter((device) => [device.name, device.type, device.serial, device.code].join(" ").toLowerCase().includes(mappedSearch.trim().toLowerCase()) && (mappedTypeFilter === "all" || String(device.type || "") === mappedTypeFilter) && (mappedStatusFilter === "all" || String(device.status || "Active").toLowerCase() === mappedStatusFilter)), [safeMappings, mappedSearch, mappedTypeFilter, mappedStatusFilter]);
   const pageCount = Math.max(1, Math.ceil(available.length / pageSize));
   const mappedPageCount = Math.max(1, Math.ceil(filteredMappings.length / pageSize));
   const pageRows = available.slice((page - 1) * pageSize, page * pageSize);
   const mappedRows = filteredMappings.slice((mappedPage - 1) * pageSize, mappedPage * pageSize);
+  const changePageSize = (size) => { setPageSize(size); setPage(1); setMappedPage(1); };
   const toggleSelection = (id) => setSelection((current) => current.includes(String(id)) ? current.filter((item) => item !== String(id)) : [...current, String(id)]);
-  const openPicker = () => { setSelection([]); setSearch(""); setPage(1); setError(""); setView("picker"); };
+  const openPicker = () => { setSelection([]); setSearch(""); setDeviceTypeFilter("all"); setDeviceStatusFilter("all"); setPage(1); setError(""); setView("picker"); };
   const addSelected = () => {
     const selected = devices.filter((device) => selection.includes(String(device.id)) && !mappedIds.has(String(device.id)));
     if (!selected.length) return;
@@ -94,7 +102,7 @@ export function DeviceMapping() {
     setMappedPage(1);
     setView("mapped");
   };
-  const save = useSaveAction(async () => {
+  useSaveAction(async () => {
     const draftMappings = Array.isArray(mappingsRef.current) ? mappingsRef.current : [];
     const savedMappings = Array.isArray(serverMappings) ? serverMappings : [];
     const serverByDevice = new Map(savedMappings.map((mapping) => [String(mapping.deviceId), mapping]));
@@ -159,10 +167,16 @@ export function DeviceMapping() {
     <div className="mv-existing-content">
       <p className="mv-device-scope">Only active devices registered to this merchant are available.</p>
       {error && <p role="alert" className="mv-error">{error}</p>}
-      <div className="mv-existing-toolbar mv-device-toolbar">
-        <input className="mv-search" aria-label="Search devices" placeholder="Search devices by name, code, type or serial…" value={search} onChange={(event) => { setSearch(event.target.value); setPage(1); }} />
-        <button type="button" onClick={() => { setSearch(""); setPage(1); setSelection([]); }}>Clear filters</button>
-      </div>
+      <FiltersBar
+        searchValue={search}
+        onSearchChange={(value) => { setSearch(value); setPage(1); }}
+        searchPlaceholder="Search devices by name, code, type or serial…"
+        filters={[
+          { key: "deviceType", label: "Device type", value: deviceTypeFilter, options: [{ value: "all", label: "All Device Types" }, ...availableTypes.map((value) => ({ value, label: value }))], onChange: (value) => { setDeviceTypeFilter(value); setPage(1); } },
+          { key: "status", label: "Status", value: deviceStatusFilter, options: [{ value: "all", label: "All Statuses" }, { value: "active", label: "Active" }, { value: "inactive", label: "Inactive" }, { value: "online", label: "Online" }, { value: "offline", label: "Offline" }], onChange: (value) => { setDeviceStatusFilter(value); setPage(1); } },
+        ]}
+        onClear={() => { setSearch(""); setDeviceTypeFilter("all"); setDeviceStatusFilter("all"); setPage(1); setSelection([]); }}
+      />
       <div className="mv-picker-summary"><span>{available.length} matching devices · {selection.length} selected</span></div>
       <div className="mv-existing-table-wrap"><table>
         <thead><tr><th>Select</th><th>Device ID</th><th>Device Code</th><th>Device Name</th><th>Device Type</th><th>Serial Number</th><th>Status</th></tr></thead>
@@ -175,9 +189,9 @@ export function DeviceMapping() {
           {loading && <tr><td colSpan="7" role="status">Loading merchant devices…</td></tr>}
         </tbody>
       </table></div>
-      <nav className="mv-picker-pagination" aria-label="Device pages"><span>Showing {available.length ? (page - 1) * pageSize + 1 : 0}–{Math.min(page * pageSize, available.length)} of {available.length}</span>
-        <div className="mv-popup-actions"><button type="button" disabled={page === 1} onClick={() => setPage(page - 1)}>Previous</button><span>Page {page} of {pageCount}</span><button type="button" disabled={page === pageCount} onClick={() => setPage(page + 1)}>Next</button></div>
-      </nav>
+      <Pagination currentPage={page} totalPages={pageCount} totalItems={available.length}
+        pageSize={pageSize} onPageChange={setPage} onPageSizeChange={changePageSize}
+        itemLabel="devices" showWhenEmpty pageSizeOptions={[10, 25, 50, 100]} />
     </div>
     <footer className="mv-existing-footer"><span>{selection.length} devices selected</span><div className="mv-popup-actions"><button type="button" onClick={backToMapped}>Cancel</button><button type="button" disabled={!selection.length} className="mv-primary" onClick={addSelected}>Add Selected</button></div></footer>
   </section>;
@@ -187,15 +201,23 @@ export function DeviceMapping() {
     {error && <p role="alert" className="mv-error">{error}</p>}
     <section className="mv-card mv-device-list-card">
       <h3>Mapped Device List</h3>
-      <div className="mv-toolbar"><div className="mv-toolbar-left"><input aria-label="Search mapped devices" placeholder="Search devices by name, type or serial…" value={mappedSearch} onChange={(event) => { setMappedSearch(event.target.value); setMappedPage(1); }} /></div><button type="button" className="mv-reset" onClick={() => { setMappedSearch(""); setMappedPage(1); }}>↺ Reset</button></div>
+      <FiltersBar
+        searchValue={mappedSearch}
+        onSearchChange={(value) => { setMappedSearch(value); setMappedPage(1); }}
+        searchPlaceholder="Search devices by name, type or serial…"
+        filters={[
+          { key: "deviceType", label: "Device type", value: mappedTypeFilter, options: [{ value: "all", label: "All Device Types" }, ...mappedTypes.map((value) => ({ value, label: value }))], onChange: (value) => { setMappedTypeFilter(value); setMappedPage(1); } },
+          { key: "status", label: "Status", value: mappedStatusFilter, options: [{ value: "all", label: "All Statuses" }, { value: "active", label: "Active" }, { value: "inactive", label: "Inactive" }, { value: "online", label: "Online" }, { value: "offline", label: "Offline" }], onChange: (value) => { setMappedStatusFilter(value); setMappedPage(1); } },
+        ]}
+        onClear={() => { setMappedSearch(""); setMappedTypeFilter("all"); setMappedStatusFilter("all"); setMappedPage(1); }}
+      />
       <div className="mv-scroll"><table><thead><tr><th>Device Code</th><th>Device ID</th><th>Device Name</th><th>Serial Number</th><th>Device Type</th><th>Actions</th></tr></thead><tbody>
-        {mappedRows.map((device) => <tr key={device.deviceId}><td>{device.code || "—"}</td><td>{device.deviceIdentifier || "—"}</td><td><strong>{device.name || "—"}</strong></td><td>{device.serial || "—"}</td><td>{device.type || "—"}</td><td><button type="button" className="mv-device-remove" onClick={() => setMappings((current) => current.filter((item) => String(item.deviceId) !== String(device.deviceId)))}>Remove</button></td></tr>)}
+        {mappedRows.map((device) => <tr key={device.deviceId}><td>{device.code || "—"}</td><td>{device.deviceIdentifier || "—"}</td><td><strong>{device.name || "—"}</strong></td><td>{device.serial || "—"}</td><td>{device.type || "—"}</td><td><button type="button" className="mv-device-remove pc-icon-action pc-danger" aria-label={`Remove ${device.name || "device"}`} title="Delete" onClick={() => setMappings((current) => current.filter((item) => String(item.deviceId) !== String(device.deviceId)))}><i className="bi bi-trash3" aria-hidden="true" /></button></td></tr>)}
         {!mappedRows.length && <tr><td colSpan="7">No mapped devices match. Use Add Existing Device to select from merchant devices.</td></tr>}
       </tbody></table></div>
-      <nav className="mv-picker-pagination" aria-label="Mapped device pages"><span>Showing {filteredMappings.length ? (mappedPage - 1) * pageSize + 1 : 0}–{Math.min(mappedPage * pageSize, filteredMappings.length)} of {filteredMappings.length} entries</span>
-        <div className="mv-popup-actions"><button type="button" disabled={mappedPage === 1} onClick={() => setMappedPage(mappedPage - 1)}>Previous</button><span>Page {mappedPage} of {mappedPageCount}</span><button type="button" disabled={mappedPage === mappedPageCount} onClick={() => setMappedPage(mappedPage + 1)}>Next</button></div>
-      </nav>
-      <ConfigFooter message="Mapping changes are saved with POS Configuration." onBack={() => settings.requestLeave(null)} onSave={save} />
+      <Pagination currentPage={mappedPage} totalPages={mappedPageCount} totalItems={filteredMappings.length}
+        pageSize={pageSize} onPageChange={setMappedPage} onPageSizeChange={changePageSize}
+        itemLabel="entries" showWhenEmpty pageSizeOptions={[10, 25, 50, 100]} />
     </section>
   </section>;
 }

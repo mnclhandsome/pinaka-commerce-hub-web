@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import FilterDropdown from "../../../components/FilterDropdown";
 import { ApiError } from "../../../api/http";
 import {
   ConfigBadge, ConfigField, ConfigFooter, ConfigHeader, ConfigSwitch,
@@ -115,28 +116,28 @@ export function MappingConfiguration({ value, registers, onSave, onBack, onManag
             </div>}
            <div className="pc-form-grid">
                 <ConfigField label="Register">
-                    <select required value={editor.registerId || ""} onChange={(event) => update("registerId", event.target.value)}>
+                    <FilterDropdown required value={editor.registerId || ""} onChange={(event) => update("registerId", event.target.value)}>
                         <option value="">Select a register</option>
                         {registers.map((register) => (
                             <option key={register.id} value={register.id}>{register.name} · {register.pos}</option>
                         ))}
-                    </select>
+                    </FilterDropdown>
                 </ConfigField>
                 <ConfigField label="Card Terminal"><input value={editor.terminal || ""} onChange={(event) => update("terminal", event.target.value)} placeholder="LANE3000-001" /></ConfigField>
                 <ConfigField label="Printer"><input value={editor.printer || ""} onChange={(event) => update("printer", event.target.value)} placeholder="STAR-01" /></ConfigField>
                 <ConfigField label="Cash Drawer"><input value={editor.drawer || ""} onChange={(event) => update("drawer", event.target.value)} placeholder="DRAWER-01" /></ConfigField>
                 <ConfigField label="Status">
-                    <select value={editor.status} onChange={(event) => update("status", event.target.value)}>
+                    <FilterDropdown value={editor.status} onChange={(event) => update("status", event.target.value)}>
                         <option>Active</option>
                         <option>Inactive</option>
                         <option>Setup</option>
-                    </select>
+                    </FilterDropdown>
                 </ConfigField>
             </div>
         <div className="pc-editor-actions pos-form-actions"><button type="button" className="pc-button" onClick={() => settings.requestLeave(null)}>Cancel</button><button type="submit" className="pc-button pc-primary" disabled={!editor.registerId}>Apply Mapping</button></div></form>}
         {error && <p className="pc-error" role="alert">{error}</p>}
         <div className="pc-table-wrap"><table className="pc-table"><caption className="pc-sr-only">Terminal and register mappings</caption><thead><tr>{["Register", "POS Device", "Card Terminal", "Printer", "Cash Drawer", "Status", "Actions"].map((heading) => <th key={heading} scope="col">{heading}</th>)}</tr></thead><tbody>
-            {rows.map((row) => { const register = registers.find((item) => item.id === row.registerId); return <tr key={row.id}><th scope="row">{register?.name || "Missing register"}</th><td>{register?.pos || "—"}</td><td>{row.terminal || "—"}</td><td>{row.printer || "—"}</td><td>{row.drawer || "—"}</td><td><ConfigBadge>{row.status}</ConfigBadge></td><td><div className="pc-row-actions"><button type="button" disabled={!!editor} aria-label={`Edit mapping for ${register?.name}`} onClick={() => { setEditor({ ...row }); setError(""); setMessage(""); }}>Edit</button><button type="button" disabled={!!editor} className="pc-danger" aria-label={`Remove mapping for ${register?.name}`} onClick={() => { setRows((current) => current.filter((item) => item.id !== row.id)); setError(""); setMessage("Mapping removed from the draft. Save Changes to keep this change."); }}>Remove</button></div></td></tr>; })}
+            {rows.map((row) => { const register = registers.find((item) => item.id === row.registerId); return <tr key={row.id}><th scope="row">{register?.name || "Missing register"}</th><td>{register?.pos || "—"}</td><td>{row.terminal || "—"}</td><td>{row.printer || "—"}</td><td>{row.drawer || "—"}</td><td><ConfigBadge>{row.status}</ConfigBadge></td><td><div className="pc-row-actions"><button type="button" disabled={!!editor} aria-label={`Edit mapping for ${register?.name}`} title="Edit" onClick={() => { setEditor({ ...row }); setError(""); setMessage(""); }}><i className="bi bi-pencil" aria-hidden="true" /></button><button type="button" disabled={!!editor} className="pc-danger" aria-label={`Remove mapping for ${register?.name}`} title="Delete" onClick={() => { setRows((current) => current.filter((item) => item.id !== row.id)); setError(""); setMessage("Mapping removed from the draft. Save Changes to keep this change."); }}><i className="bi bi-trash3" aria-hidden="true" /></button></div></td></tr>; })}
             {!rows.length && <tr><td colSpan="7" className="pc-empty">No mappings yet. Add a mapping to connect your devices.</td></tr>}
         </tbody></table></div>
         <ConfigFooter onBack={onBack} message={message} onSave={saveChanges} />

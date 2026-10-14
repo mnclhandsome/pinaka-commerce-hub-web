@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import FilterDropdown from "../../../components/FilterDropdown";
 import { ApiError } from "../../../api/http";
 import {
   ConfigBadge, ConfigField, ConfigFooter, ConfigHeader, ConfigSwitch,
@@ -53,16 +54,19 @@ export function TaxConfiguration() {
     const [taxClasses, setTaxClasses] = useConfigState("taxClasses", [
         {
             id: 1,
+            clientId: newRecordId(),
             name: "Standard",
             rate: "8.25",
         },
         {
             id: 2,
+            clientId: newRecordId(),
             name: "Reduced",
             rate: "0.00",
         },
         {
             id: 3,
+            clientId: newRecordId(),
             name: "Zero Rated",
             rate: "0.00",
         },
@@ -80,6 +84,7 @@ export function TaxConfiguration() {
         setTaxCalculation(record.taxCalculation);
         setTaxClasses((record.taxClasses || []).map((item) => ({
             id: item.id,
+            clientId: newRecordId(),
             name: item.name,
             rate: String(item.rate),
         })));
@@ -100,10 +105,10 @@ export function TaxConfiguration() {
         return () => { active = false; };
     }, [settings.storeId]);
 
-    const updateTaxClass = (id, field, value) => {
+    const updateTaxClass = (clientId, field, value) => {
         setTaxClasses((items) =>
             items.map((item) =>
-                item.id === id
+                item.clientId === clientId
                     ? {
                           ...item,
                           [field]: value,
@@ -113,9 +118,9 @@ export function TaxConfiguration() {
         );
     };
 
-    const removeTaxClass = (id) => {
+    const removeTaxClass = (clientId) => {
         setTaxClasses((items) =>
-            items.filter((item) => item.id !== id)
+            items.filter((item) => item.clientId !== clientId)
         );
     };
 
@@ -124,6 +129,7 @@ export function TaxConfiguration() {
             ...items,
             {
                 id: Date.now(),
+                clientId: newRecordId(),
                 name: "",
                 rate: "0.00",
             },
@@ -215,7 +221,7 @@ export function TaxConfiguration() {
 
                         <div className="currency-tax-input-wrap">
 
-                            <select
+                            <FilterDropdown
                                 value={currency}
                                 onChange={(event) =>
                                     setCurrency(
@@ -246,7 +252,7 @@ export function TaxConfiguration() {
                                 <option value="AUD">
                                     AUD - Australian Dollar
                                 </option>
-                            </select>
+                            </FilterDropdown>
 
                             <i className="bi bi-chevron-down" />
 
@@ -265,7 +271,7 @@ export function TaxConfiguration() {
 
                         <div className="currency-tax-input-wrap">
 
-                            <select
+                            <FilterDropdown
                                 value={rounding}
                                 onChange={(event) =>
                                     setRounding(
@@ -288,7 +294,7 @@ export function TaxConfiguration() {
                                 <option value="up">
                                     Always round up
                                 </option>
-                            </select>
+                            </FilterDropdown>
 
                             <i className="bi bi-chevron-down" />
 
@@ -404,7 +410,7 @@ export function TaxConfiguration() {
 
                                     <div className="currency-tax-input-wrap">
 
-                                        <select
+                                        <FilterDropdown
                                             value={
                                                 taxCalculation
                                             }
@@ -429,7 +435,7 @@ export function TaxConfiguration() {
                                             <option value="total">
                                                 Calculate Tax on Total
                                             </option>
-                                        </select>
+                                        </FilterDropdown>
 
                                         <i className="bi bi-chevron-down" />
 
@@ -460,9 +466,7 @@ export function TaxConfiguration() {
 
                                             <div
                                                 className="tax-class-row"
-                                                key={
-                                                    taxClass.id
-                                                }
+                                                key={taxClass.clientId}
                                             >
 
                                                 <div className="tax-class-name">
@@ -476,7 +480,7 @@ export function TaxConfiguration() {
                                                             event
                                                         ) =>
                                                             updateTaxClass(
-                                                                taxClass.id,
+                                                                taxClass.clientId,
                                                                 "name",
                                                                 event
                                                                     .target
@@ -502,7 +506,7 @@ export function TaxConfiguration() {
                                                             event
                                                         ) =>
                                                             updateTaxClass(
-                                                                taxClass.id,
+                                                                taxClass.clientId,
                                                                 "rate",
                                                                 event
                                                                     .target
@@ -523,7 +527,7 @@ export function TaxConfiguration() {
                                                     className="tax-class-delete"
                                                     onClick={() =>
                                                         removeTaxClass(
-                                                            taxClass.id
+                                                            taxClass.clientId
                                                         )
                                                     }
                                                     aria-label={`Remove ${taxClass.name || "tax class"}`}

@@ -703,7 +703,9 @@
   align-items: center;
   justify-content: center;
   gap: 5px;
+  width: 86px;
   min-width: 86px;
+  box-sizing: border-box;
   height: 26px;
   padding: 0 10px;
   border-radius: 12px;

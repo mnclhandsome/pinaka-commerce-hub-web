@@ -1277,6 +1277,64 @@
     }
 }
 
+/* Use the same compact bordered icon controls for POS row actions. */
+.pos-page-content :is(
+  .cashback-edit,
+  .cashback-delete,
+  .service-charge-edit,
+  .service-charge-delete,
+  .tax-class-delete,
+  .pc-icon-action,
+  .pc-row-actions > button,
+  .mv-device-remove
+) {
+  box-sizing: border-box;
+  display: inline-flex;
+  width: 42px;
+  min-width: 42px;
+  height: 42px;
+  min-height: 42px;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 1px solid #e5ebf4;
+  border-radius: 8px;
+  background: #fff;
+  color: #5143bc;
+  font-size: 16px;
+  line-height: 1;
+  text-decoration: none;
+}
+.pos-page-content :is(.cashback-delete, .service-charge-delete, .tax-class-delete, .pc-danger, .mv-device-remove) {
+  color: #ed3d66;
+}
+.pos-page-content :is(
+  .cashback-edit,
+  .cashback-delete,
+  .service-charge-edit,
+  .service-charge-delete,
+  .tax-class-delete,
+  .pc-icon-action,
+  .pc-row-actions > button,
+  .mv-device-remove
+):hover:not(:disabled) {
+  border-color: #d8dff0;
+  background: #f8f9fd;
+}
+.pos-page-content :is(
+  .cashback-edit,
+  .cashback-delete,
+  .service-charge-edit,
+  .service-charge-delete,
+  .tax-class-delete,
+  .pc-icon-action,
+  .pc-row-actions > button,
+  .mv-device-remove
+):disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
 @media (max-width: 500px) {
     .pos-page-content {
         padding: 15px;
@@ -1428,6 +1486,13 @@
     font-weight: 600;
 
     line-height: 1.4;
+    transform-origin: left center;
+    transition: color 0.18s ease, transform 0.18s ease;
+}
+
+.currency-tax-field:focus-within > label {
+    color: #5143bc;
+    transform: translateY(-2px);
 }
 
 .currency-tax-field .required {
@@ -1466,7 +1531,8 @@
 
     transition:
         border-color 0.15s ease,
-        box-shadow 0.15s ease;
+        box-shadow 0.15s ease,
+        transform 0.18s ease;
 }
 
 .currency-tax-field input::placeholder {
@@ -1479,6 +1545,7 @@
 
     box-shadow:
         0 0 0 3px rgba(81, 67, 188, 0.08);
+    transform: translateY(-1px);
 }
 
 
@@ -1488,6 +1555,23 @@
 
 .currency-tax-input-wrap {
     position: relative;
+}
+
+.currency-tax-input-wrap > .pch-filter-dropdown {
+    display: grid;
+    width: 100%;
+}
+
+.currency-tax-input-wrap > .pch-filter-dropdown > .pch-filter-sizing {
+    width: 100%;
+}
+
+.currency-tax-input-wrap > .pch-filter-dropdown > .pch-filter-trigger {
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.18s ease;
+}
+
+.currency-tax-input-wrap:focus-within > .pch-filter-dropdown > .pch-filter-trigger {
+    transform: translateY(-1px);
 }
 
 .currency-tax-input-wrap select {
@@ -1695,6 +1779,12 @@
     font-weight: 500;
 
     outline: none;
+    transition: color 0.18s ease, transform 0.18s ease;
+}
+
+.tax-class-name input:focus {
+    color: #5143bc;
+    transform: translateY(-1px);
 }
 
 
@@ -1724,10 +1814,13 @@
     font-size: 11px;
 
     outline: none;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.18s ease;
 }
 
 .tax-class-rate input:focus {
     border-color: #5143bc;
+    box-shadow: 0 0 0 3px rgba(81, 67, 188, 0.08);
+    transform: translateY(-1px);
 }
 
 
@@ -2118,6 +2211,13 @@
 
     font-size: 10px;
     font-weight: 600;
+    transform-origin: left center;
+    transition: color 0.18s ease, transform 0.18s ease;
+}
+
+.service-charge-setting:focus-within > label {
+    color: #5143bc;
+    transform: translateY(-2px);
 }
 
 
@@ -2177,6 +2277,27 @@
 
 .service-charge-select {
     position: relative;
+}
+
+.service-charge-select > .pch-filter-dropdown,
+.service-charge-table-select > .pch-filter-dropdown {
+    display: grid;
+    width: 100%;
+}
+
+.service-charge-select > .pch-filter-dropdown > .pch-filter-sizing,
+.service-charge-table-select > .pch-filter-dropdown > .pch-filter-sizing {
+    width: 100%;
+}
+
+.service-charge-select > .pch-filter-dropdown > .pch-filter-trigger,
+.service-charge-table-select > .pch-filter-dropdown > .pch-filter-trigger {
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.18s ease;
+}
+
+.service-charge-select:focus-within > .pch-filter-dropdown > .pch-filter-trigger,
+.service-charge-table-select:focus-within > .pch-filter-dropdown > .pch-filter-trigger {
+    transform: translateY(-1px);
 }
 
 .service-charge-select select {
@@ -2256,6 +2377,7 @@
     font-size: 10px;
 
     outline: none;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.18s ease;
 }
 
 .service-charge-limit-input input:focus {
@@ -2263,6 +2385,7 @@
 
     box-shadow:
         0 0 0 3px rgba(81, 67, 188, 0.08);
+    transform: translateY(-1px);
 }
 
 .service-charge-limit-input span {
@@ -2400,10 +2523,13 @@
     font-size: 12px;
 
     outline: none;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.18s ease;
 }
 
 .service-charge-table td input:focus {
     border-color: #5143bc;
+    box-shadow: 0 0 0 3px rgba(81, 67, 188, 0.08);
+    transform: translateY(-1px);
 }
 
 
@@ -2547,6 +2673,10 @@
 
     gap: 12px;
 
+    margin-top: 10px;
+}
+
+.service-charge-tiers-card > .pagination-container {
     margin-top: 10px;
 }
 
@@ -2867,6 +2997,13 @@
 
     font-size: 10px;
     font-weight: 600;
+    transform-origin: left center;
+    transition: color 0.18s ease, transform 0.18s ease;
+}
+
+.cashback-setting:focus-within > label {
+    color: #5143bc;
+    transform: translateY(-2px);
 }
 
 
@@ -2942,6 +3079,7 @@
     font-size: 10px;
 
     outline: none;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.18s ease;
 }
 
 .cashback-limit-setting input::placeholder {
@@ -2953,6 +3091,7 @@
 
     box-shadow:
         0 0 0 3px rgba(81, 67, 188, 0.08);
+    transform: translateY(-1px);
 }
 
 
@@ -3074,6 +3213,7 @@
     font-size: 12px;
 
     outline: none;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.18s ease;
 }
 
 .cashback-table td input:focus {
@@ -3081,6 +3221,7 @@
 
     box-shadow:
         0 0 0 2px rgba(81, 67, 188, 0.06);
+    transform: translateY(-1px);
 }
 
 
@@ -3142,6 +3283,10 @@
     align-items: center;
     justify-content: space-between;
 
+    margin-top: 10px;
+}
+
+.cashback-tiers-card > .pagination-container {
     margin-top: 10px;
 }
 
@@ -4332,9 +4477,16 @@
 .pc-screen fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }
 .pc-screen fieldset:disabled { opacity: .55; }
 .pc-field { display: flex; flex-direction: column; gap: 8px; min-width: 0; font-size: 12px; font-weight: 600; color: #475c78; }
+.pc-field > span { transform-origin: left center; transition: color 0.18s ease, transform 0.18s ease; }
+.pc-field:focus-within > span { color: #5143bc; transform: translateY(-2px); }
 .pc-card > .pc-field, .pc-card > fieldset > .pc-field { margin-top: 16px; }
 .pc-field small { font-size: 11px; font-weight: 400; color: #65758e; overflow-wrap: anywhere; }
-.pc-screen input:not([type=checkbox]), .pc-screen select { width: 100%; min-width: 0; min-height: 39px; border: 1px solid #d8e1ee; border-radius: 5px; padding: 8px 10px; background: white; color: var(--pc-ink); font: inherit; font-size: 12px; }
+.pc-screen input:not([type=checkbox]), .pc-screen select { width: 100%; min-width: 0; min-height: 39px; border: 1px solid #d8e1ee; border-radius: 5px; padding: 8px 10px; background: white; color: var(--pc-ink); font: inherit; font-size: 12px; transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.18s ease; }
+.pc-field > .pch-filter-dropdown { display: grid; width: 100%; }
+.pc-field > .pch-filter-dropdown > .pch-filter-sizing { width: 100%; }
+.pc-field > .pch-filter-dropdown > .pch-filter-trigger { transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.18s ease; }
+.pc-field:focus-within > .pch-filter-dropdown > .pch-filter-trigger { transform: translateY(-1px); }
+.pc-field input:focus, .pc-field select:focus { transform: translateY(-1px); box-shadow: 0 0 0 3px rgba(81, 67, 188, 0.08); }
 .pc-screen input:disabled, .pc-screen input:read-only { background: #f3f6fa; color: #708096; }
 .pc-switch-field { position: relative; display: flex; align-items: center; justify-content: space-between; gap: 14px; min-height: 40px; font-size: 12px; font-weight: 600; color: #475c78; cursor: pointer; }
 .pc-switch-field input { position: absolute; right: 0; width: 38px; height: 24px; opacity: 0; }
@@ -4453,6 +4605,133 @@
     .pos-change-actions .pc-button { flex: 1 1 100%; }
 }
 
+/* Store configuration visual refresh */
+.pos-page-content {
+    --pos-primary: #5143bc;
+    --pos-primary-hover: #4436a8;
+    background: #f3f5fb;
+    color: #17233e;
+}
+.pos-config-page-header {
+    align-items: center;
+    padding: 4px 2px 18px;
+    border-bottom: 1px solid #e1e6f0;
+}
+.pos-page-content .page-header h1 { font-size: 23px; letter-spacing: -.025em; }
+.pos-page-content .page-header p { margin-top: 8px; font-size: 13px; }
+.pos-config-cards-container {
+    padding: 22px;
+    border-color: #e0e5ef;
+    border-radius: 12px;
+    background: linear-gradient(145deg, #fff 0%, #fbfcff 100%);
+    box-shadow: 0 8px 24px rgba(28, 43, 77, .045);
+}
+.pos-config-cards-grid { gap: 18px; }
+.pos-config-option-card {
+    min-height: 188px;
+    padding: 22px;
+    border-color: #e1e6f0;
+    border-radius: 12px;
+    box-shadow: 0 2px 5px rgba(28, 43, 77, .025);
+}
+.pos-config-option-card:hover:not(:disabled) {
+    border-color: #c7c0f2;
+    background: #fdfcff;
+    box-shadow: 0 10px 24px rgba(51, 42, 126, .09);
+    transform: translateY(-2px);
+}
+.pos-config-option-icon { width: 56px; height: 56px; border-radius: 13px; }
+.pos-config-option-content h3 { font-size: 16px; }
+.pos-config-option-content p { font-size: 13px; line-height: 1.6; }
+.pos-back-button { margin-bottom: 16px; font-size: 13px; }
+.pos-config-detail-card {
+    border-color: #e0e5ef;
+    border-radius: 12px;
+    background: #fff;
+    box-shadow: 0 8px 24px rgba(28, 43, 77, .045);
+}
+.pos-config-detail-card > .pos-screen-lock > .currency-tax-panel,
+.pos-config-detail-card > .pos-screen-lock > .pos-panel,
+.pos-config-detail-card > .pos-screen-lock > .pc-screen { padding: 30px; }
+.currency-tax-grid { gap: 20px; }
+.currency-tax-card, .pc-card {
+    border-color: #e1e6f0;
+    border-radius: 11px;
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(28, 43, 77, .025);
+}
+.currency-tax-card { padding: 23px; }
+.currency-tax-card-header { margin-bottom: 22px; padding-bottom: 13px; border-bottom: 1px solid #edf0f6; }
+.currency-tax-card-header h3, .pc-screen h3 { color: #24324d; }
+.currency-tax-field > label, .pc-field { color: #435572; }
+.currency-tax-field { margin-bottom: 20px; }
+.currency-tax-field input, .currency-tax-field select,
+.settings-field > input, .settings-field > select,
+.settings-table td input, .settings-table td select,
+.pc-screen input:not([type=checkbox]), .pc-screen select {
+    min-width: 0;
+    border-color: #d5deec;
+    border-radius: 7px;
+    background-color: #fff;
+    color: #17233e;
+}
+.currency-tax-field select, .settings-field > select, .settings-table td select,
+.pc-screen select {
+    padding-right: 42px;
+    background-position: right 14px center;
+}
+.currency-tax-input-wrap select { padding-right: 42px; }
+.currency-tax-input-wrap > i,
+.service-charge-select > i,
+.service-charge-table-select > i { display: none; }
+.service-charge-select select { padding-right: 40px; }
+.currency-tax-field :is(input, select):focus,
+.settings-field > :is(input, select):focus,
+.settings-table td :is(input, select):focus,
+.pc-screen :is(input, select, textarea):focus {
+    border-color: #766bd0;
+    box-shadow: 0 0 0 3px rgba(81, 67, 188, .10);
+    outline: 0;
+}
+.settings-row { grid-template-columns: minmax(170px, 230px) minmax(0, 1fr); column-gap: 24px; margin-bottom: 22px; }
+.settings-field { max-width: none; }
+.settings-label { padding-top: 12px; }
+.pos-panel { padding: 30px; }
+.pos-panel-heading { margin-bottom: 27px; padding-bottom: 18px; border-bottom: 1px solid #edf0f6; }
+.pc-screen { background: #fff; }
+.pc-card > .pc-field, .pc-card > fieldset > .pc-field { margin-top: 19px; }
+.pc-form-grid, .pc-safe-grid { gap: 18px; }
+.pc-footer, .pos-page-content .settings-actions { padding-top: 20px; border-top: 1px solid #e7ebf3; }
+.pos-page-content .pos-form-actions { gap: 12px; }
+.pos-page-content :is(.pc-button, .pos-primary-button, .currency-tax-save-button,
+    .opening-balance-save, .cashback-save-button, .service-charge-save-button, .cd-save-btn) {
+    min-height: 42px;
+    border-radius: 7px;
+}
+.settings-table, .pc-table { border-color: #e0e6f0; border-radius: 8px; overflow: hidden; }
+.settings-table th, .pc-table thead { background: #f4f5fb; }
+.settings-table th { color: #40516e; }
+.settings-table td { border-color: #edf0f5; }
+@media (max-width: 900px) {
+    .currency-tax-grid { grid-template-columns: minmax(0, 1fr); }
+    .pos-config-cards-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 700px) {
+    .pos-page-content { padding: 18px 16px 28px; }
+    .pos-config-page-header { align-items: stretch; flex-direction: column; gap: 16px; }
+    .pos-config-search { width: 100%; flex-basis: auto; }
+    .pos-config-cards-container { padding: 14px; }
+    .pos-config-cards-grid { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+    .pos-config-option-card { min-height: 150px; padding: 18px; }
+    .pos-config-detail-card > .pos-screen-lock > .currency-tax-panel,
+    .pos-config-detail-card > .pos-screen-lock > .pos-panel,
+    .pos-config-detail-card > .pos-screen-lock > .pc-screen,
+    .pos-panel { padding: 18px; }
+    .currency-tax-card { padding: 17px; }
+    .settings-row { grid-template-columns: minmax(0, 1fr); gap: 7px; margin-bottom: 18px; }
+    .settings-label { padding-top: 0; }
+}
+
 /* Shared action layout for every POS form, including register/mapping editors. */
 .pos-page-content .pos-form-actions {
     display: flex;
@@ -4483,4 +4762,113 @@
 .pos-page-content :is(.cashback-actions, .service-charge-actions) {
     justify-content: flex-end;
     gap: 12px;
+}
+
+/* Keep table headers, row content and action controls on a consistent grid. */
+.pos-page-content :is(.settings-table, .service-charge-table, .cashback-table, .cd-table, .pc-table) {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+.pos-page-content :is(.settings-table, .service-charge-table, .cashback-table, .cd-table, .pc-table) :is(th, td) {
+    box-sizing: border-box;
+    vertical-align: middle;
+}
+.pos-page-content :is(.settings-table, .service-charge-table, .cashback-table, .cd-table, .pc-table) thead th {
+    height: 48px;
+    padding: 12px 16px;
+    line-height: 1.35;
+    white-space: nowrap;
+}
+.pos-page-content :is(.settings-table, .service-charge-table, .cashback-table, .cd-table, .pc-table) tbody :is(th, td) {
+    min-height: 56px;
+    padding: 10px 16px;
+}
+.pos-page-content :is(.settings-table, .service-charge-table, .cashback-table, .cd-table, .pc-table) tbody td > :is(input, select) {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    margin: 0;
+}
+.pos-page-content :is(.cashback-table, .service-charge-table, .pc-table) thead th:last-child,
+.pos-page-content :is(.cashback-table, .service-charge-table, .pc-table) tbody td:last-child,
+.pos-page-content .cd-table :is(th, td).cd-actions-column,
+.pos-page-content .settings-table :is(th, td):last-child {
+    text-align: center;
+}
+.pos-page-content :is(.cashback-actions, .service-charge-actions, .pc-row-actions) {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    width: 100%;
+    min-height: 32px;
+    margin-inline: auto;
+}
+.pos-page-content :is(.cashback-actions, .service-charge-actions) > button {
+    flex: 0 0 30px;
+    margin: 0;
+}
+.pos-page-content .pc-table .pc-row-actions > button { white-space: nowrap; }
+.pos-page-content .settings-table td .pos-remove-button { width: auto; min-width: 84px; margin-inline: auto; }
+.pos-page-content .cd-table-wrapper,
+.pos-page-content .pc-table-wrap,
+.pos-page-content .settings-table-wrapper,
+.pos-page-content .service-charge-table-wrapper,
+.pos-page-content .cashback-table-wrapper { max-width: 100%; }
+@media (max-width: 700px) {
+    .pos-page-content :is(.settings-table, .service-charge-table, .cashback-table, .cd-table, .pc-table) thead th,
+    .pos-page-content :is(.settings-table, .service-charge-table, .cashback-table, .cd-table, .pc-table) tbody :is(th, td) {
+        padding-inline: 12px;
+    }
+    .pos-page-content :is(.cashback-actions, .service-charge-actions, .pc-row-actions) { gap: 6px; }
+}
+
+.pos-page-content :is(.cashback-actions, .service-charge-actions, .pc-row-actions) > :is(
+  .cashback-edit,
+  .cashback-delete,
+  .service-charge-edit,
+  .service-charge-delete,
+  .pc-icon-action,
+  button
+) {
+  flex: 0 0 42px;
+  margin: 0;
+}
+.pos-page-content .tax-class-delete { margin: 0; }
+.pos-page-content .settings-table td .pos-remove-button.pc-icon-action {
+  width: 42px;
+  min-width: 42px;
+  flex: 0 0 42px;
+}
+.pos-page-content :is(.cashback-edit, .service-charge-edit, .pc-row-actions > button:not(.pc-danger)) {
+  border-color: #dce4f2;
+  color: #5143bc;
+}
+.pos-page-content :is(.cashback-delete, .service-charge-delete, .tax-class-delete, .pc-icon-action.pc-danger, .pc-row-actions > button.pc-danger, .mv-device-remove) {
+  border-color: #f1d9de;
+  color: #e3385d;
+}
+.pos-page-content :is(.cashback-edit, .service-charge-edit, .pc-row-actions > button:not(.pc-danger)):hover:not(:disabled) {
+  border-color: #b8adf2;
+  background: #f3f0ff;
+  color: #4534b2;
+}
+.pos-page-content :is(.cashback-delete, .service-charge-delete, .tax-class-delete, .pc-icon-action.pc-danger, .pc-row-actions > button.pc-danger, .mv-device-remove):hover:not(:disabled) {
+  border-color: #f0a9b7;
+  background: #fff0f3;
+  color: #c91f46;
+}
+.pos-page-content .tax-class-delete {
+  width: 32px;
+  min-width: 32px;
+  height: 32px;
+  min-height: 32px;
+  border-color: transparent;
+  background: transparent;
+}
+.pos-page-content .tax-class-delete:hover:not(:disabled) {
+  border-color: transparent;
+  background: #fff0f3;
 }
