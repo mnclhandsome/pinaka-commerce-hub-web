@@ -3287,3 +3287,57 @@
   box-shadow: 0 0 0 2px rgba(81, 67, 188, 0.08);
 }
 
+
+/* Fast Keys API list */
+.fast-keys-panel { min-width: 0; }
+.fast-keys-panel .fast-key-table { width: 100%; min-width: 600px; table-layout: fixed; }
+.fast-keys-panel .fast-key-table th:first-child { width: 76px; }
+.fast-keys-panel .fast-key-table th:nth-child(2) { width: 25%; }
+.fast-keys-panel .fast-key-table th:nth-child(3) { width: 40%; }
+.fast-keys-panel .fast-key-table td { vertical-align: middle; padding: 16px; overflow-wrap: anywhere; }
+.fast-keys-panel .fast-key-image { width: 48px; height: 48px; overflow: hidden; border-radius: 8px; background: #f6f7fb; }
+.fast-keys-panel .fast-key-image img { display: block; width: 100%; height: 100%; object-fit: contain; }
+.fast-keys-panel .fast-key-products { display: flex; flex-direction: column; gap: 4px; font-size: 12px; line-height: 1.5; }
+.fast-keys-panel .fast-key-products small { color: #81899a; font-size: 11px; }
+.fast-keys-panel .fast-key-employee { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #667085; font-size: 12px; }
+.fast-keys-panel .fast-key-table { min-width: 1050px; }
+.fast-keys-panel .fast-key-table th:nth-child(2) { width: 160px; }
+.fast-keys-panel .fast-key-table th:nth-child(3) { width: 240px; }
+.fast-keys-panel .fast-key-table th:nth-child(4) { width: 140px; }
+.fast-keys-panel .fast-key-table th:nth-child(5),
+.fast-keys-panel .fast-key-table th:nth-child(6) { width: 125px; }
+.fast-keys-panel .fast-key-table th:nth-child(7) { width: 85px; }
+.fast-keys-panel .fast-key-table th:nth-child(8) { width: 90px; }
+.fast-key-timestamp { display: flex; flex-direction: column; gap: 4px; white-space: nowrap; }
+.fast-keys-panel .fast-key-timestamp strong { font-size: 12px; font-weight: 500; color: #536078; }
+.fast-key-timestamp small { font-size: 11px; color: #81899a; }
+.fast-key-actions button:disabled { opacity: .4; cursor: not-allowed; }
+.fast-keys-panel .fast-key-table th:nth-child(7) { width: 90px; }
+.fast-keys-panel .fast-key-actions .edit-button { color: #5b3fe5; background: #f0edff; }
+.fast-keys-panel .fast-key-actions .delete-button { color: #dc3545; background: #fff0f1; }
+.fast-keys-panel .fast-key-actions button:disabled { opacity: 1; }
+.fast-key-no-image { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; width: 100%; height: 100%; color: #98a2b3; }
+.fast-key-no-image i { font-size: 18px; line-height: 1; }
+.fast-key-no-image small { font-size: 9px; line-height: 1; white-space: nowrap; }
+.fast-key-product-picker { grid-column: 1 / -1; min-width: 0; }
+.fast-key-product-options { max-height: 200px; overflow-y: auto; border: 1px solid #dce1ed; border-radius: 8px; background: #fff; padding: 4px; }
+.fast-key-modal .fast-key-product-option { display: flex; flex-direction: row; align-items: center; gap: 10px; margin: 0; padding: 10px 12px; border-radius: 5px; cursor: pointer; }
+.fast-key-modal .fast-key-product-option:hover { background: #f6f4ff; }
+.fast-key-modal .fast-key-product-option input { flex: 0 0 16px; margin: 0; padding: 0; accent-color: #603de6; }
+.fast-key-modal .fast-key-product-option span { font-size: 13px; font-weight: 400; color: #344054; line-height: 1.4; }
+/* Keep Fast Key form fields reachable while product choices scroll independently. */
+.fast-key-modal-backdrop { overflow-y: auto; padding: 20px; }
+.fast-key-modal-backdrop .fast-key-modal { display: flex; flex-direction: column; max-height: calc(100dvh - 40px); overflow: hidden; min-height: 0; }
+.fast-key-modal-backdrop .fast-key-modal-header,
+.fast-key-modal-backdrop .fast-key-modal-footer { flex: 0 0 auto; background: #fff; }
+.fast-key-modal-backdrop .fast-key-modal-body { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
+.fast-key-modal .fast-key-form-grid { align-items: start; }
+.fast-key-modal .fast-key-product-options { height: 160px; max-height: 160px; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
+.fast-key-modal .fast-key-image-preview img { max-height: 120px; max-width: 100%; object-fit: contain; }
+.fast-key-modal .fast-key-modal-header { align-items: center; gap: 16px; }
+.fast-key-modal .fast-key-modal-header h2 { margin: 0; }
+.fast-key-modal .fast-key-close { display: inline-flex; align-items: center; justify-content: center; flex: 0 0 32px; width: 32px; height: 32px; padding: 0; border: 1px solid #e4e7ec; border-radius: 8px; background: #fff; color: #667085; cursor: pointer; line-height: 1; }
+.fast-key-modal .fast-key-close i { font-size: 14px; }
+.fast-key-modal .fast-key-close:hover { background: #f5f3ff; color: #603de6; border-color: #d9d0ff; }
+.fast-key-modal .fast-key-close:focus-visible { outline: 2px solid #603de6; outline-offset: 2px; }
+.fast-key-modal .fast-key-close:disabled { opacity: .5; cursor: not-allowed; }
