@@ -1,11 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Pagination from "../components/Pagination";
 import ViewDetailsModal from "../components/ViewDetailsModal";
-import {
-  getStoreCatalogTaxonomies,
-  syncWordpressAttributes,
-  syncWordpressTags,
-} from "../api/storeConnector";
+import { getStoreCatalogTaxonomies } from "../api/storeConnector";
 import "../styles/store-categories.css";
 
 
@@ -104,8 +100,6 @@ export default function StoreCategories({
   const [attributes, setAttributes] = useState([]);
   const [taxonomyLoading, setTaxonomyLoading] = useState(Boolean(storeId));
   const [taxonomyError, setTaxonomyError] = useState("");
-  const [taxonomySyncing, setTaxonomySyncing] = useState(false);
-  const [taxonomySyncMessage, setTaxonomySyncMessage] = useState("");
 
   const applyTaxonomies = useCallback((response) => {
     const data = response?.taxonomies || response?.data?.taxonomies || response?.data || response || {};
@@ -174,26 +168,6 @@ export default function StoreCategories({
 
     return () => controller.abort();
   }, [refreshTaxonomies, storeId]);
-
-  const handleSyncTaxonomies = async () => {
-    if (!storeId || taxonomySyncing) return;
-    setTaxonomySyncing(true);
-    setTaxonomyError("");
-    setTaxonomySyncMessage("");
-    try {
-      const tagResult = await syncWordpressTags(storeId);
-      const attributeResult = await syncWordpressAttributes(storeId);
-      await refreshTaxonomies();
-      setTaxonomySyncMessage(
-        `Synced ${Number(tagResult?.tagCount ?? 0)} tags and ${Number(attributeResult?.attributeCount ?? 0)} attributes from WooCommerce.`,
-      );
-    } catch (error) {
-      setTaxonomyError(error?.message || "Could not sync tags and attributes from WooCommerce.");
-    } finally {
-      setTaxonomySyncing(false);
-    }
-  };
-
 
   /* =========================================================
      FILTER CATEGORIES
@@ -1378,23 +1352,7 @@ export default function StoreCategories({
 
         </div>
 
-        <button
-          type="button"
-          className="taxonomy-sync-button"
-          onClick={handleSyncTaxonomies}
-          disabled={!storeId || taxonomySyncing}
-        >
-          <i className={`bi ${taxonomySyncing ? "bi-arrow-repeat taxonomy-sync-spinning" : "bi-cloud-download"}`} />
-          {taxonomySyncing ? "Syncing…" : "Sync Tags & Attributes"}
-        </button>
-
       </div>
-
-      {taxonomySyncMessage ? (
-        <div className="taxonomy-sync-message" role="status">
-          {taxonomySyncMessage}
-        </div>
-      ) : null}
 
 
       {/* =====================================================
