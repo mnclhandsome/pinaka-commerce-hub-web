@@ -322,8 +322,8 @@ const applySavedRolePermissions = (matrix, savedRows, roleId, roleName = "") => 
   }
   return next;
 };
-const Field = ({ label, value, onChange, type = "text", optional = false, ...props }) => (
-  <label className="sf-field">
+const Field = ({ label, value, onChange, type = "text", optional = false, error, ...props }) => (
+  <label className={`sf-field${error ? " sf-field-invalid" : ""}`}>
     <span>
       {label}
       {optional && <small> (Optional)</small>}
@@ -334,6 +334,7 @@ const Field = ({ label, value, onChange, type = "text", optional = false, ...pro
       onChange={(event) => onChange(event.target.value)}
       {...props}
     />
+    {error && <small className="sf-field-error" role="alert">{error}</small>}
   </label>
 );
 
@@ -343,9 +344,10 @@ const SelectField = ({
   onChange,
   options,
   optional = false,
+  error,
   ...props
 }) => (
-  <label className="sf-field">
+  <label className={`sf-field${error ? " sf-field-invalid" : ""}`}>
     <span>
       {label}
       {optional && <small> (Optional)</small>}
@@ -367,6 +369,7 @@ const SelectField = ({
         ),
       )}
     </select>
+    {error && <small className="sf-field-error" role="alert">{error}</small>}
   </label>
 );
 
@@ -445,6 +448,7 @@ export default function AddStore() {
   const [featuresLoading, setFeaturesLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState({});
   const [employeeSearch, setEmployeeSearch] = useState("");
   const [employeeFilter, setEmployeeFilter] = useState("All");
   const [employeePage, setEmployeePage] = useState(1);
@@ -966,15 +970,22 @@ export default function AddStore() {
     setPermissionAvailability({}); setRoleFeatureRows({}); setRolesError("");
     setEmployeeAssignments([]);
     setPinEditorId(""); setPinDraft(""); setPinError(""); setEmployeeSearch(""); setEmployeeFilter("All"); setEmployeePage(1);
-    setFeatureSearch(""); setFeatureCategory("All Features"); setCopyFromRole(""); setError(""); setStep(0);
+    setFeatureSearch(""); setFeatureCategory("All Features"); setCopyFromRole(""); setError(""); setFieldErrors({}); setStep(0);
   };
 
   useEffect(() => {
     if (!editing) changeMerchant(routeMerchantId || "");
   }, [routeMerchantId, storeId]);
 
-  const updateStore = (key, value) =>
+  const updateStore = (key, value) => {
     setStore((current) => ({ ...current, [key]: value }));
+    setFieldErrors((current) => {
+      if (!current[key]) return current;
+      const next = { ...current };
+      delete next[key];
+      return next;
+    });
+  };
   const updateHours = (index, key, value) => {
     const hours = hoursRef.current.map((row, i) =>
       i === index ? { ...row, [key]: value } : row,
@@ -982,13 +993,21 @@ export default function AddStore() {
     hoursRef.current = hours;
     setStore((current) => ({ ...current, hours }));
   };
-  const changeCountry = (country) =>
+  const changeCountry = (country) => {
     setStore((current) => ({
       ...current,
       country,
       currency: COUNTRIES[country]?.currency || "",
       timezone: COUNTRIES[country]?.zones[0] || "",
     }));
+    setFieldErrors((current) => {
+      const next = { ...current };
+      delete next.country;
+      delete next.currency;
+      delete next.timezone;
+      return next;
+    });
+  };
   const copyScheduleToAll = () => {
     const base = hoursRef.current[0] || blankHours()[0];
     const hours = DAYS.map((day) => ({ ...base, day }));
@@ -1107,6 +1126,40 @@ export default function AddStore() {
     } finally {
       setSubscriptionLoading(false);
     }
+  };
+
+  const validateStoreFields = (draftOnly = false) => {
+    const errors = {};
+    if (!String(store.name || "").trim()) errors.name = "Store Name is required.";
+    if (!draftOnly) {
+      if (!store.merchantId && !routeMerchantId) errors.merchantId = "Merchant is required.";
+      if (!store.storeTypeId) errors.storeTypeId = "Store Type is required.";
+      for (const [key, label] of [
+        ["addressLine1", "Address Line 1"], ["city", "City"],
+        ["state", "State / Province"], ["zip", "Zip / Postal Code"],
+        ["country", "Country"], ["timezone", "Time Zone"],
+        ["currency", "Currency"], ["phone", "Store Phone"], ["url", "Website URL"],
+      ]) {
+        if (!String(store[key] || "").trim()) errors[key] = `${label} is required.`;
+      }
+      if (store.name.trim().length > 150) errors.name = "Store Name must be 150 characters or fewer.";
+      if (store.phone && (!/^[+\d\s().-]+$/.test(store.phone) || !/^\d{7,15}$/.test(store.phone.replace(/\D/g, ""))))
+        errors.phone = "Enter a valid phone number containing 7–15 digits.";
+      if (store.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(store.email.trim()))
+        errors.email = "Enter a valid email address.";
+      if (store.url) {
+        try {
+          const url = new URL(store.url.trim());
+          if (!["https:", "http:"].includes(url.protocol) || !url.hostname || url.username || url.password)
+            errors.url = "Enter an HTTP or HTTPS website URL.";
+        } catch {
+          errors.url = "Enter a valid website URL, including https://.";
+        }
+      }
+      if (store.zip && !/^[A-Za-z0-9][A-Za-z0-9 -]{1,11}$/.test(store.zip.trim()))
+        errors.zip = "Enter a valid postal code.";
+    }
+    return errors;
   };
 
   const validateStep = (index, draftOnly = false, subOverride = null) => {
@@ -1267,6 +1320,14 @@ export default function AddStore() {
     if (saving || subscriptionLoading) return;
     const next = Math.max(0, Math.min(STEPS.length - 1, index));
     if (next > step) {
+      if (step === 0) {
+        const fieldProblems = validateStoreFields();
+        if (Object.keys(fieldProblems).length) {
+          setFieldErrors(fieldProblems);
+          setError(Object.values(fieldProblems)[0]);
+          return;
+        }
+      }
       let currentSub = subscription;
 
       if (step === 0 && next >= 1) {
@@ -1348,6 +1409,15 @@ export default function AddStore() {
     if (saveLock.current) return;
     const steps = saveDraft ? [0, 2, 4] : [0, 1, 2, 3, 4];
     for (const index of steps) {
+      if (index === 0) {
+        const fieldProblems = validateStoreFields(saveDraft);
+        if (Object.keys(fieldProblems).length) {
+          setFieldErrors(fieldProblems);
+          setError(Object.values(fieldProblems)[0]);
+          setStep(0);
+          return;
+        }
+      }
       const problem = validateStep(index, saveDraft);
       if (problem) {
         setError(problem);
@@ -1462,11 +1532,12 @@ export default function AddStore() {
             subtitle="Provide the general information for this store."
           >
             <div className="sf-form-grid sf-basic-grid">
-              <div className="sf-field sf-merchant-field">
+              <div className={`sf-field sf-merchant-field${fieldErrors.merchantId ? " sf-field-invalid" : ""}`}>
                 <label htmlFor="sf-merchant">Merchant *</label>
                 <select
                   id="sf-merchant"
                   required
+                  aria-invalid={Boolean(fieldErrors.merchantId)}
                   value={merchantSelectValue}
                   disabled={Boolean(routeMerchantId) || editing || saving}
                   onChange={(event) => changeMerchant(event.target.value)}
@@ -1485,17 +1556,22 @@ export default function AddStore() {
                     </option>
                   ))}
                 </select>
+                {fieldErrors.merchantId && <small className="sf-field-error" role="alert">{fieldErrors.merchantId}</small>}
               </div>
               <Field
                 label="Store Name *"
                 value={store.name}
                 onChange={(value) => updateStore("name", value)}
                 placeholder="Enter store name"
+                required
+                error={fieldErrors.name}
               />
               <SelectField
                 label="Store Type *"
                 value={store.storeTypeId}
                 disabled={storeTypesLoading}
+                required
+                error={fieldErrors.storeTypeId}
                 onChange={(value) => {
                   const type = storeTypes.find(
                     (item) =>
@@ -1510,6 +1586,12 @@ export default function AddStore() {
                     storeTypeId: value,
                     type: type?.name || type?.storeTypeName || value,
                   }));
+                  setFieldErrors((current) => {
+                    if (!current.storeTypeId) return current;
+                    const next = { ...current };
+                    delete next.storeTypeId;
+                    return next;
+                  });
                   setEnabledFeatures([]);
                   setPermissions({});
                   setLoadError("");
@@ -1557,6 +1639,8 @@ export default function AddStore() {
                 value={store.addressLine1}
                 onChange={(value) => updateStore("addressLine1", value)}
                 placeholder="Street address"
+                required
+                error={fieldErrors.addressLine1}
               />
               <Field
                 label="Address Line 2"
@@ -1570,23 +1654,31 @@ export default function AddStore() {
                 value={store.city}
                 onChange={(value) => updateStore("city", value)}
                 placeholder="City"
+                required
+                error={fieldErrors.city}
               />
               <Field
                 label="State / Province *"
                 value={store.state}
                 onChange={(value) => updateStore("state", value)}
                 placeholder="State or province"
+                required
+                error={fieldErrors.state}
               />
               <Field
                 label="Zip / Postal Code *"
                 value={store.zip}
                 onChange={(value) => updateStore("zip", value)}
                 placeholder="Postal code"
+                required
+                error={fieldErrors.zip}
               />
               <SelectField
                 label="Country *"
                 value={store.country}
                 onChange={changeCountry}
+                required
+                error={fieldErrors.country}
                 options={[
                   { value: "", label: "Select country" },
                   ...Object.keys(COUNTRIES).map((value) => ({
@@ -1606,6 +1698,8 @@ export default function AddStore() {
                 label="Time Zone *"
                 value={store.timezone}
                 onChange={(value) => updateStore("timezone", value)}
+                required
+                error={fieldErrors.timezone}
                 options={[
                   { value: "", label: "Select time zone" },
                   ...[
@@ -1625,6 +1719,8 @@ export default function AddStore() {
                 label="Currency *"
                 value={currencyCode}
                 onChange={(value) => updateStore("currency", value)}
+                required
+                error={fieldErrors.currency}
                 options={[
                   { value: "", label: "Select currency" },
                   ...Object.values(COUNTRIES)
@@ -1759,6 +1855,8 @@ export default function AddStore() {
               onChange={(value) => updateStore("phone", value)}
               type="tel"
               placeholder="Enter phone number"
+              required
+              error={fieldErrors.phone}
             />
             <Field
               label="Store Email"
@@ -1767,6 +1865,7 @@ export default function AddStore() {
               onChange={(value) => updateStore("email", value)}
               type="email"
               placeholder="store@example.com"
+              error={fieldErrors.email}
             />
             <Field
               label="Website URL *"
@@ -1774,6 +1873,8 @@ export default function AddStore() {
               onChange={(value) => updateStore("url", value)}
               type="url"
               placeholder="https://example.com"
+              required
+              error={fieldErrors.url}
             />
           </Panel>
         </div>
@@ -2148,25 +2249,8 @@ export default function AddStore() {
               </div>
             )}
           </div>
-          {error && (
-            <div className="sf-error" role="alert">
-              {error}
-              <button type="button" onClick={() => setError("")}>
-                ×
-              </button>
-            </div>
-          )}
-          {(loadError || merchantError) && (
-            <div className="sf-error" role="alert">
-              {loadError || merchantError}
-              <button
-                type="button"
-                onClick={() => setReload((value) => value + 1)}
-              >
-                Retry
-              </button>
-            </div>
-          )}
+          
+          
           {(mastersLoading ||
             merchantLoading ||
             featuresLoading ||

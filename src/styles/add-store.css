@@ -592,6 +592,13 @@
   outline: none !important;
 }
 
+.sf-field-error {
+  color: #ef3340 !important;
+  font-size: 11px !important;
+  font-weight: 400 !important;
+  line-height: 15px;
+}
+
 .sf-footer-right > .sf-outline,
 .sf-footer-right > .sf-primary {
   box-sizing: border-box;

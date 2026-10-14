@@ -248,14 +248,9 @@
     opacity: 0.48;
 }
 
-#pch-new .pch-rail button:not(:disabled):hover {
-    background: #f7f6ff;
-    color: #5143bc;
-}
-
 #pch-new .pch-rail button.pch-current {
-    background: #f3f0ff;
-    color: #5143bc;
+    background: #5143bc;
+    color: #fff;
     border-color: #e2dcff;
 }
 
@@ -276,9 +271,8 @@
 }
 
 #pch-new .pch-rail button.pch-current .pch-number {
-    background: #5937e8;
-    border-color: #5937e8 ;
-    color: #fff;
+    background: #f7f6ff;
+    color: #5937e8;
 }
 
 #pch-new .pch-rail button:not(.pch-current) .pch-number {
@@ -303,8 +297,9 @@
 }
 
 #pch-new .pch-rail button.pch-current .pch-rail-description {
-    color: #8994aa;
+    color: #eff0f0;
 }
+ 
 
 #pch-new aside > .pch-note {
     margin-top: auto;
@@ -3072,25 +3067,6 @@
 
 #pch-new.pch-merchant-one-page .pch-payment-methods input {
   accent-color: #5143bc;
-}
-
-#pch-new.pch-merchant-one-page label.pch-plan-option {
-  align-items: flex-start;
-  cursor: pointer;
-}
-
-#pch-new.pch-merchant-one-page .pch-plan-option input[type="radio"] {
-  flex: 0 0 16px;
-  width: 16px;
-  height: 16px;
-  margin: 2px 0 0;
-  accent-color: #5143bc;
-  cursor: pointer;
-}
-
-#pch-new.pch-merchant-one-page .pch-plan-option:has(input:focus-visible) {
-  outline: 2px solid #5143bc;
-  outline-offset: 2px;
 }
 
 @media (max-width: 680px) {
