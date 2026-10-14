@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import FilterDropdown from "../../../components/FilterDropdown";
 import { ApiError } from "../../../api/http";
 import {
   ConfigBadge, ConfigField, ConfigFooter, ConfigHeader, ConfigSwitch,
@@ -115,22 +116,22 @@ export function MappingConfiguration({ value, registers, onSave, onBack, onManag
             </div>}
            <div className="pc-form-grid">
                 <ConfigField label="Register">
-                    <select required value={editor.registerId || ""} onChange={(event) => update("registerId", event.target.value)}>
+                    <FilterDropdown required value={editor.registerId || ""} onChange={(event) => update("registerId", event.target.value)}>
                         <option value="">Select a register</option>
                         {registers.map((register) => (
                             <option key={register.id} value={register.id}>{register.name} · {register.pos}</option>
                         ))}
-                    </select>
+                    </FilterDropdown>
                 </ConfigField>
                 <ConfigField label="Card Terminal"><input value={editor.terminal || ""} onChange={(event) => update("terminal", event.target.value)} placeholder="LANE3000-001" /></ConfigField>
                 <ConfigField label="Printer"><input value={editor.printer || ""} onChange={(event) => update("printer", event.target.value)} placeholder="STAR-01" /></ConfigField>
                 <ConfigField label="Cash Drawer"><input value={editor.drawer || ""} onChange={(event) => update("drawer", event.target.value)} placeholder="DRAWER-01" /></ConfigField>
                 <ConfigField label="Status">
-                    <select value={editor.status} onChange={(event) => update("status", event.target.value)}>
+                    <FilterDropdown value={editor.status} onChange={(event) => update("status", event.target.value)}>
                         <option>Active</option>
                         <option>Inactive</option>
                         <option>Setup</option>
-                    </select>
+                    </FilterDropdown>
                 </ConfigField>
             </div>
         <div className="pc-editor-actions pos-form-actions"><button type="button" className="pc-button" onClick={() => settings.requestLeave(null)}>Cancel</button><button type="submit" className="pc-button pc-primary" disabled={!editor.registerId}>Apply Mapping</button></div></form>}

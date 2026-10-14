@@ -1040,7 +1040,38 @@
 .mv-device-mapped-page > .mv-header { margin: 0; }
 .mv-device-mapped-page .mv-device-list-card { padding: 24px; }
 .mv-device-mapped-page .mv-device-list-card h3 { margin: 0; }
-.mv-device-mapped-page .mv-device-list-card .mv-scroll { margin-top: 0; }
+.mv-device-mapped-page .mv-device-list-card > .mv-toolbar { padding: 16px 0; }
+.mv-device-mapped-page .mv-device-list-card .mv-scroll { width: 100%; margin: 0; }
+.mv-device-mapped-page .pagination-container,
+.mv-device-picker .pagination-container { margin-top: 16px; }
+.mv-device-mapped-page .pagination-container :is(.pagination-arrow, .pagination-page),
+.mv-device-picker .pagination-container :is(.pagination-arrow, .pagination-page) {
+    width: 36px;
+    height: 36px;
+    flex: 0 0 36px;
+    padding: 0;
+    border: 1px solid #d8dee9;
+    border-radius: 7px;
+    background: #fff;
+    color: #64748b;
+    font-size: 14px;
+    line-height: 1;
+}
+.mv-device-mapped-page .pagination-container .pagination-page.active,
+.mv-device-picker .pagination-container .pagination-page.active { background: #5143bc; color: #fff; }
+.mv-device-mapped-page .mv-device-list-card .mv-scroll table { width: 100%; min-width: 1200px; }
+.mv-device-mapped-page .mv-device-list-card .mv-scroll th:nth-child(1),
+.mv-device-mapped-page .mv-device-list-card .mv-scroll td:nth-child(1) { width: 14%; }
+.mv-device-mapped-page .mv-device-list-card .mv-scroll th:nth-child(2),
+.mv-device-mapped-page .mv-device-list-card .mv-scroll td:nth-child(2) { width: 16%; }
+.mv-device-mapped-page .mv-device-list-card .mv-scroll th:nth-child(3),
+.mv-device-mapped-page .mv-device-list-card .mv-scroll td:nth-child(3) { width: 23%; }
+.mv-device-mapped-page .mv-device-list-card .mv-scroll th:nth-child(4),
+.mv-device-mapped-page .mv-device-list-card .mv-scroll td:nth-child(4) { width: 18%; }
+.mv-device-mapped-page .mv-device-list-card .mv-scroll th:nth-child(5),
+.mv-device-mapped-page .mv-device-list-card .mv-scroll td:nth-child(5) { width: 16%; }
+.mv-device-mapped-page .mv-device-list-card .mv-scroll th:nth-child(6),
+.mv-device-mapped-page .mv-device-list-card .mv-scroll td:nth-child(6) { width: 13%; }
 .mv-device-mapped-page .mv-device-remove { border: 0; background: transparent; color: #b42318; cursor: pointer; }
 .mv-device-mapped-page .pc-footer { margin-top: 18px; }
 .mv-dialog[open]:not(.mv-dialog-create):not(.mv-dialog-select) { display: flex; flex-direction: column; height: min(90vh, 760px); max-height: 90vh; overflow: hidden; }

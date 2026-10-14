@@ -1428,6 +1428,13 @@
     font-weight: 600;
 
     line-height: 1.4;
+    transform-origin: left center;
+    transition: color 0.18s ease, transform 0.18s ease;
+}
+
+.currency-tax-field:focus-within > label {
+    color: #5143bc;
+    transform: translateY(-2px);
 }
 
 .currency-tax-field .required {
@@ -1466,7 +1473,8 @@
 
     transition:
         border-color 0.15s ease,
-        box-shadow 0.15s ease;
+        box-shadow 0.15s ease,
+        transform 0.18s ease;
 }
 
 .currency-tax-field input::placeholder {
@@ -1479,6 +1487,7 @@
 
     box-shadow:
         0 0 0 3px rgba(81, 67, 188, 0.08);
+    transform: translateY(-1px);
 }
 
 
@@ -1488,6 +1497,23 @@
 
 .currency-tax-input-wrap {
     position: relative;
+}
+
+.currency-tax-input-wrap > .pch-filter-dropdown {
+    display: grid;
+    width: 100%;
+}
+
+.currency-tax-input-wrap > .pch-filter-dropdown > .pch-filter-sizing {
+    width: 100%;
+}
+
+.currency-tax-input-wrap > .pch-filter-dropdown > .pch-filter-trigger {
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.18s ease;
+}
+
+.currency-tax-input-wrap:focus-within > .pch-filter-dropdown > .pch-filter-trigger {
+    transform: translateY(-1px);
 }
 
 .currency-tax-input-wrap select {
@@ -1695,6 +1721,12 @@
     font-weight: 500;
 
     outline: none;
+    transition: color 0.18s ease, transform 0.18s ease;
+}
+
+.tax-class-name input:focus {
+    color: #5143bc;
+    transform: translateY(-1px);
 }
 
 
@@ -1724,10 +1756,13 @@
     font-size: 11px;
 
     outline: none;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.18s ease;
 }
 
 .tax-class-rate input:focus {
     border-color: #5143bc;
+    box-shadow: 0 0 0 3px rgba(81, 67, 188, 0.08);
+    transform: translateY(-1px);
 }
 
 
@@ -2118,6 +2153,13 @@
 
     font-size: 10px;
     font-weight: 600;
+    transform-origin: left center;
+    transition: color 0.18s ease, transform 0.18s ease;
+}
+
+.service-charge-setting:focus-within > label {
+    color: #5143bc;
+    transform: translateY(-2px);
 }
 
 
@@ -2177,6 +2219,27 @@
 
 .service-charge-select {
     position: relative;
+}
+
+.service-charge-select > .pch-filter-dropdown,
+.service-charge-table-select > .pch-filter-dropdown {
+    display: grid;
+    width: 100%;
+}
+
+.service-charge-select > .pch-filter-dropdown > .pch-filter-sizing,
+.service-charge-table-select > .pch-filter-dropdown > .pch-filter-sizing {
+    width: 100%;
+}
+
+.service-charge-select > .pch-filter-dropdown > .pch-filter-trigger,
+.service-charge-table-select > .pch-filter-dropdown > .pch-filter-trigger {
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.18s ease;
+}
+
+.service-charge-select:focus-within > .pch-filter-dropdown > .pch-filter-trigger,
+.service-charge-table-select:focus-within > .pch-filter-dropdown > .pch-filter-trigger {
+    transform: translateY(-1px);
 }
 
 .service-charge-select select {
@@ -2256,6 +2319,7 @@
     font-size: 10px;
 
     outline: none;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.18s ease;
 }
 
 .service-charge-limit-input input:focus {
@@ -2263,6 +2327,7 @@
 
     box-shadow:
         0 0 0 3px rgba(81, 67, 188, 0.08);
+    transform: translateY(-1px);
 }
 
 .service-charge-limit-input span {
@@ -2400,10 +2465,13 @@
     font-size: 12px;
 
     outline: none;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.18s ease;
 }
 
 .service-charge-table td input:focus {
     border-color: #5143bc;
+    box-shadow: 0 0 0 3px rgba(81, 67, 188, 0.08);
+    transform: translateY(-1px);
 }
 
 
@@ -2867,6 +2935,13 @@
 
     font-size: 10px;
     font-weight: 600;
+    transform-origin: left center;
+    transition: color 0.18s ease, transform 0.18s ease;
+}
+
+.cashback-setting:focus-within > label {
+    color: #5143bc;
+    transform: translateY(-2px);
 }
 
 
@@ -2942,6 +3017,7 @@
     font-size: 10px;
 
     outline: none;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.18s ease;
 }
 
 .cashback-limit-setting input::placeholder {
@@ -2953,6 +3029,7 @@
 
     box-shadow:
         0 0 0 3px rgba(81, 67, 188, 0.08);
+    transform: translateY(-1px);
 }
 
 
@@ -3074,6 +3151,7 @@
     font-size: 12px;
 
     outline: none;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.18s ease;
 }
 
 .cashback-table td input:focus {
@@ -3081,6 +3159,7 @@
 
     box-shadow:
         0 0 0 2px rgba(81, 67, 188, 0.06);
+    transform: translateY(-1px);
 }
 
 
@@ -4332,9 +4411,16 @@
 .pc-screen fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }
 .pc-screen fieldset:disabled { opacity: .55; }
 .pc-field { display: flex; flex-direction: column; gap: 8px; min-width: 0; font-size: 12px; font-weight: 600; color: #475c78; }
+.pc-field > span { transform-origin: left center; transition: color 0.18s ease, transform 0.18s ease; }
+.pc-field:focus-within > span { color: #5143bc; transform: translateY(-2px); }
 .pc-card > .pc-field, .pc-card > fieldset > .pc-field { margin-top: 16px; }
 .pc-field small { font-size: 11px; font-weight: 400; color: #65758e; overflow-wrap: anywhere; }
-.pc-screen input:not([type=checkbox]), .pc-screen select { width: 100%; min-width: 0; min-height: 39px; border: 1px solid #d8e1ee; border-radius: 5px; padding: 8px 10px; background: white; color: var(--pc-ink); font: inherit; font-size: 12px; }
+.pc-screen input:not([type=checkbox]), .pc-screen select { width: 100%; min-width: 0; min-height: 39px; border: 1px solid #d8e1ee; border-radius: 5px; padding: 8px 10px; background: white; color: var(--pc-ink); font: inherit; font-size: 12px; transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.18s ease; }
+.pc-field > .pch-filter-dropdown { display: grid; width: 100%; }
+.pc-field > .pch-filter-dropdown > .pch-filter-sizing { width: 100%; }
+.pc-field > .pch-filter-dropdown > .pch-filter-trigger { transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.18s ease; }
+.pc-field:focus-within > .pch-filter-dropdown > .pch-filter-trigger { transform: translateY(-1px); }
+.pc-field input:focus, .pc-field select:focus { transform: translateY(-1px); box-shadow: 0 0 0 3px rgba(81, 67, 188, 0.08); }
 .pc-screen input:disabled, .pc-screen input:read-only { background: #f3f6fa; color: #708096; }
 .pc-switch-field { position: relative; display: flex; align-items: center; justify-content: space-between; gap: 14px; min-height: 40px; font-size: 12px; font-weight: 600; color: #475c78; cursor: pointer; }
 .pc-switch-field input { position: absolute; right: 0; width: 38px; height: 24px; opacity: 0; }

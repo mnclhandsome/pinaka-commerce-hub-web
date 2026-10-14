@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import FilterDropdown from "../../../components/FilterDropdown";
 import { ApiError } from "../../../api/http";
 import {
   ConfigBadge, ConfigField, ConfigFooter, ConfigHeader, ConfigSwitch,
@@ -121,7 +122,7 @@ export function RegisterConfiguration({ value, mappings, onSave, onBack }) {
                 <ConfigField label="Register"><input autoFocus required value={editor.name} onChange={(e) => update("name", e.target.value)} placeholder="REG-04" /></ConfigField>
                 <ConfigField label="Assigned POS"><input required value={editor.pos} onChange={(e) => update("pos", e.target.value)} placeholder="SUNMI-D3-004" /></ConfigField>
                 <ConfigField label={`Maximum Cash (${currency})`}><input required type="number" min="0.01" step="0.01" value={editor.maxCash} onChange={(e) => update("maxCash", e.target.value)} /></ConfigField>
-                <ConfigField label="Status"><select value={editor.status} onChange={(e) => update("status", e.target.value)}><option>Active</option><option>Inactive</option></select></ConfigField>
+                <ConfigField label="Status"><FilterDropdown value={editor.status} onChange={(e) => update("status", e.target.value)}><option>Active</option><option>Inactive</option></FilterDropdown></ConfigField>
                 <ConfigSwitch label="Safe Drop Enabled" checked={editor.safeDrop} onChange={(next) => update("safeDrop", next)} />
             </div>
             <div className="pc-editor-actions pos-form-actions"><button type="button" className="pc-button" onClick={() => settings.requestLeave(null)}>Cancel</button><button className="pc-button pc-primary" type="submit">Apply Register</button></div>

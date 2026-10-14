@@ -713,8 +713,7 @@ input {
     .orders-table-wrapper {
         width: calc(100% - 20px);
         max-width: calc(100% - 20px);
-        margin-right: 10px;
-        margin-left: 10px;
+        margin: 12px 10px 0;
     }
 }
 
