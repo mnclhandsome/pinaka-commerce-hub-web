@@ -29,16 +29,6 @@ function matchesDate(createdAt, dateFilter) {
   return orderDate >= from;
 }
 
-function getInitials(name = "") {
-  return String(name)
-    .split(" ")
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0])
-    .join("")
-    .toUpperCase();
-}
-
 export default function Orders({
   embedded = false,
   merchantId,
@@ -176,11 +166,6 @@ export default function Orders({
   const pendingCount = orders.filter((order) => statusClass(order.status) === "pending").length;
   const totalAmount = orders.reduce((sum, order) => sum + Number(order.totalValue || 0), 0);
   const orderPercentage = (count) => (orders.length ? ((count / orders.length) * 100).toFixed(1) : "0.0");
-  const detailSearch = new URLSearchParams();
-  if (selectedMerchant) detailSearch.set("merchant", selectedMerchant);
-  if (selectedStore) detailSearch.set("store", selectedStore);
-  const detailQuery = detailSearch.toString();
-
   function rememberFilters(nextMerchant, nextStore) {
     if (embedded) return;
     const next = new URLSearchParams(searchParams);
@@ -319,6 +304,10 @@ export default function Orders({
         )}
 
         {selectedStore && !loading && filteredOrders.length > 0 && (
+          <>
+          <div className="orders-table-heading">
+            <div>Orders<span>{filteredOrders.length}</span></div>
+          </div>
           <div className="orders-table-wrapper">
             <table className="orders-table">
               <thead>
@@ -339,7 +328,11 @@ export default function Orders({
                         <div>
                           <Link
                             className="order-id-link"
-                            to={`/orders/${encodeURIComponent(order.id)}${detailQuery ? `?${detailQuery}` : ""}`}
+                            to={`/orders/${encodeURIComponent(order.id)}?${new URLSearchParams({
+                              ...(selectedMerchant ? { merchant: selectedMerchant } : {}),
+                              ...(selectedStore ? { store: selectedStore } : {}),
+                              number: order.wooOrderId,
+                            }).toString()}`}
                             state={{ from: `${location.pathname}${location.search}` }}
                           >
                             <strong>{order.wooOrderId}</strong>
@@ -363,7 +356,6 @@ export default function Orders({
                     </td>
                     <td>
                       <div className="order-author">
-                        <div className="author-avatar">{getInitials(order.author)}</div>
                         <span>{order.author}</span>
                       </div>
                     </td>
@@ -373,6 +365,7 @@ export default function Orders({
               </tbody>
             </table>
           </div>
+          </>
         )}
 
         {selectedStore && !loading && filteredOrders.length === 0 && (

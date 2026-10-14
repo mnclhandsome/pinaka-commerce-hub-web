@@ -1,5 +1,7 @@
-import { api } from "./http";
+import { api, pendingStoreRead } from "./http";
 import { endpoints } from "./endpoints";
+
+const readDevice = path => pendingStoreRead(`device-read:${path}`, () => api.get(path));
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -85,7 +87,7 @@ export function normalizeDevice(device) {
  * GET /devices
  */
 export async function listDevices() {
-  const response = await api.get(endpoints.devices);
+  const response = await readDevice(endpoints.devices);
 
   const unwrapped = unwrapDevice(response);
   const items = Array.isArray(unwrapped)
@@ -100,7 +102,7 @@ export async function getDevicesByMerchantId(merchantId) {
   if (!UUID_PATTERN.test(String(merchantId || ""))) {
     throw new Error("A valid merchant UUID is required to load devices.");
   }
-  const response = await api.get(
+  const response = await readDevice(
     `${endpoints.availableDevices}?merchant_id=${encodeURIComponent(merchantId)}`,
   );
   const unwrapped = unwrapDevice(response);
@@ -115,7 +117,7 @@ export async function listAllDevicesByMerchantId(merchantId) {
   if (!UUID_PATTERN.test(String(merchantId || ""))) {
     throw new Error("A valid merchant UUID is required to load devices.");
   }
-  const response = await api.get(endpoints.merchantDevices(merchantId));
+  const response = await readDevice(endpoints.merchantDevices(merchantId));
   const unwrapped = unwrapDevice(response);
   const items = Array.isArray(unwrapped)
     ? unwrapped
@@ -131,7 +133,7 @@ export async function getDevice(deviceId) {
     throw new Error("Device ID is required");
   }
 
-  return normalizeDevice(unwrapDevice(await api.get(endpoints.device(deviceId))));
+  return normalizeDevice(unwrapDevice(await readDevice(endpoints.device(deviceId))));
 }
 
 /**

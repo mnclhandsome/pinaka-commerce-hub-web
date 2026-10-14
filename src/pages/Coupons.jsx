@@ -2,8 +2,87 @@ import FilterDropdown from "../components/FilterDropdown";
 import { useEffect, useMemo, useState } from "react";
 import Pagination from "../components/Pagination";
 import ViewDetailsModal from "../components/ViewDetailsModal";
+import DeleteConfirmationDialog from "../components/DeleteConfirmationDialog";
 import { couponsSeed } from "../data/data";
 import "../styles/coupons.css";
+
+const emptyCoupon = {
+    code: "",
+    discount_type: "",
+    amount: "",
+    description: "",
+    date_expires: "",
+    individual_use: false,
+    exclude_sale_items: false,
+    free_shipping: false,
+    product_ids: "",
+    excluded_product_ids: "",
+    product_categories: "",
+    excluded_product_categories: "",
+    email_restrictions: "",
+    issue_enabled: false,
+    coupon_generate_type: "",
+    issue_usage_limit: "",
+    minimum_amount: "",
+    maximum_amount: "",
+    usage_limit: "",
+    usage_limit_per_user: "",
+    limit_usage_to_x_items: "",
+};
+
+const listValues = (value) => Array.isArray(value) ? value : [];
+
+function normalizeCoupon(raw = {}) {
+    const usageCount = Number(raw.usage_count ?? raw.usedCount ?? raw.used_count ?? 0);
+    const usageLimit = raw.usage_limit ?? raw.usageLimit ?? "";
+    const expiryDate = raw.date_expires || raw.expiryDate || raw.expiry_date || "";
+    const expired = expiryDate && new Date(expiryDate) < new Date();
+    const usedUp = Number(usageLimit) > 0 && usageCount >= Number(usageLimit);
+    const typeMap = {
+        percent: "Percentage discount",
+        fixed_cart: "Fixed cart discount",
+        fixed_product: "Fixed product discount",
+    };
+    const discountType = raw.discount_type || raw.discountType || "fixed_cart";
+    const amountValue = raw.amount ?? raw.discount_amount ?? raw.discountAmount ?? "";
+    return {
+        ...raw,
+        id: raw.id ?? raw.couponId ?? raw.coupon_id ?? raw.woocommerceId ?? raw.woocommerce_id ?? raw.code,
+        code: raw.code || raw.coupon_code || "",
+        type: typeMap[discountType] || raw.type || discountType,
+        amount: amountValue === "" ? "—" : `${amountValue}${discountType === "percent" ? "%" : ""}`,
+        description: raw.description || "",
+        productIds: listValues(raw.product_ids || raw.productIds).map(String),
+        issuedOrderIds: listValues(raw.issuedOrderIds || raw.issued_order_ids),
+        usedOrderIds: listValues(raw.usedOrderIds || raw.used_order_ids),
+        usedCount: usageCount,
+        usageLimit: usageLimit || "∞",
+        expiryDate: expiryDate ? String(expiryDate).slice(0, 10) : "",
+        status: expired ? "Expired" : usedUp ? "Used" : raw.status || "Active",
+    };
+}
+
+function couponToForm(coupon = {}) {
+    const csv = (value) => Array.isArray(value) ? value.join(", ") : (value || "");
+    return {
+        ...emptyCoupon,
+        ...coupon,
+        code: coupon.code || "",
+        discount_type: coupon.discount_type || coupon.discountType || "fixed_cart",
+        amount: String(coupon.amount ?? "").replace(/[$,%]/g, "").trim(),
+        date_expires: coupon.date_expires ? String(coupon.date_expires).slice(0, 10) : coupon.expiryDate || "",
+        product_ids: csv(coupon.product_ids || coupon.productIds),
+        excluded_product_ids: csv(coupon.excluded_product_ids || coupon.excludedProductIds),
+        product_categories: csv(coupon.product_categories || coupon.productCategories),
+        excluded_product_categories: csv(coupon.excluded_product_categories || coupon.excludedProductCategories),
+        email_restrictions: csv(coupon.email_restrictions || coupon.emailRestrictions),
+        minimum_amount: String(coupon.minimum_amount ?? coupon.minimumAmount ?? ""),
+        maximum_amount: String(coupon.maximum_amount ?? coupon.maximumAmount ?? ""),
+        usage_limit: String(coupon.usage_limit ?? coupon.usageLimit ?? ""),
+        usage_limit_per_user: String(coupon.usage_limit_per_user ?? coupon.usageLimitPerUser ?? ""),
+        limit_usage_to_x_items: String(coupon.limit_usage_to_x_items ?? coupon.limitUsageToXItems ?? ""),
+    };
+}
 
 export default function Coupons({
     embedded = false,
@@ -28,19 +107,23 @@ export default function Coupons({
 
     const [selectedCoupon, setSelectedCoupon] = useState(null);
 
+    const [coupons] = useState(() => (couponsSeed || []).map(normalizeCoupon));
+    const [editorMode, setEditorMode] = useState("");
+    const [couponForm, setCouponForm] = useState(emptyCoupon);
+    const [formError, setFormError] = useState("");
+    const [deleteTarget, setDeleteTarget] = useState(null);
+    const [deleteError, setDeleteError] = useState("");
+
     // =========================================================
     // COUPON SYNC STATES
     // =========================================================
 
-    const [syncing, setSyncing] = useState("");
     const [syncMessage, setSyncMessage] = useState("");
     const [syncError, setSyncError] = useState("");
 
     // =========================================================
     // COUPONS
     // =========================================================
-
-    const coupons = couponsSeed || [];
 
     // =========================================================
     // COUPON TYPES
@@ -185,42 +268,60 @@ export default function Coupons({
     // LATEST COUPON UPDATES
     // =========================================================
 
-    const handleLatestCouponUpdates = async () => {
-        if (syncing) return;
-
-        setSyncing("latest");
+    const handleLatestCouponUpdates = () => {
         setSyncMessage("");
         setSyncError("");
-
-        try {
-            /*
-             * API WILL BE CONNECTED HERE
-             *
-             * Example later:
-             *
-             * await updateLatestCoupons({
-             *     merchantId,
-             *     storeId,
-             * });
-             */
-
-            // Temporary simulation until API is ready
-            await new Promise((resolve) =>
-                setTimeout(resolve, 1000)
-            );
-
-            setSyncMessage(
-                "Latest coupon updates completed successfully."
-            );
-        } catch (error) {
-            setSyncError(
-                error?.message ||
-                "Failed to update latest coupons."
-            );
-        } finally {
-            setSyncing("");
-        }
+        setSyncMessage("WooCommerce sync will be connected after the coupon API is implemented.");
     };
+
+    const openCreate = () => {
+        setCouponForm(emptyCoupon);
+        setFormError("");
+        setEditorMode("create");
+    };
+
+    const openEdit = (coupon) => {
+        setCouponForm(couponToForm(coupon));
+        setFormError("");
+        setSelectedCoupon(null);
+        setEditorMode("edit");
+    };
+
+    const handleSaveCoupon = (event) => {
+        event.preventDefault();
+        if (!storeId) {
+            setFormError("Select a store before creating or editing a coupon.");
+            return;
+        }
+        if (!couponForm.code.trim() || !couponForm.discount_type || couponForm.amount === "") {
+            setFormError("Coupon name, discount type, and amount are required.");
+            return;
+        }
+        if (!Number.isFinite(Number(couponForm.amount)) || Number(couponForm.amount) < 0) {
+            setFormError("Enter a valid discount amount.");
+            return;
+        }
+        setFormError("Saving will be enabled after the coupon API is implemented.");
+    };
+
+    const handleDeleteCoupon = () => {
+        if (!deleteTarget || !storeId) return;
+        setDeleteError("Deleting will be enabled after the coupon API is implemented.");
+    };
+
+    if (editorMode) {
+        return (
+            <CouponEditor
+                mode={editorMode}
+                form={couponForm}
+                setForm={setCouponForm}
+                error={formError}
+                busy={false}
+                onSubmit={handleSaveCoupon}
+                onClose={() => setEditorMode("")}
+            />
+        );
+    }
 
     // =========================================================
     // RENDER
@@ -254,25 +355,26 @@ export default function Coupons({
 
                 <div className="coupons-header-actions">
 
+                    <button
+                        type="button"
+                        className="coupon-create-btn"
+                        onClick={openCreate}
+                        disabled={!storeId}
+                    >
+                        <i className="bi bi-plus-lg" />
+                        Create Coupon
+                    </button>
+
                     {/* LATEST UPDATES */}
 
                     <button
                         type="button"
                         className="coupon-sync-btn coupon-sync-update"
                         onClick={handleLatestCouponUpdates}
-                        disabled={Boolean(syncing)}
+                        disabled={!storeId}
                     >
-                        {syncing === "latest" ? (
-                            <>
-                                <span className="coupon-sync-spinner" />
-                                Updating...
-                            </>
-                        ) : (
-                            <>
-                                <i className="bi bi-arrow-repeat" />
-                                Latest Updates
-                            </>
-                        )}
+                        <i className="bi bi-arrow-repeat" />
+                        Latest Updates
                     </button>
 
                 </div>
@@ -315,6 +417,13 @@ export default function Coupons({
                         <i className="bi bi-x" />
                     </button>
 
+                </div>
+            )}
+
+            {!storeId && (
+                <div className="coupons-sync-message error" role="alert">
+                    <i className="bi bi-exclamation-circle" />
+                    <span>Select a store to manage its coupons.</span>
                 </div>
             )}
 
@@ -502,14 +611,6 @@ export default function Coupons({
                         </span>
                     </div>
 
-                    <div className="coupon-read-only">
-
-                        <i className="bi bi-lock" />
-
-                        Read Only
-
-                    </div>
-
                 </div>
 
                 {/* =================================================
@@ -529,11 +630,10 @@ export default function Coupons({
                                 <th>Used Order ID</th>
                                 <th>Coupon Type</th>
                                 <th>Coupon Amount</th>
-                                <th>Description</th>
-                                <th>Product IDS</th>
                                 <th>Usage / Limit</th>
                                 <th>Expiry Date</th>
                                 <th>Barcode</th>
+                                <th>Actions</th>
 
                             </tr>
 
@@ -549,6 +649,8 @@ export default function Coupons({
                                         onView={() =>
                                             setSelectedCoupon(coupon)
                                         }
+                                        onEdit={() => openEdit(coupon)}
+                                        onDelete={() => { setDeleteError(""); setDeleteTarget(coupon); }}
                                     />
                                 )
                             )}
@@ -756,6 +858,130 @@ export default function Coupons({
                 onClose={() => setSelectedCoupon(null)}
             />
 
+            <DeleteConfirmationDialog
+                isOpen={Boolean(deleteTarget)}
+                title="Delete coupon?"
+                message={deleteTarget ? `Delete “${deleteTarget.code}” from this store and sync the change to WooCommerce?` : "This coupon will be removed from this store and synced to WooCommerce."}
+                busy={false}
+                error={deleteError}
+                onCancel={() => setDeleteTarget(null)}
+                onConfirm={handleDeleteCoupon}
+            />
+
+        </div>
+    );
+}
+
+function CouponEditor({ mode, form, setForm, error, busy, onSubmit, onClose }) {
+    const [activeTab, setActiveTab] = useState("general");
+    const editorTabs = [
+        ["general", "General", "bi-ticket-perforated"],
+        ["restrictions", "Usage restriction", "bi-slash-circle"],
+        ["limits", "Usage limits", "bi-arrows-collapse"],
+        ["issuing", "Issuing Coupon", "bi-wrench-adjustable"],
+    ];
+    const change = (event) => {
+        const { name, value, type, checked } = event.target;
+        setForm((current) => ({ ...current, [name]: type === "checkbox" ? checked : value }));
+    };
+    const field = (label, name, options = {}) => (
+        <label className="coupon-form-field" key={name}>
+            <span>{label}{options.required ? " *" : ""}</span>
+            {options.textarea ? (
+                <textarea name={name} value={form[name] || ""} onChange={change} rows={3} />
+            ) : options.select ? (
+                <select name={name} value={form[name] || ""} onChange={change} required={options.required}>
+                    {options.select.map(([value, text]) => <option key={value} value={value}>{text}</option>)}
+                </select>
+            ) : (
+                <input name={name} type={options.type || "text"} value={form[name] ?? ""} onChange={change} required={options.required} min={options.min} step={options.step} />
+            )}
+            {options.help && <small>{options.help}</small>}
+        </label>
+    );
+    const toggle = (label, name) => (
+        <label className="coupon-form-toggle" key={name}>
+            <input type="checkbox" name={name} checked={Boolean(form[name])} onChange={change} />
+            <span>{label}</span>
+        </label>
+    );
+
+    return (
+        <div className="coupons-page coupon-editor-page">
+            <header className="coupons-header coupon-editor-heading">
+                <div className="coupons-title-area">
+                    <div className="coupons-title-icon"><i className="bi bi-ticket-perforated" /></div>
+                    <div>
+                        <h1 id="coupon-editor-title">{mode === "edit" ? "Edit Coupon" : "Create Coupon"}</h1>
+                        <p>Set coupon details and optional restrictions.</p>
+                    </div>
+                </div>
+                    <button type="button" className="coupon-form-cancel" onClick={onClose}>Back to coupons</button>
+                </header>
+                <section className="coupon-editor-layout">
+                    <nav className="coupon-editor-tabs" role="tablist" aria-label="Coupon settings">
+                        {editorTabs.map(([id, label, icon]) => (
+                            <button key={id} type="button" role="tab" aria-selected={activeTab === id} className={activeTab === id ? "active" : ""} onClick={() => setActiveTab(id)}>
+                                <i className={`bi ${icon}`} /><span>{label}</span>
+                            </button>
+                        ))}
+                    </nav>
+                    <form className="coupon-editor-form" onSubmit={onSubmit}>
+                        <div className="coupon-editor-body">
+                            {activeTab === "general" && <>
+                                <h2>General</h2>
+                                <div className="coupon-editor-grid">
+                                    {field("Coupon name", "code", { required: true, help: "This is the coupon code customers enter at checkout." })}
+                                    {field("Discount type", "discount_type", { required: true, select: [["", "Select discount type"], ["fixed_cart", "Fixed cart discount"], ["percent", "Percentage discount"], ["fixed_product", "Fixed product discount"]] })}
+                                    {field("Amount", "amount", { required: true, type: "number", min: "0", step: "0.01" })}
+                                    {field("Expiry date", "date_expires", { type: "date" })}
+                                    {field("Description", "description", { textarea: true })}
+                                </div>
+                            </>}
+                            {activeTab === "restrictions" && <>
+                                <h2>Usage restriction</h2>
+                                <div className="coupon-editor-grid">
+                                    {field("Minimum spend", "minimum_amount", { type: "number", min: "0", step: "0.01" })}
+                                    {field("Maximum spend", "maximum_amount", { type: "number", min: "0", step: "0.01" })}
+                                    {field("Product IDs", "product_ids", { help: "Comma-separated WooCommerce product IDs." })}
+                                    {field("Excluded product IDs", "excluded_product_ids", { help: "Comma-separated WooCommerce product IDs." })}
+                                    {field("Product category IDs", "product_categories", { help: "Comma-separated category IDs." })}
+                                    {field("Excluded category IDs", "excluded_product_categories", { help: "Comma-separated category IDs." })}
+                                    {field("Allowed emails", "email_restrictions", { help: "Comma-separated email addresses." })}
+                                </div>
+                                <div className="coupon-editor-toggles">
+                                    {toggle("Individual use only", "individual_use")}
+                                    {toggle("Exclude sale items", "exclude_sale_items")}
+                                    {toggle("Allow free shipping", "free_shipping")}
+                                </div>
+                            </>}
+                            {activeTab === "limits" && <>
+                                <h2>Usage limits</h2>
+                                <div className="coupon-editor-grid">
+                                    {field("Coupon usage limit", "usage_limit", { type: "number", min: "0", step: "1", help: "Leave blank for unlimited usage." })}
+                                    {field("Usage limit per user", "usage_limit_per_user", { type: "number", min: "0", step: "1" })}
+                                    {field("Limit usage to X items", "limit_usage_to_x_items", { type: "number", min: "0", step: "1" })}
+                                </div>
+                            </>}
+                            {activeTab === "issuing" && <>
+                                <h2>Issuing Coupon</h2>
+                                <div className="coupon-editor-toggles coupon-issue-enable">
+                                    {toggle("Enable coupon issuing", "issue_enabled")}
+                                </div>
+                                {form.issue_enabled && <div className="coupon-editor-grid coupon-issue-fields">
+                                    {field("Coupon generate type", "coupon_generate_type", { select: [["", "Select type"], ["daily", "Daily"], ["weekly", "Weekly"], ["monthly", "Monthly"], ["yearly", "Yearly"]] })}
+                                    {field("Coupon usage limit", "issue_usage_limit", { type: "number", min: "0", step: "1" })}
+                                </div>}
+                                <p className="coupon-editor-note">Issuing settings are optional and can be configured later.</p>
+                            </>}
+                        </div>
+                        {error && <p className="coupon-form-error" role="alert">{error}</p>}
+                    <footer className="coupon-editor-actions">
+                        <button type="button" className="coupon-form-cancel" onClick={onClose} disabled={busy}>Cancel</button>
+                        <button type="submit" className="coupon-form-save" disabled={busy}>{busy ? "Saving…" : mode === "edit" ? "Save Changes" : "Create Coupon"}</button>
+                    </footer>
+                    </form>
+                </section>
         </div>
     );
 }
@@ -764,7 +990,7 @@ export default function Coupons({
 // COUPON ROW
 // =========================================================
 
-function CouponRow({ coupon, onView }) {
+function CouponRow({ coupon, onView, onEdit, onDelete }) {
 
     const statusClass =
         coupon.status === "Active"
@@ -797,10 +1023,6 @@ function CouponRow({ coupon, onView }) {
             <td>
 
                 <div className="coupon-code-cell">
-
-                    <div className="coupon-code-icon">
-                        <i className="bi bi-ticket-perforated" />
-                    </div>
 
                     <div>
 
@@ -870,30 +1092,6 @@ function CouponRow({ coupon, onView }) {
             </td>
 
             {/* =================================================
-                DESCRIPTION
-            ================================================= */}
-
-            <td>
-
-                <span className="coupon-description">
-                    {coupon.description || "—"}
-                </span>
-
-            </td>
-
-            {/* =================================================
-                PRODUCT IDS
-            ================================================= */}
-
-            <td>
-
-                <ProductIds
-                    values={coupon.productIds}
-                />
-
-            </td>
-
-            {/* =================================================
                 USAGE / LIMIT
             ================================================= */}
 
@@ -939,6 +1137,10 @@ function CouponRow({ coupon, onView }) {
 
             </td>
 
+            <td className="coupon-row-actions" onClick={(event) => event.stopPropagation()} onKeyDown={(event) => event.stopPropagation()}>
+                <button type="button" aria-label={`Edit ${coupon.code}`} title="Edit coupon" onClick={onEdit}><i className="bi bi-pencil" /></button>
+                <button type="button" aria-label={`Delete ${coupon.code}`} title="Delete coupon" onClick={onDelete}><i className="bi bi-trash3" /></button>
+            </td>
 
         </tr>
     );
@@ -972,39 +1174,6 @@ function OrderList({ values }) {
             {values.length > 2 && (
                 <small>
                     +{values.length - 2} more
-                </small>
-            )}
-
-        </div>
-    );
-}
-
-// =========================================================
-// PRODUCT IDS
-// =========================================================
-
-function ProductIds({ values }) {
-
-    if (!values || values.length === 0) {
-        return (
-            <span className="empty-value">
-                —
-            </span>
-        );
-    }
-
-    return (
-        <div className="coupon-product-ids">
-
-            {values.slice(0, 3).map((id) => (
-                <span key={id}>
-                    {id}
-                </span>
-            ))}
-
-            {values.length > 3 && (
-                <small>
-                    +{values.length - 3} more
                 </small>
             )}
 

@@ -1,4 +1,4 @@
-import { api } from "./http";
+import { api, pendingStoreRead } from "./http";
 
 const collectionPath = (featureId) => `/features/${encodeURIComponent(featureId)}/permissions`;
 const itemPath = (featureId, permissionId) => `${collectionPath(featureId)}/${encodeURIComponent(permissionId)}`;
@@ -7,7 +7,7 @@ export const listFeaturePermissions = async (featureId, params = {}) => {
   const query = new URLSearchParams();
   if (params.status) query.set("status", String(params.status).toUpperCase());
   const suffix = query.toString() ? `?${query}` : "";
-  const response = await api.get(`${collectionPath(featureId)}${suffix}`);
+  const response = await pendingStoreRead(`feature-permissions:${featureId}:${suffix}`, () => api.get(`${collectionPath(featureId)}${suffix}`));
   const permissions = Array.isArray(response?.permissions)
     ? response.permissions
     : Array.isArray(response?.data?.permissions)
@@ -29,7 +29,7 @@ export const listFeaturePermissions = async (featureId, params = {}) => {
 };
 
 export const getFeaturePermissionById = async (featureId, permissionId) => {
-  const response = await api.get(itemPath(featureId, permissionId));
+  const response = await pendingStoreRead(`feature-permission:${featureId}:${permissionId}`, () => api.get(itemPath(featureId, permissionId)));
   return response?.permission || response?.data?.permission || response?.data || response;
 };
 

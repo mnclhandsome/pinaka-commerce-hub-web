@@ -1,4 +1,4 @@
-import { api } from "./http";
+import { api, pendingStoreRead } from "./http";
 import { endpoints } from "./endpoints";
 import { buildStoreSetupPayload } from "./storeDetails";
 
@@ -77,7 +77,7 @@ export function normalizeStore(item) {
 }
 
 export async function listStores() {
-  const response = await api.get(endpoints.stores);
+  const response = await pendingStoreRead("stores-list", () => api.get(endpoints.stores));
   const stores = storeListFromResponse(response).map(normalizeStore);
   return { ...response, stores, count: response?.count ?? stores.length };
 }
@@ -127,7 +127,7 @@ export function createStores(stores, merchantId) {
 }
 
 export async function getStore(id) {
-  const { store } = await api.get(endpoints.store(encodeURIComponent(id)));
+  const { store } = await pendingStoreRead(`store:${id}`, () => api.get(endpoints.store(encodeURIComponent(id))));
   return {
     merchant: store.merchantId,
     storeID: store.id,

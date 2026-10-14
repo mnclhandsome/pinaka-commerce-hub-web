@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import Pagination from "../components/Pagination";
 import { getPlan } from "../api/plans";
 function displayText(value, fallback = "—") {
@@ -56,6 +56,7 @@ function featureRows(features) {
 export default function ViewPlanFeaturesLimits() {
   const navigate = useNavigate();
   const { planId } = useParams();
+  const navigationPlan = useLocation().state?.plan;
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
   const [retry, setRetry] = useState(0);
@@ -81,7 +82,7 @@ export default function ViewPlanFeaturesLimits() {
           throw new Error("The plan ID is missing from the URL.");
         }
         /* * getPlan() already: * * 1. Calls GET /plans/:id * 2. Extracts the plan from the response * 3. Normalizes the API response */ const plan =
-          await getPlan(planId);
+          retry === 0 && String(navigationPlan?.id) === String(planId) ? navigationPlan : await getPlan(planId);
         if (!plan) {
           throw new Error("Plan details were not found.");
         }
