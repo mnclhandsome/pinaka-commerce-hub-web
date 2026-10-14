@@ -9,6 +9,7 @@ import { getActiveSubscriptions, extractActiveSubscription } from "../api/subscr
 import PosConfiguration from "./pos/PosConfiguration";
 import Products from "./Products";
 import Coupons from "./Coupons";
+import Discounts from "./Discounts";
 import Orders from "./Orders";
 import StoreCustomers from "./StoreCustomers";
 import FastKeys from "./FastKeys";
@@ -102,6 +103,7 @@ const navGroups = [
     label: "Promotions",
     items: [
       ["coupons", "bi-ticket-perforated", "Coupons"],
+      ["discounts", "bi-percent", "Discounts"],
     ],
   },
 
@@ -791,6 +793,15 @@ export default function StoreConfiguration() {
               ) : section === "coupons" ? (
 
                 <Coupons
+                  merchantId={merchantId}
+                  storeId={storeId}
+                  store={store}
+                  embedded
+                />
+
+              ) : section === "discounts" ? (
+
+                <Discounts
                   merchantId={merchantId}
                   storeId={storeId}
                   store={store}
