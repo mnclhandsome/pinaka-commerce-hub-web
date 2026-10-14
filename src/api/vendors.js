@@ -1,4 +1,4 @@
-import { apiRequest } from "./http";
+import { apiRequest, pendingStoreRead } from "./http";
 import { endpoints } from "./endpoints";
 
 /*
@@ -35,12 +35,15 @@ function formatDateTime(value) {
 */
 
 async function request(path, { token, signal, ...options } = {}) {
-  const data = await apiRequest(path, {
+  const read = () => apiRequest(path, {
     ...options,
     body: options.body ? JSON.parse(options.body) : undefined,
     signal,
     token,
   });
+  const data = options.method === "GET" && !signal && !token
+    ? await pendingStoreRead(`vendor-read:${path}`, read)
+    : await read();
 
   if (data && data.success === false) {
     throw new Error(data.message || data.error || "API request failed.");

@@ -4,7 +4,7 @@ import FiltersBar from "../components/FiltersBar";
 import { Download } from "lucide-react";
 import DeleteConfirmationDialog from "../components/DeleteConfirmationDialog";
 import { useLocationOptions } from "../data/useLocationOptions";
-import { getVendors, createVendor, updateVendor, deleteVendor as deleteVendorApi, } from "../api/vendors";
+import { getVendor, getVendors, createVendor, updateVendor, deleteVendor as deleteVendorApi, } from "../api/vendors";
 
 const emptyForm = {
   code: "",
@@ -668,9 +668,14 @@ export default function Vendors({
   | Populate the same form in read-only mode.
   */
 
-  function viewVendor(
-    vendor
-  ) {
+  async function viewVendor(vendor) {
+    try {
+      vendor = await getVendor(vendor.id);
+      if (!vendor?.id) throw new Error("Vendor not found.");
+    } catch (error) {
+      setError(error.message || "Unable to load vendor.");
+      return;
+    }
     const viewForm = {
       code: vendor.code || "",
       name: vendor.name || "",
@@ -709,9 +714,14 @@ export default function Vendors({
   |--------------------------------------------------------------------------
   */
 
-  function editVendor(
-    vendor
-  ) {
+  async function editVendor(vendor) {
+    try {
+      vendor = await getVendor(vendor.id);
+      if (!vendor?.id) throw new Error("Vendor not found.");
+    } catch (error) {
+      setError(error.message || "Unable to load vendor.");
+      return;
+    }
     const editForm = {
       code:
         vendor.code || "",

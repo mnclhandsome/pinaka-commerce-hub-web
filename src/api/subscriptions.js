@@ -1,12 +1,12 @@
-import { api } from "./http";
+import { api, pendingStoreRead } from "./http";
 
 const path = (id) => `/subscriptions/${encodeURIComponent(id)}`;
 
-export const listSubscriptions = (params) => api.get("/subscriptions", { params });
-export const listSubscriptionPlans = () => api.get("/subscription-plans");
+export const listSubscriptions = (params) => pendingStoreRead(`subscription-list:${JSON.stringify(params || {})}`, () => api.get("/subscriptions", { params }));
+export const listSubscriptionPlans = () => pendingStoreRead("subscription-plans", () => api.get("/subscription-plans"));
 export const changeSubscriptionPlan = (data) =>
   api.post("/subscriptions/subscription-plan-changes", data);
-export const getSubscription = (id) => api.get(path(id));
+export const getSubscription = (id) => pendingStoreRead(`subscription:${id}`, () => api.get(path(id)));
 export const createSubscription = (data) => api.post("/subscriptions", data);
 export const updateSubscription = (id, data) => api.put(path(id), data);
 export const deleteSubscription = (id) => api.delete(path(id));

@@ -9,16 +9,6 @@ const initialTender = {
   status: "",
 };
 
-function getTendorList(response) {
-  if (Array.isArray(response)) return response;
-  if (Array.isArray(response?.data)) return response.data;
-  if (Array.isArray(response?.data?.items)) return response.data.items;
-  if (Array.isArray(response?.data?.tendors)) return response.data.tendors;
-  if (Array.isArray(response?.tendors)) return response.tendors;
-  if (Array.isArray(response?.items)) return response.items;
-  return [];
-}
-
 function mapTender(tender) {
   const rawStatus = String(tender.status || "").toUpperCase();
 
@@ -75,14 +65,10 @@ export default function TenderDetails() {
         setLoading(true);
         setError("");
 
-        const response = await tendorsApi.getAll();
-        const list = getTendorList(response);
+        const response = await tendorsApi.getById(tenderId);
+        const found = response?.tendor || response?.tender || response?.data?.tendor || response?.data?.tender || response?.data || response;
 
-        const found = list.find(
-          (item) => String(item.id) === String(tenderId),
-        );
-
-        if (!found) {
+        if (!found || typeof found !== "object" || !found.id) {
           throw new Error("Tender details could not be found.");
         }
 

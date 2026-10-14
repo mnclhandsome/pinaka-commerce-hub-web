@@ -1,5 +1,5 @@
+import { pendingStoreRead } from "../api/http";
 import { useMemo, useState, useEffect } from "react";
-import { useReferenceData } from "../api/referenceData";
 import { listMerchants } from "../api/merchants";
 import Pagination from "../components/Pagination";
 import ListActions from "../components/ListActions";
@@ -34,7 +34,6 @@ import {
 } from "lucide-react";
 
 import { listPlans, getMerchantFormPlans } from "../api/plans";
-import { listFeatures } from "../api/features";
 
 import {
 
@@ -1117,33 +1116,6 @@ const handleDateRangeChange = (value) => {
 
 function SubscriptionDetails({ merchant, onBack, onChangePlan }) {
 
-  const [featureCatalog, setFeatureCatalog] = useState([]);
-
-  useEffect(() => {
-
-    let active = true;
-
-    listFeatures()
-
-      .then((features) => {
-
-        if (active) setFeatureCatalog(Array.isArray(features) ? features : []);
-
-      })
-
-      .catch(() => {
-
-        if (active) setFeatureCatalog([]);
-
-      });
-
-    return () => {
-
-      active = false;
-
-    };
-
-  }, []);
 
   if (!merchant) return null;
 
@@ -1169,15 +1141,6 @@ function SubscriptionDetails({ merchant, onBack, onChangePlan }) {
 
     ).trim();
 
-    const match = featureCatalog.find((feature) =>
-
-      [feature.id, feature.featureId, feature.feature_id, feature.code]
-
-        .filter(Boolean)
-
-        .some((candidate) => String(candidate).toLowerCase() === reference.toLowerCase()),
-
-    );
 
     return {
 
@@ -1185,7 +1148,6 @@ function SubscriptionDetails({ merchant, onBack, onChangePlan }) {
 
       name:
 
-        match?.name ||
 
         value.name ||
 
@@ -2445,7 +2407,7 @@ function SubscriptionCrudForm({
 
 export default function MerchantSubscriptions() {
 
-  const { data: reference, error: referenceError } = useReferenceData();
+
 
   const [subscriptions, setSubscriptions] = useState([]);
 
@@ -2512,7 +2474,8 @@ export default function MerchantSubscriptions() {
   useEffect(() => {
     let active = true;
 
-    Promise.all([listMerchants(), listSubscriptionPlans()])
+    if (!crudForm) return;
+    Promise.all([crudEditing ? Promise.resolve([]) : pendingStoreRead("subscription-form-merchants", () => listMerchants()), listSubscriptionPlans()])
       .then(([merchantResponse, planResponse]) => {
         if (!active) return;
 
@@ -2542,7 +2505,7 @@ export default function MerchantSubscriptions() {
     return () => {
       active = false;
     };
-  }, []);
+  }, [Boolean(crudForm), crudEditing]);
 
   const openAddSubscription = () => {
     setCrudEditing(null);
@@ -2803,12 +2766,21 @@ export default function MerchantSubscriptions() {
 
   };
 
-  const openDetails = (merchant) => {
-
-    setSelectedMerchant(merchant);
-
-    setScreen("details");
-
+  const openDetails = async (merchant) => {
+    setCrudBusy(true);
+    setCrudError("");
+    try {
+      const response = await getSubscription(merchant.id);
+      const data = response?.subscription || response?.data?.subscription || response?.data || response;
+      const mapped = mapSubscriptionToRow(data);
+      if (!mapped) throw new Error("Subscription not found.");
+      setSelectedMerchant({ ...merchant, ...mapped });
+      setScreen("details");
+    } catch (error) {
+      setCrudError(error.message || "Unable to load subscription.");
+    } finally {
+      setCrudBusy(false);
+    }
   };
 
   const openChoosePlan = () => {
@@ -3116,7 +3088,7 @@ export default function MerchantSubscriptions() {
       <SubscriptionList
         subscriptions={subscriptions}
         loading={loading}
-        error={error || referenceError || crudError}
+        error={error || crudError}
         onReload={loadData}
         onView={openDetails}
         onAdd={openAddSubscription}
@@ -3132,7 +3104,6 @@ export default function MerchantSubscriptions() {
           editing={crudEditing}
           merchants={crudMerchants}
           plans={crudPlans}
-          reference={reference}
           busy={crudBusy}
           error={crudError}
           onCancel={() => {

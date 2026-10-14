@@ -1,4 +1,6 @@
-import { api } from "./http";
+import { api, pendingStoreRead } from "./http";
+
+const readMerchantRoles = path => pendingStoreRead(`merchant-role-read:${path}`, () => api.get(path));
 
 const unwrapList = (response, keys = ["roleTemplates", "items"]) => {
   const candidates = [response, response?.data, response?.result, response?.data?.data];
@@ -15,10 +17,10 @@ const unwrapList = (response, keys = ["roleTemplates", "items"]) => {
 export const merchantRoleTemplatesApi = {
   /** Templates from subscription store type + selected flags. */
   getAvailable: (merchantId) =>
-    api.get(`/merchants/${encodeURIComponent(merchantId)}/role-templates/available`),
+    readMerchantRoles(`/merchants/${encodeURIComponent(merchantId)}/role-templates/available`),
 
   list: (merchantId, status = "ACTIVE") =>
-    api.get(
+    readMerchantRoles(
       `/merchants/${encodeURIComponent(merchantId)}/role-templates${status ? `?status=${encodeURIComponent(status)}` : ""}`,
     ),
 
@@ -29,7 +31,7 @@ export const merchantRoleTemplatesApi = {
     }),
 
   getStoreTypes: (merchantId) =>
-    api.get(`/merchants/${encodeURIComponent(merchantId)}/store-types`),
+    readMerchantRoles(`/merchants/${encodeURIComponent(merchantId)}/store-types`),
 };
 
 export function readAvailableRoleTemplates(response) {

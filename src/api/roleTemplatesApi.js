@@ -1,9 +1,11 @@
-import { api } from "./http";
+import { api, pendingStoreRead } from "./http";
+
+const readRoleTemplate = path => pendingStoreRead(`role-template-read:${path}`, () => api.get(path));
 
 const unwrap = (response) => response?.data ?? response;
 
 export const roleTemplatesApi = {
-  getAll: () => api.get("/role-templates"),
+  getAll: () => readRoleTemplate("/role-templates"),
 
   assignToStoreType: (storeTypeId, values) =>
     api.post(
@@ -12,17 +14,17 @@ export const roleTemplatesApi = {
     ),
 
   getForStoreType: (storeTypeId) =>
-    api.get(`/store-types/${encodeURIComponent(storeTypeId)}/role-templates`),
+    readRoleTemplate(`/store-types/${encodeURIComponent(storeTypeId)}/role-templates`),
 
   removeFromStoreType: (storeTypeId, roleTemplateId) =>
     api.delete(
       `/store-types/${encodeURIComponent(storeTypeId)}/role-templates/${encodeURIComponent(roleTemplateId)}`,
     ),
 
-  getById: (id) => api.get(`/role-templates/${encodeURIComponent(id)}`),
+  getById: (id) => readRoleTemplate(`/role-templates/${encodeURIComponent(id)}`),
 
   getAvailableStoreTypes: (id) =>
-    api.get(`/role-templates/${encodeURIComponent(id)}/store-types/available`),
+    readRoleTemplate(`/role-templates/${encodeURIComponent(id)}/store-types/available`),
 
   getFeatures: (id, storeTypeIds = []) => {
     const ids = Array.isArray(storeTypeIds)
@@ -31,7 +33,7 @@ export const roleTemplatesApi = {
 
     const query = ids ? `?storeTypeIds=${encodeURIComponent(ids)}` : "";
 
-    return api.get(
+    return readRoleTemplate(
       `/role-templates/${encodeURIComponent(id)}/features${query}`,
     );
   },

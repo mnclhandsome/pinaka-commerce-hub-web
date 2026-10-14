@@ -1,3 +1,4 @@
+import { pendingStoreRead } from "./http";
 import { api } from "./http";
 import { endpoints } from "./endpoints";
 
@@ -72,7 +73,7 @@ export async function updateEmployee(employeeId, data, image) {
 }
 
 export async function getEmployee(employeeId) {
-  return employeeResponse(await api.get(endpoints.employee(employeeId)));
+  return employeeResponse(await pendingStoreRead(`employee:${employeeId}`, () => api.get(endpoints.employee(employeeId))));
 }
 
 export function deleteEmployee(employeeId) {
@@ -229,7 +230,7 @@ function mapEmployeeList(data) {
 }
 
 export async function getEmployeeList() {
-  const response = await api.get(endpoints.employees);
+  const response = await pendingStoreRead("employee-list", () => api.get(endpoints.employees));
   return { employees: mapEmployeeList(response), statistics: response?.statistics ?? response?.data?.statistics ?? null };
 }
 

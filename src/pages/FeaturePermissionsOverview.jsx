@@ -130,11 +130,12 @@ export default function FeaturePermissionsOverview() {
       setError("");
 
       try {
-        const [permissionResponse, featureResponse] =
-          await Promise.all([
-            getFeaturePermissionById(featureId, permissionId),
-            getFeature(featureId),
-          ]);
+        const permissionResponse = await getFeaturePermissionById(featureId, permissionId);
+        const permissionSource = permissionResponse?.permission || permissionResponse?.data?.permission || permissionResponse?.data || permissionResponse;
+        const returnedName = permissionSource?.feature?.name || permissionSource?.feature?.feature_name || permissionSource?.featureName || permissionSource?.feature_name;
+        const featureResponse = returnedName
+          ? { ...permissionSource?.feature, id: featureId, name: returnedName }
+          : await getFeature(featureId);
 
         if (cancelled) return;
 

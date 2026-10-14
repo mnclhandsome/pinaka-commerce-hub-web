@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { getPlan } from "../api/plans";
 function formatAmount(value, currency) {
   if (value === "" || value == null) {
@@ -38,6 +38,7 @@ function formatPlanDate(value) {
 export default function ViewPlanPricing() {
   const navigate = useNavigate();
   const { planId } = useParams();
+  const navigationPlan = useLocation().state?.plan;
   const [retry, setRetry] = useState(0);
   const [result, setResult] = useState({
     id: null,
@@ -54,7 +55,7 @@ export default function ViewPlanPricing() {
           throw new Error("The plan ID is missing from the URL.");
         }
         /* * getPlan() already: * 1. Calls GET /plans/:id * 2. Extracts the plan response * 3. Normalizes the API response */ const plan =
-          await getPlan(planId);
+          retry === 0 && String(navigationPlan?.id) === String(planId) ? navigationPlan : await getPlan(planId);
         if (!cancelled) {
           setResult({ id: planId, loading: false, plan, error: "" });
         }

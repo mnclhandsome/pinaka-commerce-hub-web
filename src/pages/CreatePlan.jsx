@@ -717,12 +717,6 @@ async function confirmDelete() {
                 name="applicableStoreType"
                 value={form.applicableStoreType}
                 onChange={updateField}
-                onPointerDown={fetchStoreTypes}
-                onKeyDown={(event) => {
-                  if (["ArrowDown", "ArrowUp", "Enter", " "].includes(event.key)) {
-                    fetchStoreTypes();
-                  }
-                }}
                 aria-busy={storeTypesLoading}
               >
                 <option value="">
