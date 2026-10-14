@@ -460,6 +460,7 @@ const Field = ({
   type = "text",
   optional = false,
   invalid = false,
+  error = "",
   ...props
 }) => (
   <label className={`sf-field${invalid ? " sf-field-invalid" : ""}`}>
@@ -473,6 +474,7 @@ const Field = ({
       onChange={(event) => onChange(event.target.value)}
       {...props}
     />
+    {error && <small className="sf-field-error" role="alert">{error}</small>}
   </label>
 );
 
@@ -484,6 +486,7 @@ const SelectField = ({
   required = false,
   optional = false,
   invalid = false,
+  error = "",
   ...props
 }) => (
   <label className={`sf-field${invalid ? " sf-field-invalid" : ""}`}>
@@ -510,6 +513,7 @@ const SelectField = ({
         ),
       )}
     </FilterDropdown>
+    {error && <small className="sf-field-error" role="alert">{error}</small>}
   </label>
 );
 
@@ -538,15 +542,9 @@ const Panel = ({ title, subtitle, action, children, className = "" }) => (
 
 const ValidationSummary = ({ error, summaryRef, onDismiss }) => {
   const lines = error.split("\n");
-  const fieldNames = [...new Set(lines.flatMap((line) => {
-    const match = line.match(/^FIELD::([^:]+)::/);
-    return match ? [match[1]] : [];
-  }))];
   const otherIssues = lines.filter((line) => !line.startsWith("FIELD::"));
-  const summary = [
-    ...(fieldNames.length ? [fieldNames.join(", ")] : []),
-    ...otherIssues,
-  ].join("; ");
+  if (!otherIssues.length) return null;
+  const summary = otherIssues.join("; ");
 
   return (
     <div className="sf-error" role="alert" ref={summaryRef}>
@@ -560,6 +558,13 @@ const ValidationSummary = ({ error, summaryRef, onDismiss }) => {
     </div>
   );
 };
+
+const getFieldValidationMessage = (error, field) =>
+  String(error || "")
+    .split("\n")
+    .filter((line) => line.startsWith(`FIELD::${field}::`))
+    .map((line) => line.slice(`FIELD::${field}::`.length))
+    .join(" ");
 
 const SelectedStoreContext = ({ store, typeName, planName }) => (
   <div className="sf-role-context">
@@ -653,7 +658,9 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
   const errorBannerRef = useRef(null);
   const scrollToValidationSummary = () => {
     requestAnimationFrame(() => {
-      errorBannerRef.current?.scrollIntoView({ block: "start", behavior: "smooth" });
+      const target = errorBannerRef.current ||
+        document.querySelector(".sf-root .sf-field-invalid, .sf-root [aria-invalid='true']");
+      target?.scrollIntoView({ block: "center", behavior: "smooth" });
     });
   };
   const [employeeSearch, setEmployeeSearch] = useState("");
@@ -668,7 +675,9 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
   useEffect(() => {
     if (!error) return undefined;
     const frame = requestAnimationFrame(() => {
-      errorBannerRef.current?.scrollIntoView({ block: "start", behavior: "smooth" });
+      const target = errorBannerRef.current ||
+        document.querySelector(".sf-root .sf-field-invalid, .sf-root [aria-invalid='true']");
+      target?.scrollIntoView({ block: "center", behavior: "smooth" });
     });
     return () => cancelAnimationFrame(frame);
   }, [error, step]);
@@ -2640,6 +2649,7 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
               <Field
                 label="Store Name *"
                 invalid={invalidStoreFields.has("Store Name")}
+                error={getFieldValidationMessage(error, "Store Name")}
                 value={store.name}
                 onChange={(value) => updateStore("name", value)}
                 placeholder="Enter store name"
@@ -2647,6 +2657,7 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
               <SelectField
                 label="Store Type *"
                 invalid={invalidStoreFields.has("Store Type")}
+                error={getFieldValidationMessage(error, "Store Type")}
                 value={store.storeTypeId}
                 disabled={storeTypesLoading}
                 onChange={(value) => {
@@ -2721,6 +2732,7 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
               <SelectField
                 label="Country *"
                 invalid={invalidStoreFields.has("Country")}
+                error={getFieldValidationMessage(error, "Country")}
                 value={store.country}
                 onChange={changeCountry}
                 options={[
@@ -2734,6 +2746,7 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
               <Field
                 label="Address Line 1 *"
                 invalid={invalidStoreFields.has("Address Line 1")}
+                error={getFieldValidationMessage(error, "Address Line 1")}
                 value={store.addressLine1}
                 onChange={(value) => updateStore("addressLine1", value)}
                 placeholder="Street address"
@@ -2748,6 +2761,7 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
               <Field
                 label="City *"
                 invalid={invalidStoreFields.has("City")}
+                error={getFieldValidationMessage(error, "City")}
                 value={store.city}
                 onChange={(value) => updateStore("city", value)}
                 placeholder="City"
@@ -2755,6 +2769,7 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
               <SelectField
                 label="State / Province *"
                 invalid={invalidStoreFields.has("State / Province")}
+                error={getFieldValidationMessage(error, "State / Province")}
                 value={store.state}
                 onChange={(value) => updateStore("state", value)}
                 options={[
@@ -2765,6 +2780,7 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
               <Field
                 label="Zip / Postal Code *"
                 invalid={invalidStoreFields.has("Zip / Postal Code")}
+                error={getFieldValidationMessage(error, "Zip / Postal Code")}
                 value={store.zip}
                 onChange={(value) => updateStore("zip", value)}
                 placeholder="Postal code"
@@ -2779,6 +2795,7 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
               <SelectField
                 label="Time Zone *"
                 invalid={invalidStoreFields.has("Time Zone")}
+                error={getFieldValidationMessage(error, "Time Zone")}
                 value={store.timezone}
                 onChange={(value) => updateStore("timezone", value)}
                 options={[
@@ -2799,6 +2816,7 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
               <SelectField
                 label="Currency *"
                 invalid={invalidStoreFields.has("Currency")}
+                error={getFieldValidationMessage(error, "Currency")}
                 value={currencyCode}
                 onChange={(value) => updateStore("currency", value)}
                 options={[
@@ -2895,6 +2913,11 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
                             updateHours(index, "shifts", event.target.value)
                           }
                         />
+                        {getFieldValidationMessage(error, `${row.day} Schedule`) && (
+                          <small className="sf-field-error" role="alert">
+                            {getFieldValidationMessage(error, `${row.day} Schedule`)}
+                          </small>
+                        )}
                       </td>
                     </tr>
                   ))}
@@ -2937,6 +2960,7 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
             <Field
               label="Store Phone *"
               invalid={invalidStoreFields.has("Store Phone")}
+              error={getFieldValidationMessage(error, "Store Phone")}
               value={store.phone}
               onChange={(value) => updateStore("phone", value)}
               type="tel"
@@ -2945,6 +2969,7 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
             <Field
               label="Store Email"
               invalid={invalidStoreFields.has("Store Email")}
+              error={getFieldValidationMessage(error, "Store Email")}
               optional
               value={store.email}
               onChange={(value) => updateStore("email", value)}
@@ -2954,6 +2979,7 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
             <Field
               label="Website URL *"
               invalid={invalidStoreFields.has("Website URL")}
+              error={getFieldValidationMessage(error, "Website URL")}
               value={store.url}
               onChange={(value) => updateStore("url", value)}
               type="url"

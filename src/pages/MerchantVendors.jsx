@@ -842,7 +842,7 @@ useEffect(() => {
                 {storeScope ? (
                     <div className="mv-toolbar">
                         <input aria-label="Search assigned vendors"
-                            placeholder="Search vendors by code, name, type or phone\u2026"
+                            placeholder="Search vendors by code, name, type or phone…"
                             value={query}
                             onChange={(event) => { setQuery(event.target.value); setPage(1); }} />
                         <button type="button" onClick={() => {
