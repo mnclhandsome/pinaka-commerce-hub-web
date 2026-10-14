@@ -2349,3 +2349,27 @@
 .sf-perm-na { color: #c0c6d2; font-size: 14px; }
 .sf-permission-table td { text-align: center; }
 .sf-permission-table td:first-child { text-align: left; }
+
+.sf-field .sf-field-error,
+.sf-hours-table .sf-field-error {
+  display: block;
+  margin: 0;
+  color: #d92d42;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.35;
+}
+
+.sf-feature-table .sf-access-included,
+.sf-feature-table .sf-access-excluded {
+  display: inline-flex;
+  box-sizing: border-box;
+  width: 104px;
+  min-height: 28px;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 8px;
+  font-size: 11px;
+  line-height: 16px;
+  text-align: center;
+}
