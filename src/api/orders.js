@@ -80,6 +80,8 @@ export async function listOrders(storeId) {
   return orders.map(normalizeOrder);
 }
 
-export async function getOrder(orderId) {
-  return api.get(endpoints.order(orderId));
+export async function getOrder(orderId, storeId) {
+  return api.get(endpoints.order(orderId), {
+    headers: storeId ? { "x-store-id": storeId } : undefined,
+  });
 }

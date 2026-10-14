@@ -326,7 +326,7 @@ input {
     height: 52px;
     padding: 10px 14px;
     border-bottom: 1px solid #e4e8ef;
-    color: #4d5970;
+    color: #202124;
     font-size: 13px;
     vertical-align: middle;
 }
@@ -406,14 +406,14 @@ input {
 
 .order-id-cell strong {
     display: block;
-    color: #176da9;
+    color: #202124;
     font-size: 13px;
 }
 
 .order-id-cell small {
     display: block;
     margin-top: 2px;
-    color: #7d889b;
+    color: #555b66;
     font-size: 10px;
     font-weight: 500;
 }
@@ -423,7 +423,7 @@ input {
 ========================================================= */
 
 .offline-order-id {
-    color: #56647b;
+    color: #202124;
     font-family: monospace;
     font-size: 13px;
 }
@@ -434,7 +434,7 @@ input {
 
 .order-date strong {
     display: block;
-    color: #536078;
+    color: #202124;
     font-size: 12px;
     font-weight: 500;
 }
@@ -442,7 +442,7 @@ input {
 .order-date small {
     display: block;
     margin-top: 3px;
-    color: #9aa3b2;
+    color: #666d78;
     font-size: 10px ;
 }
 
@@ -473,13 +473,13 @@ input {
 }
 
 .order-status.completed {
-    background: #e8f3f8;
-    color: #16638d;
+    background: #e7f6ec;
+    color: #177245;
 }
 
 .order-status.pending {
-    background: #fff2df;
-    color: #bd7811;
+    background: #e8f3fb;
+    color: #17638c;
 }
 
 .order-status.processing {
@@ -493,8 +493,8 @@ input {
 }
 
 .order-status.refunded {
-    background: #fcebea;
-    color: #c04b48;
+    background: #fde8e8;
+    color: #bd3131;
 }
 
 .order-status.partial {
@@ -512,25 +512,8 @@ input {
     gap: 5px;
 }
 
-.orders-table .order-author .author-avatar {
-    flex-shrink: 0;
-}
-
-.author-avatar {
-    width: 29px;
-    height: 29px;
-    border-radius: 50%;
-    background: #f0ebff;
-    color: #5b45d5;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 9px;
-    font-weight: 700;
-}
-
 .order-author span {
-    color: #4d5a72;
+    color: #202124;
     white-space: nowrap;
 }
 
@@ -539,7 +522,7 @@ input {
 ========================================================= */
 
 .order-total {
-    color: #263650;
+    color: #202124;
     font-size: 13px;
     white-space: nowrap;
 }
@@ -705,7 +688,7 @@ input {
     width: calc(100% - 24px);
     max-width: calc(100% - 24px);
     min-width: 0;
-    margin: 0 12px;
+    margin: 12px 12px 0;
     overflow-x: auto;
     overscroll-behavior-x: contain;
     border: 1px solid #dfe9f4;
