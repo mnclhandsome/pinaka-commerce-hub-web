@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import Pagination from "../components/Pagination";
 import "../styles/vendor-payments.css";
 
 const initialVendors = [
@@ -105,6 +106,8 @@ export default function VendorPayments({ viewMode } = {}) {
   const [payments, setPayments] = useState(initialPayments);
 
   const [search, setSearch] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   const [showVendorForm, setShowVendorForm] = useState(false);
   const [showPaymentForm, setShowPaymentForm] = useState(false);
@@ -137,6 +140,8 @@ export default function VendorPayments({ viewMode } = {}) {
         .includes(term)
     );
   }, [payments, search]);
+  const totalPaymentPages = Math.max(1, Math.ceil(filteredPayments.length / pageSize));
+  const paginatedPayments = filteredPayments.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
   // Add vendor
   const addVendor = (event) => {
@@ -173,6 +178,7 @@ export default function VendorPayments({ viewMode } = {}) {
       },
       ...current,
     ]);
+    setCurrentPage(1);
 
     setPayment({
       vendor: "",
@@ -251,7 +257,7 @@ export default function VendorPayments({ viewMode } = {}) {
         <input
           type="text"
           value={search}
-          onChange={(event) => setSearch(event.target.value)}
+          onChange={(event) => { setSearch(event.target.value); setCurrentPage(1); }}
           placeholder={
             view === "vendors"
               ? "Search Vendors"
@@ -306,22 +312,19 @@ export default function VendorPayments({ viewMode } = {}) {
 
           <thead>
             <tr>
-              <th>□</th>
-              <th>Title ↕</th>
+              <th>Title</th>
               <th>Vendor Name</th>
               <th>Payment Purpose</th>
               <th>Payment Method</th>
               <th>Payment Amount</th>
-              <th>Date ↕</th>
+              <th>Date</th>
             </tr>
           </thead>
 
           <tbody>
 
-            {filteredPayments.map((payment) => (
+            {paginatedPayments.map((payment) => (
               <tr key={payment.id}>
-
-                <td>□</td>
 
                 <td>
                   <strong>{payment.title}</strong>
@@ -347,6 +350,19 @@ export default function VendorPayments({ viewMode } = {}) {
           </tbody>
 
         </table>
+      )}
+
+      {view === "payments" && filteredPayments.length > 0 && (
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPaymentPages}
+          totalItems={filteredPayments.length}
+          pageSize={pageSize}
+          onPageChange={setCurrentPage}
+          onPageSizeChange={(size) => { setPageSize(size); setCurrentPage(1); }}
+          itemLabel="payments"
+          pageSizeOptions={[10, 25, 50, 100]}
+        />
       )}
 
       {/* Add Vendor Modal */}

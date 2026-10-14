@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import FilterDropdown from "../../../components/FilterDropdown";
 import { ApiError } from "../../../api/http";
 import {
   ConfigBadge, ConfigField, ConfigFooter, ConfigHeader, ConfigSwitch,
@@ -232,7 +233,7 @@ export function ServiceChargeSettings() {
 
                         <div className="service-charge-select">
 
-                            <select
+                            <FilterDropdown
                                 value={applyTo}
                                 onChange={(event) =>
                                     setApplyTo(
@@ -247,7 +248,7 @@ export function ServiceChargeSettings() {
                                 <option value="line-item">
                                     Each Line Item
                                 </option>
-                            </select>
+                            </FilterDropdown>
 
                             <i className="bi bi-chevron-down" />
 
@@ -266,7 +267,7 @@ export function ServiceChargeSettings() {
 
                         <div className="service-charge-select">
 
-                            <select
+                            <FilterDropdown
                                 value={defaultType}
                                 onChange={(event) =>
                                     setDefaultType(
@@ -281,7 +282,7 @@ export function ServiceChargeSettings() {
                                 <option value="fixed">
                                     Fixed
                                 </option>
-                            </select>
+                            </FilterDropdown>
 
                             <i className="bi bi-chevron-down" />
 
@@ -477,7 +478,7 @@ export function ServiceChargeSettings() {
 
                                         <div className="service-charge-table-select">
 
-                                            <select
+                                            <FilterDropdown
                                                 value={
                                                     tier.feeType
                                                 }
@@ -496,7 +497,7 @@ export function ServiceChargeSettings() {
                                                 <option value="Fixed">
                                                     Fixed
                                                 </option>
-                                            </select>
+                                            </FilterDropdown>
 
                                             <i className="bi bi-chevron-down" />
 
@@ -511,7 +512,7 @@ export function ServiceChargeSettings() {
 
                                         <div className="service-charge-table-select">
 
-                                            <select
+                                            <FilterDropdown
                                                 value={
                                                     tier.appliesTo
                                                 }
@@ -538,7 +539,7 @@ export function ServiceChargeSettings() {
                                                 <option value="All">
                                                     All
                                                 </option>
-                                            </select>
+                                            </FilterDropdown>
 
                                             <i className="bi bi-chevron-down" />
 

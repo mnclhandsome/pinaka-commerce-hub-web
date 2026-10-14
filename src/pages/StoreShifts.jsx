@@ -55,10 +55,6 @@ export default function StoreShifts({ store }) {
     && (!filters.device || row.openDevice === filters.device || row.closeDevice === filters.device),
   ), [filters, searchQuery]);
   const visible = filtered.slice((page - 1) * pageSize, page * pageSize);
-  const rangeLabel = filters.from && filters.to
-    ? `${dateLabel(filters.from)} - ${dateLabel(filters.to)}`
-    : filters.from ? `From ${dateLabel(filters.from)}` : filters.to ? `Through ${dateLabel(filters.to)}` : "All dates";
-
   const updateDraft = (key, value) => {
     setDraft((current) => ({ ...current, [key]: value }));
     setFilters((current) => ({ ...current, [key]: value }));
@@ -95,7 +91,6 @@ export default function StoreShifts({ store }) {
   if (selectedShift) return <ShiftDetails shift={selectedShift} store={store} onBack={() => setSelectedShift(null)} />;
 
   return <section className="sm-screen" aria-label="Store shift management">
-    <nav className="sm-breadcrumb" aria-label="Shift navigation"><span>Shift Management</span></nav>
     <header className="sm-page-heading">
       <div><h1>Shift Management</h1><p>View and manage store-level shifts. A shift remains open until it is closed.</p></div>
     </header>
@@ -103,10 +98,10 @@ export default function StoreShifts({ store }) {
     <div className="sm-filter-card">
       <label className="sm-search-control"><i className="bi bi-search" aria-hidden="true" /><span className="sr-only">Search shifts</span><input aria-label="Search shifts" placeholder="Search shifts..." value={searchQuery} onChange={(event) => { setSearchQuery(event.target.value); setPage(1); }} /></label>
       <FilterDropdown aria-label="Filter by date" value={datePreset} onChange={(event) => chooseDatePreset(event.target.value)}><option value="any">Any Date</option><option value="today">Today</option><option value="week">This Week</option><option value="month">This Month</option><option value="custom">Custom Date Range</option></FilterDropdown>
-      <FilterDropdown aria-label="Filter by shift status" value={draft.status} onChange={(event) => updateDraft("status", event.target.value)}><option value="">All Shift Statuses</option><option value="open">Open</option><option value="closed">Closed</option></FilterDropdown>
-      <FilterDropdown aria-label="Filter by started by" value={draft.startedBy} onChange={(event) => updateDraft("startedBy", event.target.value)}><option value="">All Started By</option>{employees.map((employee) => <option key={employee}>{employee}</option>)}</FilterDropdown>
-      <FilterDropdown aria-label="Filter by closed by" value={draft.closedBy} onChange={(event) => updateDraft("closedBy", event.target.value)}><option value="">All Closed By</option>{employees.map((employee) => <option key={employee}>{employee}</option>)}</FilterDropdown>
-      <FilterDropdown aria-label="Filter by device" value={draft.device} onChange={(event) => updateDraft("device", event.target.value)}><option value="">All Devices</option>{devices.map((device) => <option key={device}>{device}</option>)}</FilterDropdown>
+      <FilterDropdown aria-label="Filter by status" value={draft.status} onChange={(event) => updateDraft("status", event.target.value)}><option value="">Status</option><option value="open">Open</option><option value="closed">Closed</option></FilterDropdown>
+      <FilterDropdown aria-label="Filter by started by" value={draft.startedBy} onChange={(event) => updateDraft("startedBy", event.target.value)}><option value="">Started By</option>{employees.map((employee) => <option key={employee}>{employee}</option>)}</FilterDropdown>
+      <FilterDropdown aria-label="Filter by closed by" value={draft.closedBy} onChange={(event) => updateDraft("closedBy", event.target.value)}><option value="">Closed By</option>{employees.map((employee) => <option key={employee}>{employee}</option>)}</FilterDropdown>
+      <FilterDropdown aria-label="Filter by device" value={draft.device} onChange={(event) => updateDraft("device", event.target.value)}><option value="">Device</option>{devices.map((device) => <option key={device}>{device}</option>)}</FilterDropdown>
       <button type="button" className="sm-reset-button" onClick={reset}><i className="bi bi-arrow-counterclockwise" aria-hidden="true" /> Reset</button>
     </div>
 
@@ -118,10 +113,8 @@ export default function StoreShifts({ store }) {
       <button type="button" className="sm-text-button" onClick={() => { setCustomStart(""); setCustomEnd(""); setDraft((current) => ({ ...current, from: "", to: "" })); setFilters((current) => ({ ...current, from: "", to: "" })); setDatePreset("any"); setShowDateRange(false); }}>Clear dates</button>
     </div> : null}
 
-    <section className="sm-records-card">
-      <h2><i className="bi bi-calendar3" /> Shift Records <span>— {rangeLabel}</span></h2>
       <div className="sm-table-wrap"><table className="sm-table"><thead><tr><th>#</th><th>Shift ID</th><th>Shift Date</th><th>Opened By</th><th>Opening Device</th><th>Open Time</th><th>Closed By</th><th>Closing Device</th><th>Close Time</th><th>Duration</th><th>Opening Balance</th><th>Closing Balance</th><th>Status</th><th>View</th></tr></thead>
-        <tbody>{visible.map((shift, index) => <tr key={shift.id}><td>{(page - 1) * pageSize + index + 1}</td><td><button type="button" className="sm-link" onClick={() => setSelectedShift(shift)}>{shift.id}</button></td><td>{dateLabel(shift.date)}</td><td>{shift.openedBy}<small>({shift.openedCode})</small></td><td>{shift.openDevice}</td><td>{timeLabel(shift.openTime)}</td><td>{shift.closedBy ? <>{shift.closedBy}<small>({shift.closedCode})</small></> : "—"}</td><td>{shift.closeDevice || "—"}</td><td>{timeLabel(shift.closeTime)}</td><td>{shift.duration}</td><td>{money(shift.openingBalance)}</td><td>{money(shift.closingBalance)}</td><td><span className={`sm-status ${shift.status.toLowerCase()}`}>{shift.status}</span></td><td><button type="button" className="sm-button-outline sm-view-button" onClick={() => setSelectedShift(shift)}>View</button></td></tr>)}
+        <tbody>{visible.map((shift, index) => <tr key={shift.id}><td>{(page - 1) * pageSize + index + 1}</td><td><button type="button" className="sm-link" onClick={() => setSelectedShift(shift)}>{shift.id}</button></td><td>{dateLabel(shift.date)}</td><td>{shift.openedBy}<small>({shift.openedCode})</small></td><td>{shift.openDevice}</td><td>{timeLabel(shift.openTime)}</td><td>{shift.closedBy ? <>{shift.closedBy}<small>({shift.closedCode})</small></> : "—"}</td><td>{shift.closeDevice || "—"}</td><td>{timeLabel(shift.closeTime)}</td><td>{shift.duration}</td><td>{money(shift.openingBalance)}</td><td>{money(shift.closingBalance)}</td><td><span className={`sm-status ${shift.status.toLowerCase()}`}>{shift.status}</span></td><td><button type="button" className="sm-button-outline sm-view-button" aria-label={`View shift ${shift.id}`} onClick={() => setSelectedShift(shift)}><i className="bi bi-eye" aria-hidden="true" /></button></td></tr>)}
           {!visible.length && <tr><td colSpan={14} className="sm-empty">No shift records match these filters.</td></tr>}
         </tbody>
       </table></div>
@@ -136,7 +129,6 @@ export default function StoreShifts({ store }) {
         showWhenEmpty
         pageSizeOptions={[10, 25, 50]}
       />
-    </section>
   </section>;
 }
 

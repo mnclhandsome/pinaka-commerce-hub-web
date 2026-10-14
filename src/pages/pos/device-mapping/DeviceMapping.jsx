@@ -1,10 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import Pagination from "../../../components/Pagination";
 import { devicesApi } from "../../../api/devices";
 import { createStoreDeviceMapping, deleteStoreDeviceMapping, getStoreDeviceMappings } from "../../../api/storeDeviceMappings";
 import "../../../styles/merchant-vendors.css";
-import { ConfigFooter, useConfigState, usePosSettings, useSaveAction } from "../shared";
-
-const pageSize = 10;
+import { useConfigState, usePosSettings, useSaveAction } from "../shared";
 
 async function combineMappings(rows, devices) {
   const deviceById = new Map(devices.map((device) => [String(device.id), device]));
@@ -45,6 +44,7 @@ export function DeviceMapping() {
   const [mappedSearch, setMappedSearch] = useState("");
   const [page, setPage] = useState(1);
   const [mappedPage, setMappedPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
 
@@ -84,6 +84,7 @@ export function DeviceMapping() {
   const mappedPageCount = Math.max(1, Math.ceil(filteredMappings.length / pageSize));
   const pageRows = available.slice((page - 1) * pageSize, page * pageSize);
   const mappedRows = filteredMappings.slice((mappedPage - 1) * pageSize, mappedPage * pageSize);
+  const changePageSize = (size) => { setPageSize(size); setPage(1); setMappedPage(1); };
   const toggleSelection = (id) => setSelection((current) => current.includes(String(id)) ? current.filter((item) => item !== String(id)) : [...current, String(id)]);
   const openPicker = () => { setSelection([]); setSearch(""); setPage(1); setError(""); setView("picker"); };
   const addSelected = () => {
@@ -94,7 +95,7 @@ export function DeviceMapping() {
     setMappedPage(1);
     setView("mapped");
   };
-  const save = useSaveAction(async () => {
+  useSaveAction(async () => {
     const draftMappings = Array.isArray(mappingsRef.current) ? mappingsRef.current : [];
     const savedMappings = Array.isArray(serverMappings) ? serverMappings : [];
     const serverByDevice = new Map(savedMappings.map((mapping) => [String(mapping.deviceId), mapping]));
@@ -175,9 +176,9 @@ export function DeviceMapping() {
           {loading && <tr><td colSpan="7" role="status">Loading merchant devices…</td></tr>}
         </tbody>
       </table></div>
-      <nav className="mv-picker-pagination" aria-label="Device pages"><span>Showing {available.length ? (page - 1) * pageSize + 1 : 0}–{Math.min(page * pageSize, available.length)} of {available.length}</span>
-        <div className="mv-popup-actions"><button type="button" disabled={page === 1} onClick={() => setPage(page - 1)}>Previous</button><span>Page {page} of {pageCount}</span><button type="button" disabled={page === pageCount} onClick={() => setPage(page + 1)}>Next</button></div>
-      </nav>
+      <Pagination currentPage={page} totalPages={pageCount} totalItems={available.length}
+        pageSize={pageSize} onPageChange={setPage} onPageSizeChange={changePageSize}
+        itemLabel="devices" showWhenEmpty pageSizeOptions={[10, 25, 50, 100]} />
     </div>
     <footer className="mv-existing-footer"><span>{selection.length} devices selected</span><div className="mv-popup-actions"><button type="button" onClick={backToMapped}>Cancel</button><button type="button" disabled={!selection.length} className="mv-primary" onClick={addSelected}>Add Selected</button></div></footer>
   </section>;
@@ -189,13 +190,13 @@ export function DeviceMapping() {
       <h3>Mapped Device List</h3>
       <div className="mv-toolbar"><div className="mv-toolbar-left"><input aria-label="Search mapped devices" placeholder="Search devices by name, type or serial…" value={mappedSearch} onChange={(event) => { setMappedSearch(event.target.value); setMappedPage(1); }} /></div><button type="button" className="mv-reset" onClick={() => { setMappedSearch(""); setMappedPage(1); }}>↺ Reset</button></div>
       <div className="mv-scroll"><table><thead><tr><th>Device Code</th><th>Device ID</th><th>Device Name</th><th>Serial Number</th><th>Device Type</th><th>Actions</th></tr></thead><tbody>
-        {mappedRows.map((device) => <tr key={device.deviceId}><td>{device.code || "—"}</td><td>{device.deviceIdentifier || "—"}</td><td><strong>{device.name || "—"}</strong></td><td>{device.serial || "—"}</td><td>{device.type || "—"}</td><td><button type="button" className="mv-device-remove" onClick={() => setMappings((current) => current.filter((item) => String(item.deviceId) !== String(device.deviceId)))}>Remove</button></td></tr>)}
+        {mappedRows.map((device) => <tr key={device.deviceId}><td>{device.code || "—"}</td><td>{device.deviceIdentifier || "—"}</td><td><strong>{device.name || "—"}</strong></td><td>{device.serial || "—"}</td><td>{device.type || "—"}</td><td><button type="button" className="mv-device-remove pc-icon-action pc-danger" aria-label={`Remove ${device.name || "device"}`} title="Delete" onClick={() => setMappings((current) => current.filter((item) => String(item.deviceId) !== String(device.deviceId)))}><i className="bi bi-trash3" aria-hidden="true" /></button></td></tr>)}
         {!mappedRows.length && <tr><td colSpan="7">No mapped devices match. Use Add Existing Device to select from merchant devices.</td></tr>}
       </tbody></table></div>
-      <nav className="mv-picker-pagination" aria-label="Mapped device pages"><span>Showing {filteredMappings.length ? (mappedPage - 1) * pageSize + 1 : 0}–{Math.min(mappedPage * pageSize, filteredMappings.length)} of {filteredMappings.length} entries</span>
-        <div className="mv-popup-actions"><button type="button" disabled={mappedPage === 1} onClick={() => setMappedPage(mappedPage - 1)}>Previous</button><span>Page {mappedPage} of {mappedPageCount}</span><button type="button" disabled={mappedPage === mappedPageCount} onClick={() => setMappedPage(mappedPage + 1)}>Next</button></div>
-      </nav>
-      <ConfigFooter message="Mapping changes are saved with POS Configuration." onBack={() => settings.requestLeave(null)} onSave={save} />
+      <Pagination currentPage={mappedPage} totalPages={mappedPageCount} totalItems={filteredMappings.length}
+        pageSize={pageSize} onPageChange={setMappedPage} onPageSizeChange={changePageSize}
+        itemLabel="entries" showWhenEmpty pageSizeOptions={[10, 25, 50, 100]} />
+      <p className="mv-device-save-note">Mapping changes are saved with POS Configuration.</p>
     </section>
   </section>;
 }

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import FilterDropdown from "../../../components/FilterDropdown";
 import { ApiError } from "../../../api/http";
 import {
   ConfigBadge, ConfigField, ConfigFooter, ConfigHeader, ConfigSwitch,
@@ -215,7 +216,7 @@ export function TaxConfiguration() {
 
                         <div className="currency-tax-input-wrap">
 
-                            <select
+                            <FilterDropdown
                                 value={currency}
                                 onChange={(event) =>
                                     setCurrency(
@@ -246,7 +247,7 @@ export function TaxConfiguration() {
                                 <option value="AUD">
                                     AUD - Australian Dollar
                                 </option>
-                            </select>
+                            </FilterDropdown>
 
                             <i className="bi bi-chevron-down" />
 
@@ -265,7 +266,7 @@ export function TaxConfiguration() {
 
                         <div className="currency-tax-input-wrap">
 
-                            <select
+                            <FilterDropdown
                                 value={rounding}
                                 onChange={(event) =>
                                     setRounding(
@@ -288,7 +289,7 @@ export function TaxConfiguration() {
                                 <option value="up">
                                     Always round up
                                 </option>
-                            </select>
+                            </FilterDropdown>
 
                             <i className="bi bi-chevron-down" />
 
@@ -404,7 +405,7 @@ export function TaxConfiguration() {
 
                                     <div className="currency-tax-input-wrap">
 
-                                        <select
+                                        <FilterDropdown
                                             value={
                                                 taxCalculation
                                             }
@@ -429,7 +430,7 @@ export function TaxConfiguration() {
                                             <option value="total">
                                                 Calculate Tax on Total
                                             </option>
-                                        </select>
+                                        </FilterDropdown>
 
                                         <i className="bi bi-chevron-down" />
 
