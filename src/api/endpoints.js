@@ -60,6 +60,13 @@ export const endpoints = {
   merchantStores: (merchantId) => `/merchants/${merchantId}/stores`,
   storeEmployees: (merchantId, storeId) =>
     `/merchants/${encodeURIComponent(merchantId)}/stores/${encodeURIComponent(storeId)}/employees`,
+  
+  // Employee Attendance (Connector API)
+  attendance: "/connector/api/v1/attendance",
+  attendanceMe: "/connector/api/v1/attendance/me",
+  attendanceClockIn: "/connector/api/v1/attendance/clock-in",
+  attendanceClockOut: "/connector/api/v1/attendance/clock-out",
+
   storeRolePermissions: (merchantId, storeId) =>
     `/merchants/${encodeURIComponent(merchantId)}/stores/${encodeURIComponent(storeId)}/role-permissions`,
 
