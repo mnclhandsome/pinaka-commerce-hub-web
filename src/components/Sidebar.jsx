@@ -38,13 +38,13 @@ const sections = [
     title: "OPERATIONS",
     items: [
 
-      ["/pos-configuration", "bi-cpu", "POS Configuration",],
+      // ["/pos-configuration", "bi-cpu", "POS Configuration",],
       ["/orders", "bi-receipt", "Orders"],
-      ["/cash-management", "bi-wallet2", "Cash Management"],
+      // ["/cash-management", "bi-wallet2", "Cash Management"],
       ["/employees", "bi-people", "Employees",],
       ["/devices", "bi-display", "Devices",],
-      ["/shifts", "bi-clock", "Shifts"],
-      ["/attendance", "bi-person-check", "Attendance"],
+      // ["/shifts", "bi-clock", "Shifts"],
+      // ["/attendance", "bi-person-check", "Attendance"],
     ],
   },
   {

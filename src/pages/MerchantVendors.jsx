@@ -6,6 +6,7 @@ import FiltersBar from "../components/FiltersBar";
 import Pagination from "../components/Pagination";
 import "../styles/merchant-vendors.css";
 import Vendors from "./Vendors";
+import { listMerchantStores } from "../api/stores";
 
 import {
     getMappedMerchantVendors,
@@ -14,6 +15,7 @@ import {
     createVendor,
     unmapMerchantVendor,
     getMappedStoreVendors,
+    getVendors,
     addStoreVendors,
     unmapStoreVendor,
 } from "../api/vendors";
@@ -207,15 +209,41 @@ export default function MerchantVendors({
             const mapped = storeScope
                 ? await pendingStoreRead(`store-vendors:${mappingId}:${searchValue}`, () => getMappedStoreVendors(mappingId, { search: searchValue }))
                 : await pendingStoreRead(`merchant-vendors:${mappingId}:${searchValue}`, () => getMappedMerchantVendors(mappingId, { search: searchValue }));
+            // Store mapping responses can contain only vendor IDs. Load the
+            // vendor records as well so the assigned rows show their details
+            // on the first visit to a store's Vendors section.
+            const storeVendorDetails = storeScope
+                ? await getVendors().catch(() => [])
+                : [];
+            let assignedStoreCounts = new Map();
+            if (storeScope && merchantId) {
+                const merchantStores = await listMerchantStores(merchantId).catch(() => []);
+                const storeIds = [...new Set([
+                    mappingId,
+                    ...merchantStores.map(store => store.value),
+                ].filter(Boolean).map(String))];
+                const storeAssignments = await Promise.all(storeIds.map(async storeId => {
+                    try {
+                        const vendorsForStore = await pendingStoreRead(
+                            `store-vendors:${storeId}:`,
+                            () => getMappedStoreVendors(storeId),
+                        );
+                        return vendorsForStore.map(idOf);
+                    } catch {
+                        return [];
+                    }
+                }));
+                assignedStoreCounts = new Map();
+                storeAssignments.forEach(vendorIds => vendorIds.forEach(vendorId => {
+                    if (vendorId) assignedStoreCounts.set(vendorId, (assignedStoreCounts.get(vendorId) || 0) + 1);
+                }));
+            }
 
             const mappedIds = mapped.map(idOf);
 
             setMasterVendors((current) => {
                 const byId = new Map(
-                    current.map((vendor) => [
-                        idOf(vendor),
-                        vendor,
-                    ])
+                    [...current, ...storeVendorDetails].map((vendor) => [idOf(vendor), vendor])
                 );
 
                 mapped.forEach((vendor) => {
@@ -230,6 +258,7 @@ export default function MerchantVendors({
                         id,
                         vendorId: id,
                         mappingId: vendor.mappingId || details.mappingId || "",
+                        ...(storeScope ? { assignedStoreCount: assignedStoreCounts.get(id) ?? details.assignedStoreCount ?? vendor.assignedStoreCount ?? 0 } : {}),
                     });
                 });
 

@@ -129,6 +129,8 @@ function MerchantReadOnly({ merchantId, merchant, onBack, onSaveEmployee, onSave
   const [error, setError] = useState('');
   const [attempt, setAttempt] = useState(0);
   const [apiEmployees, setApiEmployees] = useState(null);
+  const [registeredDeviceCount, setRegisteredDeviceCount] = useState(null);
+  const [registeredEmployeeCount, setRegisteredEmployeeCount] = useState(null);
   const [employeesLoading, setEmployeesLoading] = useState(false);
   const [employeesError, setEmployeesError] = useState('');
   const [allSubscriptions, setAllSubscriptions] = useState([]);
@@ -248,6 +250,19 @@ async function openEmployeeEdit(employee) {
     });
     return () => { active = false; };
   }, [activeTab, loading, result, needsSubscriptionFallback, needsPlanFallback]);
+  useEffect(() => {
+    if (activeTab !== 'subscription' || loading || !apiMerchantId) return;
+    let active = true;
+    Promise.all([
+      pendingStoreRead(`devices:${apiMerchantId}`, () => devicesApi.listAllByMerchantId(apiMerchantId)).catch(() => null),
+      pendingStoreRead(`employees:${apiMerchantId}`, () => listMerchantEmployees(apiMerchantId)).catch(() => null),
+    ]).then(([deviceRows, employeeRows]) => {
+      if (!active) return;
+      if (Array.isArray(deviceRows)) setRegisteredDeviceCount(deviceRows.length);
+      if (Array.isArray(employeeRows)) setRegisteredEmployeeCount(employeeRows.length);
+    });
+    return () => { active = false; };
+  }, [activeTab, loading, apiMerchantId]);
   const subStoreType = subscription.storeType || subscription.store_type || subPlan.storeType || subPlan.store_type || raw.storeType || {};
 
   const subMatch = useMemo(() => {
@@ -517,9 +532,9 @@ async function openEmployeeEdit(employee) {
           ['Renewal Date', displayRenewalDate],
           ['Registered Stores', stores.length > 0 ? stores.length : (subMatch?.stores ?? summary.stores ?? raw.storeCount ?? (Array.isArray(raw.stores) ? raw.stores.length : 0))],
           ['Store Allowance', displayStoreAllowance],
-          ['Registered Devices', devices.length > 0 ? devices.length : (subMatch?.devices ?? raw.deviceCount ?? (Array.isArray(raw.devices) ? raw.devices.length : 0))],
+          ['Registered Devices', devices.length > 0 ? devices.length : (registeredDeviceCount ?? subMatch?.devices ?? raw.deviceCount ?? (Array.isArray(raw.devices) ? raw.devices.length : 0))],
           ['Device Allowance', displayDeviceAllowance],
-          ['Registered Employees', employees.length > 0 ? employees.length : (subMatch?.employees ?? (Array.isArray(employeeRecords) ? employees.length : saved?.employeeCount ?? raw.employeeCount ?? summary.employeeCount ?? 0))],
+          ['Registered Employees', employees.length > 0 ? employees.length : (registeredEmployeeCount ?? subMatch?.employees ?? (Array.isArray(employeeRecords) ? employees.length : saved?.employeeCount ?? raw.employeeCount ?? summary.employeeCount ?? 0))],
           ['Employee Allowance', displayEmployeeAllowance],
         ]} /></ViewSection>
       </div>
