@@ -149,7 +149,7 @@ export default function MerchantVendors({
     const [page, setPage] = useState(1);
     const [pageSize, setPageSize] = useState(10);
     const [pickerPage, setPickerPage] = useState(1);
-    const pickerPageSize = 25;
+    const [pickerPageSize, setPickerPageSize] = useState(10);
 
     const [sort, setSort] = useState({
         key: "name",
@@ -704,7 +704,7 @@ useEffect(() => {
         <section className="merchant-vendors mv-create-page">
             <header className="mv-card mv-header">
                 <h2>Add New Vendor</h2>
-                <button type="button" disabled={busy} onClick={close}>← Back to Vendors</button>
+                <button type="button" className="store-config-back-button" disabled={busy} onClick={close}>← Back to Vendors</button>
             </header>
             <div className="mv-create-content"><Vendors formOnly onCreate={createAndAssignVendor} onCancel={close} /></div>
         </section>
@@ -717,7 +717,7 @@ useEffect(() => {
                     <h2>Add Existing Vendor</h2>
                     <p>Choose one or more vendors to add to this {entityName}.</p>
                 </div>
-                <button type="button" disabled={busy} onClick={close}>← Back to Vendors</button>
+                <button type="button" className="store-config-back-button" disabled={busy} onClick={close}>← Back to Vendors</button>
             </header>
 
             <div className="mv-existing-content">
@@ -736,11 +736,7 @@ useEffect(() => {
                     />
                     <select aria-label="Filter by country" value={countryFilter} onChange={e => { setCountryFilter(e.target.value); setStateFilter(""); setPickerPage(1); }}><option value="">All countries</option>{countries.map(country => <option key={locationKey(country)} value={locationKey(country)}>{country}</option>)}</select>
                     <select aria-label="Filter by state" value={stateFilter} onChange={e => { setStateFilter(e.target.value); setPickerPage(1); }}><option value="">All states</option>{states.map(state => <option key={locationKey(state)} value={locationKey(state)}>{state}</option>)}</select>
-                    <button type="button" onClick={() => { setSearch(""); setCountryFilter(""); setStateFilter(""); setPickerPage(1); }}>Clear filters</button>
-                </div>
-
-                <div className="mv-picker-summary">
-                    <span>{available.length} matching vendors · {selection.length} selected</span>
+                    <button type="button" onClick={() => { setSearch(""); setCountryFilter(""); setStateFilter(""); setPickerPage(1); }}><i className="bi bi-arrow-counterclockwise" aria-hidden="true" /> Clear</button>
                 </div>
 
                 <div className="mv-existing-table-wrap">
@@ -774,14 +770,7 @@ useEffect(() => {
                     </table>
                 </div>
 
-                <nav className="mv-picker-pagination" aria-label="Existing vendor pages">
-                    <span>Showing {available.length ? (currentPickerPage - 1) * pickerPageSize + 1 : 0}–{Math.min(currentPickerPage * pickerPageSize, available.length)} of {available.length}</span>
-                    <div className="mv-popup-actions">
-                        <button type="button" disabled={currentPickerPage === 1} onClick={() => setPickerPage(currentPickerPage - 1)}>Previous</button>
-                        <span>Page {currentPickerPage} of {pickerPages}</span>
-                        <button type="button" disabled={currentPickerPage === pickerPages} onClick={() => setPickerPage(currentPickerPage + 1)}>Next</button>
-                    </div>
-                </nav>
+                <Pagination currentPage={currentPickerPage} totalPages={pickerPages} totalItems={available.length} pageSize={pickerPageSize} onPageChange={setPickerPage} onPageSizeChange={(size) => { setPickerPageSize(size); setPickerPage(1); }} itemLabel="vendors" showWhenEmpty />
                 {saveError && <p role="alert" className="mv-error">{saveError}</p>}
             </div>
 
@@ -1120,8 +1109,7 @@ useEffect(() => {
                                 onChange={(e) => { setSearch(e.target.value); setPickerPage(1); }}
                             />
 
-                            <div className="mv-location-filters"><select aria-label="Filter by country" value={countryFilter} onChange={e => { setCountryFilter(e.target.value); setStateFilter(""); setPickerPage(1); }}><option value="">All countries</option>{countries.map(country => <option key={locationKey(country)} value={locationKey(country)}>{country}</option>)}</select><select aria-label="Filter by state" value={stateFilter} onChange={e => { setStateFilter(e.target.value); setPickerPage(1); }}><option value="">All states</option>{states.map(state => <option key={locationKey(state)} value={locationKey(state)}>{state}</option>)}</select><button type="button" onClick={() => { setSearch(""); setCountryFilter(""); setStateFilter(""); setPickerPage(1); }}>Clear filters</button></div>
-                            <div className="mv-picker-summary"><span>{available.length} matching vendors · {selection.length} selected</span></div>
+                            <div className="mv-location-filters"><select aria-label="Filter by country" value={countryFilter} onChange={e => { setCountryFilter(e.target.value); setStateFilter(""); setPickerPage(1); }}><option value="">All countries</option>{countries.map(country => <option key={locationKey(country)} value={locationKey(country)}>{country}</option>)}</select><select aria-label="Filter by state" value={stateFilter} onChange={e => { setStateFilter(e.target.value); setPickerPage(1); }}><option value="">All states</option>{states.map(state => <option key={locationKey(state)} value={locationKey(state)}>{state}</option>)}</select><button type="button" onClick={() => { setSearch(""); setCountryFilter(""); setStateFilter(""); setPickerPage(1); }}><i className="bi bi-arrow-counterclockwise" aria-hidden="true" /> Clear</button></div>
                             <div className="mv-scroll mv-options">
 
                                 <table>
@@ -1222,7 +1210,7 @@ useEffect(() => {
                                 </table>
 
                             </div>
-                            <nav className="mv-picker-pagination" aria-label="Existing vendor pages"><span>Showing {available.length ? (currentPickerPage - 1) * pickerPageSize + 1 : 0}–{Math.min(currentPickerPage * pickerPageSize, available.length)} of {available.length}</span><div className="mv-popup-actions"><button type="button" disabled={currentPickerPage === 1} onClick={() => setPickerPage(currentPickerPage - 1)}>Previous</button><span>Page {currentPickerPage} of {pickerPages}</span><button type="button" disabled={currentPickerPage === pickerPages} onClick={() => setPickerPage(currentPickerPage + 1)}>Next</button></div></nav>
+                            <Pagination currentPage={currentPickerPage} totalPages={pickerPages} totalItems={available.length} pageSize={pickerPageSize} onPageChange={setPickerPage} onPageSizeChange={(size) => { setPickerPageSize(size); setPickerPage(1); }} itemLabel="vendors" showWhenEmpty />
 
                         </div>
                     ) : (

@@ -166,6 +166,10 @@
   gap: 5px;
 }
 
+.discounts-page .coupon-editor-heading {
+  align-items: center;
+}
+
 .discount-back {
   align-self: flex-start;
   margin-bottom: 2px;

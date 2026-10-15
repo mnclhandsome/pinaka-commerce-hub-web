@@ -730,30 +730,6 @@ export default function Products({
             <div className="products-card">
 
                 {/* =================================================
-                    TABLE HEADER
-                ================================================= */}
-
-                <div className="products-table-header">
-
-                    <div>
-                        Products
-
-                        <span>
-                            {filteredProducts.length}
-                        </span>
-                    </div>
-
-                    <div className="read-only-badge">
-
-                        <i className="bi bi-lock" />
-
-                        Read Only
-
-                    </div>
-
-                </div>
-
-                {/* =================================================
                     LOADING
                 ================================================= */}
 
@@ -793,7 +769,7 @@ export default function Products({
 
                             <tbody>
 
-                                {paginatedProducts.map(
+                                {paginatedProducts.length ? paginatedProducts.map(
                                     (product) => (
                                         <ProductRow
                                             key={
@@ -809,6 +785,25 @@ export default function Products({
                                             }
                                         />
                                     )
+                                ) : (
+                                    <tr>
+                                        <td className="products-table-empty-cell" colSpan="9">
+                                            <div className="products-table-empty-state">
+                                                <div className="products-empty-icon">
+                                                    <i className="bi bi-box-seam" />
+                                                </div>
+                                                <strong>No products found</strong>
+                                                <span>
+                                                    {products.length === 0
+                                                        ? "No products are available for this store."
+                                                        : "Try changing your search or filters."}
+                                                </span>
+                                                <button type="button" onClick={clearFilters}>
+                                                    Clear Filters
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
                                 )}
 
                             </tbody>
@@ -819,48 +814,10 @@ export default function Products({
                 )}
 
                 {/* =================================================
-                    EMPTY STATE
-                ================================================= */}
-
-                {!loading &&
-                    filteredProducts.length ===
-                        0 && (
-                        <div className="products-empty">
-
-                            <div>
-                                <i className="bi bi-box-seam" />
-                            </div>
-
-                            <h3>
-                                No products found
-                            </h3>
-
-                            <p>
-                                {products.length ===
-                                0
-                                    ? "No products are available for this store."
-                                    : "Try changing your search or filters."}
-                            </p>
-
-                            <button
-                                type="button"
-                                onClick={
-                                    clearFilters
-                                }
-                            >
-                                Clear Filters
-                            </button>
-
-                        </div>
-                    )}
-
-                {/* =================================================
                     PAGINATION
                 ================================================= */}
 
-                {!loading &&
-                    filteredProducts.length >
-                        0 && (
+                {!loading && (
                         <Pagination
                             currentPage={
                                 currentPage
@@ -871,6 +828,7 @@ export default function Products({
                             totalItems={
                                 totalItems
                             }
+                            showWhenEmpty
                             pageSize={
                                 pageSize
                             }

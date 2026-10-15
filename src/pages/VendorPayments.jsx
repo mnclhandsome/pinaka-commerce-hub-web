@@ -254,6 +254,7 @@ export default function VendorPayments({ viewMode } = {}) {
 
         {/* Single Search Box */}
        <div className="vendor-search">
+        <i className="bi bi-search" aria-hidden="true" />
         <input
           type="text"
           value={search}

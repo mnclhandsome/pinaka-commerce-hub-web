@@ -828,6 +828,7 @@ export default function StoreCategories({
           );
 
         }}
+        showWhenEmpty
       />
 
     </>
@@ -1043,6 +1044,7 @@ export default function StoreCategories({
           );
 
         }}
+        showWhenEmpty
       />
 
     </>
@@ -1312,6 +1314,7 @@ export default function StoreCategories({
           );
 
         }}
+        showWhenEmpty
       />
 
     </>

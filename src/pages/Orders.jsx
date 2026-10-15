@@ -190,6 +190,39 @@ export default function Orders({
       onSearchChange={setSearch}
       searchPlaceholder="Search order ID, client order ID, customer..."
       filters={[
+        ...(!embedded ? [
+          {
+            key: "merchant",
+            label: "Merchant",
+            value: selectedMerchant,
+            options: [
+              { label: "All Merchants", value: "" },
+              ...merchants.map((merchant) => ({
+                label: merchant.name || merchant.merchantId,
+                value: merchant.id,
+              })),
+            ],
+            onChange: (value) => {
+              setSelectedMerchant(value);
+              setSelectedStore("");
+              setOrders([]);
+              rememberFilters(value, "");
+            },
+          },
+          {
+            key: "store",
+            label: "Store",
+            value: selectedStore,
+            options: [
+              { label: "All Stores", value: "" },
+              ...stores.map((item) => ({ label: item.label, value: item.value })),
+            ],
+            onChange: (value) => {
+              setSelectedStore(value);
+              rememberFilters(selectedMerchant, value);
+            },
+          },
+        ] : []),
         {
           key: "date",
           label: "Date",
@@ -248,66 +281,13 @@ export default function Orders({
         <SummaryCard icon="bi-cash-stack" tone="blue" label="Total Value" value={`$${totalAmount.toFixed(2)}`} meta="Across loaded orders" metaTone="info" />
       </div>
 
-      {embedded && ordersToolbar}
-
       <div className="orders-card">
-        {!embedded && (
-          <FiltersBar
-            filters={[
-              {
-                key: "merchant",
-                label: "Merchant",
-                value: selectedMerchant,
-                options: [
-                  { label: "All Merchants", value: "" },
-                  ...merchants.map((merchant) => ({
-                    label: merchant.name || merchant.merchantId,
-                    value: merchant.id,
-                  })),
-                ],
-                onChange: (value) => {
-                  setSelectedMerchant(value);
-                  setSelectedStore("");
-                  setOrders([]);
-                  rememberFilters(value, "");
-                },
-              },
-              {
-                key: "store",
-                label: "Store",
-                value: selectedStore,
-                options: [
-                  { label: "All Stores", value: "" },
-                  ...stores.map((item) => ({ label: item.label, value: item.value })),
-                ],
-                onChange: (value) => {
-                  setSelectedStore(value);
-                  rememberFilters(selectedMerchant, value);
-                },
-              },
-            ]}
-            showClear={false}
-          />
-        )}
-
-        {!embedded && ordersToolbar}
+        {ordersToolbar}
 
         {error && <div className="orders-banner error">{error}</div>}
         {loading && <div className="orders-banner">Loading orders...</div>}
 
-        {!selectedStore && !loading && (
-          <div className="orders-empty">
-            <div className="orders-empty-icon"><i className="bi bi-receipt" /></div>
-            <h3>Select a store</h3>
-            <p>Choose a merchant and store to load that store&apos;s orders.</p>
-          </div>
-        )}
-
-        {selectedStore && !loading && filteredOrders.length > 0 && (
-          <>
-          <div className="orders-table-heading">
-            <div>Orders<span>{filteredOrders.length}</span></div>
-          </div>
+        {!loading && (
           <div className="orders-table-wrapper">
             <table className="orders-table">
               <thead>
@@ -321,7 +301,7 @@ export default function Orders({
                 </tr>
               </thead>
               <tbody>
-                {paginatedOrders.map((order) => (
+                {paginatedOrders.length ? paginatedOrders.map((order) => (
                   <tr key={order.id}>
                     <td>
                       <div className="order-id-cell">
@@ -361,25 +341,40 @@ export default function Orders({
                     </td>
                     <td><strong className="order-total">{order.total}</strong></td>
                   </tr>
-                ))}
+                )) : (
+                  <tr>
+                    <td className="orders-table-empty" colSpan="6">
+                      <div className="products-table-empty-state">
+                        <div className="products-empty-icon">
+                          <i className="bi bi-receipt" />
+                        </div>
+                        <strong>
+                          {!selectedStore
+                            ? "Select a store to view orders"
+                            : error
+                              ? "Orders could not be loaded"
+                              : "No orders found"}
+                        </strong>
+                        <span>
+                          {!selectedStore
+                            ? "Choose a merchant and store to load that store's orders."
+                            : error
+                              ? error
+                              : "Try changing your search or filters."}
+                        </span>
+                        {selectedStore && !error && (
+                          <button type="button" onClick={clearFilters}>Clear Filters</button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
-          </>
         )}
 
-        {selectedStore && !loading && filteredOrders.length === 0 && (
-          <div className="orders-empty">
-            <div className="orders-empty-icon"><i className="bi bi-receipt" /></div>
-            <h3>No orders found</h3>
-            <p>{error ? "The order list could not be loaded." : "Try changing your search or filters."}</p>
-            {!error && (
-              <button type="button" onClick={clearFilters}>Clear Filters</button>
-            )}
-          </div>
-        )}
-
-        {filteredOrders.length > 0 && (
+        {!loading && (
           <Pagination
             currentPage={currentPage}
             totalPages={totalPages}
@@ -395,7 +390,7 @@ export default function Orders({
           />
         )}
 
-        {filteredOrders.length > 0 && (
+        {selectedStore && !loading && filteredOrders.length > 0 && (
           <div className="orders-footer">
             <span className="orders-source">
               <i className="bi bi-arrow-repeat" />

@@ -379,7 +379,7 @@ export default function FastKeys() {
           </thead>
 
           <tbody>
-            {pageItems.map((item) => (
+            {pageItems.length ? pageItems.map((item) => (
               <tr key={item.id}>
 
                 {/* Image */}
@@ -409,12 +409,21 @@ export default function FastKeys() {
                 <td>{formatTimestamp(item.date)}</td><td>{formatTimestamp(item.updatedAt)}</td>
                 <td><div className="fast-key-actions"><button type="button" className="edit-button" onClick={() => openForm(item)} aria-label={`Edit ${item.title}`}><i className="bi bi-pencil" /></button><button type="button" className="delete-button" onClick={() => remove(item)} aria-label={`Delete ${item.title}`}><i className="bi bi-trash" /></button></div></td>
               </tr>
-            ))}
+            )) : (
+              <tr>
+                <td className="fast-key-table-empty-cell" colSpan="7">
+                  {loading
+                    ? "Loading fast keys..."
+                    : loadError
+                      ? "Fast keys could not be loaded."
+                      : "No fast keys found."}
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
-        {!loading && !loadError && filtered.length === 0 && <div className="fast-key-empty">No fast keys found.</div>}
       </div>
-      <div className="fast-key-footer"><Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} pageSize={itemsPerPage} onPageSizeChange={setItemsPerPage} totalItems={filtered.length} itemLabel="fast keys" /></div>
+      <div className="fast-key-footer"><Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} pageSize={itemsPerPage} onPageSizeChange={setItemsPerPage} totalItems={filtered.length} itemLabel="fast keys" showWhenEmpty /></div>
       <DeleteConfirmationDialog isOpen={Boolean(deleteTarget)} title="Delete Fast Key?" message={deleteTarget ? `Are you sure you want to delete "${deleteTarget.title}"?` : ""} confirmLabel="Delete" busyLabel="Deleting…" cancelLabel="Cancel" busy={deleting} error={deleteError} onCancel={cancelDelete} onConfirm={confirmDelete} iconClassName="bi bi-trash3" />
       {formOpen && <div className="fast-key-modal-backdrop"><form className="fast-key-modal" onSubmit={save}>
         <div className="fast-key-modal-header"><h2>{editing ? "Edit Fast Key" : "Add New Fast Key"}</h2><button type="button" className="fast-key-close" disabled={saving} onClick={closeForm} aria-label="Close"><i className="bi bi-x-lg" aria-hidden="true" /></button></div>
