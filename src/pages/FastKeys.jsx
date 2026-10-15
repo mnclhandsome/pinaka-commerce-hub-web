@@ -48,7 +48,7 @@ export default function FastKeys() {
           image: item.fastkey_image || "",
           products: (Array.isArray(item.products) ? item.products : []).map(product => product.name || String(product.product_id || "")).filter(Boolean),
           productIds: (Array.isArray(item.products) ? item.products : []).map(product => String(product.product_id || product.id || "")).filter(Boolean),
-          employeeId: item.username || item.user_id || "—",
+          employeeId: item.email || "—",
           userId: item.user_id || "",
           updatedAt: item.updated_at || item.updatedAt || "",
           date: item.created_at || item.createdAt || "—",
@@ -426,7 +426,7 @@ export default function FastKeys() {
 
 
                 <td><div className="fast-key-products"><small>{item.products.length} products</small>{item.products.slice(0,3).map((name,index) => <span key={index}>{name}</span>)}{item.products.length > 3 && <b>+{item.products.length - 3} more</b>}</div></td>
-                <td><span className="fast-key-employee" title={item.userId}>{item.employeeId}</span></td>
+                <td><span className="fast-key-employee" title={item.employeeId}>{item.employeeId}</span></td>
                 <td>{formatTimestamp(item.date)}</td><td>{formatTimestamp(item.updatedAt)}</td>
                 <td><div className="fast-key-actions"><button type="button" className="edit-button" onClick={() => openForm(item)} aria-label={`Edit ${item.title}`}><i className="bi bi-pencil" /></button><button type="button" className="delete-button" onClick={() => remove(item)} aria-label={`Delete ${item.title}`}><i className="bi bi-trash" /></button></div></td>
               </tr>

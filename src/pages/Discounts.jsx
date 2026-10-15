@@ -1,4 +1,7 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useParams } from "react-router-dom";
+import { api, pendingStoreRead } from "../api/http";
+import { normalizeCatalog } from "../api/products";
 import FilterDropdown from "../components/FilterDropdown";
 import Pagination from "../components/Pagination";
 import DeleteConfirmationDialog from "../components/DeleteConfirmationDialog";
@@ -45,12 +48,6 @@ const typeOptions = {
   ],
 };
 
-const discountsSeed = [
-  { id: "auto-1", type: "auto", code: "Weekend Saver", discount_type: "percent", amount: "10", product: "Pake Taxo", auto_apply: true, usage_limit: "100", date_starts: "2026-01-01", date_expires: "2026-12-31" },
-  { id: "mix-1", type: "mix_match", code: "Movie Night", discount_type: "percent", amount: "20", product: "Popcorn", discounted_products: "Soda, Chocolate", usage_limit: "120", date_starts: "2026-11-01", date_expires: "2026-11-15" },
-  { id: "pack-1", type: "multipack", code: "Family Rice Pack", discount_type: "price", amount: "5", product: "Basmati Rice", qty: "6", usage_limit: "40", date_starts: "2026-08-01", date_expires: "2026-10-01" },
-];
-
 const typeLabel = (value) => TYPES.find((type) => type.id === value)?.label || "Discount";
 const discountStatus = (discount) => {
   const now = new Date();
@@ -63,14 +60,61 @@ const amountLabel = (discount) => {
   if (discount.discount_type === "percent") return `${discount.amount}%`;
   return `$${Number(discount.amount || 0).toFixed(2)}`;
 };
+const inputDate = value => {
+  const text = String(value ?? "").slice(0, 10);
+  const match = text.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+  return match ? `${match[3]}-${match[2]}-${match[1]}` : text;
+};
 const formatSystemDate = (value) => {
   if (!value) return "—";
   const date = new Date(`${value}T00:00:00`);
   return Number.isNaN(date.getTime()) ? value : new Intl.DateTimeFormat(undefined, { dateStyle: "medium" }).format(date);
 };
 
+function DiscountProductPicker({ products, value, onChange, multiple = false, disabled }) {
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const root = useRef(null);
+  const ids = String(value || "").split(",").filter(Boolean);
+  const productId = product => String(product.wordpressId || product.id);
+  const selected = products.filter(product => ids.includes(productId(product)));
+  useEffect(() => {
+    const dismiss = event => { if (!root.current?.contains(event.target)) { setOpen(false); setQuery(""); } };
+    document.addEventListener("pointerdown", dismiss);
+    return () => document.removeEventListener("pointerdown", dismiss);
+  }, []);
+  return <div className="discount-product-picker" ref={root}>
+    <div className="discount-product-search">
+      <i className="bi bi-search" aria-hidden="true" />
+      <input aria-label={multiple ? "Search discounted products" : "Search products"} role="combobox" aria-expanded={open} autoComplete="off" disabled={disabled}
+        placeholder={selected.length ? selected.map(product => product.name).join(", ") : "Search products..."}
+        value={open ? query : selected.map(product => product.name).join(", ")}
+        onFocus={() => { setOpen(true); setQuery(""); }} onChange={event => { setQuery(event.target.value); setOpen(true); }}
+        onKeyDown={event => { if (event.key === "Escape") { setOpen(false); setQuery(""); } }} />
+    </div>
+    {open && !disabled && <div className="discount-product-menu">
+      {products.filter(product => product.name.toLowerCase().includes(query.toLowerCase())).map(product => {
+        const id = productId(product);
+        return <button type="button" key={id} aria-pressed={ids.includes(id)} onClick={() => {
+          onChange(multiple ? (ids.includes(id) ? ids.filter(item => item !== id) : [...ids, id]).join(",") : id);
+          if (!multiple) { setOpen(false); setQuery(""); }
+        }}><span>{product.name}</span>{ids.includes(id) && <i className="bi bi-check2" aria-hidden="true" />}</button>;
+      })}
+      {!products.some(product => product.name.toLowerCase().includes(query.toLowerCase())) && <p>No products found.</p>}
+    </div>}
+  </div>;
+}
 export default function Discounts({ embedded = false }) {
-  const [discounts, setDiscounts] = useState(discountsSeed);
+  const { storeId } = useParams();
+  const [discounts, setDiscounts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
+  const [retry, setRetry] = useState(0);
+  const [pagination, setPagination] = useState({});
+  const catalogCache = useRef({});
+  const [catalogProducts, setCatalogProducts] = useState([]);
+  const [saving, setSaving] = useState(false);
+  const saveLock = useRef(false);
   const [typeFilter, setTypeFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [search, setSearch] = useState("");
@@ -81,9 +125,59 @@ export default function Discounts({ embedded = false }) {
   const [notice, setNotice] = useState("");
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleteError, setDeleteError] = useState("");
+  const [deleting, setDeleting] = useState(false);
+  const deleteLock = useRef(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
+  useEffect(() => {
+    let active = true;
+    setLoading(true);
+    setLoadError("");
+    setDiscounts([]);
+    const path = `/stores/${storeId}/discounts?page=${currentPage}&per_page=${pageSize}`;
+    pendingStoreRead(`discounts:${path}`, () => api.get(path, { headers: { Accept: "application/json" } }))
+      .then(async response => {
+        if (!active) return;
+        if (response?.success === false || response?.status === "error") throw new Error(response.message || "Unable to load discounts.");
+        const data = response?.data ?? response;
+        if (!catalogCache.current[storeId]) {
+          catalogCache.current[storeId] = pendingStoreRead(`store-products:${storeId}`, () => api.get(`/stores/${encodeURIComponent(storeId)}/catalog`))
+            .then(result => normalizeCatalog(result).products)
+            .catch(error => { delete catalogCache.current[storeId]; throw error; });
+        }
+        const catalog = await catalogCache.current[storeId];
+        if (!active) return;
+        setCatalogProducts(catalog);
+        const productNames = new Map();
+        catalog.forEach(product => {
+          [product.id, product.product_id, product.wordpressId, product.wordpress_id, product.payload?.id].filter(id => id != null).forEach(id => productNames.set(String(id), product.name));
+        });
+        const names = value => {
+          const values = Array.isArray(value) ? value : String(value ?? "").split(",").map(item => item.trim()).filter(Boolean);
+          return values.map(item => {
+            if (item && typeof item === "object") return item.name || item.title || productNames.get(String(item.product_id ?? item.id)) || "Product unavailable";
+            return productNames.get(String(item)) || (/^\d+$/.test(String(item)) ? "Product unavailable" : String(item));
+          }).join(", ");
+        };
+        const rows = Array.isArray(data) ? data : ["auto", "mix_match", "multipack"].flatMap(type => (Array.isArray(data?.[type]) ? data[type] : []).map(item => ({ ...item, type })));
+        setDiscounts(rows.map(item => ({
+          ...item,
+          id: item.id ?? item.discount_id,
+          type: item.type || "auto",
+          code: item.code || item.name || "—",
+          amount: item.coupon_amount ?? "0",
+          product: item.type === "mix_match" ? names(item.product_label || item.product_id) : names(item.product_label ?? item.product ?? item.product_name ?? item.products ?? item.product_ids ?? item.product_id),
+          discounted_products: names(item.discounted_products ?? item.discount_products ?? item.discount_product_ids),
+          date_starts: inputDate(item.date_starts ?? item.start_date),
+          date_expires: inputDate(item.date_expires ?? item.expiry_date),
+        })));
+        setPagination(response?.pagination || {});
+      })
+      .catch(error => { if (active) setLoadError(error.message || "Unable to load discounts."); })
+      .finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  }, [storeId, currentPage, pageSize, retry]);
   const filtered = useMemo(() => {
     const query = search.trim().toLowerCase();
     return discounts.filter((item) => {
@@ -94,8 +188,8 @@ export default function Discounts({ embedded = false }) {
       return matchesType && matchesStatus && matchesSearch;
     });
   }, [discounts, search, typeFilter, statusFilter]);
-  const totalPages = Math.ceil(filtered.length / pageSize);
-  const visibleDiscounts = filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+  const totalPages = Math.max(1, Number(pagination.total_pages ?? pagination.totalPages) || (pagination.has_more ? currentPage + 1 : currentPage));
+  const visibleDiscounts = filtered;
 
   const openCreate = () => {
     setForm({ ...emptyForm("auto"), type: "" });
@@ -118,19 +212,22 @@ export default function Discounts({ embedded = false }) {
   };
 
   const openEdit = (discount) => {
-    setForm({ ...emptyForm(discount.type), ...discount });
+    setForm({ ...emptyForm(discount.type), ...discount, product: String(discount.product_id ?? ""), discounted_products: (discount.discount_product_ids || []).map(String).join(","), auto_apply: [true, 1, "1", "yes", "true"].includes(discount.pinaka_discount_auto_apply) });
     setFormTab("details");
     setFormError("");
     setMode("edit");
   };
 
   const closeEditor = () => {
+    if (saveLock.current) return;
     setMode("");
     setFormError("");
   };
 
-  const saveDiscount = (event) => {
+  const saveDiscount = async (event) => {
     event.preventDefault();
+    if (saveLock.current) return;
+    setFormError("");
     const amount = Number(form.amount);
     if (!form.code.trim() || !form.discount_type || form.amount === "") {
       setFormError("Discount name, discount type, and amount are required.");
@@ -158,31 +255,74 @@ export default function Discounts({ embedded = false }) {
       return;
     }
 
-    const saved = {
-      ...form,
-      id: form.id || `${form.type}-${Date.now()}`,
-      amount: String(amount),
-      code: form.code.trim(),
-      product: form.product.trim(),
-      discounted_products: form.discounted_products.trim(),
-      created_at: form.created_at || new Date().toISOString(),
-    };
-    setDiscounts((current) => mode === "edit"
-      ? current.map((item) => item.id === saved.id ? saved : item)
-      : [saved, ...current]);
-    setNotice(`${typeLabel(saved.type)} ${mode === "edit" ? "updated" : "created"}. This change is saved in this screen only until the discount API is connected.`);
-    setMode("");
-    setCurrentPage(1);
+    {
+      const productId = Number(form.product);
+      const discountedIds = form.discounted_products.split(",").map(value => Number(value.trim())).filter(Boolean);
+      if (!Number.isInteger(productId) || productId <= 0 || (form.type === "mix_match" && !discountedIds.length)) {
+        setFormError("Select valid store products.");
+        setFormTab("rules");
+        return;
+      }
+      if (form.date_starts && form.date_expires && form.date_starts > form.date_expires) {
+        setFormError("Expiry date must be on or after the start date.");
+        setFormTab("limits");
+        return;
+      }
+      const payload = {
+        type: form.type,
+        code: form.code.trim(),
+        discount_type: form.discount_type,
+        amount,
+        product_id: productId,
+        pinaka_discount_auto_apply: Boolean(form.auto_apply),
+        ...(form.type === "mix_match" ? { discount_product_ids: discountedIds } : {}),
+      };
+      for (const key of ["qty", "usage_limit", "minimum_amount", "maximum_amount", "min_qty", "max_qty"]) {
+        if (form[key] !== "") payload[key] = Number(form[key]);
+      }
+      if (form.date_starts) payload.date_starts = form.date_starts;
+      if (form.date_expires) payload.date_expires = form.date_expires;
+      saveLock.current = true;
+      setSaving(true);
+      try {
+        const basePath = `/stores/${encodeURIComponent(storeId)}/discounts`;
+        const response = mode === "edit"
+          ? await api.put(`${basePath}/${encodeURIComponent(form.type)}/${encodeURIComponent(form.id)}`, payload)
+          : await api.post(basePath, payload);
+        if (response?.success === false || ["error", "failed"].includes(response?.status)) throw new Error(response.message || "Unable to save discount.");
+        setNotice(response?.message || (mode === "edit" ? "Discount updated successfully." : "Discount created successfully."));
+        setMode("");
+        setCurrentPage(1);
+        setRetry(value => value + 1);
+      } catch (error) {
+        setFormError(error.message || "Unable to save discount.");
+      } finally {
+        saveLock.current = false;
+        setSaving(false);
+      }
+      return;
+    }
   };
 
-  const deleteDiscount = () => {
-    if (!deleteTarget) return;
-    setDiscounts((current) => current.filter((item) => item.id !== deleteTarget.id));
-    setNotice(`${deleteTarget.code} was deleted from this screen.`);
-    setDeleteTarget(null);
+  const deleteDiscount = async () => {
+    if (!deleteTarget || deleteLock.current) return;
+    deleteLock.current = true;
+    setDeleting(true);
     setDeleteError("");
+    try {
+      const response = await api.delete(`/stores/${encodeURIComponent(storeId)}/discounts/${encodeURIComponent(deleteTarget.type)}/${encodeURIComponent(deleteTarget.id)}`);
+      if (response?.success === false || ["error", "failed"].includes(response?.status)) throw new Error(response.message || "Unable to delete discount.");
+      setNotice(response?.message || "Discount deleted successfully.");
+      setDeleteTarget(null);
+      if (discounts.length === 1 && currentPage > 1) setCurrentPage(page => page - 1);
+      else setRetry(value => value + 1);
+    } catch (error) {
+      setDeleteError(error.message || "Unable to delete discount.");
+    } finally {
+      deleteLock.current = false;
+      setDeleting(false);
+    }
   };
-
   const updateForm = (key, value) => setForm((current) => ({ ...current, [key]: value }));
 
   if (mode) {
@@ -243,15 +383,14 @@ export default function Discounts({ embedded = false }) {
               {formTab === "rules" && <>
                 <h2>Products & rules</h2>
                 <div className="coupon-editor-grid">
-                  <label className="coupon-form-field"><span className="discount-field-label">{form.type === "mix_match" ? "Main product (trigger)" : "Product"} <span className="discount-required" title="Required" aria-label="Required">*</span></span>
-                    <input value={form.product} onChange={(event) => updateForm("product", event.target.value)} placeholder="Enter product name" required />
-                    <small>Product catalog selection will be connected with the API.</small>
-                  </label>
-                  {form.type === "mix_match" && <label className="coupon-form-field discount-full-width"><span className="discount-field-label">Discounted products <span className="discount-required" title="Required" aria-label="Required">*</span></span>
-                    <textarea rows="3" value={form.discounted_products} onChange={(event) => updateForm("discounted_products", event.target.value)} placeholder="Enter product names separated by commas" required />
+                  <div className="coupon-form-field"><span className="discount-field-label">{form.type === "mix_match" ? "Main product (trigger)" : "Product"} <span className="discount-required">*</span></span>
+                    <DiscountProductPicker products={catalogProducts} value={form.product} onChange={value => updateForm("product", value)} disabled={saving} />
+                    <small>Select a product from the store catalog.</small>
+                  </div>
+                  {form.type === "mix_match" && <div className="coupon-form-field discount-full-width"><span className="discount-field-label">Discounted products <span className="discount-required">*</span></span>
+                    <DiscountProductPicker products={catalogProducts} value={form.discounted_products} onChange={value => updateForm("discounted_products", value)} multiple disabled={saving} />
                     <small>These products receive the discount when the trigger product is present.</small>
-                  </label>}
-                  {form.type === "multipack" && <label className="coupon-form-field"><span className="discount-field-label">Pack quantity <span className="discount-required" title="Required" aria-label="Required">*</span></span>
+                  </div>}                  {form.type === "multipack" && <label className="coupon-form-field"><span className="discount-field-label">Pack quantity <span className="discount-required" title="Required" aria-label="Required">*</span></span>
                     <input type="number" min="1" step="1" value={form.qty} onChange={(event) => updateForm("qty", event.target.value)} placeholder="e.g. 3" required />
                   </label>}
                   {form.type === "auto" && <>
@@ -291,7 +430,7 @@ export default function Discounts({ embedded = false }) {
             </div>
             <div className="coupon-editor-actions">
               <button type="button" className="coupon-form-cancel" onClick={closeEditor}>Cancel</button>
-              <button type="submit" className="coupon-form-save" disabled={mode === "create" && !form.type}><i className="bi bi-check2" />{mode === "edit" ? "Save changes" : "Create discount"}</button>
+              <button type="submit" className="coupon-form-save" disabled={saving || (mode === "create" && !form.type)}><i className="bi bi-check2" />{saving ? "Saving…" : mode === "edit" ? "Save changes" : "Create discount"}</button>
             </div>
           </div>
         </form>
@@ -341,26 +480,30 @@ export default function Discounts({ embedded = false }) {
           {(search || typeFilter || statusFilter) && <button type="button" className="coupons-clear-btn" onClick={() => { setSearch(""); setTypeFilter(""); setStatusFilter(""); setCurrentPage(1); }}><i className="bi bi-arrow-counterclockwise" />Clear</button>}
         </div>
         <div className="coupons-table-heading"><div>Discounts<span>{filtered.length}</span></div></div>
-        {visibleDiscounts.length ? <div className="coupons-table-wrapper">
+        {loading ? <p role="status">Loading discounts…</p> : loadError ? <p role="alert">{loadError} <button type="button" onClick={() => setRetry(value => value + 1)}>Retry</button></p> : visibleDiscounts.length ? <div className="coupons-table-wrapper">
           <table className="coupons-table discounts-table">
-            <thead><tr><th>Name</th><th>Discount type</th><th>Amount</th><th>Product / rules</th><th>Usage / limit</th><th>Start date</th><th>Expiry date</th><th>Status</th><th>Actions</th></tr></thead>
+            <thead><tr><th>Name</th><th>Discount type</th><th>Amount</th><th>Product / rules</th><th>Usage / limit</th><th>Start date</th><th>Expiry date</th><th>Actions</th></tr></thead>
             <tbody>{visibleDiscounts.map((discount) => <tr key={discount.id}>
               <td><div className="discount-name-cell"><strong>{discount.code}</strong><small>{typeLabel(discount.type)}</small></div></td>
-              <td><span className="discount-type-pill">{typeOptions[discount.type].find(([value]) => value === discount.discount_type)?.[1] || discount.discount_type}</span></td>
+              <td><span className="discount-type-pill">{discount.type || "—"}</span></td>
               <td><strong className="discount-amount">{amountLabel(discount)}</strong></td>
-              <td><span className="discount-product-cell">{discount.type === "mix_match" ? `${discount.product} → ${discount.discounted_products}` : `${discount.product}${discount.type === "multipack" ? ` · ${discount.qty} items` : ""}`}</span></td>
+              <td><span className="discount-product-cell">{`${discount.product}${discount.type === "multipack" ? ` · ${discount.qty} items` : ""}`}</span></td>
               <td>{discount.usage_limit || "∞"}</td>
               <td>{formatSystemDate(discount.date_starts)}</td>
               <td>{formatSystemDate(discount.date_expires)}</td>
-              <td><span className={`discount-status ${discountStatus(discount).toLowerCase()}`}>{discountStatus(discount)}</span></td>
+
               <td className="coupon-row-actions"><button type="button" aria-label={`Edit ${discount.code}`} onClick={() => openEdit(discount)}><i className="bi bi-pencil" /></button><button type="button" aria-label={`Delete ${discount.code}`} onClick={() => { setDeleteError(""); setDeleteTarget(discount); }}><i className="bi bi-trash3" /></button></td>
             </tr>)}</tbody>
           </table>
         </div> : <div className="discounts-empty"><div className="coupons-empty-icon"><i className="bi bi-percent" /></div><h3>{search || typeFilter || statusFilter ? "No discounts found" : "No discounts yet"}</h3><p>{search || typeFilter || statusFilter ? "Try changing your search or filters." : "Create a discount to see it listed here."}</p>{!(search || typeFilter || statusFilter) && <button type="button" className="coupon-create-btn" onClick={openCreate}><i className="bi bi-plus-lg" />Create discount</button>}</div>}
+<<<<<<< HEAD
         <Pagination currentPage={currentPage} totalPages={totalPages} totalItems={filtered.length} pageSize={pageSize} onPageChange={setCurrentPage} onPageSizeChange={(size) => { setPageSize(size); setCurrentPage(1); }} itemLabel="discounts" showWhenEmpty />
+=======
+        {!loading && !loadError && (discounts.length > 0 || currentPage > 1) && <Pagination currentPage={currentPage} totalPages={totalPages} totalItems={Number(pagination.total ?? pagination.total_items) || ((totalPages - 1) * pageSize + discounts.length)} pageSize={pageSize} onPageChange={setCurrentPage} onPageSizeChange={(size) => { setPageSize(size); setCurrentPage(1); }} />}
+>>>>>>> 66486cd1f3cf32455cfcc1a0746fa2fa0e1f8bda
       </div>
 
-      <DeleteConfirmationDialog isOpen={Boolean(deleteTarget)} title="Delete discount?" message={deleteTarget ? `Delete “${deleteTarget.code}” from this screen?` : ""} error={deleteError} onCancel={() => { setDeleteTarget(null); setDeleteError(""); }} onConfirm={deleteDiscount} />
+      <DeleteConfirmationDialog isOpen={Boolean(deleteTarget)} title="Delete discount?" message={deleteTarget ? `Delete “${deleteTarget.code}”?` : ""} busy={deleting} busyLabel="Deleting…" error={deleteError} onCancel={() => { if (deleteLock.current) return; setDeleteTarget(null); setDeleteError(""); }} onConfirm={deleteDiscount} />
     </div>
   );
 }
