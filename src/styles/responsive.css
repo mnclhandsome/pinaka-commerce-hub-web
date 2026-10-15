@@ -1,0 +1,257 @@
+/* Shared layout constraints for screens whose page styles have fixed sizing. */
+:where(#root, .dashboard-app, .main-content, .page-content) {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.main-content > *,
+.page-content > * {
+  min-width: 0;
+  max-width: 100%;
+}
+
+:where(.main-content, #root) :is(
+  .table-wrap,
+  [class*="table-container"],
+  [class*="table-wrapper"]
+) {
+  max-width: 100%;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+}
+
+:where(.main-content, #root) :is(input, select, textarea) {
+  max-width: 100%;
+}
+
+:where(.main-content, #root) :is(
+  .form-grid,
+  .view-details-grid,
+  .device-view-grid,
+  .device-view-meta-grid
+) > * {
+  min-width: 0;
+}
+
+:where(.main-content, #root) :is(
+  .filters-bar,
+  .filter-options,
+  .pagination-container,
+  .pagination-controls
+) {
+  min-width: 0;
+  max-width: 100%;
+}
+
+:where(.main-content, #root) :is(.page-header, .page-actions) {
+  min-width: 0;
+  max-width: 100%;
+}
+
+:where(.main-content, #root) :is(
+  .view-details-modal,
+  .delete-confirmation-dialog,
+  [role="dialog"]
+) {
+  max-width: calc(100vw - 24px);
+}
+
+@media (max-width: 767px) {
+  .main-content {
+    width: 100%;
+  }
+
+  :where(.main-content, #root) :is(.filters-bar, .filter-options) {
+    flex-wrap: wrap;
+  }
+
+  :where(.main-content, #root) .filter-search {
+    min-width: min(100%, 200px);
+  }
+
+  :where(.main-content, #root) .page-actions {
+    flex-wrap: wrap;
+  }
+
+  :where(.main-content, #root) .topbar-right {
+    min-width: 0;
+    gap: 8px;
+  }
+
+  :where(.main-content, #root) .profile {
+    min-width: 0;
+  }
+}
+
+@media (min-width: 601px) and (max-width: 1200px) {
+  :where(.main-content, #root) .add-employee-topbar {
+    margin-right: -18px;
+    margin-left: -18px;
+  }
+}
+
+@media (min-width: 701px) and (max-width: 1200px) {
+  :where(.main-content, #root) .employee-device-edit-page > .device-view-topbar {
+    margin-right: -18px;
+    margin-left: -18px;
+  }
+}
+
+@media (max-width: 700px) {
+  :where(.main-content, #root) .vendors-create-page .vendors-navigation {
+    margin-right: -12px;
+    margin-left: -12px;
+  }
+
+  :where(.main-content, #root) :is(
+    .store-features-tools,
+    .role-templates-tools
+  ) {
+    flex-wrap: wrap;
+  }
+
+  :where(.main-content, #root) :is(
+    .store-features-search,
+    .role-templates-search
+  ) {
+    min-width: 0;
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 760px) {
+  :where(.main-content, #root) .st-section-heading {
+    min-width: 0;
+    width: 100%;
+  }
+}
+
+@media (max-width: 950px) {
+  :where(.main-content, #root) .plans-list-header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  :where(.main-content, #root) .plans-list-card .plans-filters {
+    width: 100%;
+    min-width: 0;
+    flex-wrap: wrap !important;
+    justify-content: stretch;
+  }
+
+  :where(.main-content, #root) .plans-list-card .plan-search {
+    width: 100% !important;
+    max-width: none !important;
+    flex: 1 1 100% !important;
+  }
+
+  :where(.main-content, #root) .plans-list-card .plans-filters select {
+    min-width: 0;
+    flex: 1 1 140px !important;
+  }
+}
+
+@media (max-width: 600px) {
+  :where(.main-content, #root) .employees-page-header {
+    height: auto;
+    min-height: 55px;
+    align-items: stretch;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  :where(.main-content, #root) .employees-header-actions {
+    flex-wrap: wrap;
+  }
+
+  :where(.main-content, #root) .employee-device-edit-page {
+    overflow-x: clip;
+  }
+}
+
+/* Keep detail dialogs bounded on desktop and scrollable on compact screens. */
+:where(.main-content, #root) .view-details-overlay .view-details-modal {
+  max-width: 720px;
+}
+
+@media (max-width: 640px) {
+  :where(.main-content, #root) .view-details-overlay .view-details-modal {
+    max-height: min(80dvh, 720px);
+  }
+}
+
+/* The permission panel uses inline grid sizing; stack its action block on narrow screens. */
+@media (max-width: 760px) {
+  .store-workspace-page .store-workspace-card .sf-root .sf-permissions-panel .sf-panel-head {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    align-items: start;
+    gap: 12px !important;
+  }
+
+  .store-workspace-page .store-workspace-card .sf-root .sf-permissions-panel .sf-panel-head > div:first-child {
+    min-width: 0;
+  }
+
+  .store-workspace-page .store-workspace-card .sf-root .sf-permissions-panel .sf-copy-permissions {
+    box-sizing: border-box;
+    width: 100% !important;
+    min-width: 0;
+    grid-template-columns: minmax(0, 1fr) !important;
+    justify-self: stretch !important;
+    gap: 8px !important;
+  }
+
+  .store-workspace-page .store-workspace-card .sf-root .sf-permissions-panel .sf-copy-permissions > label:nth-child(2),
+  .store-workspace-page .store-workspace-card .sf-root .sf-permissions-panel .sf-copy-permissions > label:nth-child(2) > .pch-filter-dropdown {
+    box-sizing: border-box;
+    width: 100% !important;
+    min-width: 0;
+  }
+
+  .store-workspace-page .store-workspace-card .sf-root .sf-permissions-panel .sf-copy-permissions select {
+    width: 100% !important;
+    min-width: 0;
+  }
+}
+
+/* Vendor history remains horizontally scrollable without row heights growing from wrapped cells. */
+.store-workspace-page .store-workspace-card .vendor-screen > .vendor-table th,
+.store-workspace-page .store-workspace-card .vendor-screen > .vendor-table td {
+  white-space: nowrap;
+}
+
+@media (max-width: 480px) {
+  :where(.main-content, #root) .vendors-stat-title {
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  :where(.main-content, #root) .pagination-container {
+    height: auto;
+    gap: 10px;
+    padding: 12px 8px;
+  }
+
+  :where(.main-content, #root) .pagination-controls {
+    gap: 6px;
+  }
+
+  :where(.main-content, #root) .pagination-page-size {
+    gap: 6px;
+  }
+
+  :where(.main-content, #root) .pagination-page-size span {
+    font-size: 12px;
+  }
+
+  :where(.main-content, #root) .topbar {
+    padding-right: 10px;
+    padding-left: 10px;
+  }
+
+  :where(.main-content, #root) .logout-btn {
+    padding-right: 8px;
+    padding-left: 8px;
+  }
+}
