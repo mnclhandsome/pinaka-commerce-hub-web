@@ -142,6 +142,39 @@
   max-width: 100%;
 }
 
+.categories-toolbar > .pch-filter-dropdown {
+  flex: 0 0 160px;
+}
+
+.categories-clear-btn {
+  box-sizing: border-box;
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  height: 40px;
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1px solid #d9dee8;
+  border-radius: 6px;
+  background: #fff;
+  color: #5143bc;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.categories-clear-btn:hover {
+  border-color: #c8c1f2;
+  background: #f8f7ff;
+}
+
+.categories-clear-btn:focus-visible {
+  outline: 2px solid rgba(81, 67, 188, 0.2);
+  outline-offset: 2px;
+}
+
 .categories-search i {
   position: absolute;
   top: 50%;
@@ -177,21 +210,34 @@
    TABLE
 ========================================================= */
 
-.categories-table-wrap {
+.categories-list-block {
   box-sizing: border-box;
   width: calc(100% - 24px);
   max-width: calc(100% - 24px);
   margin: 0 12px;
-  overflow-x: auto;
+  overflow: hidden;
   border: 1px solid #dfe9f4;
   border-radius: 8px;
   background: #fff;
 }
 
-.categories-table-wrap + .pagination-container {
+.categories-table-wrap {
   box-sizing: border-box;
-  width: calc(100% - 24px);
-  margin: 0 12px;
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  overflow-x: auto;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.categories-list-block > .pagination-container {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  border-top: 1px solid #e4e8f0;
 }
 
 .categories-table {
@@ -418,7 +464,7 @@
     width: 34px;
     height: 34px;
     padding: 0;
-    border: 1px solid #e5e7eb;
+    border: 1px solid #e5e7eb !important;
     border-radius: 7px;
     background: #ffffff;
     color: #6b7280;
@@ -477,7 +523,12 @@
   }
 
   .categories-search {
-    width: 100%;
+    width: auto;
+    flex: 1 1 auto;
+  }
+
+  .categories-toolbar > .pch-filter-dropdown {
+    flex: 0 0 140px;
   }
 
   .categories-table thead th,
@@ -511,16 +562,18 @@
 }
 
 @media (max-width: 600px) {
-  .categories-table-wrap {
+  .categories-list-block {
     width: calc(100% - 20px);
     max-width: calc(100% - 20px);
     margin-right: 10px;
     margin-left: 10px;
   }
 
-  .categories-table-wrap + .pagination-container {
-    width: calc(100% - 20px);
-    margin-right: 10px;
-    margin-left: 10px;
+  .categories-table-wrap,
+  .categories-list-block > .pagination-container {
+    width: 100%;
+    max-width: 100%;
+    margin-right: 0;
+    margin-left: 0;
   }
 }

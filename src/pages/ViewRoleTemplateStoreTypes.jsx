@@ -336,10 +336,6 @@ export default function ViewRoleTemplateStoreTypes() {
               </p>
             </div>
 
-            <span className="role-details-active">
-              <i className="bi bi-circle-fill" />
-              {roleTemplate.status || "Active"}
-            </span>
           </div>
         </div>
 

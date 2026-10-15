@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import { api, pendingStoreRead } from "../api/http";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import FilterDropdown from "../components/FilterDropdown";
 import Pagination from "../components/Pagination";
 import DeleteConfirmationDialog from "../components/DeleteConfirmationDialog";
 
@@ -62,6 +63,7 @@ export default function FastKeys() {
 
   const [search, setSearch] = useState("");
   const [tab, setTab] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
 
@@ -97,6 +99,7 @@ export default function FastKeys() {
   const saveLock = useRef(false);
   const [successMessage, setSuccessMessage] = useState("");
   const [saveError, setSaveError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState({});
 
   // Filter fast keys
   const filtered = useMemo(() => {
@@ -113,10 +116,11 @@ export default function FastKeys() {
       const matchesSearch = searchText.includes(
         search.toLowerCase()
       );
+      const matchesStatus = !statusFilter || String(item.status || "").toLowerCase() === statusFilter.toLowerCase();
 
-      return matchesTab && matchesSearch;
+      return matchesTab && matchesSearch && matchesStatus;
     });
-  }, [items, search, tab]);
+  }, [items, search, tab, statusFilter]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / itemsPerPage));
   const pageItems = filtered.slice(
@@ -126,7 +130,7 @@ export default function FastKeys() {
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [search, tab]);
+  }, [search, tab, statusFilter]);
 
   useEffect(() => {
     setCurrentPage((page) => Math.min(page, totalPages));
@@ -142,6 +146,7 @@ export default function FastKeys() {
     setProductSearch("");
     createdFastkeyId.current = null;
     setSaveError("");
+    setFieldErrors({});
     setImageFile(null);
 
     if (item) {
@@ -179,6 +184,7 @@ export default function FastKeys() {
       ...current,
       [name]: value,
     }));
+    setFieldErrors((current) => ({ ...current, [name]: "" }));
   };
 
   // Handle local image upload
@@ -218,7 +224,11 @@ export default function FastKeys() {
   // Save Add / Edit
   const save = async (event) => {
     event.preventDefault();
-    if (saveLock.current || !form.title.trim()) return;
+    const errors = {};
+    if (!form.title.trim()) errors.title = "Fast Key Name is required.";
+    if (!Number.isInteger(Number(form.index)) || Number(form.index) < 1) errors.index = "Position must be a whole number greater than 0.";
+    setFieldErrors(errors);
+    if (Object.keys(errors).length || saveLock.current) return;
     saveLock.current = true;
     setSuccessMessage("");
     setSaving(true);
@@ -322,7 +332,7 @@ export default function FastKeys() {
             Fast keys allow quick access to products in POS.
           </p>
         </div>
-      <button type="button" className="store-config-btn" onClick={() => openForm()}>Add New Fast Key</button>
+      <button type="button" className="store-config-btn" onClick={() => openForm()}><i className="bi bi-plus-lg" aria-hidden="true" /> Add New Fast Key</button>
       </div>
 
 
@@ -352,10 +362,21 @@ export default function FastKeys() {
           }
         />
 
+        <FilterDropdown
+          aria-label="Filter fast keys by status"
+          value={statusFilter}
+          onChange={(event) => setStatusFilter(event.target.value)}
+        >
+          <option value="">All Statuses</option>
+          {[...new Set(items.map((item) => String(item.status || "")).filter((status) => status && status !== "—"))].map((status) => (
+            <option key={status} value={status}>{status}</option>
+          ))}
+        </FilterDropdown>
+
         <button
           type="button"
           className="store-edit-btn"
-          onClick={() => setSearch("")}
+          onClick={() => { setSearch(""); setStatusFilter(""); }}
         >
           <i className="bi bi-arrow-counterclockwise" />
           Reset
@@ -379,7 +400,7 @@ export default function FastKeys() {
           </thead>
 
           <tbody>
-            {pageItems.map((item) => (
+            {pageItems.length ? pageItems.map((item) => (
               <tr key={item.id}>
 
                 {/* Image */}
@@ -409,18 +430,27 @@ export default function FastKeys() {
                 <td>{formatTimestamp(item.date)}</td><td>{formatTimestamp(item.updatedAt)}</td>
                 <td><div className="fast-key-actions"><button type="button" className="edit-button" onClick={() => openForm(item)} aria-label={`Edit ${item.title}`}><i className="bi bi-pencil" /></button><button type="button" className="delete-button" onClick={() => remove(item)} aria-label={`Delete ${item.title}`}><i className="bi bi-trash" /></button></div></td>
               </tr>
-            ))}
+            )) : (
+              <tr>
+                <td className="fast-key-table-empty-cell" colSpan="7">
+                  {loading
+                    ? "Loading fast keys..."
+                    : loadError
+                      ? "Fast keys could not be loaded."
+                      : "No fast keys found."}
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
-        {!loading && !loadError && filtered.length === 0 && <div className="fast-key-empty">No fast keys found.</div>}
       </div>
-      <div className="fast-key-footer"><Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} pageSize={itemsPerPage} onPageSizeChange={setItemsPerPage} totalItems={filtered.length} itemLabel="fast keys" /></div>
+      {!loading && !loadError && <div className="fast-key-footer"><Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} pageSize={itemsPerPage} onPageSizeChange={(pageSize) => { setItemsPerPage(pageSize); setCurrentPage(1); }} totalItems={filtered.length} itemLabel="fast keys" showWhenEmpty /></div>}
       <DeleteConfirmationDialog isOpen={Boolean(deleteTarget)} title="Delete Fast Key?" message={deleteTarget ? `Are you sure you want to delete "${deleteTarget.title}"?` : ""} confirmLabel="Delete" busyLabel="Deleting…" cancelLabel="Cancel" busy={deleting} error={deleteError} onCancel={cancelDelete} onConfirm={confirmDelete} iconClassName="bi bi-trash3" />
       {formOpen && <div className="fast-key-modal-backdrop"><form className="fast-key-modal" onSubmit={save}>
         <div className="fast-key-modal-header"><h2>{editing ? "Edit Fast Key" : "Add New Fast Key"}</h2><button type="button" className="fast-key-close" disabled={saving} onClick={closeForm} aria-label="Close"><i className="bi bi-x-lg" aria-hidden="true" /></button></div>
         <div className="fast-key-modal-body"><div className="fast-key-form-grid">
-          <label className="fast-key-field"><span>Fast Key Name *</span><input name="title" value={form.title} onChange={handleChange} required disabled={saving} /></label>
-          <label className="fast-key-field"><span>Position *</span><input type="number" name="index" min="1" step="1" value={form.index || "1"} onChange={handleChange} required disabled={saving} /></label>
+          <label className={`fast-key-field${fieldErrors.title ? " has-error" : ""}`}><span>Fast Key Name *</span><input name="title" value={form.title} onChange={handleChange} required aria-invalid={Boolean(fieldErrors.title)} disabled={saving} />{fieldErrors.title && <small className="fast-key-field-error" role="alert">{fieldErrors.title}</small>}</label>
+          <label className={`fast-key-field${fieldErrors.index ? " has-error" : ""}`}><span>Position *</span><input type="number" name="index" min="1" step="1" value={form.index || "1"} onChange={handleChange} required aria-invalid={Boolean(fieldErrors.index)} disabled={saving} />{fieldErrors.index && <small className="fast-key-field-error" role="alert">{fieldErrors.index}</small>}</label>
           <div className="fast-key-field fast-key-product-picker">
             <span>Products</span>
             <input type="search" placeholder="Search store products…" value={productSearch} onChange={event => setProductSearch(event.target.value)} disabled={saving || productsLoading} />

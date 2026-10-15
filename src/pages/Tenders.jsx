@@ -158,6 +158,7 @@ const [currentPage, setCurrentPage] = useState(1);
 
 
   const [form, setForm] = useState(emptyForm);
+  const [fieldErrors, setFieldErrors] = useState({});
   const [originalForm, setOriginalForm] = useState(null);
   const [editingId, setEditingId] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
@@ -264,6 +265,7 @@ useEffect(() => {
       ...current,
       [name]: value,
     }));
+    setFieldErrors((current) => ({ ...current, [name]: "" }));
   }
 
   const generatedCode = generateNextTendorCode(tenders);
@@ -286,16 +288,18 @@ useEffect(() => {
 
   function resetForm() {
     setForm(emptyForm);
+    setFieldErrors({});
     setOriginalForm(null);
     setEditingId(null);
   }
 
   async function saveTender(event) {
     event.preventDefault();
-
-    if (!tenderFormComplete) {
-      return;
-    }
+    const errors = {};
+    if (!form.name.trim()) errors.name = "Tender Name is required.";
+    if (!form.status) errors.status = "Status is required.";
+    setFieldErrors(errors);
+    if (Object.keys(errors).length) return;
 
     try {
       setSaving(true);
@@ -338,6 +342,7 @@ useEffect(() => {
     };
 
     setEditingId(tender.id);
+    setFieldErrors({});
     setOriginalForm(editValues);
     setForm(editValues);
 
@@ -436,7 +441,7 @@ async function confirmDeleteTender() {
         </div>
       </div>
 
-      <form className="tenders-form" onSubmit={saveTender} autoComplete="off">
+      <form className="tenders-form" onSubmit={saveTender} autoComplete="off" noValidate>
         <div className="tenders-form-heading">
           <div className="tenders-heading-content">
             <div className="tenders-heading-icon">
@@ -478,7 +483,7 @@ async function confirmDeleteTender() {
 
 
 
-          <label>
+          <label className={fieldErrors.name ? "has-error" : ""}>
             <span>
               Tender Name <b>*</b>
             </span>
@@ -489,11 +494,13 @@ async function confirmDeleteTender() {
               onChange={handleChange}
               placeholder="e.g. Store Credit"
               required
+              aria-invalid={Boolean(fieldErrors.name)}
               autoComplete="off"
             />
+            {fieldErrors.name && <small className="tenders-field-error" role="alert">{fieldErrors.name}</small>}
           </label>
 
-          <label>
+<label className={fieldErrors.status ? "has-error" : ""}>
   <span>
     Status <b>*</b>
   </span>
@@ -503,6 +510,7 @@ async function confirmDeleteTender() {
     value={form.status}
     onChange={handleChange}
     required
+    aria-invalid={Boolean(fieldErrors.status)}
     className={`tender-status-select ${
       form.status === "Active"
         ? "status-active"
@@ -515,6 +523,7 @@ async function confirmDeleteTender() {
     <option value="Active">Active</option>
     <option value="Inactive">Inactive</option>
   </select>
+  {fieldErrors.status && <small className="tenders-field-error" role="alert">{fieldErrors.status}</small>}
 </label>
         </div>
 

@@ -426,11 +426,6 @@ export default function Coupons({
             <div className="coupons-header">
 
                 <div className="coupons-title-area">
-
-                    <div className="coupons-title-icon">
-                        <i className="bi bi-ticket-perforated" />
-                    </div>
-
                     <div>
                         <h1>Coupons</h1>
 
@@ -676,7 +671,7 @@ export default function Coupons({
                         onClick={clearFilters}
                     >
                         <i className="bi bi-arrow-counterclockwise" />
-                        Clear
+                        Reset
                     </button>
 
             </div>
@@ -689,18 +684,6 @@ export default function Coupons({
                 {/* =================================================
                     TABLE HEADER
                 ================================================= */}
-
-                <div className="coupons-table-heading">
-
-                    <div>
-                        Coupons
-
-                        <span>
-                            {filteredCoupons.length}
-                        </span>
-                    </div>
-
-                </div>
 
                 {/* =================================================
                     TABLE
@@ -730,7 +713,7 @@ export default function Coupons({
 
                         <tbody>
 
-                            {paginatedCoupons.map(
+                            {paginatedCoupons.length ? paginatedCoupons.map(
                                 (coupon) => (
                                     <CouponRow
                                         key={coupon.id}
@@ -742,6 +725,23 @@ export default function Coupons({
                                         onDelete={() => { setDeleteError(""); setDeleteTarget(coupon); }}
                                     />
                                 )
+                            ) : (
+                                <tr>
+                                    <td className="coupons-table-empty" colSpan="9">
+                                        <div className="products-table-empty-state">
+                                
+                                            <strong>
+                                                {loading
+                                                    ? "Loading coupons..."
+                                                    : loadError
+                                                        ? "Coupons could not be loaded."
+                                                        : "No coupons found"}
+                                            </strong>
+                                            {!loading && !loadError && <span>Try changing your search or filters.</span>}
+                                            
+                                        </div>
+                                    </td>
+                                </tr>
                             )}
 
                         </tbody>
@@ -751,46 +751,18 @@ export default function Coupons({
                 </div>
 
                 {/* =================================================
-                    EMPTY
-                ================================================= */}
-
-                {filteredCoupons.length === 0 && (
-                    <div className="coupons-empty">
-
-                        <div className="coupons-empty-icon">
-                            <i className="bi bi-ticket-perforated" />
-                        </div>
-
-                        <h3>
-                            No coupons found
-                        </h3>
-
-                        <p>
-                            Try changing your search or
-                            filters.
-                        </p>
-
-                        <button
-                            type="button"
-                            onClick={clearFilters}
-                        >
-                            Clear Filters
-                        </button>
-
-                    </div>
-                )}
-
-                {/* =================================================
                     PAGINATION
                 ================================================= */}
 
-                {filteredCoupons.length > 0 && (
+                {!loading && (
                     <Pagination
                         currentPage={currentPage}
                         totalPages={totalPages}
                         totalItems={totalItems}
                         pageSize={pageSize}
                         onPageChange={setCurrentPage}
+                        itemLabel="Coupons"
+                        showWhenEmpty
                         onPageSizeChange={(size) => {
                             setPageSize(size);
                             setCurrentPage(1);
@@ -999,13 +971,12 @@ function CouponEditor({ mode, form, setForm, error, busy, onSubmit, onClose }) {
         <div className="coupons-page coupon-editor-page">
             <header className="coupons-header coupon-editor-heading">
                 <div className="coupons-title-area">
-                    <div className="coupons-title-icon"><i className="bi bi-ticket-perforated" /></div>
                     <div>
                         <h1 id="coupon-editor-title">{mode === "edit" ? "Edit Coupon" : "Create Coupon"}</h1>
                         <p>Set coupon details and optional restrictions.</p>
                     </div>
                 </div>
-                    <button type="button" className="coupon-form-cancel" onClick={onClose}>Back to coupons</button>
+                <button type="button" className="coupon-form-cancel coupon-editor-back store-config-back-button" onClick={onClose}><i className="bi bi-arrow-left" /> Back to Coupons</button>
                 </header>
                 <section className="coupon-editor-layout">
                     <nav className="coupon-editor-tabs" role="tablist" aria-label="Coupon settings">

@@ -338,6 +338,14 @@
     vertical-align: middle;
 }
 
+.coupons-table-wrapper .coupons-table td.coupons-table-empty {
+    height: 154px;
+    padding: 24px;
+    color: #718096;
+    text-align: center;
+    font-size: 14px;
+}
+
 .coupon-row-actions {
     white-space: nowrap;
 }
@@ -556,6 +564,14 @@
     cursor: pointer;
 }
 
+.coupon-editor-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    flex: 0 0 auto;
+    white-space: nowrap;
+}
+
 @media (max-width: 700px) {
     .coupons-header:not(.coupon-editor-heading) { align-items: flex-start; flex-direction: column; }
     .coupons-header-actions { width: 100%; flex-wrap: wrap; }
@@ -565,6 +581,7 @@
     .coupon-editor-tabs button { flex: 0 0 auto; padding: 0 14px; }
     .coupon-editor-body { padding: 18px; }
     .coupon-editor-actions { padding: 14px 18px; }
+    .coupon-editor-heading { align-items: flex-start; }
 }
 
 .coupons-table tbody tr:hover {

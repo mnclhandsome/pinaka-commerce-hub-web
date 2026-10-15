@@ -84,7 +84,7 @@
 .sm-pagination button:disabled { color:#aab3c3; cursor:default; }
 .sm-pagination .sm-page-current { border-color:#5937ef; color:#4f32e7; font-size:13px; }
 .sm-detail-heading { margin-bottom:22px; }
-.sm-detail-heading .sm-button-outline { min-height:40px; }
+.sm-detail-heading .sm-button-outline { min-height:40px; padding:0 15px; font-size:14px; }
 .sm-detail-overview { position:relative; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); padding:20px 10px; margin-bottom:14px; }
 .sm-detail-status { position:absolute; top:15px; right:16px; z-index:1; display:inline-flex; align-items:center; gap:6px; padding:7px 11px; border-radius:6px; background:#e0f8e9; color:#17813b; font-size:11px; font-weight:700; }
 .sm-detail-status.open { background:#e3edff; color:#2462d4; }

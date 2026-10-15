@@ -1,5 +1,5 @@
 ﻿import React, { useEffect, useMemo, useState } from "react";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Pencil } from "lucide-react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import {
   createMerchant,
@@ -100,8 +100,8 @@ function Select({ label, value, options, onChange, placeholder, error, ...props 
   );
 }
 
-function Panel({ title, children }) {
-  return <section className="pch-panel"><div className="pch-panel-heading"><h2>{title}</h2></div>{children}</section>;
+function Panel({ title, children, action }) {
+  return <section className="pch-panel"><div className="pch-panel-heading"><h2>{title}</h2>{action}</div>{children}</section>;
 }
 
 function formatPrice(amount, currency = "USD") {
@@ -467,7 +467,7 @@ function MerchantEditor({ merchantId, localMerchants, onSave }) {
             <h1>Review &amp; Subscribe</h1>
             <p className="pch-muted">Review merchant, plan, and billing information.</p>
             <div className="pch-review-grid">
-              <Panel title="Merchant Details">
+              <Panel title="Merchant Details" action={editing && <button className="pch-review-edit" type="button" aria-label="Edit merchant details" title="Edit merchant details" onClick={() => { setError(""); setStep(0); }}><Pencil size={16} aria-hidden="true" /><span>Edit</span></button>}>
                 <dl className="pch-review-list">
                   <div><dt>Business Name</dt><dd>{merchant.business || merchant.display || "—"}</dd></div>
                   <div><dt>Merchant Code</dt><dd>{merchant.code || "Auto Generated"}</dd></div>
@@ -478,7 +478,7 @@ function MerchantEditor({ merchantId, localMerchants, onSave }) {
                   <div><dt>Business Address</dt><dd>{address || "—"}</dd></div>
                 </dl>
               </Panel>
-              <Panel title="Plan Details">
+              <Panel title="Plan Details" action={editing && <button className="pch-review-edit" type="button" aria-label="Edit plan details" title="Edit plan details" onClick={() => { setError(""); setStep(1); }}><Pencil size={16} aria-hidden="true" /><span>Edit</span></button>}>
                 <dl className="pch-review-list">
                   <div><dt>Subscription Plan</dt><dd>{plan?.name || "—"}</dd></div>
                   <div><dt>Store Type</dt><dd>{plan ? getPlanStoreType(plan, storeTypes) : "—"}</dd></div>

@@ -575,7 +575,7 @@ useEffect(() => {
               </p>
             </div>
 
-            <button aria-label="Close" disabled={busy} onClick={close}>
+            <button aria-label="Close" disabled={busy} onClick={close} class="close-button" >
               ×
             </button>
           </header>
@@ -590,7 +590,8 @@ useEffect(() => {
                 </p>
               )}
 
-              <input
+              <div className="mt-picker-toolbar">
+                <input
                 className="mt-search"
                 autoFocus
                 aria-label="Search master tenders"
@@ -598,7 +599,8 @@ useEffect(() => {
                 value={search}
                 disabled={busy || masterLoading}
                 onChange={(event) => setSearch(event.target.value)}
-              />
+                />
+              </div>
 
               <div className="mt-scroll mt-options">
                 <table>
@@ -667,9 +669,6 @@ useEffect(() => {
 
           <footer className="mt-footer">
             <span>
-              {modal?.type === "select"
-                ? `${selection.length} tenders selected`
-                : ""}
             </span>
 
             <div>

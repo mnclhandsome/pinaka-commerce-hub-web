@@ -545,19 +545,19 @@ export default function StoreDevices({
                     PAGINATION
                 ================================================= */}
 
-        {filteredDevices.length > 0 && (
-          <Pagination
+        <Pagination
             currentPage={currentPage}
             totalPages={totalPages}
             totalItems={totalItems}
             pageSize={pageSize}
             onPageChange={setCurrentPage}
+            itemLabel="devices"
+            showWhenEmpty
             onPageSizeChange={(size) => {
               setPageSize(size);
               setCurrentPage(1);
             }}
           />
-        )}
       </div>
 
       {/* =====================================================

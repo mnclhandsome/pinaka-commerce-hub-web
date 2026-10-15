@@ -126,24 +126,43 @@
 }
 
 .store-payment-records-search {
+    box-sizing: border-box;
     display: flex;
+    flex: 1 1 280px;
     align-items: center;
     gap: 8px;
+    min-width: 180px;
+    height: 40px;
+    padding: 0 10px;
+    border: 1px solid #e1e4eb;
+    border-radius: 5px;
+    background: #fff;
+    color: #9aa2b3;
+}
+
+.store-payment-records-search > i {
+    flex: 0 0 auto;
+    font-size: 13px;
 }
 
 .store-payment-records-search input {
-    width: 215px;
-    height: 38px;
-    padding: 0 11px;
-    border: 1px solid #d9dde4;
-    border-radius: 6px;
+    box-sizing: border-box;
+    flex: 1 1 auto;
+    width: 100%;
+    min-width: 0;
+    height: 100%;
+    padding: 0;
+    border: 0;
     outline: none;
+    background: transparent;
+    color: #3c465a;
     font-size: 12px;
+    box-shadow: none;
 }
 
-.store-payment-records-search input:focus {
-    border-color: #8c80e6;
-    box-shadow: 0 0 0 3px rgba(102, 86, 217, 0.08);
+.store-payment-records-search:focus-within {
+    border-color: #c8c1f2;
+    box-shadow: 0 0 0 2px rgba(81, 67, 188, 0.08);
 }
 
 .store-payment-records-search button,
