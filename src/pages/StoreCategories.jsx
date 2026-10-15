@@ -830,6 +830,7 @@ export default function StoreCategories({
           );
 
         }}
+        
       />
 
     </>
@@ -1040,6 +1041,7 @@ export default function StoreCategories({
           );
 
         }}
+      
       />
 
     </>
@@ -1304,6 +1306,7 @@ export default function StoreCategories({
           );
 
         }}
+       
       />
 
     </>

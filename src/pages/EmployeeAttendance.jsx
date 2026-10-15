@@ -59,7 +59,7 @@ export function AttendanceDetails({ record, store, onBack }) {
     { text: "Early leave approved due to urgent work.", addedOn: "08 Oct 2026, 01:10 PM" },
   ] : [];
   return <div className="ea-details-page">
-    <header className="ea-details-heading"><div><h2>Employee Attendance – View Details</h2><p>View attendance information for the selected date.</p></div><button type="button" onClick={onBack}><i className="bi bi-arrow-left" /> Back to Attendance</button></header>
+    <header className="ea-details-heading"><div><h2>Employee Attendance – View Details</h2><p>View attendance information for the selected date.</p></div><button type="button" className="store-config-back-button" onClick={onBack}><i className="bi bi-arrow-left" /> Back to Attendance</button></header>
     <section className="ea-details-card"><h3>Employee Overview</h3><div className="ea-profile-grid">
       <div className="ea-profile-primary"><span className="ea-avatar">{initials}</span><dl><div><dt>Employee Code</dt><dd>{record.code}</dd></div><div><dt>Employee Name</dt><dd>{record.name}</dd></div><div><dt>Role</dt><dd>{profile.role || "—"}</dd></div></dl></div>
       <dl><div><dt>Phone</dt><dd>{profile.phone || "—"}</dd></div><div><dt>Email</dt><dd>{profile.email || "—"}</dd></div><div><dt>Employment Type</dt><dd>{profile.employmentType || "—"}</dd></div></dl>

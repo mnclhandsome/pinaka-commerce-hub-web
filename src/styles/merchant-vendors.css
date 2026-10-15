@@ -1042,6 +1042,7 @@
 .mv-create-content .vendors-field-hint { display: none; }
 .mv-create-content .vendors-form input, .mv-create-content .vendors-form select { height: 46px; font-size: 14px; font-weight: 400; }
 .mv-create-content .vendors-form-actions { gap: 12px; margin-top: 28px; }
+<<<<<<< HEAD
 .mv-existing-content { padding: 10px 24px; background: #fff; }
 .mv-existing-content > .mv-search { max-width: none; }
 .mv-existing-toolbar { display: grid; grid-template-columns: minmax(260px, 2fr) minmax(145px, 1fr) minmax(145px, 1fr) auto; align-items: center; gap: 12px; }
@@ -1055,6 +1056,35 @@
 .mv-existing-page .mv-existing-table-wrap { overflow-x: hidden; }
 .mv-existing-page .mv-existing-table-wrap table { width: 100%; min-width: 0; border-collapse: collapse; table-layout: fixed; white-space: normal; }
 .mv-existing-page .mv-existing-table-wrap th, .mv-existing-page .mv-existing-table-wrap td { padding: 13px 10px; border-bottom: 1px solid #e8ecf3; text-align: left; vertical-align: middle; overflow-wrap: anywhere; }
+=======
+.mv-existing-content { padding: 12px 0 18px; background: #fff; }
+.mv-existing-content > .mv-search { max-width: none; }
+.mv-existing-toolbar { display: grid; grid-template-columns: minmax(260px, 2fr) minmax(145px, 1fr) minmax(145px, 1fr) auto; align-items: end; gap: 12px; }
+.mv-existing-toolbar > .mv-search { width: 100%; max-width: none; height: 42px; }
+.mv-existing-toolbar > .mv-search {
+    box-sizing: border-box;
+    padding: 0 14px;
+    border: 1px solid #dfe4ee;
+    border-radius: 7px;
+    outline: none;
+    background: #fff;
+    color: #172640;
+    font: 14px Inter, Arial, sans-serif;
+    box-shadow: none;
+    appearance: none;
+}
+.mv-existing-toolbar > .mv-search:focus {
+    border-color: #6547e8;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(101, 71, 232, .1);
+}
+.mv-existing-toolbar select { width: 100%; min-width: 0; height: 42px; padding: 0 10px; border: 1px solid #dfe4ee; border-radius: 7px; background: #fff; }
+.mv-existing-toolbar > button { height: 42px; white-space: nowrap; }
+.mv-existing-content > .pagination-container { height: 60px; padding: 12px 0; }
+.mv-existing-table-wrap { width: 100%; margin-top: 10px; overflow-x: auto; border: 1px solid #dfe4ee; border-radius: 8px; }
+.mv-existing-table-wrap table { width: 100%; min-width: 980px; border-collapse: collapse; table-layout: fixed; }
+.mv-existing-table-wrap th, .mv-existing-table-wrap td { padding: 13px 14px; border-bottom: 1px solid #e8ecf3; text-align: left; vertical-align: middle; }
+>>>>>>> origin/raju
 .mv-existing-table-wrap th { position: sticky; top: 0; z-index: 1; background: #f5f7fb; color: #17233e; }
 .mv-existing-table-wrap th:nth-child(1), .mv-existing-table-wrap td:nth-child(1) { width: 8%; text-align: center; }
 .mv-existing-table-wrap th:nth-child(2), .mv-existing-table-wrap td:nth-child(2) { width: 16%; }
@@ -1066,7 +1096,7 @@
 .mv-existing-table-wrap tbody tr:hover { background: #f8f7ff; }
 .mv-existing-table-wrap tbody tr.mv-row-selected { background: #f0edff; }
 .mv-existing-table-wrap tbody tr.mv-row-disabled { cursor: not-allowed; opacity: 0.6; }
-.mv-existing-footer { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 18px 24px; border-top: 1px solid #dfe4ee; background: #fff; }
+.mv-existing-footer { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 18px 0; border-top: 1px solid #dfe4ee; background: #fff; }
 .mv-existing-content .mv-picker-pagination { margin-bottom: 4px; }
 .mv-existing-content .mv-location-filters { margin-top: 16px; }
 .mv-device-picker .mv-device-scope { margin: 0 0 16px; color: #63708a; font-size: 13px; }
@@ -1175,8 +1205,8 @@
     .mv-create-content { padding: 18px 12px; }
     .mv-create-content .vendors-form { padding: 16px; }
     .mv-create-content .vendors-form-grid { grid-template-columns: 1fr; }
-    .mv-existing-content { padding: 18px 12px; }
-    .mv-existing-footer { align-items: stretch; flex-direction: column; padding: 16px 12px; }
+    .mv-existing-content { padding: 12px 0 16px; }
+    .mv-existing-footer { align-items: stretch; flex-direction: column; padding: 16px 0; }
     .mv-existing-footer .mv-popup-actions { justify-content: stretch; }
     .mv-existing-footer .mv-popup-actions button { flex: 1; }
 }

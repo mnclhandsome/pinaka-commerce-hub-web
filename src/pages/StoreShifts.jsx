@@ -144,8 +144,7 @@ function ShiftDetails({ shift, store, onBack }) {
   ];
   const difference = shift.actualClosing == null ? null : shift.actualClosing - shift.expectedClosing;
   return <section className="sm-screen sm-detail-screen" aria-label="Shift details">
-    <nav className="sm-breadcrumb" aria-label="Shift navigation"><button type="button" onClick={onBack}>Shift Management</button><b>/</b><strong>Shift Details</strong></nav>
-    <header className="sm-detail-heading"><div><h1>Shift Details</h1><p>View complete information for the selected shift.</p></div><button type="button" className="sm-button-outline" onClick={onBack}><i className="bi bi-arrow-left" /> Back to Shift Management</button></header>
+    <header className="sm-detail-heading"><div><h1>Shift Details</h1><p>View complete information for the selected shift.</p></div><button type="button" className="sm-button-outline store-config-back-button" onClick={onBack}><i className="bi bi-arrow-left" /> Back to Shift Management</button></header>
     <section className="sm-detail-overview">
       <span className={`sm-detail-status ${shift.status.toLowerCase()}`}><i className={`bi ${shift.status === "Closed" ? "bi-check-lg" : "bi-clock"}`} /> {shift.status}</span>
       <div className="sm-info-block"><h2><i className="bi bi-clock" /> Shift Information</h2><dl><div><dt>Shift ID</dt><dd>{shift.id}</dd></div><div><dt>Shift Date</dt><dd>{dateLabel(shift.date)} ({new Date(`${shift.date}T12:00:00`).toLocaleDateString("en-GB", { weekday: "long" })})</dd></div><div><dt>Status</dt><dd><span className={`sm-status ${shift.status.toLowerCase()}`}>{shift.status}</span></dd></div><div><dt>Duration</dt><dd>{shift.duration}</dd></div><div><dt>Store</dt><dd>{store?.name || store?.storeName || "—"}</dd></div></dl></div>

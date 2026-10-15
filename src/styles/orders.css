@@ -331,6 +331,14 @@ input {
     vertical-align: middle;
 }
 
+.orders-table-wrapper .orders-table td.orders-table-empty {
+    height: 124px;
+    padding: 24px;
+    color: #718096;
+    text-align: center;
+    font-size: 14px;
+}
+
 .orders-table th:nth-child(1) { width: 15%; }
 .orders-table th:nth-child(2) { width: 21%; }
 .orders-table th:nth-child(3) { width: 17%; }
@@ -558,6 +566,7 @@ input {
 .orders-empty {
     padding: 55px 20px;
     text-align: center;
+    padding-right: 24px;
 }
 
 .orders-empty-icon {
@@ -707,6 +716,20 @@ input {
 
 .orders-card > .orders-toolbar {
     border-bottom: 0;
+}
+
+@media (min-width: 1201px) {
+    .orders-card > .filters-bar {
+        flex-wrap: nowrap;
+    }
+
+    .orders-card > .filters-bar .filter-search {
+        min-width: 180px;
+    }
+
+    .orders-card > .filters-bar .filter-options {
+        flex-wrap: nowrap;
+    }
 }
 
 @media (max-width: 600px) {

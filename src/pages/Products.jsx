@@ -765,7 +765,7 @@ export default function Products({
 
                             <tbody>
 
-                                {paginatedProducts.map(
+                                {paginatedProducts.length ? paginatedProducts.map(
                                     (product) => (
                                         <ProductRow
                                             key={
@@ -781,39 +781,33 @@ export default function Products({
                                             }
                                         />
                                     )
+                                ) : (
+                                    <tr>
+                                        <td className="products-table-empty-cell" colSpan="9">
+                                            <div className="products-table-empty-state">
+                                                <div className="products-empty-icon">
+                                                    <i className="bi bi-box-seam" />
+                                                </div>
+                                                <strong>No products found</strong>
+                                                <span>
+                                                    {products.length === 0
+                                                        ? "No products are available for this store."
+                                                        : "Try changing your search or filters."}
+                                                </span>
+                                                <button type="button" onClick={clearFilters}>
+                                                    Clear Filters
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
                                 )}
 
                             </tbody>
 
                         </table>
 
-                         {/* =================================================
-                    EMPTY STATE
-                ================================================= */}
-
-                {!loading &&
-                    filteredProducts.length ===
-                        0 && (
-                        <div className="products-empty">
-                            <h3>
-                                No products found
-                            </h3>
-
-                            <p>
-                                {products.length ===
-                                0
-                                    ? "No products are available for this store."
-                                    : "Try changing your search or filters."}
-                            </p>
-
-
-                        </div>
-                    )}
-
                     </div>
                 )}
-
-               
 
                 {/* =================================================
                     PAGINATION

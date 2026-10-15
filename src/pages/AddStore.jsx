@@ -522,12 +522,6 @@ const Panel = ({ title, subtitle, action, children, className = "" }) => (
     {(title || action) && (
       <div
         className="sf-panel-head"
-        style={className.includes("sf-permissions-panel") ? {
-          display: "grid",
-          gridTemplateColumns: "minmax(0, 1fr) auto",
-          alignItems: "center",
-          gap: 32,
-        } : undefined}
       >
         <div>
           {title && <h2>{title}</h2>}
@@ -2433,7 +2427,34 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
 
   const subscriptionScreen = () => {
     const used = merchantStores.length;
-    const limit = Number.isFinite(storeLimit) ? storeLimit : "Not provided";
+    const limit = Number.isFinite(storeLimit) ? storeLimit : "—";
+    const planTypeValue =
+      matchedPlan?.applicableStoreType ??
+      matchedPlan?.storeType ??
+      plan?.applicableStoreType ??
+      plan?.storeType ??
+      subscription?.storeType ??
+      subscription?.storeTypeName ??
+      "";
+    const planTypeKey =
+      planTypeValue && typeof planTypeValue === "object"
+        ? planTypeValue.id ??
+          planTypeValue.storeTypeId ??
+          planTypeValue.code ??
+          planTypeValue.storeTypeCode ??
+          planTypeValue.name ??
+          planTypeValue.storeTypeName
+        : planTypeValue;
+    const planTypeMatch = storeTypes.find((item) =>
+      [item.id, item._id, item.storeTypeId, item.code, item.storeTypeCode, item.name, item.storeTypeName]
+        .filter(Boolean)
+        .some((value) => String(value).toLowerCase() === String(planTypeKey).toLowerCase()),
+    );
+    const planStoreType = planTypeMatch
+      ? planTypeMatch.name || planTypeMatch.storeTypeName || planTypeMatch.storeTypeCode || planTypeMatch.code
+      : typeof planTypeValue === "object"
+        ? planTypeValue.name || planTypeValue.storeTypeName || planTypeValue.storeTypeCode || planTypeValue.code || "—"
+        : planTypeValue || "—";
     const validity =
       subscription?.endDate ||
       subscription?.renewalDate ||
@@ -2466,11 +2487,9 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
                 <tr>
                   <th>Selected Plan</th>
                   <th>Plan Name</th>
-                  <th>Billing Type</th>
-                  <th>Price</th>
+                  <th>Store Type</th>
                   <th>Validity</th>
                   <th>Stores Used</th>
-                  <th>Stores Limit</th>
                   <th>Status</th>
                 </tr>
               </thead>
@@ -2481,19 +2500,10 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
                   </td>
                   <td>
                     <strong>{planName}</strong>
-                    <small>
-                      {plan?.description || "Merchant subscription plan"}
-                    </small>
                   </td>
-                  <td>{billing}</td>
-                  <td>
-                    {planPrice == null
-                      ? "—"
-                      : `${subscription?.currency || currencyCode} ${planPrice}`}
-                  </td>
+                  <td>{planStoreType}</td>
                   <td>{validity}</td>
-                  <td>{used}</td>
-                  <td>{limit}</td>
+                  <td>{used}/{limit}</td>
                   <td>
                     <span className="sf-status-pill">
                       {subscription?.status || "Not provided"}
@@ -3281,18 +3291,7 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
             subtitle={readOnly ? "Saved access for the selected role." : "Set what this role can view, create, edit or delete."}
             className="sf-permissions-panel"
             action={
-              <div
-                className="sf-copy-permissions"
-                style={{
-                  display: "grid",
-                  width: "max-content",
-                  justifySelf: "end",
-                  marginRight: 0,
-                  gridTemplateColumns: "max-content 220px",
-                  alignItems: "end",
-                  gap: 12,
-                }}
-              >
+              <div className="sf-copy-permissions">
                 <label className="sf-select-all-label">
                   <input type="checkbox" disabled={readOnly || !active || !matrixRows.length} checked={Boolean(active && matrixRows.length && matrixRows.every((item) => STANDARD_ACTIONS.every((action) => Boolean(permissions[active]?.[item.name]?.[action]))))} onChange={(event) => {
                     if (!active) return;
@@ -3308,7 +3307,7 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
                   }} />
                   Select all permissions
                 </label>
-                <label style={{ width: 220 }}>
+                <label className="sf-copy-role-select">
                   <FilterDropdown
                     value={copyFromRole}
                     onChange={(event) => setCopyFromRole(event.target.value)}

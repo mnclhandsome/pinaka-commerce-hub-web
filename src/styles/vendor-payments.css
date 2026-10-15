@@ -91,31 +91,41 @@
 /* Single Search Box */
 
 .vendor-search {
+  position: relative;
   display: flex;
   align-items: center;
   margin-left: auto;
 }
 
+.vendor-search > i {
+  position: absolute;
+  left: 13px;
+  color: #71809a;
+  font-size: 14px;
+  pointer-events: none;
+}
+
 .vendor-search input {
-  width: 280px;
-  height: 42px;
-  padding: 0 18px;
-  border: 1px solid #aaa;
-  border-radius: 0;
-  font-size: 16px;
-  color: #333;
+  width: 300px;
+  height: 40px;
+  padding: 0 14px 0 36px;
+  border: 1px solid #d7dfef;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #172640;
   background: #fff;
   box-sizing: border-box;
 }
 
 .vendor-search input::placeholder {
-  color: #2271b1;
+  color: #8492aa;
   opacity: 1;
 }
 
 .vendor-search input:focus {
   outline: none;
-  border-color: #2271b1;
+  border-color: #6547e8;
+  box-shadow: 0 0 0 3px rgba(101, 71, 232, .1);
 }
 
 .vendor-filter-reset {

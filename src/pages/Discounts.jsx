@@ -330,12 +330,10 @@ export default function Discounts({ embedded = false }) {
       <div className={`coupons-page discounts-page ${embedded ? "discounts-embedded" : ""}`}>
         <div className="coupons-header coupon-editor-heading">
           <div className="discount-editor-title">
-            <button type="button" className="discount-back" onClick={closeEditor}>
-              <i className="bi bi-arrow-left" /> Discounts
-            </button>
             <h1>{mode === "edit" ? "Edit discount" : "Create discount"}</h1>
             <p>{typeLabel(form.type)} settings</p>
           </div>
+          <button type="button" className="coupon-form-cancel coupon-editor-back store-config-back-button" onClick={closeEditor}><i className="bi bi-arrow-left" /> Back to Discounts</button>
         </div>
         <form className="discount-editor-layout" onSubmit={saveDiscount}>
           <nav className="discount-editor-tabs" aria-label="Discount settings">
@@ -442,7 +440,6 @@ export default function Discounts({ embedded = false }) {
     <div className={`coupons-page discounts-page ${embedded ? "discounts-embedded" : ""}`}>
       <div className="coupons-header">
         <div className="coupons-title-area">
-          <div className="coupons-title-icon"><i className="bi bi-percent" /></div>
           <div><h1>Discounts</h1><p>Create and manage automatic, mix 'n match, and multipack discounts for this store.</p></div>
         </div>
         <div className="coupons-header-actions">
@@ -479,11 +476,18 @@ export default function Discounts({ embedded = false }) {
           </FilterDropdown>
           {(search || typeFilter || statusFilter) && <button type="button" className="coupons-clear-btn" onClick={() => { setSearch(""); setTypeFilter(""); setStatusFilter(""); setCurrentPage(1); }}><i className="bi bi-arrow-counterclockwise" />Clear</button>}
         </div>
+<<<<<<< HEAD
         <div className="coupons-table-heading"><div>Discounts<span>{filtered.length}</span></div></div>
         {loading ? <p role="status">Loading discounts…</p> : loadError ? <p role="alert">{loadError} <button type="button" onClick={() => setRetry(value => value + 1)}>Retry</button></p> : visibleDiscounts.length ? <div className="coupons-table-wrapper">
           <table className="coupons-table discounts-table">
             <thead><tr><th>Name</th><th>Discount type</th><th>Amount</th><th>Product / rules</th><th>Usage / limit</th><th>Start date</th><th>Expiry date</th><th>Actions</th></tr></thead>
             <tbody>{visibleDiscounts.map((discount) => <tr key={discount.id}>
+=======
+        <div className="coupons-table-wrapper">
+          <table className="coupons-table discounts-table">
+            <thead><tr><th>Name</th><th>Discount type</th><th>Amount</th><th>Product / rules</th><th>Usage / limit</th><th>Start date</th><th>Expiry date</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody>{visibleDiscounts.length ? visibleDiscounts.map((discount) => <tr key={discount.id}>
+>>>>>>> origin/raju
               <td><div className="discount-name-cell"><strong>{discount.code}</strong><small>{typeLabel(discount.type)}</small></div></td>
               <td><span className="discount-type-pill">{discount.type || "—"}</span></td>
               <td><strong className="discount-amount">{amountLabel(discount)}</strong></td>
@@ -493,14 +497,19 @@ export default function Discounts({ embedded = false }) {
               <td>{formatSystemDate(discount.date_expires)}</td>
 
               <td className="coupon-row-actions"><button type="button" aria-label={`Edit ${discount.code}`} onClick={() => openEdit(discount)}><i className="bi bi-pencil" /></button><button type="button" aria-label={`Delete ${discount.code}`} onClick={() => { setDeleteError(""); setDeleteTarget(discount); }}><i className="bi bi-trash3" /></button></td>
-            </tr>)}</tbody>
+            </tr>) : <tr><td className="discount-table-empty" colSpan="9"><div className="products-table-empty-state"><div className="products-empty-icon"><i className="bi bi-percent" /></div><strong>{search || typeFilter || statusFilter ? "No discounts found" : "No discounts yet"}</strong><span>{search || typeFilter || statusFilter ? "Try changing your search or filters." : "Create a discount to see it listed here."}</span>{search || typeFilter || statusFilter ? <button type="button" onClick={() => { setSearch(""); setTypeFilter(""); setStatusFilter(""); setCurrentPage(1); }}>Clear Filters</button> : <button type="button" onClick={openCreate}><i className="bi bi-plus-lg" /> Create discount</button>}</div></td></tr>}</tbody>
           </table>
+<<<<<<< HEAD
         </div> : <div className="discounts-empty"><div className="coupons-empty-icon"><i className="bi bi-percent" /></div><h3>{search || typeFilter || statusFilter ? "No discounts found" : "No discounts yet"}</h3><p>{search || typeFilter || statusFilter ? "Try changing your search or filters." : "Create a discount to see it listed here."}</p>{!(search || typeFilter || statusFilter) && <button type="button" className="coupon-create-btn" onClick={openCreate}><i className="bi bi-plus-lg" />Create discount</button>}</div>}
 <<<<<<< HEAD
         <Pagination currentPage={currentPage} totalPages={totalPages} totalItems={filtered.length} pageSize={pageSize} onPageChange={setCurrentPage} onPageSizeChange={(size) => { setPageSize(size); setCurrentPage(1); }} itemLabel="discounts" showWhenEmpty />
 =======
         {!loading && !loadError && (discounts.length > 0 || currentPage > 1) && <Pagination currentPage={currentPage} totalPages={totalPages} totalItems={Number(pagination.total ?? pagination.total_items) || ((totalPages - 1) * pageSize + discounts.length)} pageSize={pageSize} onPageChange={setCurrentPage} onPageSizeChange={(size) => { setPageSize(size); setCurrentPage(1); }} />}
 >>>>>>> 66486cd1f3cf32455cfcc1a0746fa2fa0e1f8bda
+=======
+        </div>
+        <Pagination currentPage={currentPage} totalPages={totalPages} totalItems={filtered.length} pageSize={pageSize} onPageChange={setCurrentPage} onPageSizeChange={(size) => { setPageSize(size); setCurrentPage(1); }} showWhenEmpty />
+>>>>>>> origin/raju
       </div>
 
       <DeleteConfirmationDialog isOpen={Boolean(deleteTarget)} title="Delete discount?" message={deleteTarget ? `Delete “${deleteTarget.code}”?` : ""} busy={deleting} busyLabel="Deleting…" error={deleteError} onCancel={() => { if (deleteLock.current) return; setDeleteTarget(null); setDeleteError(""); }} onConfirm={deleteDiscount} />
