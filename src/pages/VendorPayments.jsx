@@ -202,7 +202,7 @@ export default function VendorPayments({ viewMode } = {}) {
   };
 
   return (
-    <div className="vendor-screen">
+    <div className={`vendor-screen ${viewMode ? "vendor-history-screen" : ""}`}>
 
       {/* Header */}
       <div className="vendor-title-row">
@@ -233,6 +233,7 @@ export default function VendorPayments({ viewMode } = {}) {
 
           {view === "payments" && (
             <button className="vendor-primary-action" onClick={() => { setFieldErrors({}); setShowPaymentForm(true); }}>
+              <i className="bi bi-plus-lg" aria-hidden="true" />
               Add New Vendor Payment
             </button>
           )}
@@ -243,7 +244,7 @@ export default function VendorPayments({ viewMode } = {}) {
       {/* Toolbar */}
       <div className="vendor-toolbar">
 
-        <div className="vendor-tabs">
+        {!viewMode && <div className="vendor-tabs">
 
           <button className="active">
             All (
@@ -261,7 +262,7 @@ export default function VendorPayments({ viewMode } = {}) {
             )
           </button>
 
-        </div>
+        </div>}
 
         {/* Single Search Box */}
        <div className="vendor-search">
@@ -287,7 +288,7 @@ export default function VendorPayments({ viewMode } = {}) {
             <option key={method} value={method}>{method}</option>
           ))}
         </FilterDropdown>}
-        {view === "payments" && (search || methodFilter) && <button type="button" className="vendor-filter-reset" onClick={() => { setSearch(""); setMethodFilter(""); setCurrentPage(1); }}>Reset</button>}
+        {view === "payments" && (viewMode || search || methodFilter) && <button type="button" className="vendor-filter-reset" onClick={() => { setSearch(""); setMethodFilter(""); setCurrentPage(1); }}><i className="bi bi-arrow-counterclockwise" aria-hidden="true" />Reset</button>}
 
       </div>
 
@@ -330,6 +331,7 @@ export default function VendorPayments({ viewMode } = {}) {
 
       {/* Vendor Payments Table */}
       {view === "payments" && (
+        <div className={viewMode ? "vendor-history-table-scroll" : undefined}>
         <table className="vendor-table">
 
           <thead>
@@ -349,7 +351,7 @@ export default function VendorPayments({ viewMode } = {}) {
               <tr key={payment.id}>
 
                 <td>
-                  <strong>{payment.title}</strong>
+                  <strong title={payment.title}>{payment.title}</strong>
                 </td>
 
                 <td>{payment.vendor}</td>
@@ -372,6 +374,7 @@ export default function VendorPayments({ viewMode } = {}) {
           </tbody>
 
         </table>
+        </div>
       )}
 
       {view === "payments" && (

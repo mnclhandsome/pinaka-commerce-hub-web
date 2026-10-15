@@ -718,7 +718,7 @@ export default function Products({
                         }
                     >
                         <i className="bi bi-arrow-counterclockwise" />
-                        Clear
+                        Reset
                     </button>
 
             </div>
@@ -785,18 +785,14 @@ export default function Products({
                                     <tr>
                                         <td className="products-table-empty-cell" colSpan="9">
                                             <div className="products-table-empty-state">
-                                                <div className="products-empty-icon">
-                                                    <i className="bi bi-box-seam" />
-                                                </div>
+                                            
                                                 <strong>No products found</strong>
                                                 <span>
                                                     {products.length === 0
                                                         ? "No products are available for this store."
                                                         : "Try changing your search or filters."}
                                                 </span>
-                                                <button type="button" onClick={clearFilters}>
-                                                    Clear Filters
-                                                </button>
+                                               
                                             </div>
                                         </td>
                                     </tr>

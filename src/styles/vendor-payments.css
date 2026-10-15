@@ -42,6 +42,10 @@
 }
 
 .vendor-actions .vendor-primary-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   border-color: #5143bc;
   border-radius: 6px;
   background: #5143bc;
@@ -197,7 +201,7 @@
 }
 
 .vendor-table td strong {
-  color: #0073aa;
+  color: #17233e;
   font-weight: 600;
 }
 

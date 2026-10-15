@@ -732,6 +732,27 @@
   flex: 0 0 160px;
 }
 
+.fast-key-toolbar > .store-edit-btn {
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  height: 40px;
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1px solid #d9dee8;
+  border-radius: 6px;
+  background: #fff;
+  color: #5143bc;
+  font-size: 13px;
+  cursor: pointer;
+}
+.fast-key-toolbar > .store-edit-btn:hover {
+  border-color: #c8c1f2;
+  background: #f8f7ff;
+}
+
 .fast-key-table-wrap {
   overflow-x: hidden;
 
@@ -4010,7 +4031,260 @@
   border-color: #6547e8;
   box-shadow: 0 0 0 3px rgba(101, 71, 232, .1);
 }
+
+/* Employee assignment filters stay together on the left; bulk select stays right. */
+.store-workspace-page .store-section-editor .sf-employee-tools {
+  justify-content: flex-start;
+}
+.store-workspace-page .store-section-editor .sf-employee-tools > .sf-search {
+  order: 1;
+  flex: 0 1 280px;
+  margin-right: 0;
+}
+.store-workspace-page .store-section-editor .sf-employee-tools > .sf-field {
+  order: 2;
+  margin-right: 0;
+}
+.store-workspace-page .store-section-editor .sf-employee-tools > .sf-field > .pch-filter-dropdown {
+  width: 145px;
+  flex: 0 0 145px;
+}
+.store-workspace-page .store-section-editor .sf-employee-tools > .sf-select-all-employees {
+  order: 3;
+  margin-left: auto;
+  white-space: nowrap;
+}
+@media (max-width: 600px) {
+  .store-workspace-page .store-section-editor .sf-employee-tools > .sf-select-all-employees {
+    margin-left: auto;
+  }
+}
 .store-workspace-page .mv-existing-toolbar > .mv-search:focus-visible {
   outline: none;
   outline-offset: 0;
+}
+
+/* Match the visible status filter buttons in the embedded Store lists. */
+.store-workspace-page .store-workspace-card :is(.categories-toolbar, .fast-key-toolbar) > .pch-filter-dropdown {
+  box-sizing: border-box;
+  flex: 0 0 160px;
+  width: 160px;
+  min-width: 160px;
+  height: 40px;
+}
+.store-workspace-page .store-workspace-card :is(.categories-toolbar, .fast-key-toolbar) > .pch-filter-dropdown > .pch-filter-sizing {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 100%;
+  height: 40px;
+  min-height: 40px;
+  padding: 0 12px;
+  border: 1px solid #e1e4eb;
+  border-radius: 6px;
+  background: #fff;
+  color: #59647a;
+  font: 13px Inter, "Segoe UI", sans-serif;
+}
+.store-workspace-page .store-workspace-card :is(.categories-toolbar, .fast-key-toolbar) > .pch-filter-dropdown > .pch-filter-trigger {
+  box-sizing: border-box;
+  width: 100% !important;
+  height: 40px !important;
+  min-height: 40px !important;
+  padding: 0 32px 0 12px !important;
+  border: 1px solid #e1e4eb !important;
+  border-radius: 6px !important;
+  background: #fff !important;
+  color: #59647a !important;
+  font: 13px Inter, "Segoe UI", sans-serif !important;
+  box-shadow: none !important;
+}
+
+/* Payment Records uses the same search field treatment as the other Store lists. */
+.store-workspace-page .store-workspace-card .store-payment-records-toolbar > .store-payment-records-search {
+  box-sizing: border-box;
+  display: flex;
+  flex: 1 1 280px;
+  flex-flow: row nowrap;
+  align-items: center;
+  justify-content: flex-start;
+  min-width: 180px;
+  height: 40px;
+  min-height: 40px;
+  padding: 0 10px;
+  border: 1px solid #e1e4eb;
+  border-radius: 5px;
+  background: #fff;
+  color: #9aa2b3;
+}
+.store-workspace-page .store-workspace-card .store-payment-records-toolbar > .store-payment-records-search > i {
+  flex: 0 0 auto;
+  font-size: 13px;
+}
+.store-workspace-page .store-workspace-card .store-payment-records-toolbar > .store-payment-records-search input,
+.store-workspace-page .store-workspace-card .store-payment-records-toolbar > .store-payment-records-search input:focus {
+  box-sizing: border-box;
+  flex: 1 1 auto;
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  padding: 0;
+  border: 0 !important;
+  border-radius: 0;
+  outline: none;
+  background: transparent !important;
+  color: #3c465a;
+  box-shadow: none !important;
+}
+.store-workspace-page .store-workspace-card .store-payment-records-toolbar > .store-payment-records-search:focus-within {
+  border-color: #c8c1f2;
+  box-shadow: 0 0 0 2px rgba(81, 67, 188, 0.08);
+}
+.store-workspace-page .store-workspace-card .store-payment-records-toolbar > .store-payment-reset-btn {
+  box-sizing: border-box;
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  height: 40px;
+  min-height: 40px;
+  margin-left: auto;
+  padding: 0 14px;
+  border: 1px solid #d9dee8;
+  border-radius: 6px;
+  background: #fff;
+  color: #5143bc;
+  font-size: 13px;
+}
+.store-workspace-page .store-workspace-card .store-payment-records-toolbar > .store-payment-reset-btn:hover:not(:disabled) {
+  border-color: #c8c1f2;
+  background: #f8f7ff;
+  color: #5143bc;
+}
+@media (max-width: 600px) {
+  .store-workspace-page .store-workspace-card .store-payment-records-toolbar > .store-payment-records-search {
+    flex-basis: 100%;
+  }
+}
+
+/* Keep Vendor History columns readable and its payment method filter consistent. */
+.store-workspace-page .store-workspace-card .vendor-history-table-scroll {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  border: 1px solid #e1e4eb;
+  border-radius: 8px;
+  background: #fff;
+}
+.store-workspace-page .store-workspace-card .vendor-history-screen .vendor-history-table-scroll > .vendor-table {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 1200px;
+  table-layout: fixed;
+  background: #fff;
+}
+.store-workspace-page .store-workspace-card .vendor-history-screen .vendor-history-table-scroll > .vendor-table th,
+.store-workspace-page .store-workspace-card .vendor-history-screen .vendor-history-table-scroll > .vendor-table td {
+  box-sizing: border-box;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: normal;
+  line-height: 1.45;
+}
+.store-workspace-page .store-workspace-card .vendor-history-screen .vendor-history-table-scroll > .vendor-table th:nth-child(1),
+.store-workspace-page .store-workspace-card .vendor-history-screen .vendor-history-table-scroll > .vendor-table td:nth-child(1) { width: 23%; }
+.store-workspace-page .store-workspace-card .vendor-history-screen .vendor-history-table-scroll > .vendor-table th:nth-child(2),
+.store-workspace-page .store-workspace-card .vendor-history-screen .vendor-history-table-scroll > .vendor-table td:nth-child(2) { width: 17%; }
+.store-workspace-page .store-workspace-card .vendor-history-screen .vendor-history-table-scroll > .vendor-table th:nth-child(3),
+.store-workspace-page .store-workspace-card .vendor-history-screen .vendor-history-table-scroll > .vendor-table td:nth-child(3) { width: 15%; }
+.store-workspace-page .store-workspace-card .vendor-history-screen .vendor-history-table-scroll > .vendor-table th:nth-child(4),
+.store-workspace-page .store-workspace-card .vendor-history-screen .vendor-history-table-scroll > .vendor-table td:nth-child(4) { width: 16%; }
+.store-workspace-page .store-workspace-card .vendor-history-screen .vendor-history-table-scroll > .vendor-table th:nth-child(5),
+.store-workspace-page .store-workspace-card .vendor-history-screen .vendor-history-table-scroll > .vendor-table td:nth-child(5) { width: 13%; }
+.store-workspace-page .store-workspace-card .vendor-history-screen .vendor-history-table-scroll > .vendor-table th:nth-child(6),
+.store-workspace-page .store-workspace-card .vendor-history-screen .vendor-history-table-scroll > .vendor-table td:nth-child(6) { width: 16%; }
+.store-workspace-page .store-workspace-card .vendor-history-screen .vendor-toolbar > .pch-filter-dropdown {
+  box-sizing: border-box;
+  flex: 0 0 200px;
+  width: 200px;
+  min-width: 200px;
+}
+.store-workspace-page .store-workspace-card .vendor-history-screen .vendor-toolbar > .pch-filter-dropdown > .pch-filter-sizing {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 100%;
+  height: 40px;
+  min-height: 40px;
+  padding: 0 32px 0 12px;
+  border: 1px solid #d7dfef;
+  border-radius: 6px;
+  background: #fff;
+  color: #59647a;
+  font: 13px Inter, "Segoe UI", sans-serif;
+}
+.store-workspace-page .store-workspace-card .vendor-history-screen .vendor-toolbar > .pch-filter-dropdown > .pch-filter-trigger {
+  box-sizing: border-box;
+  width: 100% !important;
+  height: 40px !important;
+  min-height: 40px !important;
+  padding: 0 32px 0 12px !important;
+  border: 1px solid #d7dfef !important;
+  border-radius: 6px !important;
+  background: #fff !important;
+  color: #59647a !important;
+  font: 13px Inter, "Segoe UI", sans-serif !important;
+  box-shadow: none !important;
+}
+.store-workspace-page .store-workspace-card .vendor-history-screen .vendor-toolbar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 200px auto;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  margin: 0 0 14px;
+}
+.store-workspace-page .store-workspace-card .vendor-history-screen .vendor-toolbar > .vendor-search {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+}
+.store-workspace-page .store-workspace-card .vendor-history-screen .vendor-search input {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+}
+.store-workspace-page .store-workspace-card .vendor-history-screen .vendor-toolbar > .vendor-filter-reset {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-width: 88px;
+  height: 40px;
+  padding: 0 14px;
+  border-color: #d9dee8;
+  border-radius: 6px;
+  color: #5143bc;
+  font-size: 13px;
+}
+.store-workspace-page .store-workspace-card .vendor-history-screen .vendor-table td:first-child strong {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+@media (max-width: 700px) {
+  .store-workspace-page .store-workspace-card .vendor-history-screen .vendor-toolbar {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+  .store-workspace-page .store-workspace-card .vendor-history-screen .vendor-toolbar > .vendor-search {
+    grid-column: 1 / -1;
+  }
+  .store-workspace-page .store-workspace-card .vendor-history-screen .vendor-toolbar > .pch-filter-dropdown {
+    width: 100%;
+    min-width: 0;
+    flex-basis: auto;
+  }
 }

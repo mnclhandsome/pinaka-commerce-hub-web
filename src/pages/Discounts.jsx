@@ -190,6 +190,12 @@ export default function Discounts({ embedded = false }) {
   }, [discounts, search, typeFilter, statusFilter]);
   const totalPages = Math.max(1, Number(pagination.total_pages ?? pagination.totalPages) || (pagination.has_more ? currentPage + 1 : currentPage));
   const visibleDiscounts = filtered;
+  const resetFilters = () => {
+    setSearch("");
+    setTypeFilter("");
+    setStatusFilter("");
+    setCurrentPage(1);
+  };
 
   const openCreate = () => {
     setForm({ ...emptyForm("auto"), type: "" });
@@ -474,7 +480,7 @@ export default function Discounts({ embedded = false }) {
             <option value="Scheduled">Scheduled</option>
             <option value="Expired">Expired</option>
           </FilterDropdown>
-          {(search || typeFilter || statusFilter) && <button type="button" className="coupons-clear-btn" onClick={() => { setSearch(""); setTypeFilter(""); setStatusFilter(""); setCurrentPage(1); }}><i className="bi bi-arrow-counterclockwise" />Clear</button>}
+          <button type="button" className="coupons-clear-btn" onClick={resetFilters}><i className="bi bi-arrow-counterclockwise" />Reset</button>
         </div>
         <div className="coupons-table-wrapper">
           <table className="coupons-table discounts-table">
@@ -511,14 +517,8 @@ export default function Discounts({ embedded = false }) {
                 <tr>
                   <td className="discount-table-empty" colSpan="9">
                     <div className="products-table-empty-state">
-                      <div className="products-empty-icon"><i className="bi bi-percent" /></div>
                       <strong>{search || typeFilter || statusFilter ? "No discounts found" : "No discounts yet"}</strong>
                       <span>{search || typeFilter || statusFilter ? "Try changing your search or filters." : "Create a discount to see it listed here."}</span>
-                      {search || typeFilter || statusFilter ? (
-                        <button type="button" onClick={() => { setSearch(""); setTypeFilter(""); setStatusFilter(""); setCurrentPage(1); }}>Clear Filters</button>
-                      ) : (
-                        <button type="button" onClick={openCreate}><i className="bi bi-plus-lg" /> Create discount</button>
-                      )}
                     </div>
                   </td>
                 </tr>
@@ -526,7 +526,7 @@ export default function Discounts({ embedded = false }) {
             </tbody>
           </table>
         </div>
-        <Pagination currentPage={currentPage} totalPages={totalPages} totalItems={filtered.length} pageSize={pageSize} onPageChange={setCurrentPage} onPageSizeChange={(size) => { setPageSize(size); setCurrentPage(1); }} itemLabel="discounts" showWhenEmpty />
+        <Pagination currentPage={currentPage} totalPages={totalPages} totalItems={filtered.length} pageSize={pageSize} onPageChange={setCurrentPage} onPageSizeChange={(size) => { setPageSize(size); setCurrentPage(1); }} itemLabel="Discounts" showWhenEmpty />
       </div>
 
       <DeleteConfirmationDialog isOpen={Boolean(deleteTarget)} title="Delete discount?" message={deleteTarget ? `Delete “${deleteTarget.code}”?` : ""} busy={deleting} busyLabel="Deleting…" error={deleteError} onCancel={() => { if (deleteLock.current) return; setDeleteTarget(null); setDeleteError(""); }} onConfirm={deleteDiscount} />

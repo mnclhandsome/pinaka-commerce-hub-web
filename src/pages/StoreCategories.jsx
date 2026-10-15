@@ -362,6 +362,14 @@ export default function StoreCategories({
     setAttributePage(1);
   };
 
+  const resetFilters = () => {
+    setSearch("");
+    setStatusFilter("");
+    setCategoryPage(1);
+    setTagPage(1);
+    setAttributePage(1);
+  };
+
 
   /* =========================================================
      OPEN VIEW MODAL
@@ -1430,6 +1438,11 @@ export default function StoreCategories({
               <option key={status} value={status}>{status}</option>
             ))}
           </FilterDropdown>
+
+          <button type="button" className="categories-clear-btn" onClick={resetFilters}>
+            <i className="bi bi-arrow-counterclockwise" aria-hidden="true" />
+            Reset
+          </button>
 
         </div>
 

@@ -671,7 +671,7 @@ export default function Coupons({
                         onClick={clearFilters}
                     >
                         <i className="bi bi-arrow-counterclockwise" />
-                        Clear
+                        Reset
                     </button>
 
             </div>
@@ -729,9 +729,7 @@ export default function Coupons({
                                 <tr>
                                     <td className="coupons-table-empty" colSpan="9">
                                         <div className="products-table-empty-state">
-                                            <div className="products-empty-icon">
-                                                <i className="bi bi-ticket-perforated" />
-                                            </div>
+                                
                                             <strong>
                                                 {loading
                                                     ? "Loading coupons..."
@@ -740,9 +738,7 @@ export default function Coupons({
                                                         : "No coupons found"}
                                             </strong>
                                             {!loading && !loadError && <span>Try changing your search or filters.</span>}
-                                            {!loading && !loadError && (
-                                                <button type="button" onClick={clearFilters}>Clear Filters</button>
-                                            )}
+                                            
                                         </div>
                                     </td>
                                 </tr>
@@ -765,7 +761,7 @@ export default function Coupons({
                         totalItems={totalItems}
                         pageSize={pageSize}
                         onPageChange={setCurrentPage}
-                        itemLabel="coupons"
+                        itemLabel="Coupons"
                         showWhenEmpty
                         onPageSizeChange={(size) => {
                             setPageSize(size);

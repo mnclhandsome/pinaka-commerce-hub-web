@@ -389,12 +389,10 @@ export default function Orders({
 
         {selectedStore && !loading && filteredOrders.length === 0 && (
           <div className="orders-empty">
-            <div className="orders-empty-icon"><i className="bi bi-receipt" /></div>
+            
             <h3>No orders found</h3>
             <p>{error ? "The order list could not be loaded." : "Try changing your search or filters."}</p>
-            {!error && (
-              <button type="button" onClick={clearFilters}>Clear Filters</button>
-            )}
+            
           </div>
         )}
 

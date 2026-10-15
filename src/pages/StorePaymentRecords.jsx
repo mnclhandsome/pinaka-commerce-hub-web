@@ -148,26 +148,16 @@ export default function StorePaymentRecords({ store, storeId: storeIdProp, merch
       </div>
  
       <div className="store-payment-records-card">
-        <div className="store-payment-records-top">
-          <div className="store-payment-records-tabs">
-            <button type="button" className="active">
-              All ({payments.length})
-            </button>
-            <span>|</span>
-            <button type="button">Published ({payments.length})</button>
-          </div>
- 
-          <div className="store-payment-records-search">
+        <div className="store-payment-records-toolbar">
+          <label className="store-payment-records-search">
+            <i className="bi bi-search" aria-hidden="true" />
             <input
               type="text"
               value={search}
               placeholder="Search payments..."
               onChange={(event) => setSearch(event.target.value)}
             />
-          </div>
-        </div>
- 
-        <div className="store-payment-records-toolbar">
+          </label>
           <FilterDropdown
             aria-label="Filter payments by date"
             value={dateFilter}
@@ -184,7 +174,10 @@ export default function StorePaymentRecords({ store, storeId: storeIdProp, merch
             ))}
           </FilterDropdown>
  
-          {(search || dateFilter) && <button type="button" onClick={clearFilters}>Clear filters</button>}
+          <button type="button" className="store-payment-reset-btn" onClick={clearFilters}>
+            <i className="bi bi-arrow-counterclockwise" aria-hidden="true" />
+            Reset
+          </button>
  
           <span className="store-payment-records-count">
             {filteredPayments.length} items

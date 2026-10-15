@@ -368,7 +368,7 @@ export default function FastKeys() {
           onChange={(event) => setStatusFilter(event.target.value)}
         >
           <option value="">All Statuses</option>
-          {[...new Set(items.map((item) => item.status).filter((status) => status && status !== "â€”"))].map((status) => (
+          {[...new Set(items.map((item) => String(item.status || "")).filter((status) => status && status !== "—"))].map((status) => (
             <option key={status} value={status}>{status}</option>
           ))}
         </FilterDropdown>
