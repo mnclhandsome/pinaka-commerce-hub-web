@@ -3458,7 +3458,6 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
               />
             </label>
             <label className="sf-field">
-              <span>Filter</span>
               <FilterDropdown
                 aria-label="Employee assignment filter"
                 value={employeeFilter}
@@ -3485,7 +3484,7 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
                   <th>
                     <span className="sr-only">Select</span>
                   </th>
-                  <th>#</th>
+                  
                   <th>Employee Name</th>
                   <th>Employee ID</th>
                   <th>Phone</th>
@@ -3496,7 +3495,7 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
                 </tr>
               </thead>
               <tbody>
-                {pagedEmployees.map((employee, index) => {
+                {pagedEmployees.map((employee) => {
                   const employeeId = String(
                     employee.id ?? employee.employeeId ?? "",
                   );
@@ -3520,8 +3519,8 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
                           aria-label={`Assign ${employee.name}`}
                         />
                       </td>
-                      <td>{(employeePage - 1) * pageSize + index + 1}</td>
-                      <td>
+                      
+                      <td className="sf-employee-name">
                         {employee.name ||
                           `${employee.firstName || ""} ${employee.lastName || ""}`.trim()}
                       </td>
@@ -3624,7 +3623,7 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
                 })}
                 {!pagedEmployees.length && (
                   <tr>
-                    <td colSpan="9" className="sf-empty">
+                    <td colSpan="8" className="sf-empty">
                       {employees.length
                         ? "No active employees match this search."
                         : "No employees were returned for this merchant."}
@@ -4084,7 +4083,6 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
         className="sf-primary"
         disabled={saving || subscriptionLoading}
       >
-        <i className="bi bi-shop" />{" "}
         {saving
           ? "Creating…"
           : editing

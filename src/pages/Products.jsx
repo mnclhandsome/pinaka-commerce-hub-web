@@ -413,10 +413,6 @@ export default function Products({
                 <div>
                     <div className="products-title-row">
 
-                        <div className="products-title-icon">
-                            <i className="bi bi-box-seam" />
-                        </div>
-
                         <div>
                             <h1>Products</h1>
 
@@ -730,30 +726,6 @@ export default function Products({
             <div className="products-card">
 
                 {/* =================================================
-                    TABLE HEADER
-                ================================================= */}
-
-                <div className="products-table-header">
-
-                    <div>
-                        Products
-
-                        <span>
-                            {filteredProducts.length}
-                        </span>
-                    </div>
-
-                    <div className="read-only-badge">
-
-                        <i className="bi bi-lock" />
-
-                        Read Only
-
-                    </div>
-
-                </div>
-
-                {/* =================================================
                     LOADING
                 ================================================= */}
 
@@ -815,10 +787,7 @@ export default function Products({
 
                         </table>
 
-                    </div>
-                )}
-
-                {/* =================================================
+                         {/* =================================================
                     EMPTY STATE
                 ================================================= */}
 
@@ -826,11 +795,6 @@ export default function Products({
                     filteredProducts.length ===
                         0 && (
                         <div className="products-empty">
-
-                            <div>
-                                <i className="bi bi-box-seam" />
-                            </div>
-
                             <h3>
                                 No products found
                             </h3>
@@ -842,52 +806,36 @@ export default function Products({
                                     : "Try changing your search or filters."}
                             </p>
 
-                            <button
-                                type="button"
-                                onClick={
-                                    clearFilters
-                                }
-                            >
-                                Clear Filters
-                            </button>
 
                         </div>
                     )}
+
+                    </div>
+                )}
+
+               
 
                 {/* =================================================
                     PAGINATION
                 ================================================= */}
 
-                {!loading &&
-                    filteredProducts.length >
-                        0 && (
-                        <Pagination
-                            currentPage={
-                                currentPage
-                            }
-                            totalPages={
-                                totalPages
-                            }
-                            totalItems={
-                                totalItems
-                            }
-                            pageSize={
-                                pageSize
-                            }
-                            onPageChange={
-                                setCurrentPage
-                            }
-                            onPageSizeChange={(
-                                size
-                            ) => {
-                                setPageSize(
-                                    size
-                                );
-                                setCurrentPage(
-                                    1
-                                );
-                            }}
-                        />
+                {!loading && (
+                        <div className="products-pagination">
+                            <Pagination
+                                currentPage={currentPage}
+                                totalPages={totalPages}
+                                totalItems={totalItems}
+                                pageSize={pageSize}
+                                itemLabel="products"
+                                showWhenEmpty
+                                onPageChange={setCurrentPage}
+                                onPageSizeChange={(size) => {
+                                    setPageSize(size);
+                                    setCurrentPage(1);
+                                }}
+                                
+                            />
+                        </div>
                     )}
 
                 {/* =================================================

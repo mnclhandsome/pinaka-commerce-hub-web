@@ -413,15 +413,6 @@ export function MerchantEmployeeForm({
             <strong>Add Employee</strong>
           </div>
         </div>
-
-        <button
-          type="button"
-          className="back-employees-btn"
-          onClick={handleBack}
-        >
-          <ArrowLeft size={17} />
-          Back to Employees
-        </button>
       </div>
 
       {/* =====================================================

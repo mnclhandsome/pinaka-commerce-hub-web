@@ -1728,6 +1728,7 @@
     border-radius: 6px;
 
     background: #ffffff;
+    padding:8px 10px;
 }
 
 .tax-class-row {
@@ -1756,7 +1757,7 @@
 .tax-class-name {
     min-width: 0;
 
-    padding: 0 12px;
+    padding: 0px;
 }
 
 .tax-class-name input {

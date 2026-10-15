@@ -164,21 +164,12 @@ export default function StorePaymentRecords({ store, storeId: storeIdProp, merch
               placeholder="Search payments..."
               onChange={(event) => setSearch(event.target.value)}
             />
-            <button type="button" className="store-payment-search-submit">
-              Search Payments
-            </button>
           </div>
         </div>
  
         <div className="store-payment-records-toolbar">
-          <FilterDropdown defaultValue="" className="store-payment-records-bulk-select">
-            <option value="">Bulk actions</option>
-            <option value="export">Export</option>
-          </FilterDropdown>
- 
-          <button type="button">Apply</button>
- 
           <FilterDropdown
+            aria-label="Filter payments by date"
             value={dateFilter}
             onChange={(event) => setDateFilter(event.target.value)}
           >
@@ -193,25 +184,11 @@ export default function StorePaymentRecords({ store, storeId: storeIdProp, merch
             ))}
           </FilterDropdown>
  
-          <button type="button" onClick={clearFilters}>
-            Filter
-          </button>
- 
-          <button type="button">Export CSV</button>
-          <button type="button">Print</button>
+          {(search || dateFilter) && <button type="button" onClick={clearFilters}>Clear filters</button>}
  
           <span className="store-payment-records-count">
             {filteredPayments.length} items
           </span>
- 
-          <div className="store-payment-records-pagination">
-            <button type="button" disabled>«</button>
-            <button type="button" disabled>‹</button>
-            <button type="button" className="active">{currentPage}</button>
-            <span>of {pageCount}</span>
-            <button type="button" disabled>›</button>
-            <button type="button" disabled>»</button>
-          </div>
         </div>
  
         <div className="store-payment-records-table-wrapper">
@@ -255,7 +232,7 @@ export default function StorePaymentRecords({ store, storeId: storeIdProp, merch
           </table>
         </div>
  
-        <Pagination
+        {!loading && !error && <Pagination
           currentPage={currentPage}
           totalPages={pageCount}
           totalItems={filteredPayments.length}
@@ -265,7 +242,7 @@ export default function StorePaymentRecords({ store, storeId: storeIdProp, merch
           itemLabel="payments"
           showWhenEmpty
           pageSizeOptions={[10, 25, 50, 100]}
-        />
+        />}
       </div>
  
       <ViewDetailsModal

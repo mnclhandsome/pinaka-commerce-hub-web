@@ -406,19 +406,19 @@ export default function StoreCustomers({
             PAGINATION
         =================================================== */}
 
-        {filteredCustomers.length > 0 && (
-          <Pagination
+        <Pagination
             currentPage={currentPage}
             totalPages={totalPages}
             totalItems={totalItems}
             pageSize={pageSize}
             onPageChange={setCurrentPage}
+            itemLabel="customers"
+            showWhenEmpty
             onPageSizeChange={(size) => {
               setPageSize(size);
               setCurrentPage(1);
             }}
           />
-        )}
 
       </div>
 

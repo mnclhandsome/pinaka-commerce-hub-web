@@ -695,19 +695,19 @@ export default function Coupons({
                     PAGINATION
                 ================================================= */}
 
-                {filteredCoupons.length > 0 && (
                     <Pagination
                         currentPage={currentPage}
                         totalPages={totalPages}
                         totalItems={totalItems}
                         pageSize={pageSize}
                         onPageChange={setCurrentPage}
+                        itemLabel="coupons"
+                        showWhenEmpty
                         onPageSizeChange={(size) => {
                             setPageSize(size);
                             setCurrentPage(1);
                         }}
                     />
-                )}
 
                 {/* =================================================
                     FOOTER

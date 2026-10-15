@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import FilterDropdown from "../components/FilterDropdown";
 import Pagination from "../components/Pagination";
 import ViewDetailsModal from "../components/ViewDetailsModal";
 import { getStoreCatalogTaxonomies } from "../api/storeConnector";
@@ -49,6 +50,7 @@ export default function StoreCategories({
 
   const [search, setSearch] =
     useState("");
+  const [statusFilter, setStatusFilter] = useState("");
 
 
   /* =======================================================
@@ -178,13 +180,9 @@ export default function StoreCategories({
     const value =
       search.trim().toLowerCase();
 
-    if (!value) {
-      return categories;
-    }
-
     return categories.filter(
-      (item) =>
-        [
+      (item) => {
+        const matchesSearch = !value || [
           item.name,
           item.slug,
           item.parent,
@@ -193,10 +191,13 @@ export default function StoreCategories({
           String(field || "")
             .toLowerCase()
             .includes(value)
-        )
+        );
+        const matchesStatus = !statusFilter || String(item.status || "Active").toLowerCase() === statusFilter.toLowerCase();
+        return matchesSearch && matchesStatus;
+      }
     );
 
-  }, [categories, search]);
+  }, [categories, search, statusFilter]);
 
 
   /* =========================================================
@@ -208,13 +209,9 @@ export default function StoreCategories({
     const value =
       search.trim().toLowerCase();
 
-    if (!value) {
-      return tags;
-    }
-
     return tags.filter(
-      (item) =>
-        [
+      (item) => {
+        const matchesSearch = !value || [
           item.name,
           item.slug,
           item.status,
@@ -222,10 +219,13 @@ export default function StoreCategories({
           String(field || "")
             .toLowerCase()
             .includes(value)
-        )
+        );
+        const matchesStatus = !statusFilter || String(item.status || "Active").toLowerCase() === statusFilter.toLowerCase();
+        return matchesSearch && matchesStatus;
+      }
     );
 
-  }, [search, tags]);
+  }, [search, tags, statusFilter]);
 
 
   /* =========================================================
@@ -237,13 +237,9 @@ export default function StoreCategories({
     const value =
       search.trim().toLowerCase();
 
-    if (!value) {
-      return attributes;
-    }
-
     return attributes.filter(
-      (item) =>
-        [
+      (item) => {
+        const matchesSearch = !value || [
           item.name,
           item.slug,
           item.status,
@@ -251,10 +247,13 @@ export default function StoreCategories({
           String(field || "")
             .toLowerCase()
             .includes(value)
-        )
+        );
+        const matchesStatus = !statusFilter || String(item.status || "Active").toLowerCase() === statusFilter.toLowerCase();
+        return matchesSearch && matchesStatus;
+      }
     );
 
-  }, [attributes, search]);
+  }, [attributes, search, statusFilter]);
 
 
   /* =========================================================
@@ -328,6 +327,7 @@ export default function StoreCategories({
     setActiveTab(tab);
 
     setSearch("");
+    setStatusFilter("");
 
     setSelectedItem(null);
     setSelectedItemType("");
@@ -350,6 +350,13 @@ export default function StoreCategories({
       event.target.value
     );
 
+    setCategoryPage(1);
+    setTagPage(1);
+    setAttributePage(1);
+  };
+
+  const handleStatusFilterChange = (event) => {
+    setStatusFilter(event.target.value);
     setCategoryPage(1);
     setTagPage(1);
     setAttributePage(1);
@@ -769,13 +776,6 @@ export default function StoreCategories({
                 <td colSpan="6">
 
                   <div className="categories-empty-state">
-
-                    <div className="categories-empty-icon">
-
-                      <i className="bi bi-folder2-open" />
-
-                    </div>
-
                     <h3>
                       No categories found
                     </h3>
@@ -809,6 +809,8 @@ export default function StoreCategories({
         totalItems={
           filteredCategories.length
         }
+        itemLabel="categories"
+        showWhenEmpty
         pageSize={
           categoryPageSize
         }
@@ -984,13 +986,6 @@ export default function StoreCategories({
                 <td colSpan="5">
 
                   <div className="categories-empty-state">
-
-                    <div className="categories-empty-icon">
-
-                      <i className="bi bi-tags" />
-
-                    </div>
-
                     <h3>
                       No tags found
                     </h3>
@@ -1024,6 +1019,8 @@ export default function StoreCategories({
         totalItems={
           filteredTags.length
         }
+        itemLabel="tags"
+        showWhenEmpty
         pageSize={
           tagPageSize
         }
@@ -1253,13 +1250,6 @@ export default function StoreCategories({
                 <td colSpan="6">
 
                   <div className="categories-empty-state">
-
-                    <div className="categories-empty-icon">
-
-                      <i className="bi bi-sliders" />
-
-                    </div>
-
                     <h3>
                       No attributes found
                     </h3>
@@ -1293,6 +1283,8 @@ export default function StoreCategories({
         totalItems={
           filteredAttributes.length
         }
+        itemLabel="attributes"
+        showWhenEmpty
         pageSize={
           attributePageSize
         }
@@ -1424,6 +1416,18 @@ export default function StoreCategories({
 
           </div>
 
+          <FilterDropdown
+            aria-label={`Filter ${activeTab} by status`}
+            value={statusFilter}
+            onChange={handleStatusFilterChange}
+          >
+            <option value="">All Statuses</option>
+            {[...new Set((activeTab === "categories" ? categories : activeTab === "tags" ? tags : attributes)
+              .map((item) => item.status || "Active"))].map((status) => (
+              <option key={status} value={status}>{status}</option>
+            ))}
+          </FilterDropdown>
+
         </div>
 
 
@@ -1454,24 +1458,6 @@ export default function StoreCategories({
           renderAttributes()}
 
       </div>
-
-
-      {/* =====================================================
-         FOOTER
-      ===================================================== */}
-
-      <div className="categories-footer">
-
-        <span>
-
-          <i className="bi bi-cloud-check" />
-
-          Catalog data synced from WooCommerce
-
-        </span>
-
-      </div>
-
 
       {/* =====================================================
          VIEW DETAILS MODAL

@@ -658,7 +658,7 @@
 
   gap: 16px;
 
-  margin-bottom: 22px;
+  margin-bottom: 8px;
 }
 
 .fast-keys-heading h2 {
@@ -728,8 +728,12 @@
   font: inherit;
 }
 
+.fast-key-toolbar > .pch-filter-dropdown {
+  flex: 0 0 160px;
+}
+
 .fast-key-table-wrap {
-  overflow-x: auto;
+  overflow-x: hidden;
 
   border: 1px solid #e4e8f0;
   border-radius: 10px;
@@ -737,8 +741,8 @@
 
 .fast-key-table {
   width: 100%;
-
-  min-width: 920px;
+  min-width: 0;
+  table-layout: fixed;
 
   border-collapse: collapse;
 
@@ -773,7 +777,23 @@
   font-size: 13px;
   line-height: 18px;
   vertical-align: middle;
+  overflow-wrap: anywhere;
 }
+
+.fast-key-table th:first-child,
+.fast-key-table td:first-child { width: 7%; }
+.fast-key-table th:nth-child(2),
+.fast-key-table td:nth-child(2) { width: 14%; }
+.fast-key-table th:nth-child(3),
+.fast-key-table td:nth-child(3) { width: 25%; }
+.fast-key-table th:nth-child(4),
+.fast-key-table td:nth-child(4) { width: 13%; }
+.fast-key-table th:nth-child(5),
+.fast-key-table td:nth-child(5),
+.fast-key-table th:nth-child(6),
+.fast-key-table td:nth-child(6) { width: 15%; }
+.fast-key-table th:last-child,
+.fast-key-table td:last-child { width: 11%; }
 
 .fast-key-table tr:last-child td {
   border-bottom: 0;
@@ -804,7 +824,8 @@
 
   gap: 4px;
 
-  max-width: 320px;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .fast-key-products b {
@@ -870,7 +891,16 @@
 }
 
 .fast-key-footer {
+  width: 100%;
+  box-sizing: border-box;
   padding-top: 8px;
+}
+
+.fast-key-footer > .pagination-container {
+  width: 100%;
+  max-width: 100%;
+  padding-right: 0;
+  padding-left: 0;
 }
 
 
@@ -2296,7 +2326,7 @@
   --store-section-gap: 20px;
 }
 .store-workspace-page .store-workspace-card > :is(.products-page, .coupons-page, .orders-page, .pos-page-content, .store-categories-page, .shifts-page, .store-payment-records-page, .vendor-screen, .fast-keys-panel, .store-panel) {
-  padding: var(--store-content-padding);
+  padding:16px 24px;
   margin: 0;
   min-width: 0;
   min-height: 0;
@@ -2305,7 +2335,7 @@
   background: #fff;
 }
 .store-workspace-page .store-workspace-card > .pos-page-content {
-  background: #f3f5fb;
+  background: #fff; border-radius: 10px;
 }
 .store-workspace-page .store-workspace-card > .pos-page-content .pos-config-detail-card,
 .store-workspace-page .store-workspace-card > .pos-page-content .pos-config-cards-container {
@@ -2341,9 +2371,8 @@
 .store-workspace-page .store-section-editor > .sf-panel:last-child {
   margin-bottom: 0;
 }
-.store-workspace-page .store-workspace-card :is(.products-header, .coupons-header, .orders-header, .store-categories-header, .shifts-page-header, .store-payment-records-header, .vendor-title-row, .fast-keys-heading, .pc-heading, .pos-config-page-header, .store-panel-heading) {
-  margin-bottom: var(--store-heading-gap);
-}
+
+
 .store-workspace-page .store-workspace-card :is(.products-summary, .coupons-summary, .orders-summary) {
   gap: 16px;
   margin-bottom: var(--store-section-gap);
@@ -3586,7 +3615,7 @@
   color: #465573;
   font-size: 13px;
 }
-.store-workspace-page .store-workspace-card .products-table-wrapper + .pagination-container {
+.store-workspace-page .store-workspace-card .products-pagination {
   width: 100%;
   margin: 0;
 }
@@ -3596,14 +3625,14 @@
   background: transparent;
 }
 .store-workspace-page .store-workspace-card .merchant-vendors .mv-header {
-  padding: 0 0 18px;
-  margin: 0 0 16px;
-  border-bottom: 1px solid #edf0f5;
+  padding: 0 0 12px;
+  margin: 0;
+
 }
 .store-workspace-page .store-workspace-card .merchant-vendors h2 { font-size: 22px; line-height: 1.3; }
 .store-workspace-page .store-workspace-card .merchant-vendors p { color: #73809a; font-size: 14px; }
 .store-workspace-page .store-workspace-card .merchant-vendors .mv-card:not(.mv-header) { padding: 0; margin: 0; }
-.store-workspace-page .store-workspace-card .merchant-vendors .mv-card > h3 { padding: 0 0 10px; font-size: 14px; }
+.store-workspace-page .store-workspace-card .merchant-vendors .mv-card > h3 { padding: 0 0 4px; font-size: 14px; }
 .store-workspace-page .store-workspace-card .merchant-vendors .mv-toolbar {
   display: grid;
   grid-template-columns: minmax(180px, 1fr) auto;
@@ -3746,3 +3775,53 @@
   color: #c32935;
 }
 
+
+.fast-key-modal-header{align-items:center}.fast-key-modal-header .fast-key-close{display:inline-grid;place-items:center;flex:0 0 36px;width:36px;height:36px;min-height:36px;padding:0;border:1px solid #e4e8f0;border-radius:8px;background:#f6f7fb;color:#6f7b91;transition:background-color .16s ease,border-color .16s ease,color .16s ease}.fast-key-modal-header .fast-key-close i{font-size:13px;line-height:1}.fast-key-modal-header .fast-key-close:hover:not(:disabled){border-color:#d7d0ff;background:#f0edff;color:#5143bc}.fast-key-modal-header .fast-key-close:focus-visible{outline:2px solid #8d7bf0;outline-offset:2px}.fast-key-modal-header .fast-key-close:disabled{cursor:not-allowed;opacity:.55}
+
+.store-workspace-page .store-workspace-card .fast-key-modal-footer .store-edit-btn,.store-workspace-page .store-workspace-card .fast-key-modal-footer .store-config-btn{box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;height:40px;min-height:40px;padding:0 18px;border-radius:8px;line-height:1}
+
+/* Keep the added status and method filters in the same control rhythm. */
+.store-workspace-page .store-workspace-card :is(.categories-toolbar, .fast-key-toolbar, .vendor-toolbar) > .pch-filter-dropdown {
+  box-sizing: border-box;
+  width: 150px;
+  min-width: 150px;
+  flex: 0 0 150px;
+}
+.store-workspace-page .store-workspace-card :is(.categories-toolbar, .fast-key-toolbar, .vendor-toolbar) > .pch-filter-dropdown > .pch-filter-sizing {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 100%;
+  height: 40px;
+  min-height: 40px;
+  padding: 0 12px;
+  border: 1px solid #e1e4eb;
+  border-radius: 5px;
+  background: #fff;
+  color: #59647a;
+  font-size: 13px;
+}
+
+/* Match pagination footprints to their table wrappers in the store workspace. */
+.store-workspace-page .store-workspace-card :is(
+  .coupons-table-wrapper + .pagination-container,
+  .orders-card > .pagination-container,
+  .store-payment-records-card > .pagination-container
+) {
+  box-sizing: border-box;
+  width: calc(100% - 24px);
+  max-width: calc(100% - 24px);
+  margin-right: 12px;
+  margin-left: 12px;
+}
+@media (max-width: 600px) {
+  .store-workspace-page .store-workspace-card :is(
+    .coupons-table-wrapper + .pagination-container,
+    .orders-card > .pagination-container,
+    .store-payment-records-card > .pagination-container
+  ) {
+    width: calc(100% - 20px);
+    max-width: calc(100% - 20px);
+    margin-right: 10px;
+    margin-left: 10px;
+  }
+}

@@ -118,6 +118,28 @@
   border-color: #2271b1;
 }
 
+.vendor-filter-reset {
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1px solid #d9e1f0;
+  border-radius: 6px;
+  background: #fff;
+  color: #5143bc;
+  font: inherit;
+  cursor: pointer;
+}
+
+.vendor-filter-reset:hover {
+  border-color: #5143bc;
+  background: #f7f5ff;
+}
+
+.vendor-empty-row {
+  padding: 24px !important;
+  color: #73809a;
+  text-align: center;
+}
+
 /* Table */
 
 .vendor-table {
@@ -286,3 +308,5 @@
     width: 100%;
   }
 }
+
+.vendor-modal .has-error input,.vendor-modal .has-error select{border-color:#ff4055;background:#fffafa}.vendor-field-error{display:block;margin-top:5px;color:#e3344b;font-size:12px;line-height:1.35}

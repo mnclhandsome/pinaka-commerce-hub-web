@@ -297,7 +297,6 @@ export default function Orders({
 
         {!selectedStore && !loading && (
           <div className="orders-empty">
-            <div className="orders-empty-icon"><i className="bi bi-receipt" /></div>
             <h3>Select a store</h3>
             <p>Choose a merchant and store to load that store&apos;s orders.</p>
           </div>
@@ -379,7 +378,7 @@ export default function Orders({
           </div>
         )}
 
-        {filteredOrders.length > 0 && (
+        {selectedStore && !loading && (
           <Pagination
             currentPage={currentPage}
             totalPages={totalPages}
@@ -391,7 +390,7 @@ export default function Orders({
               setCurrentPage(1);
             }}
             itemLabel="orders"
-            showWhenEmpty
+            showWhenEmpty={true}
           />
         )}
 

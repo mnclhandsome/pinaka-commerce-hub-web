@@ -591,11 +591,11 @@
 }
 
 .cancel-employee-btn {
-  border: 1px solid #d7e1ed;
+  border: 1px solid #5143bc;
 
   background: #fff;
 
-  color: #304766;
+  color: #5143bc;
 }
 
 .save-employee-btn {
@@ -603,13 +603,9 @@
 
   border: none;
 
-  background: linear-gradient(
-    90deg,
-    #5d38dc,
-    #5b3ddd
-  );
+  background: #5143bc;
 
-  color: white;
+  color: #fff;
 
   box-shadow: 0 4px 10px rgba(91, 59, 221, 0.18);
 }

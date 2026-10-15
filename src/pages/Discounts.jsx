@@ -357,7 +357,7 @@ export default function Discounts({ embedded = false }) {
             </tr>)}</tbody>
           </table>
         </div> : <div className="discounts-empty"><div className="coupons-empty-icon"><i className="bi bi-percent" /></div><h3>{search || typeFilter || statusFilter ? "No discounts found" : "No discounts yet"}</h3><p>{search || typeFilter || statusFilter ? "Try changing your search or filters." : "Create a discount to see it listed here."}</p>{!(search || typeFilter || statusFilter) && <button type="button" className="coupon-create-btn" onClick={openCreate}><i className="bi bi-plus-lg" />Create discount</button>}</div>}
-        {filtered.length > 0 && <Pagination currentPage={currentPage} totalPages={totalPages} totalItems={filtered.length} pageSize={pageSize} onPageChange={setCurrentPage} onPageSizeChange={(size) => { setPageSize(size); setCurrentPage(1); }} />}
+        <Pagination currentPage={currentPage} totalPages={totalPages} totalItems={filtered.length} pageSize={pageSize} onPageChange={setCurrentPage} onPageSizeChange={(size) => { setPageSize(size); setCurrentPage(1); }} itemLabel="discounts" showWhenEmpty />
       </div>
 
       <DeleteConfirmationDialog isOpen={Boolean(deleteTarget)} title="Delete discount?" message={deleteTarget ? `Delete “${deleteTarget.code}” from this screen?` : ""} error={deleteError} onCancel={() => { setDeleteTarget(null); setDeleteError(""); }} onConfirm={deleteDiscount} />
