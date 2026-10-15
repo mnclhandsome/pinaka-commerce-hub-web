@@ -758,10 +758,7 @@ export default function Coupons({
                     PAGINATION
                 ================================================= */}
 
-<<<<<<< HEAD
-=======
                 {!loading && (
->>>>>>> origin/raju
                     <Pagination
                         currentPage={currentPage}
                         totalPages={totalPages}
@@ -774,8 +771,8 @@ export default function Coupons({
                             setPageSize(size);
                             setCurrentPage(1);
                         }}
-                        showWhenEmpty
                     />
+                )}
 
                 {/* =================================================
                     FOOTER

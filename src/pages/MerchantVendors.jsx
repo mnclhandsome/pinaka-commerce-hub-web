@@ -151,11 +151,7 @@ export default function MerchantVendors({
     const [page, setPage] = useState(1);
     const [pageSize, setPageSize] = useState(10);
     const [pickerPage, setPickerPage] = useState(1);
-<<<<<<< HEAD
     const [pickerPageSize, setPickerPageSize] = useState(25);
-=======
-    const [pickerPageSize, setPickerPageSize] = useState(10);
->>>>>>> origin/raju
 
     const [sort, setSort] = useState({
         key: "name",
@@ -715,11 +711,7 @@ useEffect(() => {
         <section className="merchant-vendors mv-create-page">
             <header className="mv-card mv-header">
                 <h2>Add New Vendor</h2>
-<<<<<<< HEAD
-
-=======
                 <button type="button" className="store-config-back-button" disabled={busy} onClick={close}>← Back to Vendors</button>
->>>>>>> origin/raju
             </header>
             <div className="mv-create-content"><Vendors formOnly onCreate={createAndAssignVendor} onCancel={close} /></div>
         </section>
@@ -732,11 +724,7 @@ useEffect(() => {
                     <h2>Add Existing Vendor</h2>
                     <p>Choose one or more vendors to add to this {entityName}.</p>
                 </div>
-<<<<<<< HEAD
-
-=======
                 <button type="button" className="store-config-back-button" disabled={busy} onClick={close}>← Back to Vendors</button>
->>>>>>> origin/raju
             </header>
 
             <div className="mv-existing-content">
@@ -755,15 +743,11 @@ useEffect(() => {
                     />
                     <select aria-label="Filter by country" value={countryFilter} onChange={e => { setCountryFilter(e.target.value); setStateFilter(""); setPickerPage(1); }}><option value="">All countries</option>{countries.map(country => <option key={locationKey(country)} value={locationKey(country)}>{country}</option>)}</select>
                     <select aria-label="Filter by state" value={stateFilter} onChange={e => { setStateFilter(e.target.value); setPickerPage(1); }}><option value="">All states</option>{states.map(state => <option key={locationKey(state)} value={locationKey(state)}>{state}</option>)}</select>
-<<<<<<< HEAD
                     <button type="button" onClick={() => { setSearch(""); setCountryFilter(""); setStateFilter(""); setPickerPage(1); }}>Clear filters</button>
                 </div>
 
                 <div className="mv-picker-summary">
                     <span></span>
-=======
-                    <button type="button" onClick={() => { setSearch(""); setCountryFilter(""); setStateFilter(""); setPickerPage(1); }}><i className="bi bi-arrow-counterclockwise" aria-hidden="true" /> Clear</button>
->>>>>>> origin/raju
                 </div>
 
                 <div className="mv-existing-table-wrap">
@@ -797,7 +781,6 @@ useEffect(() => {
                     </table>
                 </div>
 
-<<<<<<< HEAD
                 <Pagination
                     currentPage={currentPickerPage}
                     totalPages={pickerPages}
@@ -811,9 +794,6 @@ useEffect(() => {
                     itemLabel="vendors"
                     showWhenEmpty={true}
                 />
-=======
-                <Pagination currentPage={currentPickerPage} totalPages={pickerPages} totalItems={available.length} pageSize={pickerPageSize} onPageChange={setPickerPage} onPageSizeChange={(size) => { setPickerPageSize(size); setPickerPage(1); }} itemLabel="vendors" showWhenEmpty />
->>>>>>> origin/raju
                 {saveError && <p role="alert" className="mv-error">{saveError}</p>}
             </div>
 
