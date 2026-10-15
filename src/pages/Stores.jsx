@@ -5,6 +5,7 @@ import Pagination from "../components/Pagination";
 import ListActions from "../components/ListActions";
 import FiltersBar from "../components/FiltersBar";
 import DeleteConfirmationDialog from "../components/DeleteConfirmationDialog";
+import { getStoreDeviceMappings } from "../api/storeDeviceMappings";
 
 const title = (value) =>
   String(value || "")
@@ -43,6 +44,8 @@ const displayStoreId = (store) =>
         String(value),
       ),
   ) || store.id;
+const deviceCountOf = (store) =>
+  store.deviceCount ?? store.device_count ?? (Array.isArray(store.devices) ? store.devices.length : "");
 
 function exportStores(rows, merchants) {
   if (!rows.length) {
@@ -67,7 +70,7 @@ function exportStores(rows, merchants) {
     store.currency,
     store.timezone,
     store.defaultLanguage,
-    Array.isArray(store.devices) ? store.devices.length : store.deviceCount ?? store.device_count ?? "",
+    deviceCountOf(store),
     store.status,
     store.connectionStatus,
     store.syncStatus,
@@ -132,8 +135,32 @@ const handlePageSizeChange = (size) => {
     listStores()
       .then((data) => {
         if (active) {
-          setStores(Array.isArray(data.stores) ? data.stores : []);
+          const storeRows = Array.isArray(data.stores) ? data.stores : [];
+          setStores(storeRows);
           setMerchants([...new Map((data.stores || []).filter(store => store.merchantId).map(store => [String(store.merchantId), { id: store.merchantId, name: store.merchantName || String(store.merchantId) }])).values()]);
+          Promise.all(storeRows.map(async (store) => {
+            const storeId = store.id || store.storeId || store.store_id;
+            if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(storeId || ""))) return null;
+            try {
+              const mappings = await getStoreDeviceMappings(storeId);
+              const deviceIds = new Set(mappings.map(mapping => {
+                const device = mapping.device || {};
+                return mapping.deviceId || mapping.device_id || device.id || device.deviceId || device.device_id || mapping.id || mapping.mappingId || mapping.mapping_id;
+              }).filter(Boolean).map(String));
+              return { storeId: String(storeId), count: deviceIds.size };
+            } catch {
+              return null;
+            }
+          })).then(counts => {
+            if (!active) return;
+            const countByStore = new Map(counts.filter(Boolean).map(({ storeId, count }) => [storeId, count]));
+            if (countByStore.size) {
+              setStores(current => current.map(store => {
+                const storeId = String(store.id || store.storeId || store.store_id || "");
+                return countByStore.has(storeId) ? { ...store, deviceCount: countByStore.get(storeId) } : store;
+              }));
+            }
+          });
         }
       })
       .catch((e) => {
@@ -448,7 +475,7 @@ useEffect(() => {
                         <small>{s.email || "—"}</small>
                       </div>
                     </td>
-                    <td>{Array.isArray(s.devices) ? s.devices.length : s.deviceCount ?? s.device_count ?? "—"}</td>
+                    <td>{deviceCountOf(s) || 0}</td>
                     <td>
                       <span
                         className={`store-status ${String(s.status).toLowerCase()}`}
