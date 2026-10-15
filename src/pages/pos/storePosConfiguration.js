@@ -10,18 +10,52 @@ function currentUserId() {
   return UUID.test(id) ? id : undefined;
 }
 
-function asRecord(response) {
-  const value = response?.configurationValue;
-  if (value && typeof value === "object" && !Array.isArray(value)) {
-    return { id: response.id, ...value };
+function parseConfigurationValue(value) {
+  if (typeof value !== "string") return value;
+  try {
+    return JSON.parse(value);
+  } catch {
+    return value;
   }
-  return value ?? response;
+}
+
+function asRecord(response, storeId, configurationName) {
+  let row = response;
+  for (let depth = 0; depth < 5 && row && typeof row === "object" && !Array.isArray(row); depth += 1) {
+    const nested = row.storePosConfiguration || row.store_pos_configuration || row.configuration || row.data || row.result;
+    if (nested && typeof nested === "object") row = nested;
+    else break;
+  }
+
+  const value = parseConfigurationValue(row?.configurationValue ?? row?.configuration_value);
+  if (value && typeof value === "object" && !Array.isArray(value)) {
+    return {
+      ...value,
+      id: value.id || row.id || row.configurationId || row.configuration_id || `${storeId}:${configurationName}`,
+    };
+  }
+
+  if (row && typeof row === "object" && !Array.isArray(row)) {
+    const {
+      success, message, error, data, result, configuration,
+      storePosConfiguration, store_pos_configuration,
+      configurationValue, configuration_value,
+      ...record
+    } = row;
+    if (Object.keys(record).length) {
+      return {
+        ...record,
+        id: record.id || record.configurationId || record.configuration_id || `${storeId}:${configurationName}`,
+      };
+    }
+  }
+  return value ?? row;
 }
 
 export function loadStorePosConfiguration(storeId, configurationName) {
   return api
     .get(endpoints.storePosConfigurationItem(storeId, configurationName))
-    .then(asRecord);
+    .then((response) => asRecord(response, storeId, configurationName));
 }
 
 export function saveStorePosConfiguration(storeId, configurationName, configurationValue) {
@@ -33,5 +67,5 @@ export function saveStorePosConfiguration(storeId, configurationName, configurat
       configurationValue,
       ...(createdBy ? { createdBy } : {}),
     })
-    .then(asRecord);
+    .then((response) => asRecord(response, storeId, configurationName));
 }
