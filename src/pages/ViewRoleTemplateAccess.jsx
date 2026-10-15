@@ -572,10 +572,6 @@ function saveAndLeave() {
           <p>Configure store types, features and permissions for this role.</p>
         </div>
 
-        <span className="role-details-active">
-          <i className="bi bi-circle-fill" />
-          {roleTemplate.status || "Active"}
-        </span>
       </div>
 
       <nav className="role-details-tabs">

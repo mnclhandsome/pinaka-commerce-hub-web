@@ -2336,9 +2336,9 @@
 
 /* Match the standalone Vendor add/view form to the Device detail card. */
 .vendors-create-page .vendors-navigation {
-  min-height: 46px;
+  min-height: 64px;
   margin: -24px -24px 20px;
-  padding: 0 24px;
+  padding: 0 28px;
 }
 
 .vendors-create-page .vendors-header {
@@ -2454,15 +2454,15 @@
 
 @media (max-width: 1300px) {
   .vendors-create-page .vendors-navigation {
-    margin: -15px -18px 20px;
-    padding: 0 18px;
+    margin: -24px -24px 20px;
+    padding: 0 28px;
   }
 }
 
-@media (max-width: 1100px) {
+@media (max-width: 1200px) {
   .vendors-create-page .vendors-navigation {
-    margin: -13px -14px 20px;
-    padding: 0 14px;
+    margin: -16px -16px 20px;
+    padding: 0 20px;
   }
 }
 
@@ -2474,6 +2474,13 @@
 
   .vendors-create-page .vendors-form-grid {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .vendors-create-page .vendors-navigation {
+    margin: -12px -12px 20px;
+    padding: 0 12px;
   }
 }
 
