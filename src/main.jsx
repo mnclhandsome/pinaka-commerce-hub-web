@@ -46,6 +46,7 @@ import "./styles/PlanDetails.css";
 import './styles/cash-management.css';
 import "./styles/master-filter-toolbar.css";
 import "./styles/step-workspace-scroll.css";
+import "./styles/responsive.css";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
@@ -62,5 +63,4 @@ ReactDOM.createRoot(document.getElementById("root")).render(
     </BrowserRouter>
   </React.StrictMode>
 );
-
 

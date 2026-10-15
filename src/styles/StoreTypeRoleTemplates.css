@@ -329,6 +329,8 @@
   display: flex;
   flex-direction: column;
   width: min(100%, 395px);
+  box-sizing: border-box;
+  min-width: 0;
   gap: 14px;
   padding: 18px;
   border-radius: 12px;
@@ -599,5 +601,16 @@
   .role-templates-footer {
     align-items: flex-start;
     flex-direction: column;
+  }
+}
+
+@media (max-width: 360px) {
+  .role-template-modal-actions {
+    flex-wrap: wrap;
+  }
+
+  .role-template-modal .role-template-modal-actions .role-template-cancel-button {
+    width: auto;
+    min-width: 0;
   }
 }
