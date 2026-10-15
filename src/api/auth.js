@@ -76,8 +76,15 @@ export async function refreshSession() {
 }
 
 export async function logout() {
+  const refreshToken = getRefreshToken();
   try {
-    await api.post(endpoints.logout, {}, { skipAuthRefresh: true });
+    if (refreshToken) {
+      await api.post(
+        endpoints.logout,
+        { refreshToken },
+        { skipAuthRefresh: true }
+      );
+    }
   } catch {
     // Clear the local session even if logout is not implemented yet.
   } finally {

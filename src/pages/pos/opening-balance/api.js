@@ -1,18 +1,15 @@
-import { api } from "../../../api/http";
-import { endpoints } from "../../../api/endpoints";
+import { loadStorePosConfiguration, saveStorePosConfiguration } from "../storePosConfiguration";
 
-const path = (storeId) => endpoints.storeOpeningBalance(storeId);
-
-const record = (response) => response?.openingBalance || response?.data || response;
+const NAME = "opening_balance";
 
 export function getPosOpeningBalance(storeId) {
-  return api.get(path(storeId)).then(record);
+  return loadStorePosConfiguration(storeId, NAME);
 }
 
 export function createPosOpeningBalance(storeId, payload) {
-  return api.post(path(storeId), payload).then(record);
+  return saveStorePosConfiguration(storeId, NAME, payload);
 }
 
 export function updatePosOpeningBalance(storeId, payload) {
-  return api.put(path(storeId), payload).then(record);
+  return saveStorePosConfiguration(storeId, NAME, payload);
 }

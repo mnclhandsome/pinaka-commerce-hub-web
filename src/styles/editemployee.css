@@ -432,3 +432,14 @@
 .employee-phone-invalid .react-tel-input .flag-dropdown {
   border-color: #dc2626 !important;
 }
+
+/* Embedded merchant editor: size cards to their fields instead of stretching rows. */
+.merchant-employee-edit .add-employee-layout { align-items: start; }
+.merchant-employee-edit .add-employee-left > .employee-card,
+.merchant-employee-edit .add-employee-right > .employee-card:last-child { flex: none; }
+.merchant-employee-edit .add-employee-left > .employee-card > .employee-form-grid:last-child {
+  flex: none;
+  align-content: start;
+}
+.merchant-employee-edit .employee-form-grid { row-gap: 18px; align-items: start; }
+.merchant-employee-edit .employee-form-actions { margin-top: 20px; }

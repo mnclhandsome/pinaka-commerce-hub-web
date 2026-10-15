@@ -28,12 +28,12 @@
   flex-direction: column;
   align-items: flex-start;
   gap: 0;
-  margin: 0 0 18px;
+  margin: 0 0 12px;
   padding: 0;
 }
 
 .features-page-heading h1 {
-  margin: 0 0 8px;
+  margin-bottom: 5px;
   color: #10264d;
   font-size: 20px;
   line-height: 1.2;
@@ -191,6 +191,14 @@
   resize: none;
 }
 
+.feature-placeholder {
+  text-transform: none;
+  letter-spacing: 0.15px;
+  font-weight: 500;
+  cursor: not-allowed;
+  background-color: #f5f7fa !important;
+}
+
 .feature-description-field {
   width: 100%;
   min-width: 0;
@@ -259,7 +267,8 @@
   background: transparent;
   color: #25314c;
   font-family: inherit;
-  font-size: 14px;
+  font-size: 14px !important;
+  font-weight: 500 !important;
 }
 
 .select-shell > i {
@@ -287,6 +296,10 @@
 .feature-error-text {
   color: #d9485f !important;
 }
+
+
+
+
 
 /* =========================================================
    FORM FOOTER / BUTTONS — ROLE TEMPLATES BUTTON SYSTEM
@@ -445,7 +458,7 @@
 }
 
 .feature-filter-control .features-filter-select {
-  width: 150px;
+  width: 100%;
   height: 38px;
   padding: 0 34px 0 12px;
   border: 0;
@@ -526,7 +539,7 @@
 }
 
 .features-table th {
-  height: 48px;
+  height: 44px;
   padding: 0 14px;
   border: 0;
   border-bottom: 1px solid #dfe5ef;
@@ -534,7 +547,7 @@
   color: #394052;
   text-align: left;
   vertical-align: middle;
-  font-size: 13px;
+  font-size: 12px;
   line-height: 18px;
   font-weight: 600;
   white-space: nowrap;
@@ -547,8 +560,8 @@
 }
 
 .features-table td {
-  height: 58px;
-  padding: 0 14px;
+  height: 52px;
+  padding: 10px 14px;
   border: 0;
   border-bottom: 1px solid #e4e8ef;
   background: #ffffff;
@@ -611,7 +624,7 @@
   white-space: normal !important;
 }
 
-.feature-description-tooltip-wrap {
+.feature-description-content {
   position: relative;
   width: 100%;
 }
@@ -628,36 +641,20 @@
   overflow-wrap: anywhere;
 }
 
-.feature-description-tooltip {
-  position: absolute;
-  z-index: 30;
-  left: 0;
-  top: calc(100% + 7px);
-  width: max-content;
-  min-width: 220px;
-  max-width: 360px;
-  padding: 10px 12px;
-  border: 1px solid #dce4ef;
-  border-radius: 8px;
-  background: #ffffff;
-  color: #34435e;
-  box-shadow: 0 8px 24px rgba(16, 38, 77, 0.14);
-  font-size: 12px;
-  line-height: 18px;
-  font-weight: 400;
-  white-space: normal;
-  overflow-wrap: anywhere;
-  visibility: hidden;
-  opacity: 0;
-  pointer-events: none;
-  transform: translateY(-2px);
-  transition: opacity 0.15s ease, transform 0.15s ease, visibility 0.15s ease;
+
+/* Features List - Single-line Description */
+.feature-description-cell {
+  min-width: 0;
+  width: 100%;
+  overflow: hidden;
 }
 
-.feature-description-tooltip-wrap:hover .feature-description-tooltip {
-  visibility: visible;
-  opacity: 1;
-  transform: translateY(0);
+.feature-description-text {
+  display: block;
+  width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .feature-created {
@@ -727,16 +724,16 @@
 }
 
 .feature-row-actions button {
-  width: 32px;
-  height: 32px;
-  min-width: 32px;
+  width: 35px;
+  height: 35px;
+  min-width: 35px;
   padding: 0;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   border: 1px solid #edf0f5;
   border-radius: 7px;
-  background: #f8faff;
+  background: #fcfdff;
   color: #677590;
   box-shadow: none;
   cursor: pointer;
@@ -786,14 +783,14 @@
 
 .features-delete-icon {
   display: grid;
-  width: 54px;
-  height: 54px;
+   width: 58px;
+  height: 58px;
   place-items: center;
-  margin: 0 auto 15px;
+  margin: 0 auto 16px;
   border-radius: 50%;
-  color: #e5455d;
+  color: #ef3b5c;
   background: #fff0f2;
-  font-size: 23px;
+  font-size: 25px;
 }
 
 .features-delete-modal h2 {
@@ -811,7 +808,7 @@
 
 .features-delete-final-warning {
   margin-top: 12px !important;
-  color: #dc2649 !important;
+  color: #b9203f !important;
   font-size: 12px !important;
 }
 
@@ -833,9 +830,9 @@
 }
 
 .features-delete-keep-button {
-  border: 1px solid #dce8f4;
-  background: #ffffff;
-  color: #25466f;
+     border: 1.5px solid #8995a3;
+  color: #8995a3;
+  background: #fff;
 }
 
 .features-delete-confirm-button {
@@ -887,7 +884,7 @@
 }
 
 .feature-pagination button.current {
-  background: #5660e8;
+  background: #684ee3;
   color: #ffffff;
 }
 
@@ -977,16 +974,16 @@
   }
 
   .features-table th {
-    padding-left: 7px;
-    padding-right: 7px;
+    padding-left: 10px;
+    padding-right: 10px;
     white-space: normal;
-    font-size: 11px;
+    font-size: 12px;
   }
 
   .features-table td {
-    padding-left: 7px;
-    padding-right: 7px;
-    font-size: 11px;
+    padding-left: 10px;
+    padding-right: 10px;
+    font-size: 13px;
   }
 
   .features-table th.actions-col,
@@ -1145,6 +1142,7 @@
   justify-content: center;
   gap: 2px;
   line-height: 1.25;
+  color: #10264d;
 }
 
 .feature-date-stack > span {
@@ -1152,7 +1150,7 @@
 }
 
 .feature-date-stack .feature-time {
-  color: #8795aa;
+  color: #7290ba;
   font-size: 11px;
   font-weight: 400;
 }
@@ -1233,4 +1231,27 @@
   opacity: 0.45;
   border: 1px solid #dce9f5;
   cursor: not-allowed;
+}
+
+
+
+/* Features table - single-line description */
+.features-table .feature-description {
+  min-width: 0;
+  max-width: 0;
+  overflow: hidden;
+}
+
+.features-table .feature-description-content {
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.features-table .feature-description-clamp {
+  display: block;
+  width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }

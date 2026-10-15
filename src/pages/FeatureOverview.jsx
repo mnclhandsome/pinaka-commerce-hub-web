@@ -19,7 +19,7 @@ const FeatureOverview = () => {
 
   const name = feature?.name || 'Feature';
   const description = feature?.description || '—';
-  const code = feature?.code || feature?.featureKey || '—';
+  const code = feature?.feature_code || '—';
   const status = feature?.status || 'Inactive';
 
   return <div className="feature-overview-page feature-detail-page">
@@ -38,12 +38,12 @@ const FeatureOverview = () => {
       </div>
       <nav className="feature-detail-tabs" aria-label="Feature sections">
         <button className="feature-detail-tab active" type="button">Overview</button>
-        <button className="feature-detail-tab" type="button" onClick={() => navigate(`/features/${featureId}/store-types`)}>Applicable Store Types</button>
-        <button className="feature-detail-tab" type="button" onClick={() => navigate(`/features/${featureId}/permissions`)}>Feature &amp; Permission Access</button>
+        <button className="feature-detail-tab" type="button" onClick={() => navigate(`/features/${featureId}/store-types`, { state: { feature } })}>Applicable Store Types</button>
+        <button className="feature-detail-tab" type="button" onClick={() => navigate(`/features/${featureId}/permissions`, { state: { feature } })}>Permissions</button>
       </nav>
     </section>
     <section className="feature-info-card">
-      <div className="feature-info-header"><div className="info-icon-box"><Info size={20} strokeWidth={2.2} /></div><div className="feature-info-title"><h2>Feature Information</h2><p>View the core feature details.</p></div></div>
+      <div className="feature-info-header"><div className="info-icon-box"><Info size={20} strokeWidth={2.2} /></div><div className="feature-info-title"><h2>Feature Details</h2><p>View feature details.</p></div></div>
       {error && <p role="alert">{error}</p>}
       <div className="feature-info-form">
         <div className="feature-form-row feature-two-columns">

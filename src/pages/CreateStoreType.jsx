@@ -1,8 +1,13 @@
+import FilterDropdown from "../components/FilterDropdown";
 import { useEffect, useMemo, useState } from "react";
-
 import { useNavigate } from "react-router-dom";
-
+import Pagination from "../components/Pagination";
+import DeleteConfirmationDialog from "../components/DeleteConfirmationDialog";
 import { storeTypesApi } from "../api/storeTypes";
+
+function getStoreTypesForScreen() {
+  return storeTypesApi.getAll();
+}
 
 function toRow(item) {
 
@@ -105,17 +110,11 @@ function toRow(item) {
 }
 
 const emptyForm = {
-
   code: "",
-
   name: "",
-
   description: "",
-
   category: "",
-
-  status: "Active",
-
+  status: "Select Status",
 };
 
 export default function CreateStoreType() {
@@ -125,6 +124,8 @@ export default function CreateStoreType() {
   const [storeTypes, setStoreTypes] = useState([]);
 
   const [form, setForm] = useState(emptyForm);
+
+  const [nextStoreTypeCode, setNextStoreTypeCode] = useState("");
 
   const [originalForm, setOriginalForm] = useState(emptyForm);
 
@@ -148,9 +149,10 @@ export default function CreateStoreType() {
 
   const [errors, setErrors] = useState({});
 
-  const ITEMS_PER_PAGE = 5;
-
   const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(5);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
 
   async function loadStoreTypes() {
 
@@ -176,6 +178,26 @@ export default function CreateStoreType() {
 
     setStoreTypes(sorted.map(toRow));
 
+    if (response?.nextStoreTypeCode) {
+
+      setNextStoreTypeCode(response.nextStoreTypeCode);
+
+    }
+
+    if (response?.nextStoreTypeCode && editingId === null) {
+
+      setForm((current) => ({ ...current, code: response.nextStoreTypeCode }));
+
+      setOriginalForm((current) => ({
+
+        ...current,
+
+        code: response.nextStoreTypeCode,
+
+      }));
+
+    }
+
   }
 
   useEffect(() => {
@@ -184,9 +206,7 @@ export default function CreateStoreType() {
 
     setLoading(true);
 
-    storeTypesApi
-
-      .getAll()
+    getStoreTypesForScreen()
 
       .then((response) => {
 
@@ -211,6 +231,28 @@ export default function CreateStoreType() {
         );
 
         setStoreTypes(sorted.map(toRow));
+
+        if (response?.nextStoreTypeCode) {
+
+          setNextStoreTypeCode(response.nextStoreTypeCode);
+
+          setForm((current) => ({
+
+            ...current,
+
+            code: response.nextStoreTypeCode,
+
+          }));
+
+          setOriginalForm((current) => ({
+
+            ...current,
+
+            code: response.nextStoreTypeCode,
+
+          }));
+
+        }
 
       })
 
@@ -294,15 +336,14 @@ export default function CreateStoreType() {
 
   }, [storeTypes, search, statusFilter, sortBy]);
 
-  const totalPages = Math.ceil(filteredStoreTypes.length / ITEMS_PER_PAGE);
+  const totalPages = Math.ceil(
+    filteredStoreTypes.length / pageSize
+);
 
-  const paginatedStoreTypes = filteredStoreTypes.slice(
-
-    (currentPage - 1) * ITEMS_PER_PAGE,
-
-    currentPage * ITEMS_PER_PAGE,
-
-  );
+const paginatedStoreTypes = filteredStoreTypes.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+);
 
   useEffect(() => {
 
@@ -310,27 +351,24 @@ export default function CreateStoreType() {
 
   }, [search, statusFilter]);
 
-  useEffect(() => {
+ useEffect(() => {
+    const lastValidPage = Math.max(1, totalPages);
 
-    if (currentPage > totalPages && totalPages > 0) {
-
-      setCurrentPage(totalPages);
-
+    if (currentPage > lastValidPage) {
+        setCurrentPage(lastValidPage);
     }
-
-  }, [totalPages, currentPage]);
+}, [totalPages, currentPage]);
 
   const hasChanges =
-
-    form.code.trim() !== (originalForm.code || "").trim() ||
-
     form.name.trim() !== (originalForm.name || "").trim() ||
 
     form.description.trim() !== (originalForm.description || "").trim() ||
 
     form.status !== originalForm.status;
 
-  const canSubmitStoreType = !!form.code.trim() && !!form.name.trim();
+  const canSubmitStoreType =
+  !!form.name.trim() &&
+  (form.status === "Active" || form.status === "Inactive");
 
   function updateField(event) {
 
@@ -340,7 +378,7 @@ export default function CreateStoreType() {
 
       ...current,
 
-      [name]: name === "code" ? value.toUpperCase() : value,
+      [name]: value,
 
     }));
 
@@ -356,9 +394,9 @@ export default function CreateStoreType() {
 
   function resetForm() {
 
-    setForm(emptyForm);
+    setForm({ ...emptyForm, code: nextStoreTypeCode });
 
-    setOriginalForm(emptyForm);
+    setOriginalForm({ ...emptyForm, code: nextStoreTypeCode });
 
     setEditingId(null);
 
@@ -376,41 +414,13 @@ export default function CreateStoreType() {
 
   }
 
+  
+
   function validateForm() {
 
     const nextErrors = {};
 
-    const code = form.code.trim().toUpperCase();
-
     const name = form.name.trim();
-
-    if (!code) {
-
-      nextErrors.code = "Store type code is required.";
-
-    } else if (!/^[A-Z][A-Z0-9_]{2,29}$/.test(code)) {
-
-      nextErrors.code =
-
-        "Use 3–30 uppercase letters, numbers, or underscores only.";
-
-    } else if (
-
-      storeTypes.some(
-
-        (item) =>
-
-          item.code.toLowerCase() === code.toLowerCase() &&
-
-          item.id !== editingId,
-
-      )
-
-    ) {
-
-      nextErrors.code = "This store type code already exists.";
-
-    }
 
     if (!name) {
 
@@ -434,6 +444,13 @@ export default function CreateStoreType() {
 
     }
 
+    if (
+  form.status !== "Active" &&
+  form.status !== "Inactive"
+) {
+  nextErrors.status = "Please select a status.";
+}
+
     setErrors(nextErrors);
 
     return Object.keys(nextErrors).length === 0;
@@ -451,9 +468,6 @@ export default function CreateStoreType() {
     }
 
     const values = {
-
-      storeTypeCode: form.code.trim().toUpperCase(),
-
       name: form.name.trim(),
 
       description: form.description.trim(),
@@ -545,59 +559,47 @@ export default function CreateStoreType() {
   }
 
   async function confirmDelete() {
+  if (!deleteTarget) return;
 
-    if (!deleteTarget) return;
+  setDeleting(true);
+  setDeleteError("");
 
-    setSaving(true);
+  try {
+    const rawResponse = await storeTypesApi.delete(deleteTarget.id);
+    const data = rawResponse?.data ?? rawResponse;
 
-    setError("");
-
-    try {
-
-      const rawResponse = await storeTypesApi.delete(deleteTarget.id);
-
-      const data = rawResponse?.data ?? rawResponse;
-
-      if (data?.success === false) {
-
-        throw new Error(data.message || "Failed to deactivate store type.");
-
-      }
-
-      setMessage(data?.message || "Store type deactivated successfully.");
-
-      if (String(editingId) === String(deleteTarget.id)) {
-
-        resetForm();
-
-      }
-
-      setDeleteTarget(null);
-
-      // Re-fetch the updated list from the API
-
-      await loadStoreTypes();
-
-    } catch (err) {
-
-      setError(err.message || "An error occurred while deactivating.");
-
-      setDeleteTarget(null);
-
-    } finally {
-
-      setSaving(false);
-
+    if (data?.success === false) {
+      throw new Error(
+        data.message || "Failed to deactivate store type."
+      );
     }
 
+    setMessage(
+      data?.message || "Store type deactivated successfully."
+    );
+
+    if (String(editingId) === String(deleteTarget.id)) {
+      resetForm();
+    }
+
+    setDeleteTarget(null);
+
+    await loadStoreTypes();
+  } catch (err) {
+    setDeleteError(
+      err.message || "An error occurred while deactivating."
+    );
+  } finally {
+    setDeleting(false);
   }
+}
 
   return (
     <section className="store-types-page">
       <div className="store-types-page-heading">
         <div>
-          <h1>Store Type Information</h1>
-          <p>Define a business vertical and its baseline configuration.</p>
+          <h1>Store Types</h1>
+          <p>Manage store types and their basic information.</p>
         </div>
       </div>
 
@@ -623,46 +625,34 @@ export default function CreateStoreType() {
           </div>
 
           <div>
-            <h2>{editingId ? "Edit Store Type" : "Create Store Type"}</h2>
-            <p>Provide the basic details about the store type.</p>
+            <h2>{editingId ? "Edit Store Type" : "Add Store Type"}</h2>
+            <p>Enter the store type details.</p>
           </div>
         </div>
 
         <div className="store-type-form-grid">
-          <div className="store-type-field">
-            <label>
 
-              Store Type Code <span className="required">*</span>
-            </label>
-            <input
+<div className="store-type-field">
+  <label>Store Type Code</label>
 
-              name="code"
+  <input
+    name="code"
+    value=""
+    placeholder="Auto Generated"
+    readOnly
+    disabled
+    aria-readonly="true"
+  />
 
-              value={form.code}
+</div>
 
-              onChange={updateField}
 
-              placeholder="Enter a unique code, e.g. GROCERY"
 
-              maxLength={30}
-
-              className={errors.code ? "store-type-input-error" : ""}
-
-            />
-
-            {errors.code ? (
-              <small className="field-error">{errors.code}</small>
-
-            ) : (
-              <small></small>
-
-            )}
-          </div>
 
           <div className="store-type-field">
             <label>
 
-              Display Name <span className="required">*</span>
+              Store Type Name <span className="required">*</span>
             </label>
             <input
 
@@ -689,29 +679,39 @@ export default function CreateStoreType() {
             )}
           </div>
 
-          <div className="store-type-field">
-            <label>
+          
+<div className="store-type-field">
+  <label>
+    Status <span className="required">*</span>
+  </label>
 
-              Status <span className="required">*</span>
-            </label>
-            <div className="select-shell">
-              <select
+  <div className="select-shell">
+    <select
+      name="status"
+      value={form.status}
+      onChange={updateField}
+      className={
+        form.status === "Active"
+          ? "active"
+          : form.status === "Inactive"
+          ? "inactive"
+          : ""
+      }
+    >
+      <option value="Select Status">
+        Select Status
+      </option>
+      <option value="Active">Active</option>
+      <option value="Inactive">Inactive</option>
+    </select>
 
-                name="status"
+   
+  </div>
 
-                value={form.status}
-
-                onChange={updateField}
-
-                className={form.status === "Active" ? "active" : "inactive"}
-              >
-                <option value="Active">Active</option>
-                <option value="Inactive">Inactive</option>
-              </select>
-              <i className="bi bi-chevron-down" />
-            </div>
-            <small></small>
-          </div>
+  {errors.status && (
+    <small className="field-error">{errors.status}</small>
+  )}
+</div>
         </div>
 
         <div className="store-type-form-grid">
@@ -747,15 +747,6 @@ export default function CreateStoreType() {
             />
 
             <div className="store-type-description-meta">
-
-              {errors.description ? (
-                <small className="field-error">{errors.description}</small>
-
-              ) : (
-                <small></small>
-
-              )}
-              <span>{form.description.length}/500</span>
             </div>
           </div>
         </div>
@@ -800,17 +791,17 @@ export default function CreateStoreType() {
 
                 ? "Update Store Type"
 
-                : "Create Store Type"}
+                : "Add Store Type"}
           </button>
         </div>
       </form>
 
       <section className="store-types-list-card">
         <div className="store-types-list-header">
-          <h2>Store Types List</h2>
+          <h2>Store Types</h2>
 
-          <div className="store-types-filters">
-            <label className="store-type-search">
+          <div className="store-types-filters pch-master-toolbar pch-master-control">
+            <label className="store-type-search pch-master-search pch-master-control">
               <i className="bi bi-search" />
               <input
 
@@ -825,8 +816,8 @@ export default function CreateStoreType() {
               />
             </label>
 
-            <div className="store-filter-select">
-              <select
+            <div className="store-filter-select pch-master-filter pch-master-control">
+              <FilterDropdown preserveToolbarLayout
 
                 value={statusFilter}
 
@@ -835,12 +826,12 @@ export default function CreateStoreType() {
                 <option value="">All Statuses</option>
                 <option value="Active">Active</option>
                 <option value="Inactive">Inactive</option>
-              </select>
+              </FilterDropdown>
               <i className="bi bi-chevron-down" />
             </div>
 
-            <div className="store-filter-select">
-              <select
+            <div className="store-filter-select pch-master-filter pch-master-control">
+              <FilterDropdown preserveToolbarLayout
 
                 value={sortBy}
 
@@ -851,7 +842,7 @@ export default function CreateStoreType() {
                 <option value="updated">Recently Updated</option>
                 <option value="name-asc">Name (A–Z)</option>
                 <option value="name-desc">Name (Z–A)</option>
-              </select>
+              </FilterDropdown>
               <i className="bi bi-chevron-down" />
             </div>
 
@@ -859,7 +850,7 @@ export default function CreateStoreType() {
 
               type="button"
 
-              className="store-type-reset-button"
+              className="store-type-reset-button pch-master-reset pch-master-control"
 
               onClick={resetFilters}
             >
@@ -872,7 +863,7 @@ export default function CreateStoreType() {
           <div className="store-types-table">
             <div className="store-types-row store-types-row-head">
               <div>Store Type Code</div>
-              <div>Name</div>
+              <div>Store Type Name</div>
               <div>Description</div>
               <div>Status</div>
               <div>Created At</div>
@@ -921,16 +912,12 @@ export default function CreateStoreType() {
                 >
                   <strong>{item.name}</strong>
                 </button>
-
-                <div
-
-                  className="store-type-description-cell"
-
-                  title={item.description}
-                >
-
-                  {item.description}
-                </div>
+  
+              <div className="store-type-description-cell">
+                     <span className="store-type-description-text">
+                       {item.description || "—"}
+                     </span>
+                 </div>
 
                 <div>
                   <span
@@ -969,6 +956,8 @@ export default function CreateStoreType() {
                   <button
 
                     type="button"
+                    
+                    class="store-type-edit-icon"
 
                     onClick={(e) => {
 
@@ -988,13 +977,11 @@ export default function CreateStoreType() {
                     className="store-type-delete-icon"
 
                     onClick={(e) => {
-
-                      e.stopPropagation();
-
-                      setDeleteTarget(item);
-
-                    }}
-                  >
+                         e.stopPropagation();
+                          setDeleteError("");
+                           setDeleteTarget(item);
+                             }}
+                        >
                     <i className="bi bi-trash3" />
                   </button>
                 </div>
@@ -1014,142 +1001,52 @@ export default function CreateStoreType() {
           </div>
         </div>
 
-        <div className="store-types-pagination">
-          <span>
-
-            Showing{" "}
-
-            {filteredStoreTypes.length === 0
-
-              ? 0
-
-              : (currentPage - 1) * ITEMS_PER_PAGE + 1}{" "}
-
-            to{" "}
-
-            {Math.min(currentPage * ITEMS_PER_PAGE, filteredStoreTypes.length)}{" "}
-
-            of {filteredStoreTypes.length} entries
-          </span>
-
-          <div>
-            <button
-
-              type="button"
-
-              disabled={currentPage === 1}
-
-              onClick={() => setCurrentPage((p) => p - 1)}
-            >
-              <i className="bi bi-chevron-left" />
-            </button>
-
-            {Array.from({ length: totalPages }, (_, i) => (
-              <button
-
-                key={i + 1}
-
-                type="button"
-
-                className={currentPage === i + 1 ? "active" : ""}
-
-                onClick={() => setCurrentPage(i + 1)}
-              >
-
-                {i + 1}
-              </button>
-
-            ))}
-
-            <button
-
-              type="button"
-
-              disabled={currentPage === totalPages || totalPages === 0}
-
-              onClick={() => setCurrentPage((p) => p + 1)}
-            >
-              <i className="bi bi-chevron-right" />
-            </button>
-          </div>
-        </div>
+       <Pagination
+    currentPage={currentPage}
+    totalPages={totalPages}
+    totalItems={filteredStoreTypes.length}
+    pageSize={pageSize}
+    onPageChange={setCurrentPage}
+    onPageSizeChange={(newPageSize) => {
+        setPageSize(newPageSize);
+        setCurrentPage(1);
+    }}
+    itemLabel="entries"
+/>
       </section>
 
-      {deleteTarget && (
-        <div
+      
+<DeleteConfirmationDialog
+  isOpen={Boolean(deleteTarget)}
+  title="Deactivate Store Type?"
+  message={
+    deleteTarget
+      ? `Are you sure you want to deactivate "${deleteTarget.name}"?${
+          Number(deleteTarget.assignedStores) > 0
+            ? ` This store type is assigned to ${deleteTarget.assignedStores} ${
+                Number(deleteTarget.assignedStores) === 1
+                  ? "store"
+                  : "stores"
+              }, and deactivating it may affect their configuration.`
+            : ""
+        } The record will remain visible and can be activated again later.`
+      : ""
+  }
+  cancelLabel="Cancel"
+  confirmLabel="Deactivate"
+  busyLabel="Deactivating..."
+  busy={deleting}
+  error={deleteError}
+  iconClassName="bi bi-exclamation-triangle"
+  onCancel={() => {
+    if (!deleting) {
+      setDeleteTarget(null);
+      setDeleteError("");
+    }
+  }}
+  onConfirm={confirmDelete}
+/>
 
-          className="delete-storetype-overlay"
-
-          onClick={() => setDeleteTarget(null)}
-        >
-          <div
-
-            className="delete-storetype-modal"
-
-            onClick={(event) => event.stopPropagation()}
-          >
-            <div className="delete-storetype-icon">
-              <i className="bi bi-exclamation-triangle" />
-            </div>
-
-            <h2>Delete Store Type?</h2>
-
-            <p>
-
-              Are you sure you want to delete{" "}
-              <strong>{deleteTarget.name}</strong>?
-            </p>
-
-            {deleteTarget.assignedStores > 0 && (
-              <div className="delete-impact-warning">
-                <i className="bi bi-exclamation-circle-fill" />
-
-                This store type is assigned to{" "}
-                <strong>{deleteTarget.assignedStores}</strong>{" "}
-
-                {deleteTarget.assignedStores === 1 ? "store" : "stores"}.
-
-                Deleting it may affect their configuration.
-              </div>
-
-            )}
-
-            <p className="delete-final-warning">
-
-              This action cannot be undone.
-            </p>
-
-            <div className="delete-storetype-actions">
-              <button
-
-                type="button"
-
-                className="delete-keep-button"
-
-                onClick={() => setDeleteTarget(null)}
-              >
-
-                No, Keep It
-              </button>
-
-              <button
-
-                type="button"
-
-                className="delete-confirm-button"
-
-                onClick={confirmDelete}
-
-                disabled={saving}
-              >
-
-                Yes, Delete
-              </button>
-            </div>
-          </div>
-        </div>
-
-      )}
 
       {message && (
         <div className="store-type-toast">

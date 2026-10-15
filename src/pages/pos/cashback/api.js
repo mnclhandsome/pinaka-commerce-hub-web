@@ -1,18 +1,15 @@
-import { api } from "../../../api/http";
-import { endpoints } from "../../../api/endpoints";
+import { loadStorePosConfiguration, saveStorePosConfiguration } from "../storePosConfiguration";
 
-const path = (storeId) => endpoints.storeCashback(storeId);
-
-const record = (response) => response?.cashback || response?.data || response;
+const NAME = "cashback_settings";
 
 export function getPosCashback(storeId) {
-  return api.get(path(storeId)).then(record);
+  return loadStorePosConfiguration(storeId, NAME);
 }
 
 export function createPosCashback(storeId, payload) {
-  return api.post(path(storeId), payload).then(record);
+  return saveStorePosConfiguration(storeId, NAME, payload);
 }
 
 export function updatePosCashback(storeId, payload) {
-  return api.put(path(storeId), payload).then(record);
+  return saveStorePosConfiguration(storeId, NAME, payload);
 }

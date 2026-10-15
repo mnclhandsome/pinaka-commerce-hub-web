@@ -1,0 +1,96 @@
+/* Vendors presentation, limited to the seven requested listing screens. */
+:is(.merchant-subscriptions-page, .merchant-table-card, .stores-page, .orders-page, .cash-management-page, .employees-page, .devices-page) .filters-bar {
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+:is(.merchant-subscriptions-page, .merchant-table-card, .stores-page, .orders-page, .cash-management-page, .employees-page, .devices-page) .filters-bar .filter-options {
+  gap: 8px;
+  flex-wrap: wrap;
+  max-width: 100%;
+}
+
+:is(.merchant-subscriptions-page, .merchant-table-card, .stores-page, .orders-page, .cash-management-page, .employees-page, .devices-page) .filters-bar .filter-search {
+  height: 34px;
+  min-width: min(230px, 100%);
+  max-width: 100%;
+  padding: 0 10px;
+  border: 1px solid #d9e6f4;
+  border-radius: 7px;
+  background: #fff;
+  color: #6380b0;
+}
+
+:is(.merchant-subscriptions-page, .merchant-table-card, .stores-page, .orders-page, .cash-management-page, .employees-page, .devices-page) .filters-bar .filter-search i {
+  position: static;
+  transform: none;
+  flex-shrink: 0;
+  margin-right: 7px;
+  color: #75819a;
+  font-size: inherit;
+}
+
+:is(.merchant-subscriptions-page, .merchant-table-card, .stores-page, .orders-page, .cash-management-page, .employees-page, .devices-page) .filters-bar .filter-search input {
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  outline: none;
+  box-shadow: none;
+  background: transparent;
+  color: #163762;
+  font-size: 11px;
+  font-weight: 400;
+}
+
+:is(.merchant-subscriptions-page, .merchant-table-card, .stores-page, .orders-page, .cash-management-page, .employees-page, .devices-page) .filters-bar .filter-search input::placeholder {
+  color: #9ba5b8;
+}
+
+:is(.merchant-subscriptions-page, .merchant-table-card, .stores-page, .orders-page, .cash-management-page, .employees-page, .devices-page) .filters-bar .filter-select-wrapper select {
+  height: 34px;
+  padding: 0 30px 0 11px;
+  border: 1px solid #d9e6f4;
+  border-radius: 7px;
+  background: #fff;
+  color: #294a76;
+  font-size: 11px;
+  font-weight: 400;
+  outline: none;
+}
+
+:is(.merchant-subscriptions-page, .merchant-table-card, .stores-page, .orders-page, .cash-management-page, .employees-page, .devices-page) .filters-bar .filter-select-arrow {
+  right: 11px;
+  color: #294a76;
+}
+
+:is(.merchant-subscriptions-page, .merchant-table-card, .stores-page, .orders-page, .cash-management-page, .employees-page, .devices-page) .filters-bar .filter-reset-btn {
+  height: 34px;
+  padding: 0 12px;
+  border: 1px solid #d9e6f4;
+  border-radius: 7px;
+  background: #fff;
+  color: #5b79ad;
+  flex-shrink: 0;
+}
+
+:is(.merchant-subscriptions-page, .merchant-table-card, .stores-page, .orders-page, .cash-management-page, .employees-page, .devices-page) .filters-bar .filter-reset-btn i {
+  font-size: 14px;
+}
+
+:is(.merchant-subscriptions-page, .merchant-table-card, .stores-page, .orders-page, .cash-management-page, .employees-page, .devices-page) .filters-bar :is(.filter-select-wrapper select, .filter-reset-btn):hover {
+  border-color: #aeb7ff;
+}
+
+:is(.merchant-subscriptions-page, .merchant-table-card, .stores-page, .orders-page, .cash-management-page, .employees-page, .devices-page) .filters-bar .filter-reset-btn:hover {
+  background: #f7f6ff;
+  color: #684ee3;
+}
+
+:is(.merchant-subscriptions-page, .merchant-table-card, .stores-page, .orders-page, .cash-management-page, .employees-page, .devices-page) .filters-bar .filter-search:focus-within,
+:is(.merchant-subscriptions-page, .merchant-table-card, .stores-page, .orders-page, .cash-management-page, .employees-page, .devices-page) .filters-bar .filter-select-wrapper select:focus,
+:is(.merchant-subscriptions-page, .merchant-table-card, .stores-page, .orders-page, .cash-management-page, .employees-page, .devices-page) .filters-bar .filter-reset-btn:focus-visible {
+  border-color: #aeb7ff;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(104, 78, 227, 0.06);
+}

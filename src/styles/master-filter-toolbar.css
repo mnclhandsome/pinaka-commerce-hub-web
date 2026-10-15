@@ -1,0 +1,136 @@
+/* Existing Master Setup controls use the unchanged Vendors presentation. */
+.pch-master-toolbar.pch-master-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.pch-master-search.pch-master-control {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  height: 35px;
+  min-height: 35px;
+  width: 250px;
+  flex: 0 0 auto;
+  min-width: 0;
+  max-width: 100%;
+  padding: 0 10px;
+  border: 1px solid #d9e6f4;
+  border-radius: 7px;
+  background: #fff;
+  color: #6380b0;
+}
+
+.pch-master-search.pch-master-control > :is(i, svg) {
+  position: static;
+  transform: none;
+  flex-shrink: 0;
+  margin-right: 7px;
+  color: #75819a;
+}
+
+.pch-master-search.pch-master-control input {
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  outline: none;
+  box-shadow: none;
+  background: transparent;
+  color: #163762;
+  font-size: 11px;
+  font-weight: 400;
+}
+
+.pch-master-search.pch-master-control input::placeholder {
+  color: #9ba5b8;
+}
+
+.pch-master-search.pch-master-control input:focus {
+  border: 0;
+  outline: none;
+  box-shadow: none;
+}
+
+.pch-master-toolbar.pch-master-control select {
+  box-sizing: border-box;
+  height: 35px;
+  min-height: 35px;
+  padding-left: 11px;
+  padding-right: 30px;
+  border: 1px solid #d9e6f4;
+  border-radius: 7px;
+  appearance: none;
+  background-color: #fff;
+  /* Bootstrap chevron-down, matching Merchants' 11px icon and inset. */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Cpath fill='%23294a76' fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708'/%3E%3C/svg%3E");
+  background-size: 11px 11px;
+  background-position: right 11px center;
+  background-repeat: no-repeat;
+  flex: 0 0 auto;
+  color: #294a76;
+  font-size: 11px;
+  font-weight: 400;
+  outline: none;
+}
+
+.pch-master-toolbar.pch-master-control :is(i.bi-chevron-down, .feature-filter-chevron, .fp-filter-chevron) {
+  display: none;
+}
+
+.pch-master-toolbar.pch-master-control :is(.store-filter-select, .feature-filter-control, .fp-status-filter, .fp-sort-filter, .fp-filter-wrapper) {
+  box-sizing: border-box;
+  height: 35px;
+  min-height: 35px;
+  overflow: visible;
+  border: 0;
+  background: transparent;
+}
+
+.pch-master-reset.pch-master-control {
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 35px;
+  min-height: 35px;
+  padding: 0 10px;
+  gap: 6px;
+  border: 1px solid #d9e6f4;
+  border-radius: 7px;
+  background: #fff;
+  color: #5b79ad;
+  flex: 0 0 auto;
+}
+
+.pch-master-reset.pch-master-control i {
+  font-size: 14px;
+}
+
+.pch-master-toolbar.pch-master-control select:hover,
+.pch-master-reset.pch-master-control:hover {
+  border-color: #aeb7ff;
+}
+
+.pch-master-reset.pch-master-control:hover {
+  background: #f7f6ff;
+  color: #684ee3;
+}
+
+.pch-master-search.pch-master-control:focus-within,
+.pch-master-toolbar.pch-master-control select:focus,
+.pch-master-reset.pch-master-control:focus-visible {
+  border-color: #aeb7ff;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(104, 78, 227, 0.06);
+}
+
+@media (max-width: 700px) {
+  .pch-master-search.pch-master-control {
+    width: 100%;
+    flex: 0 0 auto;
+  }
+}

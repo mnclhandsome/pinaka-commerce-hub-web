@@ -1,18 +1,15 @@
-import { api } from "../../../api/http";
-import { endpoints } from "../../../api/endpoints";
+import { loadStorePosConfiguration, saveStorePosConfiguration } from "../storePosConfiguration";
 
-const path = (storeId) => endpoints.storeCashRegisters(storeId);
-
-const record = (response) => response?.cashRegister || response?.data || response;
+const NAME = "cash_register_settings";
 
 export function getPosCashRegisters(storeId) {
-  return api.get(path(storeId)).then(record);
+  return loadStorePosConfiguration(storeId, NAME);
 }
 
 export function createPosCashRegisters(storeId, payload) {
-  return api.post(path(storeId), payload).then(record);
+  return saveStorePosConfiguration(storeId, NAME, payload);
 }
 
 export function updatePosCashRegisters(storeId, payload) {
-  return api.put(path(storeId), payload).then(record);
+  return saveStorePosConfiguration(storeId, NAME, payload);
 }

@@ -30,18 +30,15 @@
   font-weight: 750;
 }
 
-.add-device-breadcrumb {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 5px;
-  color: #8193ad;
-  font-size: 12px;
+.add-device-header p {
+  margin: 6px 0 0;
+  color: #75819a;
+  font-size: 14px;
+  line-height: 1.45;
 }
 
-.add-device-breadcrumb strong {
-  color: #405b7d;
-  font-weight: 500;
+.add-device-standalone > .device-view-topbar {
+  margin: -18px -24px 20px;
 }
 
 .back-devices-btn {
@@ -70,6 +67,7 @@
 
 .add-device-form {
   width: 100%;
+  margin-top: 0;
 }
 
 .device-card {
@@ -160,7 +158,19 @@
   color: #294668;
   outline: none;
   font-family: inherit;
-  font-size: 10px;
+  font-size: 12px;
+}
+
+.device-field input.device-code-readonly {
+  border-color: #d5deea;
+  background: #eef2f7;
+  color: #60728c;
+  cursor: not-allowed;
+}
+
+.device-field input.device-code-readonly::placeholder {
+  color: #60728c;
+  opacity: 1;
 }
 
 .device-field input,
@@ -185,6 +195,28 @@
 .device-select-wrapper select:focus {
   border-color: #6744dc;
   box-shadow: 0 0 0 2px rgba(103, 68, 220, 0.08);
+}
+
+.device-field-invalid input,
+.device-field-invalid .device-select-wrapper select {
+  border-color: #ef4456 !important;
+  background-color: #fffafb !important;
+  box-shadow: 0 0 0 1px rgba(239, 68, 86, 0.08) !important;
+}
+
+.device-field-invalid input:focus,
+.device-field-invalid .device-select-wrapper select:focus {
+  border-color: #ef4456 !important;
+  box-shadow: 0 0 0 1px rgba(239, 68, 86, 0.08) !important;
+  outline: none !important;
+}
+
+.device-field-error {
+  display: block;
+  margin-top: 5px;
+  color: #ef304b;
+  font-size: 12px;
+  line-height: 1.3;
 }
 
 /* =========================================================
@@ -248,7 +280,7 @@
   right: 7px;
   bottom: 5px;
   color: #91a0b3;
-  font-size: 8px;
+  font-size: 12px;
 }
 
 /* =========================================================
@@ -262,7 +294,6 @@
   display: flex;
   justify-content: flex-end;
   gap: 10px;
-  border-top: 1px solid #e2e8f0;
 }
 
 .device-cancel-btn,
@@ -271,7 +302,7 @@
   padding: 0 19px;
   border-radius: 6px;
   font-family: inherit;
-  font-size: 11px;
+  font-size: 14px;
   cursor: pointer;
 }
 
@@ -293,6 +324,10 @@
 ========================================================= */
 
 @media (max-width: 1300px) {
+  .add-device-standalone > .device-view-topbar {
+    margin: -15px -18px 20px;
+  }
+
   .add-device-page {
     padding: 15px 18px 20px;
   }
@@ -312,21 +347,22 @@
   }
 
   .device-card-header h2 {
-    font-size: 13px;
+    font-size: 19px;
+    font-weight: 500;
   }
 
   .device-card-header p {
-    font-size: 9px;
+    font-size: 12px;
   }
 
   .device-field label {
-    font-size: 9px;
+    font-size: 12px;
   }
 
   .device-field input,
   .device-select-wrapper select {
-    height: 32px;
-    font-size: 9px;
+    height: 44px;
+    font-size: 12px;
   }
 }
 
@@ -335,6 +371,10 @@
 ========================================================= */
 
 @media (max-width: 1100px) {
+  .add-device-standalone > .device-view-topbar {
+    margin: -13px -14px 20px;
+  }
+
   .add-device-page {
     padding: 13px 14px 18px;
   }
@@ -352,38 +392,40 @@
   }
 
   .device-card-icon {
-    width: 30px;
-    height: 30px;
-    min-width: 30px;
+    width: 48px;
+    height: 48px;
+    min-width: 48px;
   }
 
   .device-card-header h2 {
     font-size: 12px;
+    font-weight: 500;
   }
 
   .device-card-header p {
-    font-size: 8px;
+    font-size: 14px;
+    font-weight: 400;
   }
 
   .device-field label {
     margin-bottom: 4px;
-    font-size: 8px;
+    font-size: 12px;
   }
 
   .device-field input,
   .device-select-wrapper select {
-    height: 30px;
+    height: 44px;
     padding: 0 8px;
-    font-size: 8px;
+    font-size: 12px;
   }
 
   .device-field textarea {
     min-height: 58px;
-    font-size: 8px;
+    font-size: 12px;
   }
 
   .device-checkbox {
-    font-size: 8px;
+    font-size: 12px;
   }
 }
 
@@ -400,4 +442,21 @@
   .device-form-grid {
     grid-template-columns: 1fr;
   }
+}
+.add-device-page-embedded {
+  padding: 0;
+  min-height: 0;
+  background: transparent;
+}
+
+.add-device-page-embedded .add-device-form {
+  margin: 0;
+}
+
+.add-device-page-embedded .device-card {
+  box-shadow: none;
+}
+
+.add-device-page-embedded .add-device-actions {
+  padding: 14px 0 0;
 }

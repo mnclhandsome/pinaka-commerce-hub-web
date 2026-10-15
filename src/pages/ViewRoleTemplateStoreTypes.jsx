@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { roleTemplatesApi } from "../api/roleTemplatesApi";
 
@@ -18,54 +18,35 @@ function readStoreTypes(response) {
   return candidates.find((value) => Array.isArray(value)) || [];
 }
 
-function normalizeStoreTypeEntry(item, index) {
+function normalizeStoreTypeEntry(item) {
   const storeType = item?.storeType ?? item ?? {};
-  const rawId =
-    storeType.id ??
-    storeType._id ??
-    item?.storeTypeId ??
-    item?.id ??
-    `store-type-${index}`;
+  const id = storeType.id ?? storeType._id ?? item?.storeTypeId ?? item?.id;
+
+  if (!id) return null;
 
   return {
     ...storeType,
-    id: rawId,
+    id,
     name:
       storeType.name ??
       storeType.storeTypeName ??
       item?.name ??
       "Unnamed store type",
-    code:
-      storeType.code ??
-      storeType.storeTypeCode ??
-      item?.code ??
-      item?.storeTypeCode ??
-      "",
-    checked:
-      item?.checked ??
-      storeType?.checked ??
-      item?.mapped ??
-      storeType?.mapped ??
-      item?.enabled ??
-      storeType?.enabled ??
-      item?.active ??
-      storeType?.active ??
-      item?.isEnabled ??
-      storeType?.isEnabled ??
-      item?.isActive ??
-      storeType?.isActive ??
-      false,
+    code: storeType.code ?? storeType.storeTypeCode ?? item?.code ?? "",
+    checked: Boolean(
+      item?.checked ?? storeType.checked ?? item?.mapped ?? false,
+    ),
   };
 }
-
-const fallbackStoreTypesList = [
-  { id: "retail", name: "Retail", code: "RETAIL" },
-  { id: "restaurant", name: "Restaurant", code: "RESTAURANT" },
-  { id: "spa", name: "Spa", code: "SPA" },
-  { id: "kiosk", name: "Kiosk", code: "KIOSK" },
-];
-
 const getStateArray = (value) => (Array.isArray(value) ? value : []);
+function readSavedStoreTypeIds(response) {
+  const mappings = [response?.items, response?.data?.items].find(Array.isArray);
+  if (!mappings) return null;
+
+  return mappings
+    .map((item) => item?.storeTypeId ?? item?.storeType?.id ?? item?.id)
+    .filter((id) => typeof id === "string" && id.length > 0);
+}
 
 export default function ViewRoleTemplateStoreTypes() {
   const navigate = useNavigate();
@@ -77,24 +58,23 @@ export default function ViewRoleTemplateStoreTypes() {
   };
 
   const initialSelectedStoreTypes = getStateArray(
-    location.state?.selectedStoreTypes
+    location.state?.selectedStoreTypes,
   );
 
-  const [storeTypesList, setStoreTypesList] = useState(
-    fallbackStoreTypesList
-  );
+  // Removed the static fallback data. Now initializes as an empty array.
+  const [storeTypesList, setStoreTypesList] = useState([]);
   const [selectedStoreTypes, setSelectedStoreTypes] = useState(
-    initialSelectedStoreTypes
+    initialSelectedStoreTypes,
   );
   const [enabledFeatures, setEnabledFeatures] = useState(
-    getStateArray(location.state?.enabledFeatures)
+    getStateArray(location.state?.enabledFeatures),
   );
   const [selectedPermissions, setSelectedPermissions] = useState(
-    getStateArray(location.state?.selectedPermissions)
+    getStateArray(location.state?.selectedPermissions),
   );
 
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
+  const [savingStoreTypeIds, setSavingStoreTypeIds] = useState([]);
   const [error, setError] = useState("");
 
   const [showLeavePopup, setShowLeavePopup] = useState(false);
@@ -102,24 +82,25 @@ export default function ViewRoleTemplateStoreTypes() {
 
   // This snapshot represents the last state received/saved for this screen.
   const [savedStoreTypes, setSavedStoreTypes] = useState(
-    initialSelectedStoreTypes
+    initialSelectedStoreTypes,
   );
+  const selectedStoreTypesRef = useRef(initialSelectedStoreTypes);
+  const savedStoreTypesRef = useRef(initialSelectedStoreTypes);
+  const saveQueueRef = useRef(Promise.resolve());
+  const queuedSaveCountRef = useRef(0);
+  const saving = savingStoreTypeIds.length > 0;
 
   const tabs = [
-    [
-      "overview",
-      "Overview",
-      `/role-templates/${roleId || "store-manager"}`,
-    ],
+    ["overview", "Overview", `/role-templates/${roleId}`],
     [
       "store-types",
       "Applicable Store Types",
-      `/role-templates/${roleId || "store-manager"}/store-types`,
+      `/role-templates/${roleId}/store-types`,
     ],
     [
       "access",
       "Feature & Permission Access",
-      `/role-templates/${roleId || "store-manager"}/access`,
+      `/role-templates/${roleId}/access`,
     ],
   ];
 
@@ -136,17 +117,26 @@ export default function ViewRoleTemplateStoreTypes() {
 
         if (!cancelled) {
           setStoreTypesList(items);
-          setSelectedStoreTypes(
-            items
-              .filter((storeType) => Boolean(storeType.checked))
-              .map((storeType) => storeType.id)
-          );
+          const savedIds = items
+            .filter((storeType) => Boolean(storeType.checked))
+            .map((storeType) => storeType.id);
+          setSelectedStoreTypes(savedIds);
+          setSavedStoreTypes(savedIds);
+          selectedStoreTypesRef.current = savedIds;
+          savedStoreTypesRef.current = savedIds;
         }
       } catch (requestError) {
         if (!cancelled) {
-          setError(
-            requestError?.message || "Unable to load store types."
-          );
+          const errorBody = requestError?.body ?? requestError?.response?.data;
+          const rawMessage =
+            errorBody?.message ||
+            errorBody?.errors?.[0]?.message ||
+            errorBody?.error ||
+            requestError?.message;
+          const errMsg = Array.isArray(rawMessage)
+            ? rawMessage.filter(Boolean).join(", ")
+            : rawMessage || "Unable to load store types.";
+          setError(errMsg);
         }
       } finally {
         if (!cancelled) {
@@ -160,33 +150,59 @@ export default function ViewRoleTemplateStoreTypes() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [roleId]);
 
-  async function toggleStoreType(id) {
-    if (saving || !roleId) return;
+  function toggleStoreType(id) {
+    if (!roleId || savingStoreTypeIds.includes(id)) return;
 
-    const nextSelectedStoreTypes = selectedStoreTypes.includes(id)
-      ? selectedStoreTypes.filter((item) => item !== id)
-      : [...selectedStoreTypes, id];
+    const currentSelection = selectedStoreTypesRef.current;
+    const nextSelectedStoreTypes = currentSelection.includes(id)
+      ? currentSelection.filter((item) => item !== id)
+      : [...currentSelection, id];
 
+    selectedStoreTypesRef.current = nextSelectedStoreTypes;
     setSelectedStoreTypes(nextSelectedStoreTypes);
+    setSavingStoreTypeIds((current) => [...current, id]);
     setError("");
-    setSaving(true);
 
-    try {
-      await roleTemplatesApi.bulkUpdateStoreTypes(
-        roleId,
-        nextSelectedStoreTypes
-      );
-      setSavedStoreTypes(nextSelectedStoreTypes);
-    } catch (requestError) {
-      setSelectedStoreTypes(selectedStoreTypes);
-      setError(
-        requestError?.message || "Unable to save store type selection."
-      );
-    } finally {
-      setSaving(false);
-    }
+    queuedSaveCountRef.current += 1;
+    saveQueueRef.current = saveQueueRef.current
+      .catch(() => {})
+      .then(async () => {
+        const requestedSelection = selectedStoreTypesRef.current;
+        let failed = false;
+
+        try {
+          const response = await roleTemplatesApi.bulkUpdateStoreTypes(
+            roleId,
+            requestedSelection,
+          );
+          const savedIds = readSavedStoreTypeIds(response) ?? requestedSelection;
+          savedStoreTypesRef.current = savedIds;
+          setSavedStoreTypes(savedIds);
+        } catch (requestError) {
+          failed = true;
+          const errorBody = requestError?.body ?? requestError?.response?.data;
+          const rawMessage =
+            errorBody?.message ||
+            errorBody?.errors?.[0]?.message ||
+            errorBody?.error ||
+            requestError?.message;
+          const errorMessage = Array.isArray(rawMessage)
+            ? rawMessage.filter(Boolean).join(", ")
+            : rawMessage || "Unable to save store type selection.";
+          setError(errorMessage);
+        } finally {
+          queuedSaveCountRef.current -= 1;
+          setSavingStoreTypeIds((current) => current.filter((item) => item !== id));
+
+          if (failed && queuedSaveCountRef.current === 0) {
+            const savedIds = savedStoreTypesRef.current;
+            selectedStoreTypesRef.current = savedIds;
+            setSelectedStoreTypes(savedIds);
+          }
+        }
+      });
   }
 
   function buildNavigationState() {
@@ -205,6 +221,7 @@ export default function ViewRoleTemplateStoreTypes() {
   }
 
   function handleSaveAndContinue() {
+    if (saving) return;
     setError("");
 
     if (selectedStoreTypes.length === 0) {
@@ -212,24 +229,18 @@ export default function ViewRoleTemplateStoreTypes() {
       return;
     }
 
-    setSaving(true);
-
     setSavedStoreTypes(selectedStoreTypes);
+    savedStoreTypesRef.current = selectedStoreTypes;
 
-    navigate(
-      `/role-templates/${roleId || "store-manager"}/access`,
-      {
-        state: buildNavigationState(),
-      }
-    );
+    navigate(`/role-templates/${roleId || "store-manager"}/access`, {
+      state: buildNavigationState(),
+    });
 
-    setSaving(false);
   }
 
   function hasUnsavedChanges() {
     return (
-      JSON.stringify(selectedStoreTypes) !==
-      JSON.stringify(savedStoreTypes)
+      JSON.stringify(selectedStoreTypes) !== JSON.stringify(savedStoreTypes)
     );
   }
 
@@ -263,6 +274,7 @@ export default function ViewRoleTemplateStoreTypes() {
   }
 
   function saveAndExit() {
+    if (saving) return;
     if (selectedStoreTypes.length === 0) {
       setShowLeavePopup(false);
       setPendingNavigation(null);
@@ -270,13 +282,10 @@ export default function ViewRoleTemplateStoreTypes() {
       return;
     }
 
-    setSaving(true);
-
     // Front-end persistence until the role-configuration save API is connected.
     const configuration = {
       roleTemplateId: roleId,
       roleTemplate,
-      selectedStoreTypes,
       enabledFeatures,
       selectedPermissions,
       updatedAt: new Date().toISOString(),
@@ -284,11 +293,11 @@ export default function ViewRoleTemplateStoreTypes() {
 
     localStorage.setItem(
       "pinaka_role_template_configs",
-      JSON.stringify(configuration)
+      JSON.stringify(configuration),
     );
 
     setSavedStoreTypes(selectedStoreTypes);
-    setSaving(false);
+    savedStoreTypesRef.current = selectedStoreTypes;
     setShowLeavePopup(false);
 
     if (pendingNavigation) {
@@ -370,33 +379,23 @@ export default function ViewRoleTemplateStoreTypes() {
 
           <div className="role-store-types-grid">
             {loading && (
-              <p className="role-loading-message">
-                Loading store types...
-              </p>
+              <p className="role-loading-message">Loading store types...</p>
             )}
 
             {!loading && storeTypesList.length === 0 && (
-              <p className="role-empty-message">
-                No store types found.
-              </p>
+              <p className="role-empty-message">No store types found.</p>
             )}
 
             {!loading &&
               storeTypesList.map((storeType) => {
                 const storeTypeId =
-                  storeType.id ??
-                  storeType._id ??
-                  storeType.storeTypeId;
+                  storeType.id ?? storeType._id ?? storeType.storeTypeId;
 
                 const storeTypeName =
-                  storeType.name ||
-                  storeType.storeTypeName ||
-                  "Store Type";
+                  storeType.name || storeType.storeTypeName || "Store Type";
 
                 const storeTypeCode =
-                  storeType.code ||
-                  storeType.storeTypeCode ||
-                  "";
+                  storeType.code || storeType.storeTypeCode || "";
 
                 const isSelected = selectedStoreTypes.includes(storeTypeId);
 
@@ -410,7 +409,7 @@ export default function ViewRoleTemplateStoreTypes() {
                     <input
                       type="checkbox"
                       checked={isSelected}
-                      disabled={saving}
+                      disabled={savingStoreTypeIds.includes(storeTypeId)}
                       onChange={() => toggleStoreType(storeTypeId)}
                     />
 
@@ -433,21 +432,12 @@ export default function ViewRoleTemplateStoreTypes() {
           <div className="role-details-actions">
             <button
               type="button"
-              className="role-details-secondary-btn"
-              onClick={handleBack}
-              disabled={saving}
-            >
-              Back
-            </button>
-
-            <button
-              type="button"
               className="role-details-primary-btn"
               onClick={handleSaveAndContinue}
               disabled={saving}
             >
               {saving ? "Saving..." : "Save & Continue"}
-              {!saving && <i className="bi bi-arrow-right" />}
+              
             </button>
           </div>
         </section>

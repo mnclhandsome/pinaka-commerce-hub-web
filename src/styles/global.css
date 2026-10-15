@@ -31,6 +31,28 @@ a {
     overflow: auto;
 }
 
+table thead th {
+    white-space: nowrap !important;
+    background: #f1f3fd !important;
+    color: #102d59 !important;
+}
+
+.pch-overflow-tooltip {
+  box-sizing: border-box;
+  padding: 10px 12px;
+  border: 1px solid #dbe5f4;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #24324d;
+  box-shadow: 0 8px 24px rgba(16, 35, 65, 0.16);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.5;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
 .clickable {
     cursor: pointer;
 }
@@ -67,5 +89,636 @@ a {
 /* =========================================================
    COMMON PAGINATION
 ========================================================= */
+.pagination-container {
+   width: 100%;
+    max-width: 100%;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    padding: 16px 14px;
+    box-sizing: border-box;
+    background: #fff;
+}
 
-/* paste pagination CSS here */
+.pagination-info {
+    flex: 0 0 auto;
+
+    color: #718096;
+
+    font-size: 13px;
+
+    white-space: nowrap;
+}
+
+.pagination-info strong {
+    color: #4a5568;
+    font-weight: 500;
+}
+
+.pagination-controls {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+
+    gap: 8px;
+
+    flex: 0 0 auto;
+
+    white-space: nowrap;
+}
+
+.pagination-page-size {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-right: 8px;
+    white-space: nowrap;
+}
+
+.pagination-page-size span {
+    color: #1f2937;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.pagination-select-wrapper {
+    position: relative;
+    width: 80px;
+    height: 36px;
+    flex-shrink: 0;
+}
+
+.pagination-page-size select {
+    width: 65px !important;
+    height: 36px !important;
+    min-height: 36px !important;
+    padding: 0 28px 0 12px !important;
+
+    border: 1px solid #d8dee9 !important;
+    border-radius: 7px !important;
+
+    background: #ffffff !important;
+    color: #334155 !important;
+    font-size: 14px !important;
+
+    outline: none !important;
+    cursor: pointer !important;
+
+    appearance: none !important;
+    -webkit-appearance: none !important;
+    -moz-appearance: none !important;
+}
+
+.pagination-page-size select:focus {
+    border-color: #9aa8bd;
+}
+
+.pagination-select-arrow {
+    position: absolute;
+    top: 50%;
+    right:30px;
+    transform: translateY(-50%);
+
+    color: #454f5d;
+    font-size: 15px;
+
+    pointer-events: none;
+}
+
+.pagination-arrow {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 36px;
+    padding: 0;
+    border: 1px solid #d8dee9;
+    border-radius: 7px;
+    background: #ffffff;
+    color: #64748b;
+    font-size: 14px;
+    cursor: pointer;
+    transition:
+        background 0.15s ease,
+        border-color 0.15s ease,
+        color 0.15s ease; 
+   
+}
+
+.pagination-arrow:hover:not(:disabled) {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+    color: #334155;
+}
+
+.pagination-arrow:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    background: #f8fafc;
+}
+
+.pagination-pages {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 6px;
+
+    white-space: nowrap;
+}
+
+.pagination-page {
+    width: 36px;
+    height: 36px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    flex: 0 0 36px;
+
+    padding: 0;
+
+    border: 1px solid #d8dee9;
+    border-radius: 7px;
+
+    background: #ffffff;
+    color: #475569;
+
+    font-size: 14px;
+
+    cursor: pointer;
+
+    transition:
+        background 0.15s ease,
+        border-color 0.15s ease,
+        color 0.15s ease;
+}
+
+.pagination-page:hover {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+}
+
+.pagination-page.active {
+    background: #5143bc;
+    color: #fff;
+    font-weight: 600;
+}
+
+
+/* Dim page numbers when the list is empty */
+.pagination-pages .pagination-page:disabled {
+  background: #ffffff;
+  color: #aeb7c6;
+  border-color: #e2e7ef;
+  cursor: not-allowed;
+  opacity: 0.7;
+  box-shadow: none;
+}
+
+/* Prevent the active page color when no records exist */
+.pagination-pages .pagination-page.active:disabled {
+  background: #d0c5f5;
+  color: #645c85;
+  border-color: #e2e7ef;
+}
+
+
+.pagination-ellipsis {
+    width: 20px;
+    height: 38px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    flex: 0 0 20px;
+
+    color: #64748b;
+
+    font-size: 14px;
+}
+
+
+
+@media (max-width: 900px) {
+    .pagination-container {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 14px;
+    }
+
+    .pagination-info {
+        width: 100%;
+        text-align: center;
+    }
+
+    .pagination-controls {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 600px) {
+    .pagination-container {
+        padding: 14px;
+    }
+
+    .pagination-controls {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .pagination-page-size {
+        width: 100%;
+        justify-content: center;
+        margin-right: 0;
+    }
+}
+
+
+
+
+
+/* Shared status pills for the Employees and Devices list tables. */
+:is(.employees-table, .devices-table, .mel) :is(.employee-status, .device-status):is(.active, .inactive) {
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 90px;
+    min-width: 90px;
+    height: 26px;
+    padding: 5px 10px;
+    gap: 5px;
+    border: 0;
+    border-radius: 6px;
+    font-size: 12px;
+    line-height: 16px;
+    font-weight: 500;
+    white-space: nowrap;
+}
+:is(.employees-table, .devices-table, .mel) :is(.employee-status, .device-status).active {
+    color: #319a5b;
+    background: #e5f6ea;
+}
+:is(.employees-table, .devices-table, .mel) :is(.employee-status, .device-status).inactive {
+    color: #e9445b;
+    background: #ffe5ea;
+}
+:is(.employees-table, .devices-table, .mel) :is(.employee-status, .device-status):is(.active, .inactive)::before {
+    content: "";
+    width: 5px;
+    height: 5px;
+    flex: 0 0 5px;
+    border-radius: 50%;
+    background: currentColor;
+}
+
+/* =========================================================
+   LIST ACTIONS CSS
+========================================================= */
+
+.list-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.list-action-btn {
+    width: 35px;
+    height: 35px;
+    padding: 0;
+    border: 1.5px solid #dce9f5;
+    border-radius: 7px;
+    background: #fcfdff;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    cursor: pointer;
+    font-size: 16px !important;
+    
+
+    box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+
+    transition:
+        background-color 0.16s ease,
+        border-color 0.16s ease,
+        color 0.16s ease,
+        box-shadow 0.16s ease;
+}
+
+
+/* =========================
+   VIEW
+========================= */
+
+.list-action-btn:has(.View-btn) {
+    color: #2563eb !important;
+}
+
+.list-action-btn:has(.View-btn):hover {
+    color: #1d4ed8;
+    border-color: #bfdbfe;
+    background: #eff6ff;
+}
+
+
+/* =========================
+   EDIT
+========================= */
+
+.list-action-btn:has(.text-primary) {
+    color: #5143bc;
+}
+
+.list-action-btn:has(.text-primary):hover {
+    color: #4338a3;
+    border-color: #d8d2ff;
+    background: #f1efff;
+}
+
+
+/* =========================
+   ACTIVATE
+========================= */
+
+.list-action-btn.text-success {
+    color: #198754;
+}
+
+.list-action-btn.text-success:hover {
+    color: #157347;
+    border-color: #b7e4c7;
+    background: #ecfdf3;
+}
+
+
+/* =========================
+   DELETE / DEACTIVATE
+========================= */
+
+.list-action-btn.text-danger {
+    color: #d9485f !important;
+}
+
+.list-action-btn.text-danger:hover {
+    color: #c5304b !important;
+    border-color: #ffd8e1 !important;
+    background: #fff0f3 !important;
+}
+
+
+/* =========================
+   DISABLED
+========================= */
+
+.list-action-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+.list-action-btn:disabled:hover {
+    background: #fcfdff;
+    border-color: #dce9f5;
+}
+
+/* =========================================================
+   REUSABLE FILTERS BAR
+   Same UI as Orders Toolbar
+========================================================= */
+
+.filters-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 12px 16px;
+    background: transparent;
+    min-height: 48px;
+    box-sizing: border-box;
+    flex-wrap: nowrap;
+}
+
+
+/* =========================================================
+   SEARCH
+========================================================= */
+
+.filter-search {
+    min-width: 230px;
+    height: 35px;
+    flex: 1;
+    border: 1px solid #e1e4eb;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    padding: 0 9px;
+    color: #9aa2b3;
+    box-sizing: border-box;
+    background: #fff;
+
+}
+
+.filter-search i {
+    transform: none;
+    flex-shrink: 0;
+    font-size: 12px;
+    color: #9aa2b3; 
+}
+
+.filter-search input {
+    width: 100%;
+    height: 100%;
+    flex: 1;
+    border: 0;
+    outline: 0;
+    padding: 0 8px;
+    background: transparent;
+    color: #3c465a;
+    font-size: 12px;
+    font-weight: 400;
+    box-sizing: border-box;
+
+}
+
+.filter-search input::placeholder {
+   color: #a0a6b5;
+}
+
+.filter-search input:focus {
+    border: 0;
+    outline: 0;
+    box-shadow: none;
+}
+
+
+/* =========================================================
+   FILTER OPTIONS
+========================================================= */
+
+.filter-options {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 0 0 auto;
+    min-width: 0;  
+}
+
+
+/* =========================================================
+   DROPDOWN WRAPPER
+========================================================= */
+
+.filter-select-wrapper {
+    position: relative;
+    width: 130px;
+    flex: 0 0 130px;
+    
+}
+
+
+/* =========================================================
+   DROPDOWN
+========================================================= */
+
+.filter-select-wrapper select {
+    width: 100%;
+    height: 35px;
+    padding: 0 34px 0 10px;
+    border: 1px solid #e1e4eb;
+    border-radius: 6px;
+    background: #fff;
+    color: #59647a;
+    font-size: 12px;
+    font-weight: 500;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    outline: none;
+    cursor: pointer;
+    box-sizing: border-box;
+}
+
+
+.filter-select-wrapper select:hover {
+    border-color: #d3d7e0;
+}
+
+.filter-select-wrapper select:focus {
+      border-color: #c8c1f2;
+    outline: none;
+    box-shadow: none;
+}
+
+
+/* =========================================================
+   DROPDOWN ARROW
+   Same as Orders
+========================================================= */
+
+.filter-select-arrow {
+     position: absolute;
+    top: 50%;
+    right: 10px;
+    transform: translateY(-50%);
+    color: #59647a;
+    font-size: 11px;
+    pointer-events: none;
+}
+
+/* Keep visible dropdown chevrons consistent across native and shared controls. */
+select:not(.pch-filter-sizing):not(.pch-master-filter-sizing) {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Cpath fill='%23294a76' fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708'/%3E%3C/svg%3E") !important;
+    background-size: 11px 11px !important;
+    background-position: right 11px center !important;
+    background-repeat: no-repeat !important;
+}
+
+:is(
+    .filter-select-arrow,
+    .pagination-select-arrow,
+    .employee-select-arrow,
+    .device-select-arrow,
+    .sf-select-arrow,
+    .feature-filter-chevron,
+    .fp-filter-chevron
+) {
+    display: none !important;
+}
+
+.pch-filter-trigger > i.bi-chevron-down {
+    font-size: 11px !important;
+}
+
+
+/* =========================================================
+   RESET
+========================================================= */
+
+.filter-reset-btn {
+     height: 35px;
+    padding: 0 12px;
+
+    border: 1px solid #e1e4eb;
+    border-radius: 6px;
+
+    background: #fff;
+    color: #59647a;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 6px;
+
+    cursor: pointer;
+    white-space: nowrap;
+
+    font-size: 12px;
+    font-weight: 500;
+
+    box-sizing: border-box;
+}
+
+.filter-reset-btn:hover {
+      background: #fafbfc;
+    border-color: #d3d7e0;
+}
+
+.filter-reset-btn i {
+    font-size: 13px;
+    line-height: 1;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 1100px) {
+    .filters-bar {
+        flex-wrap: wrap;
+    }
+
+    .filter-search {
+        flex: 1 1 230px;
+    }
+
+    .filter-options {
+        flex-wrap: wrap;
+    }
+
+    .filter-reset-btn {
+        margin-left: 0;
+    }
+}

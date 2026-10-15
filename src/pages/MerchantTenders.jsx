@@ -1,5 +1,9 @@
+import { pendingStoreRead } from "../api/http";
 import { useEffect, useRef, useState } from "react";
+import DeleteConfirmationDialog from "../components/DeleteConfirmationDialog";
 import "../styles/merchant-tenders.css";
+import Pagination from "../components/Pagination";
+import FiltersBar from "../components/FiltersBar";
 import { tendorsApi } from "../api/tendors";
 
 const idOf = (value) =>
@@ -14,6 +18,37 @@ const idOf = (value) =>
           "")
       : (value ?? ""),
   );
+
+const tendorsFrom = (response) => {
+  const candidates = [
+    response?.tendors,
+    response?.data?.tendors,
+    response?.data?.items,
+    response?.items,
+    response?.data,
+    response,
+  ];
+
+  return candidates.find(Array.isArray) || [];
+};
+
+const assignedIdsFrom = (response) => {
+  const candidates = [
+    response?.tendorIds,
+    response?.tenderIds,
+    response?.data?.tendorIds,
+    response?.data?.tenderIds,
+    response?.tendors,
+    response?.data?.tendors,
+    response?.items,
+    response?.data?.items,
+    response?.data,
+    response,
+  ];
+  const assigned = candidates.find(Array.isArray);
+
+  return assigned ? assigned.map(idOf).filter(Boolean) : [];
+};
 
 function formatDate(value) {
   if (!value) return "—";
@@ -76,19 +111,22 @@ export default function MerchantTenders({
   const [masterError, setMasterError] = useState("");
 
   const [query, setQuery] = useState("");
-  const [page, setPage] = useState(1);
+const [page, setPage] = useState(1);
+const [pageSize, setPageSize] = useState(10);
 
   const [sort, setSort] = useState({
     key: "name",
     direction: 1,
   });
-
+ 
   const [modal, setModal] = useState(null);
   const [selection, setSelection] = useState([]);
   const [search, setSearch] = useState("");
 
   const [busy, setBusy] = useState(false);
   const [saveError, setSaveError] = useState("");
+  const [assignmentsLoading, setAssignmentsLoading] = useState(true);
+  const [assignmentError, setAssignmentError] = useState("");
 
   const lock = useRef(false);
   const dialog = useRef(null);
@@ -103,13 +141,87 @@ export default function MerchantTenders({
   }, [merchantId, signature]);
 
   useEffect(() => {
-    if (modal) {
-      dialog.current?.showModal();
-    } else if (dialog.current?.open) {
-      dialog.current.close();
-      addButton.current?.focus();
+    let cancelled = false;
+
+    async function loadMasterTenders() {
+      setMasterLoading(true);
+      setMasterError("");
+
+      try {
+        const response = await pendingStoreRead("tendors", () => tendorsApi.getAll());
+
+        if (!cancelled) {
+          setMasterTenders(tendorsFrom(response));
+        }
+      } catch (loadError) {
+        console.error("Failed to load master tenders:", loadError);
+
+        if (!cancelled) {
+          setMasterError(
+            loadError?.message || "Unable to load master tenders.",
+          );
+        }
+      } finally {
+        if (!cancelled) {
+          setMasterLoading(false);
+        }
+      }
     }
-  }, [modal]);
+
+    loadMasterTenders();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadAssignments() {
+      setAssignmentsLoading(true);
+      setAssignmentError("");
+
+      try {
+        const response = await pendingStoreRead(`merchant-tendors:${merchantId}`, () => tendorsApi.getMerchantTendors(merchantId));
+
+        if (!cancelled) {
+          setIds(assignedIdsFrom(response));
+        }
+      } catch (loadError) {
+        console.error("Failed to load merchant tender assignments:", loadError);
+
+        if (!cancelled) {
+          setAssignmentError(
+            loadError?.message || "Unable to load merchant tender assignments.",
+          );
+        }
+      } finally {
+        if (!cancelled) {
+          setAssignmentsLoading(false);
+        }
+      }
+    }
+
+    loadAssignments();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [merchantId]);
+
+ 
+useEffect(() => {
+  if (modal && modal.type !== "remove") {
+    if (!dialog.current?.open) {
+      dialog.current?.showModal();
+    }
+  } else if (dialog.current?.open) {
+    dialog.current.close();
+    addButton.current?.focus();
+  }
+}, [modal]);
+
 
   const tenders = Array.from(
     new Map(
@@ -133,15 +245,26 @@ export default function MerchantTenders({
   );
 
   const rows = assigned
-    .filter((value) => matches(value, query))
-    .sort(
-      (a, b) =>
-        String(a[sort.key]).localeCompare(String(b[sort.key])) * sort.direction,
-    );
+  .filter((value) => matches(value, query))
+  .sort(
+    (a, b) =>
+      String(a[sort.key]).localeCompare(String(b[sort.key])) *
+      sort.direction
+  );
+ const totalPages = Math.max(1, Math.ceil(rows.length / pageSize));
+const currentPage = Math.min(page, totalPages);
+const paginatedRows = rows.slice(
+  (currentPage - 1) * pageSize,
+  currentPage * pageSize
+);
 
-  const pages = Math.max(1, Math.ceil(rows.length / 10));
+useEffect(() => {
+  setPage(1);
+}, [query]);
 
-  const current = Math.min(page, pages);
+useEffect(() => {
+  setPage((previous) => Math.min(previous, totalPages));
+}, [totalPages]);
 
   const available = tenders.filter(
     (value) => !ids.includes(value.id) && matches(value, search),
@@ -167,25 +290,11 @@ export default function MerchantTenders({
     setSaveError("");
 
     try {
-      const response = await tendorsApi.getAll();
+      const response = await pendingStoreRead("tendors", () => tendorsApi.getAll());
 
       console.log("TENDORS API RESPONSE:", response);
 
-      const list = Array.isArray(response)
-        ? response
-        : Array.isArray(response?.tendors)
-          ? response.tendors
-          : Array.isArray(response?.data?.tendors)
-            ? response.data.tendors
-            : Array.isArray(response?.data)
-              ? response.data
-              : Array.isArray(response?.items)
-                ? response.items
-                : [];
-
-      console.log("TENDORS LIST:", list);
-
-      setMasterTenders(Array.isArray(list) ? list : []);
+      setMasterTenders(tendorsFrom(response));
 
       setModal({
         type: "select",
@@ -292,7 +401,7 @@ export default function MerchantTenders({
                 {key === "name"
                   ? "Tender"
                   : key[0].toUpperCase() + key.slice(1)}{" "}
-                {sort.key === key ? (sort.direction === 1 ? "↑" : "↓") : "↕"}
+               
               </button>
             )}
           </th>
@@ -326,54 +435,44 @@ export default function MerchantTenders({
   }
   return (
     <div className="merchant-tenders">
-      <header className="mt-card mt-header">
-        <div>
-          <h2>Tenders</h2>
-          <p>These are the tenders connected to this merchant.</p>
-        </div>
+  <section className="mt-card">
+   <div className="mt-header">
+  <div>
+    <h3>Tender List</h3>
+    <p>These are the tenders connected to this merchant.</p>
+  </div>
 
-        <button
-          ref={addButton}
-          className="mt-primary"
-          disabled={loading || !!error || masterLoading}
-          onClick={openAddTenderModal}
-        >
-          {masterLoading ? "Loading Tenders…" : "＋ Add Tender"}
-        </button>
-      </header>
+  <button
+    ref={addButton}
+    className="mt-primary"
+    disabled={loading || !!error || masterLoading}
+    onClick={openAddTenderModal}
+  >
+    {masterLoading ? "Loading Tenders…" : "＋ Add Tender"}
+  </button>
+</div>
 
-      <section className="mt-card">
-        <h3>Tender List</h3>
+    <FiltersBar
+      searchValue={query}
+      onSearchChange={(value) => {
+        setQuery(value);
+        setPage(1);
+      }}
+      searchPlaceholder="Search tenders by name or code…"
+      onClear={() => {
+        setQuery("");
+        setPage(1);
+        setSort({ key: "name", direction: 1 });
+      }}
+      showClear={true}
+    />
 
-        <div className="mt-toolbar">
-          <input
-            aria-label="Search assigned tenders"
-            placeholder="Search tenders by name or code…"
-            value={query}
-            onChange={(event) => {
-              setQuery(event.target.value);
-              setPage(1);
-            }}
-          />
+    {/* Keep your existing tender table and pagination below */}
 
-          <button
-            onClick={() => {
-              setQuery("");
-              setPage(1);
-              setSort({
-                key: "name",
-                direction: 1,
-              });
-            }}
-          >
-            ↺ Reset
-          </button>
-        </div>
-
-        {loading ? (
+        {loading || assignmentsLoading ? (
           <p role="status">Loading tenders…</p>
-        ) : error ? (
-          <p role="alert">{error}</p>
+        ) : error || assignmentError || masterError ? (
+          <p role="alert">{error || assignmentError || masterError}</p>
         ) : (
           <>
             <div className="mt-scroll">
@@ -381,9 +480,7 @@ export default function MerchantTenders({
                 <thead>{headings()}</thead>
 
                 <tbody>
-                  {rows
-                    .slice((current - 1) * 10, current * 10)
-                    .map((tender) => (
+                  {paginatedRows.map((tender) => (
                       <tr key={tender.id}>
                         <td>{name(tender)}</td>
                         <td>{tender.code}</td>
@@ -432,34 +529,19 @@ export default function MerchantTenders({
               </table>
             </div>
 
-            <footer className="mt-footer">
-              <span>
-                Showing {rows.length ? (current - 1) * 10 + 1 : 0} to{" "}
-                {Math.min(current * 10, rows.length)} of {rows.length} entries
-              </span>
-
-              <div>
-                <button
-                  disabled={current === 1}
-                  onClick={() => setPage(current - 1)}
-                  aria-label="Previous page"
-                >
-                  ‹
-                </button>
-
-                <span className="mt-page">
-                  {current} / {pages}
-                </span>
-
-                <button
-                  disabled={current === pages}
-                  onClick={() => setPage(current + 1)}
-                  aria-label="Next page"
-                >
-                  ›
-                </button>
-              </div>
-            </footer>
+            <Pagination
+  currentPage={currentPage}
+  totalPages={totalPages}
+  totalItems={rows.length}
+  pageSize={pageSize}
+  onPageChange={setPage}
+  onPageSizeChange={(size) => {
+    setPageSize(size);
+    setPage(1);
+  }}
+  itemLabel="tenders"
+  showWhenEmpty={true}
+/>
           </>
         )}
       </section>
@@ -616,19 +698,33 @@ export default function MerchantTenders({
                 </button>
               )}
 
-              {modal?.type === "remove" && (
-                <button
-                  className="mt-primary"
-                  disabled={busy}
-                  onClick={() => removeTender(modal.tender.id)}
-                >
-                  {busy ? "Saving…" : "Remove Assignment"}
-                </button>
-              )}
+             
             </div>
           </footer>
         </div>
+      
       </dialog>
+
+      <DeleteConfirmationDialog
+        isOpen={modal?.type === "remove"}
+        title="Remove Tender Assignment?"
+        message={`Are you sure you want to remove ${
+          modal?.tender?.name || "this tender"
+        } from this merchant? The tender will remain available in Master Data.`}
+        cancelLabel="Cancel"
+        confirmLabel="Remove"
+        busyLabel="Removing..."
+        busy={busy}
+        error={saveError}
+        iconClassName="bi bi-trash3"
+        onCancel={close}
+        onConfirm={() => {
+          if (modal?.tender?.id) {
+            removeTender(modal.tender.id);
+          }
+        }}
+      />
     </div>
   );
 }
+

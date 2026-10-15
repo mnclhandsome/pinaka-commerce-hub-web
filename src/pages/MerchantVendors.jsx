@@ -1,4 +1,9 @@
+import { pendingStoreRead } from "../api/http";
 import { useEffect, useRef, useState } from "react";
+import { Eye, Trash2 } from "lucide-react";
+import DeleteConfirmationDialog from "../components/DeleteConfirmationDialog";
+import FiltersBar from "../components/FiltersBar";
+import Pagination from "../components/Pagination";
 import "../styles/merchant-vendors.css";
 import Vendors from "./Vendors";
 
@@ -8,6 +13,9 @@ import {
     addMerchantVendors,
     createVendor,
     unmapMerchantVendor,
+    getMappedStoreVendors,
+    addStoreVendors,
+    unmapStoreVendor,
 } from "../api/vendors";
 
 /* =========================================================
@@ -32,12 +40,31 @@ const normalize = (value) => ({
     name:
         value.name ||
         value.vendorName ||
+        value.vendor_name ||
         "Unnamed vendor",
+
+    code: value.code || value.vendorCode || value.vendor_code || "—",
 
     type:
         value.type ||
         value.vendorType ||
+        value.vendor_type ||
         "—",
+
+    products:
+        value.products || value.productList || value.product_list ||
+        value.productCategory || value.product_category || value.category || "—",
+
+    contactPerson: value.contactPerson || value.contact_person || value.contactName || "",
+    email: value.email || "",
+    addressLine1: value.addressLine1 || value.address_line1 || "",
+    addressLine2: value.addressLine2 || value.address_line2 || "",
+    city: value.city || "",
+    state: value.state || "",
+    zipCode: value.zipCode || value.zip_code || "",
+    country: value.country || "",
+    createdTime: value.createdTime || value.createdAt || value.created_at || "",
+    updatedTime: value.updatedTime || value.updatedAt || value.updated_at || "",
 
     phone:
         value.phone ||
@@ -76,6 +103,18 @@ const searchableValues = value => {
     if (typeof value === "object") return Object.values(value).flatMap(searchableValues);
     return [String(value)];
 };
+const displayValue = value => {
+    if (Array.isArray(value)) {
+        const items = value.map(item => item && typeof item === "object"
+            ? item.name || item.productName || item.product_name || JSON.stringify(item)
+            : item).filter(Boolean);
+        return items.length ? items.join(", ") : "—";
+    }
+    if (value && typeof value === "object") {
+        return value.name || value.productName || value.product_name || JSON.stringify(value);
+    }
+    return String(value ?? "").trim() || "—";
+};
 const matches = (vendor, query) => {
     const text = searchableValues(vendor).join(" ").toLowerCase();
     return query.trim().toLowerCase().split(/\s+/).filter(Boolean).every(term => text.includes(term));
@@ -91,12 +130,16 @@ const locationOptions = values => [...new Map(values.filter(Boolean).map(value =
 
 export default function MerchantVendors({
     merchantId,
+    storeId,
     masterVendors: initialMasterVendors = [],
     assignedVendorIds = [],
     onSaveAssignments,
     loading = false,
     error = "",
 }) {
+    const storeScope = Boolean(storeId);
+    const mappingId = storeScope ? storeId : merchantId;
+    const entityName = storeScope ? "store" : "merchant";
     const [ids, setIds] = useState(() =>
         assignedVendorIds.map(idOf)
     );
@@ -104,8 +147,9 @@ export default function MerchantVendors({
     const [query, setQuery] = useState("");
 
     const [page, setPage] = useState(1);
+    const [pageSize, setPageSize] = useState(10);
     const [pickerPage, setPickerPage] = useState(1);
-    const [pickerPageSize, setPickerPageSize] = useState(25);
+    const pickerPageSize = 25;
 
     const [sort, setSort] = useState({
         key: "name",
@@ -150,8 +194,8 @@ export default function MerchantVendors({
        LOAD MAPPED VENDORS
     ========================================================= */
 
-    async function loadMappedVendors(searchValue = "") {
-        if (!merchantId) {
+    async function loadMappedVendors(searchValue = "", { preserveIdsWhenEmpty = false } = {}) {
+        if (!mappingId) {
             setIds([]);
             return;
         }
@@ -160,10 +204,9 @@ export default function MerchantVendors({
         setMappedError("");
 
         try {
-            const mapped = await getMappedMerchantVendors(
-                merchantId,
-                { search: searchValue }
-            );
+            const mapped = storeScope
+                ? await pendingStoreRead(`store-vendors:${mappingId}:${searchValue}`, () => getMappedStoreVendors(mappingId, { search: searchValue }))
+                : await pendingStoreRead(`merchant-vendors:${mappingId}:${searchValue}`, () => getMappedMerchantVendors(mappingId, { search: searchValue }));
 
             const mappedIds = mapped.map(idOf);
 
@@ -176,17 +219,29 @@ export default function MerchantVendors({
                 );
 
                 mapped.forEach((vendor) => {
-                    byId.set(idOf(vendor), vendor);
+                    const id = idOf(vendor);
+                    if (!id) return;
+                    const details = byId.get(id) || {};
+                    // Keep full merchant vendor details when the store mapping
+                    // endpoint returns only IDs and mapping metadata.
+                    byId.set(id, {
+                        ...vendor,
+                        ...details,
+                        id,
+                        vendorId: id,
+                        mappingId: vendor.mappingId || details.mappingId || "",
+                    });
                 });
 
                 return Array.from(byId.values());
             });
 
-            setIds(mappedIds);
+            if (!preserveIdsWhenEmpty || mappedIds.length) setIds(mappedIds);
             setPage(1);
+            return mapped;
         } catch (e) {
             console.error(
-                "Failed to load mapped merchant vendors:",
+                `Failed to load mapped ${entityName} vendors:`,
                 e
             );
 
@@ -194,6 +249,7 @@ export default function MerchantVendors({
                 e?.message ||
                     "Unable to load mapped vendors."
             );
+            return null;
         } finally {
             setMappedLoading(false);
         }
@@ -211,23 +267,31 @@ export default function MerchantVendors({
         setCountryFilter("");
         setStateFilter("");
 
-        if (merchantId) {
+        if (mappingId) {
             loadMappedVendors();
         } else {
             setIds(assignedVendorIds.map(idOf));
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [merchantId]);
+    }, [mappingId, storeScope]);
 
-    useEffect(() => {
-        if (modal && modal.type !== "create") {
+    
+useEffect(() => {
+    if (
+        modal &&
+        modal.type !== "create" &&
+        modal.type !== "remove"
+    ) {
+        if (!dialog.current?.open) {
             dialog.current?.showModal();
-        } else if (dialog.current?.open) {
-            dialog.current.close();
-            addButton.current?.focus();
         }
-    }, [modal]);
+    } else if (dialog.current?.open) {
+        dialog.current.close();
+        addButton.current?.focus();
+    }
+}, [modal]);
+
 
     /* =========================================================
        MASTER VENDORS
@@ -285,7 +349,7 @@ export default function MerchantVendors({
 
     const pages = Math.max(
         1,
-        Math.ceil(rows.length / 10)
+        Math.ceil(rows.length / pageSize)
     );
 
     const current = Math.min(page, pages);
@@ -310,12 +374,19 @@ export default function MerchantVendors({
     const pickerRows = available.slice((currentPickerPage - 1) * pickerPageSize, currentPickerPage * pickerPageSize);
     const selectable = pickerRows.filter(active);
 
+    const toggleVendorSelection = (vendor) => {
+        if (busy || !active(vendor)) return;
+        setSelection(current => current.includes(vendor.id)
+            ? current.filter(id => id !== vendor.id)
+            : [...current, vendor.id]);
+    };
+
     /* =========================================================
        OPEN ADD VENDOR MODAL
     ========================================================= */
 
     async function openAddVendorModal() {
-        if (masterLoading || !merchantId) {
+        if (masterLoading || !mappingId) {
             return;
         }
 
@@ -328,23 +399,36 @@ export default function MerchantVendors({
         setSaveError("");
 
         try {
-            const vendors =
-                await getAvailableMerchantVendors(
-                    merchantId
-                );
+            let latestMappedIds = ids;
+            if (storeScope) {
+                const latestMappings = await getMappedStoreVendors(mappingId);
+                latestMappedIds = latestMappings.map(idOf);
+                setIds(latestMappedIds);
+                setMasterVendors((current) => {
+                    const byId = new Map(current.map((vendor) => [idOf(vendor), vendor]));
+                    latestMappings.forEach((vendor) => byId.set(idOf(vendor), vendor));
+                    return Array.from(byId.values());
+                });
+            }
+            const vendors = storeScope
+                ? (await getMappedMerchantVendors(merchantId)).filter(vendor => !latestMappedIds.includes(idOf(vendor)))
+                : await getAvailableMerchantVendors(mappingId);
 
-            setMasterVendors(
-                Array.isArray(vendors)
-                    ? vendors
-                    : []
-            );
+            setMasterVendors((current) => {
+                const byId = new Map(current.map((vendor) => [idOf(vendor), vendor]));
+                (Array.isArray(vendors) ? vendors : []).forEach((vendor) => {
+                    const id = idOf(vendor);
+                    if (id) byId.set(id, { ...byId.get(id), ...vendor });
+                });
+                return Array.from(byId.values()).filter((vendor) => idOf(vendor));
+            });
 
             setModal({
                 type: "select",
             });
         } catch (e) {
             console.error(
-                "Failed to load available merchant vendors:",
+                `Failed to load available ${storeScope ? "merchant-mapped" : "merchant"} vendors:`,
                 e
             );
 
@@ -380,7 +464,7 @@ export default function MerchantVendors({
     ========================================================= */
 
     async function createAndAssignVendor(payload) {
-        if (lock.current || !merchantId) throw new Error("Select a merchant before adding a vendor.");
+        if (lock.current || !mappingId || storeScope) throw new Error(`Select a ${entityName} before adding a vendor.`);
         lock.current = true;
         setBusy(true);
         try {
@@ -389,7 +473,7 @@ export default function MerchantVendors({
             const vendorId = idOf(vendor);
             if (!vendorId) throw new Error("Vendor was created but its ID was not returned. Close this popup and use Add Existing Vendor to assign it.");
             try {
-                await addMerchantVendors(merchantId, [vendorId]);
+                await addMerchantVendors(mappingId, [vendorId]);
             } catch (error) {
                 throw new Error("Vendor created, but assignment failed. Retry Create Vendor to assign the same vendor, or use Add Existing Vendor. " + (error?.message || ""));
             }
@@ -404,7 +488,7 @@ export default function MerchantVendors({
     }
 
     async function save(next) {
-        if (lock.current || !merchantId) {
+        if (lock.current || !mappingId) {
             return;
         }
 
@@ -418,10 +502,9 @@ export default function MerchantVendors({
             );
 
             if (modal?.type === "remove") {
-                await unmapMerchantVendor(
-                    merchantId,
-                    modal.vendor.id
-                );
+                if (storeScope) await unmapStoreVendor(modal.vendor.mappingId, { storeId: mappingId, vendorId: modal.vendor.id });
+                else await unmapMerchantVendor(mappingId, modal.vendor.id);
+                if (storeScope) setIds((current) => current.filter((id) => id !== modal.vendor.id));
             } else if (modal?.type === "select") {
                 if (!addedIds.length) {
                     throw new Error(
@@ -429,20 +512,47 @@ export default function MerchantVendors({
                     );
                 }
 
-                await addMerchantVendors(
-                    merchantId,
-                    addedIds
-                );
+                if (storeScope) {
+                    let latestIds = ids;
+                    try {
+                        latestIds = (await getMappedStoreVendors(mappingId)).map(idOf);
+                    } catch {
+                        // Continue with the latest IDs already loaded in the screen.
+                    }
+                    const idsToAdd = addedIds.filter((id) => !latestIds.includes(id));
+                    if (idsToAdd.length) {
+                        try {
+                            await addStoreVendors(mappingId, idsToAdd);
+                        } catch (error) {
+                            const message = String(error?.message || "").toLowerCase();
+                            if (!/(already|duplicate|exists|mapped)/.test(message)) throw error;
+                        }
+                    }
+                    const assignedIds = [...new Set([...latestIds, ...addedIds])];
+                    setIds(assignedIds);
+                    setMasterVendors((current) => {
+                        const byId = new Map(current.map((vendor) => [idOf(vendor), vendor]));
+                        addedIds.forEach((id) => {
+                            const selectedVendor = vendors.find((vendor) => vendor.id === id);
+                            if (selectedVendor) byId.set(id, selectedVendor);
+                        });
+                        return Array.from(byId.values());
+                    });
+                } else {
+                    await addMerchantVendors(mappingId, addedIds);
+                }
             }
 
-            await loadMappedVendors();
+            await loadMappedVendors("", { preserveIdsWhenEmpty: storeScope });
 
             setModal(null);
         } catch (e) {
             console.error(
-                "Failed to save merchant vendor mapping:",
+                `Failed to save ${entityName} vendor mapping:`,
                 e
             );
+
+            if (storeScope) await loadMappedVendors();
 
             setSaveError(
                 e?.message ||
@@ -533,59 +643,50 @@ export default function MerchantVendors({
 
                 {(select
                     ? [
+                          "code",
                           "name",
                           "type",
+                          "products",
                           "contact",
-                          "status",
                       ]
                     : [
+                          "code",
                           "name",
                           "type",
+                          "products",
                           "contact",
-                          "assignedStoreCount",
+                          ...(!storeScope ? ["assignedStoreCount"] : []),
                           "status",
                       ]
                 ).map((key) => (
                     <th key={key}>
                         {select ? (
                             {
-                                name: "Vendor",
-                                type: "Type",
+                                code: "Vendor Code",
+                                name: "Vendor Name",
+                                type: "Vendor Type",
+                                products: "Products Supplied",
                                 contact: "Contact",
                                 assignedStoreCount:
                                     "Assigned Stores",
                                 status: "Status",
                             }[key]
                         ) : (
-                            <button
-                                type="button"
-                                className="mv-sort"
-                                onClick={() =>
-                                    setSort((old) => ({
-                                        key,
-                                        direction:
-                                            old.key === key
-                                                ? -old.direction
-                                                : 1,
-                                    }))
-                                }
-                            >
+                            <span>
                                 {key === "name"
-                                    ? "Vendor"
+                                    ? "Vendor Name"
+                                    : key === "code"
+                                    ? "Vendor Code"
+                                    : key === "type"
+                                    ? "Vendor Type"
                                     : key ===
                                       "assignedStoreCount"
                                     ? "Assigned Stores"
+                                    : key === "products"
+                                    ? "Products Supplied"
                                     : key[0].toUpperCase() +
                                       key.slice(1)}
-
-                                {" "}
-
-                                {sort.key === key
-                                    ? sort.direction === 1
-                                        ? "↑"
-                                        : "↓"
-                                    : "↕"}
-                            </button>
+                            </span>
                         )}
                     </th>
                 ))}
@@ -609,81 +710,163 @@ export default function MerchantVendors({
         </section>
     );
 
-    return (
-        <div className="merchant-vendors">
-
-            {/* =================================================
-                HEADER
-            ================================================= */}
-
+    if (modal?.type === "select") return (
+        <section className="merchant-vendors mv-create-page mv-existing-page">
             <header className="mv-card mv-header">
                 <div>
-                    <h2>Vendors</h2>
-
-                    <p>
-                        These are the vendors connected
-                        to this merchant.
-                    </p>
+                    <h2>Add Existing Vendor</h2>
+                    <p>Choose one or more vendors to add to this {entityName}.</p>
                 </div>
-
-                <div className="mv-popup-actions">
-                <button type="button" className="mv-primary" disabled={!merchantId || busy} onClick={() => { pendingNewVendor.current = null; setSaveError(""); setModal({ type: "create" }); }}>＋ Add New Vendor</button>
-                <button
-                    ref={addButton}
-                    type="button"
-                    className="mv-primary"
-                    disabled={
-                        loading ||
-                        !!error ||
-                        masterLoading
-                    }
-                    onClick={openAddVendorModal}
-                >
-                    {masterLoading
-                        ? "Loading Vendors…"
-                        : "＋ Add Existing Vendor"}
-                </button>
-                </div>
+                <button type="button" disabled={busy} onClick={close}>← Back to Vendors</button>
             </header>
 
-            {/* =================================================
-                VENDOR LIST
-            ================================================= */}
+            <div className="mv-existing-content">
+                {masterLoading && <p role="status">Loading master vendors…</p>}
+                {masterError && <p role="alert" className="mv-error">{masterError}</p>}
 
-            <section className="mv-card">
-
-                <h3>Vendor List</h3>
-
-                <div className="mv-toolbar">
-
+                <div className="mv-existing-toolbar">
                     <input
-                        aria-label="Search assigned vendors"
-                        placeholder="Search vendors by name, type or phone…"
-                        value={query}
-                        onChange={(e) => {
-                            setQuery(e.target.value);
-                            setPage(1);
-                        }}
+                        className="mv-search"
+                        autoFocus
+                        aria-label="Search master vendors"
+                        placeholder="Search vendors by name, code, contact or product…"
+                        value={search}
+                        disabled={busy || masterLoading}
+                        onChange={e => { setSearch(e.target.value); setPickerPage(1); }}
                     />
-
-                    <button
-                        type="button"
-                        onClick={() => {
-                            setQuery("");
-                            setPage(1);
-
-                            setSort({
-                                key: "name",
-                                direction: 1,
-                            });
-                        }}
-                    >
-                        ↺ Reset
-                    </button>
-
+                    <select aria-label="Filter by country" value={countryFilter} onChange={e => { setCountryFilter(e.target.value); setStateFilter(""); setPickerPage(1); }}><option value="">All countries</option>{countries.map(country => <option key={locationKey(country)} value={locationKey(country)}>{country}</option>)}</select>
+                    <select aria-label="Filter by state" value={stateFilter} onChange={e => { setStateFilter(e.target.value); setPickerPage(1); }}><option value="">All states</option>{states.map(state => <option key={locationKey(state)} value={locationKey(state)}>{state}</option>)}</select>
+                    <button type="button" onClick={() => { setSearch(""); setCountryFilter(""); setStateFilter(""); setPickerPage(1); }}>Clear filters</button>
                 </div>
 
-                {loading || mappedLoading ? (
+                <div className="mv-picker-summary">
+                    <span>{available.length} matching vendors · {selection.length} selected</span>
+                </div>
+
+                <div className="mv-existing-table-wrap">
+                    <table>
+                        <thead><tr><th>Select</th><th>Vendor Code</th><th>Vendor Name</th><th>Vendor Type</th><th>Products Supplied</th><th>Contact</th></tr></thead>
+                        <tbody>
+                            {pickerRows.map(vendor => {
+                                const selected = selection.includes(vendor.id);
+                                return (
+                                    <tr
+                                        key={vendor.id}
+                                        className={`${selected ? "mv-row-selected" : ""} ${!active(vendor) ? "mv-row-disabled" : ""}`}
+                                        aria-selected={selected}
+                                        title={active(vendor) ? "Click to select or deselect this vendor" : "Inactive vendors cannot be selected"}
+                                        onClick={event => {
+                                            if (event.target.closest("input,button,a,select")) return;
+                                            toggleVendorSelection(vendor);
+                                        }}
+                                    >
+                                        <td><input type="checkbox" aria-label={`Select ${vendor.name}`} disabled={busy || !active(vendor)} checked={selected} onChange={() => toggleVendorSelection(vendor)} /></td>
+                                        <td>{displayValue(vendor.code)}</td>
+                                        <td><strong>{vendor.name}</strong></td>
+                                        <td>{displayValue(vendor.type)}</td>
+                                        <td>{displayValue(vendor.products)}</td>
+                                        <td>{vendor.phone || vendor.contact || "—"}</td>
+                                    </tr>
+                                );
+                            })}
+                            {!available.length && <tr><td colSpan={6}>{storeScope ? "No unassigned vendors mapped to this merchant." : "No unassigned vendors found in master data."}</td></tr>}
+                        </tbody>
+                    </table>
+                </div>
+
+                <nav className="mv-picker-pagination" aria-label="Existing vendor pages">
+                    <span>Showing {available.length ? (currentPickerPage - 1) * pickerPageSize + 1 : 0}–{Math.min(currentPickerPage * pickerPageSize, available.length)} of {available.length}</span>
+                    <div className="mv-popup-actions">
+                        <button type="button" disabled={currentPickerPage === 1} onClick={() => setPickerPage(currentPickerPage - 1)}>Previous</button>
+                        <span>Page {currentPickerPage} of {pickerPages}</span>
+                        <button type="button" disabled={currentPickerPage === pickerPages} onClick={() => setPickerPage(currentPickerPage + 1)}>Next</button>
+                    </div>
+                </nav>
+                {saveError && <p role="alert" className="mv-error">{saveError}</p>}
+            </div>
+
+            <footer className="mv-existing-footer">
+                <span>{selection.length} vendors selected</span>
+                <div className="mv-popup-actions">
+                    <button type="button" disabled={busy} onClick={close}>Cancel</button>
+                    <button type="button" className="mv-primary" disabled={busy || !selection.length} onClick={() => save([...new Set([...ids, ...selection.filter(id => vendors.some(vendor => vendor.id === id && active(vendor)))])])}>
+                        {busy ? "Saving…" : "Add Selected"}
+                    </button>
+                </div>
+            </footer>
+        </section>
+    );
+
+    return (
+        <div className="merchant-vendors">
+            {storeScope && (
+                <header className="mv-card mv-header">
+                    <div>
+                        <h2>Vendors</h2>
+                        <p>These are the vendors connected to this {entityName}.</p>
+                    </div>
+                    <div className="mv-popup-actions">
+                        <button ref={addButton} type="button" className="mv-primary"
+                            disabled={loading || !!error || masterLoading || !mappingId}
+                            onClick={openAddVendorModal}>
+                            Add Existing Vendor
+                        </button>
+                    </div>
+                </header>
+            )}
+            <section className={`mv-card${storeScope ? "" : " mv-list-card"}`}>
+                {storeScope ? <h3>Vendor List</h3> : (
+                    <header className="mv-header">
+                        <div>
+                            <h2>Vendor List</h2>
+                            <p>These are the vendors connected to this {entityName}.</p>
+                        </div>
+                        <div className="mv-list-actions">
+                            <button ref={addButton} type="button" className="mv-secondary"
+                                disabled={loading || !!error || masterLoading || !mappingId}
+                                onClick={openAddVendorModal}>
+                                <i className="bi bi-plus-lg" aria-hidden="true" />
+                                {masterLoading ? "Loading Vendors\u2026" : "Add Existing Vendor"}
+                            </button>
+                            <button type="button" className="mv-primary" disabled={!mappingId || busy}
+                                onClick={() => {
+                                    pendingNewVendor.current = null;
+                                    setSaveError("");
+                                    setModal({ type: "create" });
+                                }}>
+                                <i className="bi bi-plus-lg" aria-hidden="true" /> Add New Vendor
+                            </button>
+                        </div>
+                    </header>
+                )}
+                {storeScope ? (
+                    <div className="mv-toolbar">
+                        <input aria-label="Search assigned vendors"
+                            placeholder="Search vendors by code, name, type or phone…"
+                            value={query}
+                            onChange={(event) => { setQuery(event.target.value); setPage(1); }} />
+                        <button type="button" onClick={() => {
+                            setQuery("");
+                            setPage(1);
+                            setSort({ key: "name", direction: 1 });
+                        }}>
+                            <i className="bi bi-arrow-counterclockwise" aria-hidden="true" /> Clear
+                        </button>
+                    </div>
+                ) : (
+                    <FiltersBar
+                        searchValue={query}
+                        onSearchChange={(value) => { setQuery(value); setPage(1); }}
+                        searchPlaceholder={"Search vendors by code, name, type or phone\u2026"}
+                        onClear={() => {
+                            setQuery("");
+                            setPage(1);
+                            setSort({ key: "name", direction: 1 });
+                        }}
+                    />
+                )}
+
+                {(loading || mappedLoading) && !rows.length ? (
                     <p role="status">
                         Loading vendors…
                     </p>
@@ -705,13 +888,17 @@ export default function MerchantVendors({
 
                                     {rows
                                         .slice(
-                                            (current - 1) * 10,
-                                            current * 10
+                                            (current - 1) * pageSize,
+                                            current * pageSize
                                         )
                                         .map((vendor) => (
                                             <tr
                                                 key={vendor.id}
                                             >
+
+                                                <td>
+                                                    {displayValue(vendor.code)}
+                                                </td>
 
                                                 <td>
                                                     {name(vendor)}
@@ -722,16 +909,20 @@ export default function MerchantVendors({
                                                 </td>
 
                                                 <td>
+                                                    {displayValue(vendor.products)}
+                                                </td>
+
+                                                <td>
                                                     {vendor.phone ||
                                                         vendor.contact ||
                                                         "—"}
                                                 </td>
 
-                                                <td>
-                                                    {
-                                                        vendor.assignedStoreCount
-                                                    }
-                                                </td>
+                                                {!storeScope && (
+                                                    <td>
+                                                        {vendor.assignedStoreCount}
+                                                    </td>
+                                                )}
 
                                                 <td>
                                                     {badge(vendor)}
@@ -746,8 +937,9 @@ export default function MerchantVendors({
 
                                                         <button
                                                             type="button"
-                                                            className="mv-view"
+                                                            className="mv-view mv-icon-button"
                                                             aria-label={`View ${vendor.name}`}
+                                                            title={`View ${vendor.name}`}
                                                             onClick={() =>
                                                                 setModal({
                                                                     type: "view",
@@ -755,13 +947,14 @@ export default function MerchantVendors({
                                                                 })
                                                             }
                                                         >
-                                                            View
+                                                            <Eye size={18} aria-hidden="true" />
                                                         </button>
 
                                                         <button
                                                             type="button"
-                                                            className="mv-remove"
+                                                            className="mv-remove mv-icon-button"
                                                             aria-label={`Remove ${vendor.name} assignment`}
+                                                            title={`Remove ${vendor.name} assignment`}
                                                             onClick={() => {
                                                                 setSaveError("");
 
@@ -771,7 +964,7 @@ export default function MerchantVendors({
                                                                 });
                                                             }}
                                                         >
-                                                            Remove
+                                                            <Trash2 size={18} aria-hidden="true" />
                                                         </button>
 
                                                     </div>
@@ -782,7 +975,7 @@ export default function MerchantVendors({
 
                                     {!rows.length && (
                                         <tr>
-                                            <td colSpan={6}>
+                                            <td colSpan={storeScope ? 7 : 8}>
                                                 No assigned vendors
                                                 match. Use Add Existing Vendor
                                                 to select from master
@@ -797,69 +990,40 @@ export default function MerchantVendors({
 
                         </div>
 
-                        {/* =================================================
-                            PAGINATION
-                            ONLY SHOW WHEN MORE THAN ONE PAGE
-                        ================================================= */}
-
-                        <footer className="mv-footer">
-
-                            <span>
-                                Showing{" "}
-                                {rows.length
-                                    ? (current - 1) * 10 + 1
-                                    : 0}{" "}
-                                to{" "}
-                                {Math.min(
-                                    current * 10,
-                                    rows.length
-                                )}{" "}
-                                of {rows.length} entries
-                            </span>
-
-                            {pages > 1 && (
+                        {storeScope ? (
+                            <footer className="mv-footer">
+                                <span>
+                                    Showing {rows.length ? (current - 1) * pageSize + 1 : 0} to {Math.min(current * pageSize, rows.length)} of {rows.length} entries
+                                </span>
                                 <div className="mv-pagination">
-
-                                    <button
-                                        type="button"
-                                        className="mv-page"
-                                        disabled={
-                                            current === 1
-                                        }
-                                        onClick={() =>
-                                            setPage(
-                                                current - 1
-                                            )
-                                        }
-                                        aria-label="Previous page"
-                                    >
-                                        ‹
+                                    <button type="button" className="pagination-arrow" disabled={current === 1}
+                                        onClick={() => setPage(current - 1)} aria-label="Previous page">
+                                        <i className="bi bi-chevron-left" aria-hidden="true" />
                                     </button>
-
-                                    <span className="mv-page-number">
-                                        {current} / {pages}
-                                    </span>
-
-                                    <button
-                                        type="button"
-                                        className="mv-page"
-                                        disabled={
-                                            current === pages
-                                        }
-                                        onClick={() =>
-                                            setPage(
-                                                current + 1
-                                            )
-                                        }
-                                        aria-label="Next page"
-                                    >
-                                        ›
+                                    <div className="pagination-pages">
+                                        <button type="button" className="pagination-page active" aria-current="page" onClick={() => setPage(current)}>
+                                            {current}
+                                        </button>
+                                    </div>
+                                    <button type="button" className="pagination-arrow" disabled={current === pages}
+                                        onClick={() => setPage(current + 1)} aria-label="Next page">
+                                        <i className="bi bi-chevron-right" aria-hidden="true" />
                                     </button>
-
                                 </div>
-                            )}
+                            </footer>
+                        ) : (
+                            <Pagination
+                                currentPage={current}
+                                totalPages={pages}
+                                totalItems={rows.length}
+                                pageSize={pageSize}
+                                onPageChange={setPage}
+                                onPageSizeChange={(size) => { setPageSize(size); setPage(1); }}
+                                itemLabel="vendors"
+                                showWhenEmpty={true}
+                            />
+                        )}
 
-                        </footer>
                     </>
                 )}
 
@@ -871,7 +1035,7 @@ export default function MerchantVendors({
             ================================================= */}
 
             <dialog
-                className={`mv-dialog ${modal?.type === "create" ? "mv-dialog-create" : modal?.type === "select" ? "mv-dialog-select" : ""}`}
+                className={`mv-dialog ${modal?.type === "create" ? "mv-dialog-create" : ["select", "view-existing"].includes(modal?.type) ? "mv-dialog-select" : ""}`}
                 ref={dialog}
                 aria-labelledby="mv-dialog-title"
                 onCancel={(e) => {
@@ -889,6 +1053,8 @@ export default function MerchantVendors({
                             <h2 id="mv-dialog-title">
                                 {modal?.type === "create" ? "Add New Vendor" : modal?.type === "select"
                                     ? "Add Existing Vendor"
+                                    : modal?.type === "view-existing"
+                                    ? `Vendor Details — ${modal.vendor?.name || "Vendor"}`
                                     : modal?.type === "remove"
                                     ? "Remove vendor assignment"
                                     : "Vendor Details"}
@@ -896,7 +1062,9 @@ export default function MerchantVendors({
 
                             <p>
                                 {modal?.type === "create" ? "Create a vendor and connect it to this merchant." : modal?.type === "select"
-                                    ? "Choose one or more vendors to add to this merchant."
+                                    ? `Choose one or more vendors to add to this ${entityName}.`
+                                    : modal?.type === "view-existing"
+                                    ? "Read-only master vendor details."
                                     : modal?.type === "remove"
                                     ? "The vendor remains available in Master Data."
                                     : "Read-only master vendor details."}
@@ -952,8 +1120,8 @@ export default function MerchantVendors({
                                 onChange={(e) => { setSearch(e.target.value); setPickerPage(1); }}
                             />
 
-                            <div className="mv-location-filters"><label>Country<select value={countryFilter} onChange={e => { setCountryFilter(e.target.value); setStateFilter(""); setPickerPage(1); }}><option value="">All countries</option>{countries.map(country => <option key={locationKey(country)} value={locationKey(country)}>{country}</option>)}</select></label><label>State<select value={stateFilter} onChange={e => { setStateFilter(e.target.value); setPickerPage(1); }}><option value="">All states</option>{states.map(state => <option key={locationKey(state)} value={locationKey(state)}>{state}</option>)}</select></label><button type="button" onClick={() => { setSearch(""); setCountryFilter(""); setStateFilter(""); setPickerPage(1); }}>Clear filters</button></div>
-                            <div className="mv-picker-summary"><span>{available.length} matching vendors · {selection.length} selected</span><label>Rows per page <select value={pickerPageSize} onChange={e => { setPickerPageSize(Number(e.target.value)); setPickerPage(1); }}>{[10, 25, 50].map(size => <option key={size} value={size}>{size}</option>)}</select></label></div>
+                            <div className="mv-location-filters"><select aria-label="Filter by country" value={countryFilter} onChange={e => { setCountryFilter(e.target.value); setStateFilter(""); setPickerPage(1); }}><option value="">All countries</option>{countries.map(country => <option key={locationKey(country)} value={locationKey(country)}>{country}</option>)}</select><select aria-label="Filter by state" value={stateFilter} onChange={e => { setStateFilter(e.target.value); setPickerPage(1); }}><option value="">All states</option>{states.map(state => <option key={locationKey(state)} value={locationKey(state)}>{state}</option>)}</select><button type="button" onClick={() => { setSearch(""); setCountryFilter(""); setStateFilter(""); setPickerPage(1); }}>Clear filters</button></div>
+                            <div className="mv-picker-summary"><span>{available.length} matching vendors · {selection.length} selected</span></div>
                             <div className="mv-scroll mv-options">
 
                                 <table>
@@ -1012,6 +1180,10 @@ export default function MerchantVendors({
                                                     </td>
 
                                                     <td>
+                                                        {vendor.code}
+                                                    </td>
+
+                                                    <td>
                                                         {name(
                                                             vendor
                                                         )}
@@ -1024,15 +1196,13 @@ export default function MerchantVendors({
                                                     </td>
 
                                                     <td>
-                                                        {vendor.phone ||
-                                                            vendor.contact ||
-                                                            "—"}
+                                                        {displayValue(vendor.products)}
                                                     </td>
 
                                                     <td>
-                                                        {badge(
-                                                            vendor
-                                                        )}
+                                                        {vendor.phone ||
+                                                            vendor.contact ||
+                                                            "—"}
                                                     </td>
 
                                                 </tr>
@@ -1041,10 +1211,8 @@ export default function MerchantVendors({
 
                                         {!available.length && (
                                             <tr>
-                                                <td colSpan={5}>
-                                                    No unassigned
-                                                    vendors found
-                                                    in master data.
+                                                <td colSpan={6}>
+                                                    {storeScope ? "No unassigned vendors mapped to this merchant." : "No unassigned vendors found in master data."}
                                                 </td>
                                             </tr>
                                         )}
@@ -1061,31 +1229,25 @@ export default function MerchantVendors({
                         modal?.vendor && (
                             <dl className="mv-details">
 
-                                {Object.entries({
-                                    Vendor:
-                                        modal.vendor.name,
-
-                                    Type:
-                                        modal.vendor.type,
-
-                                    Contact:
-                                        modal.vendor.contact,
-
-                                    "Assigned Stores":
-                                        modal.vendor
-                                            .assignedStoreCount,
-
-                                    Status:
-                                        modal.vendor.status,
-
-                                    Email:
-                                        modal.vendor.email ||
-                                        "—",
-
-                                    Phone:
-                                        modal.vendor.phone ||
-                                        "—",
-                                }).map(
+                                {[
+                                    ["Vendor Code", modal.vendor.code],
+                                    ["Vendor Name", modal.vendor.name],
+                                    ["Vendor Type", modal.vendor.type],
+                                    ["Contact Person Name", modal.vendor.contactPerson || modal.vendor.contact],
+                                    ["Phone Number", modal.vendor.phone],
+                                    ["Email Address", modal.vendor.email],
+                                    ["Products Supplied", modal.vendor.products],
+                                    ["Address Line 1", modal.vendor.addressLine1],
+                                    ["Address Line 2", modal.vendor.addressLine2],
+                                    ["City", modal.vendor.city],
+                                    ["State", modal.vendor.state],
+                                    ["ZIP Code", modal.vendor.zipCode],
+                                    ["Country", modal.vendor.country],
+                                    ["Status", modal.vendor.status],
+                                    ["Assigned Stores", modal.vendor.assignedStoreCount],
+                                    ["Created At", modal.vendor.createdTime],
+                                    ["Updated At", modal.vendor.updatedTime],
+                                ].map(
                                     ([label, value]) => (
                                         <div key={label}>
 
@@ -1094,7 +1256,7 @@ export default function MerchantVendors({
                                             </dt>
 
                                             <dd>
-                                                {value}
+                                                {displayValue(value)}
                                             </dd>
 
                                         </div>
@@ -1135,9 +1297,11 @@ export default function MerchantVendors({
                             <button
                                 type="button"
                                 disabled={busy}
-                                onClick={close}
+                                onClick={modal?.type === "view-existing" ? () => setModal({ type: "select" }) : close}
                             >
-                                {modal?.type === "view"
+                                {modal?.type === "view-existing"
+                                    ? "Back to list"
+                                    : modal?.type === "view"
                                     ? "Close"
                                     : "Cancel"}
                             </button>
@@ -1177,29 +1341,6 @@ export default function MerchantVendors({
                                 </button>
                             )}
 
-                            {modal?.type === "remove" && (
-                                <button
-                                    type="button"
-                                    className="mv-primary"
-                                    disabled={busy}
-                                    onClick={() =>
-                                        save(
-                                            ids.filter(
-                                                (id) =>
-                                                    id !==
-                                                    modal
-                                                        .vendor
-                                                        .id
-                                            )
-                                        )
-                                    }
-                                >
-                                    {busy
-                                        ? "Saving…"
-                                        : "Remove Assignment"}
-                                </button>
-                            )}
-
                         </div>
 
                     </footer>}
@@ -1207,6 +1348,30 @@ export default function MerchantVendors({
                 </div>
 
             </dialog>
+
+            
+<DeleteConfirmationDialog
+    isOpen={modal?.type === "remove"}
+    title="Remove Vendor Assignment?"
+    message={`Are you sure you want to remove ${
+        modal?.vendor?.name || "this vendor"
+    } from this ${entityName}? The vendor will remain available in Master Data.`}
+    cancelLabel="Cancel"
+    confirmLabel="Remove"
+    busyLabel="Removing..."
+    busy={busy}
+    error={saveError}
+    iconClassName="bi bi-trash3"
+    onCancel={close}
+    onConfirm={() =>
+        save(
+            ids.filter(
+                (id) => id !== modal?.vendor?.id
+            )
+        )
+    }
+/>
+
 
         </div>
     );

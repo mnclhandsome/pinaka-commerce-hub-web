@@ -19,14 +19,15 @@
 .plan-details-back-icon {
   display: grid;
   place-items: center;
-  width: 30px;
-  height: 30px;
-  border: 1px solid #d8e5f4;
-  border-radius: 12px;
+  width: 40px;
+  height: 40px;
+  border: 1px solid #dce8f5;
+  border-radius: 8px;
   background: #fff;
-  color: #0873f9;
-  font-size: 15px;
+  color: #684ee3;
+  font-size: 16px;
   box-sizing: border-box;
+  cursor: pointer;
 }
 
 .plan-details-back:hover .plan-details-back-icon {
@@ -37,11 +38,19 @@
 .plan-details-heading {
   margin: 8px 0 18px;
 }
+ 
+.plan-details-heading{ margin: 1px 0 0;}
+
+.plan-details-details-top{
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 20px;}
 
 .plan-details-title-line {
   display: flex;
   align-items: center;
-  gap: 13px;
+  gap: 12px;
 }
 
 .plan-details-title-line h1,
@@ -49,8 +58,7 @@
   margin: 0;
   color: #10254a;
   font-size: 25px;
-  font-weight: 650;
-  letter-spacing: -0.5px;
+  font-weight: 600;
 }
 
 .plan-details-heading > p {
@@ -101,9 +109,7 @@
   white-space: nowrap;
 }
 
-.plan-details-tabs button:hover {
-  color: #684ee3;
-}
+
 
 .plan-details-tabs button.active {
   color: #684ee3;
@@ -167,7 +173,7 @@
 .plan-details-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 22px;
+  gap: 20px;
 }
 
 .plan-details-field {
@@ -197,12 +203,12 @@
 }
 
 .plan-details-field input {
-  height: 36px;
+  height: 40px;
   padding: 0 12px;
 }
 
 .plan-details-field textarea {
-  min-height: 72px;
+ height: 40px;
   padding: 9px 12px;
   line-height: 1.4;
 }
@@ -260,18 +266,21 @@
 
 .plan-view-features-table th,
 .plan-view-features-table td {
-  padding: 14px 16px;
-  border-bottom: 1px solid #e3edf7;
+  height: 52px;
+  padding: 10px 14px;
+  border-bottom: 1px solid #e4e8ef;
   color: #23426e;
   text-align: left;
   font-size: 13px;
+  vertical-align: middle;
 }
 
 .plan-view-features-table th {
+  height: 44px;
   color: #163762;
-  background: #f1f7ff;
+  background: #f1f3fd;
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .plan-view-features-table th:nth-child(1) {

@@ -1,3 +1,4 @@
+import FilterDropdown from "../components/FilterDropdown";
 import { useEffect, useMemo, useState } from "react";
 import Pagination from "../components/Pagination";
 import { customersSeed } from "../data/data";
@@ -203,28 +204,6 @@ export default function StoreCustomers({
 
         </div>
 
-        {/* STORE CONTEXT */}
-
-        {store && (
-          <div className="store-customers-context">
-
-            <i className="bi bi-shop" />
-
-            <div>
-              <span>STORE</span>
-
-              <strong>
-                {store.name}
-              </strong>
-
-              <small>
-                {store.id}
-              </small>
-            </div>
-
-          </div>
-        )}
-
       </div>
 
       {/* =====================================================
@@ -311,106 +290,48 @@ export default function StoreCustomers({
           MAIN CARD
       ===================================================== */}
 
-      <div className="store-customers-card">
+      {/* ===================================================
+          TOOLBAR
+      =================================================== */}
 
-        {/* ===================================================
-            TOOLBAR
-        =================================================== */}
-
-        <div className="store-customers-toolbar">
-
-          {/* SEARCH */}
-
+      <div className="store-customers-toolbar">
           <div className="store-customers-search">
-
             <i className="bi bi-search" />
-
             <input
               type="text"
               placeholder="Search customer name, email or phone..."
               value={search}
-              onChange={(event) =>
-                setSearch(event.target.value)
-              }
+              onChange={(event) => setSearch(event.target.value)}
             />
-
           </div>
-
-          {/* CUSTOMER TYPE */}
-
-          <select
+          <FilterDropdown
             value={customerTypeFilter}
-            onChange={(event) =>
-              setCustomerTypeFilter(
-                event.target.value
-              )
-            }
+            onChange={(event) => setCustomerTypeFilter(event.target.value)}
           >
-            <option value="">
-              All Customer Types
-            </option>
-
+            <option value="">All Customer Types</option>
             {customerTypes.map((type) => (
-              <option
-                key={type}
-                value={type}
-              >
-                {type}
-              </option>
+              <option key={type} value={type}>{type}</option>
             ))}
-          </select>
-
-          {/* STATUS */}
-
-          <select
+          </FilterDropdown>
+          <FilterDropdown
             value={statusFilter}
-            onChange={(event) =>
-              setStatusFilter(
-                event.target.value
-              )
-            }
+            onChange={(event) => setStatusFilter(event.target.value)}
           >
-            <option value="">
-              All Status
-            </option>
-
-            <option value="Active">
-              Active
-            </option>
-
-            <option value="Inactive">
-              Inactive
-            </option>
-          </select>
-
-          {/* CLEAR */}
-
+            <option value="">All Status</option>
+            <option value="Active">Active</option>
+            <option value="Inactive">Inactive</option>
+          </FilterDropdown>
           <button
             type="button"
             className="store-customers-clear-btn"
             onClick={clearFilters}
           >
             <i className="bi bi-arrow-counterclockwise" />
-            Clear
+            Reset
           </button>
+      </div>
 
-        </div>
-
-        {/* ===================================================
-            TABLE HEADER
-        =================================================== */}
-
-        <div className="store-customers-table-heading">
-
-          <div>
-            Customers
-
-            <span>
-              {filteredCustomers.length}
-            </span>
-          </div>
-
-        </div>
+      <div className="store-customers-card">
 
         {/* ===================================================
             TABLE
@@ -423,14 +344,14 @@ export default function StoreCustomers({
 
               <thead>
                 <tr>
-                  <th>CUSTOMER</th>
-                  <th>EMAIL</th>
-                  <th>PHONE</th>
-                  <th>TYPE</th>
-                  <th>ORDERS</th>
-                  <th>TOTAL SPENT</th>
-                  <th>STATUS</th>
-                  <th>LAST UPDATED</th>
+                  <th>Customer</th>
+                  <th>Email</th>
+                  <th>Phone</th>
+                  <th>Type</th>
+                  <th>Orders</th>
+                  <th>Total Spent</th>
+                  <th>Status</th>
+                  <th>Last Updated</th>
                 </tr>
               </thead>
 
@@ -498,26 +419,6 @@ export default function StoreCustomers({
             }}
           />
         )}
-
-        {/* ===================================================
-            SOURCE FOOTER
-        =================================================== */}
-
-        <div className="store-customers-footer">
-
-          <div>
-            <i className="bi bi-wordpress" />
-
-            <span>
-              Customer data synced from WooCommerce
-            </span>
-          </div>
-
-          <span className="store-customers-readonly">
-            Read Only
-          </span>
-
-        </div>
 
       </div>
 

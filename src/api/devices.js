@@ -1,40 +1,46 @@
-import { api } from "./http";
+import { api, pendingStoreRead } from "./http";
 import { endpoints } from "./endpoints";
+
+const readDevice = path => pendingStoreRead(`device-read:${path}`, () => api.get(path));
+
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /**
  * Convert UI form data into the backend device payload.
  *
- * Postman create-device payload:
- * deviceName
- * deviceType
- * serialNumber
- * merchantId
- * status
+ * Match the local merchant-service device DTO, which uses snake-case fields.
  */
-export function toDevicePayload(data) {
+export function toDevicePayload(data, { includeMerchant = true } = {}) {
+  const merchantId = data.merchantId || data.merchant_id || data.merchant || "";
+  const deviceId = String(data.deviceId || data.device_id || "").trim();
+  if (includeMerchant && !UUID_PATTERN.test(String(merchantId))) {
+    throw new Error("Select a merchant with a valid UUID before saving the device.");
+  }
+
   return {
-    deviceName: data.deviceName?.trim() || "",
-    deviceCode: data.deviceCode?.trim() || "",
-    deviceType: data.deviceType || "",
-    serialNumber: data.serialNumber?.trim() || "",
-    merchantId: data.merchantId || data.merchant || "",
-    status: data.status || "Active",
+    ...(deviceId ? { device_id: deviceId } : {}),
+    ...((data.deviceName || data.device_name || data.name)
+      ? { device_name: (data.deviceName || data.device_name || data.name).trim() }
+      : {}),
+    ...((data.deviceType || data.device_type || data.type)
+      ? { device_type: data.deviceType || data.device_type || data.type }
+      : {}),
+    ...((data.serialNumber || data.serial_number || data.serial)
+      ? { serial_number: (data.serialNumber || data.serial_number || data.serial).trim() }
+      : {}),
+    ...(includeMerchant ? { merchant_id: merchantId } : {}),
+    status: String(data.status || "ACTIVE").toUpperCase(),
   };
 }
 
-/** GET /device-types */
-export async function listDeviceTypes() {
-  const response = await api.get(endpoints.deviceTypes);
-  const items = Array.isArray(response)
-    ? response
-    : response?.deviceTypes || response?.data || response?.items || [];
-
-  return items.map((item) => {
-    if (typeof item === "string") return { value: item, label: item };
-    const value = item?.id || item?.deviceTypeId || item?.code || item?.name || item?.deviceType || "";
-    const label = item?.name || item?.deviceTypeName || item?.deviceType || item?.label || item?.code || value;
-    return value ? { value: String(value), label: String(label) } : null;
-  }).filter(Boolean);
+function unwrapDevice(response) {
+  let value = response;
+  for (let depth = 0; depth < 3 && value && typeof value === "object"; depth += 1) {
+    if (value.device) value = value.device;
+    else if (value.data) value = value.data;
+    else break;
+  }
+  return value;
 }
 
 /**
@@ -48,19 +54,29 @@ export async function listDeviceTypes() {
 export function normalizeDevice(device) {
   if (!device) return null;
 
+  const rawStatus = String(device.status || device.connection_status || "").toUpperCase();
+  const status = rawStatus === "ACTIVE"
+    ? "Active"
+    : rawStatus === "INACTIVE"
+      ? "Inactive"
+      : rawStatus.charAt(0) + rawStatus.slice(1).toLowerCase();
+
   return {
     ...device,
 
-    id: device.id || device.deviceId || device.deviceCode || "",
-    name: device.deviceName || device.name || "",
-    type: device.deviceType || device.type || "",
-    serial: device.serialNumber || device.serial || "",
-    merchantId: device.merchantId || "",
-    storeId: device.storeId || "",
+    id: device.id || device.uuid || device.deviceUuid || device.device_id || device.deviceId || device.device_code || device.deviceCode || "",
+    code: device.device_code || device.deviceCode || device.code || "",
+    deviceId: device.device_id || device.deviceId || "",
+    name: device.device_name || device.deviceName || device.name || "",
+    type: device.device_type || device.deviceType || device.type || "",
+    serial: device.serial_number || device.serialNumber || device.serial || "",
+    merchantId: device.merchant_id || device.merchantId || "",
+    merchantName: device.merchant_name || device.merchantName || device.merchant?.name || "",
+    storeId: device.store_id || device.storeId || "",
     merchant:
-      device.merchantName || device.merchant?.name || device.merchant || "",
-    store: device.storeName || device.store?.name || device.store || "",
-    status: device.status || "",
+      device.merchant_name || device.merchantName || device.merchant?.name || device.merchant || "",
+    store: device.store_name || device.storeName || device.store?.name || device.store || "",
+    status,
     lastSeen: device.lastSeen || device.last_seen || "-",
     notes: device.notes || "",
     enableImmediately: device.enableImmediately ?? device.enabled ?? false,
@@ -71,15 +87,42 @@ export function normalizeDevice(device) {
  * GET /devices
  */
 export async function listDevices() {
-  const response = await api.get(endpoints.devices);
+  const response = await readDevice(endpoints.devices);
 
-  const items =
-    response?.devices ||
-    response?.data ||
-    response?.items ||
-    (Array.isArray(response) ? response : []);
+  const unwrapped = unwrapDevice(response);
+  const items = Array.isArray(unwrapped)
+    ? unwrapped
+    : unwrapped?.devices || unwrapped?.items || [];
 
   return items.map(normalizeDevice);
+}
+
+/** GET /devices/available?merchant_id=:merchantId */
+export async function getDevicesByMerchantId(merchantId) {
+  if (!UUID_PATTERN.test(String(merchantId || ""))) {
+    throw new Error("A valid merchant UUID is required to load devices.");
+  }
+  const response = await readDevice(
+    `${endpoints.availableDevices}?merchant_id=${encodeURIComponent(merchantId)}`,
+  );
+  const unwrapped = unwrapDevice(response);
+  const items = Array.isArray(unwrapped)
+    ? unwrapped
+    : unwrapped?.devices || unwrapped?.availableDevices || unwrapped?.available_devices || unwrapped?.items || [];
+  return items.map(normalizeDevice).filter(Boolean);
+}
+
+/** GET /devices/merchant/:merchantId (includes devices already mapped to stores) */
+export async function listAllDevicesByMerchantId(merchantId) {
+  if (!UUID_PATTERN.test(String(merchantId || ""))) {
+    throw new Error("A valid merchant UUID is required to load devices.");
+  }
+  const response = await readDevice(endpoints.merchantDevices(merchantId));
+  const unwrapped = unwrapDevice(response);
+  const items = Array.isArray(unwrapped)
+    ? unwrapped
+    : unwrapped?.devices || unwrapped?.items || [];
+  return items.map(normalizeDevice).filter(Boolean);
 }
 
 /**
@@ -90,11 +133,7 @@ export async function getDevice(deviceId) {
     throw new Error("Device ID is required");
   }
 
-  const response = await api.get(endpoints.device(deviceId));
-
-  const device = response?.device || response?.data || response;
-
-  return normalizeDevice(device);
+  return normalizeDevice(unwrapDevice(await readDevice(endpoints.device(deviceId))));
 }
 
 /**
@@ -124,7 +163,7 @@ export async function updateDevice(deviceId, data) {
     throw new Error("Device ID is required");
   }
 
-  const payload = toDevicePayload(data);
+  const payload = toDevicePayload(data, { includeMerchant: false });
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 30000);
   try {
@@ -165,7 +204,8 @@ export async function deleteDevice(deviceId) {
 
 export const devicesApi = {
   list: listDevices,
-  listTypes: listDeviceTypes,
+  listByMerchantId: getDevicesByMerchantId,
+  listAllByMerchantId: listAllDevicesByMerchantId,
   get: getDevice,
   create: createDevice,
   update: updateDevice,

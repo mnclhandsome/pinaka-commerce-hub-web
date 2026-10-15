@@ -1,67 +1,78 @@
+import { pendingStoreRead } from "../api/http";
 import { useMemo, useState, useEffect } from "react";
-
+import { listMerchants } from "../api/merchants";
+import Pagination from "../components/Pagination";
+import ListActions from "../components/ListActions";
+import FiltersBar from "../components/FiltersBar";
 import {
 
   Eye,
-
   Search,
-
   ChevronDown,
-
-  ChevronLeft,
-
-  ChevronRight,
-
   Download,
-
   Store,
   Crown,
   Zap,
   Star,
-
   CheckCircle2,
-
   XCircle,
-
   Clock3,
-
   ArrowLeft,
-
   ArrowRight,
-
   Check,
-
   ArrowLeftRight,
-
   Info,
-
   CreditCard,
-
   Lock,
-
   Smartphone,
-
   Landmark,
-
   CircleCheck,
-
   RefreshCw,
-
+  Pencil,
+  Trash2,
+  X,
 } from "lucide-react";
 
-import { listPlans } from "../api/plans";
+import { listPlans, getMerchantFormPlans } from "../api/plans";
 
 import {
 
   changeSubscriptionPlan,
-
   listSubscriptions,
-
+  listSubscriptionPlans,
+  getSubscription,
+  createSubscription,
+  updateSubscription,
+  deleteSubscription,
+  subscriptionPayload,
   mapSubscriptionToRow,
 
 } from "../api/subscriptions";
 
 import "../styles/Merchant-subscriptions.css";
+
+const emptySubscription = {
+  merchantId: "",
+  planCode: "",
+  planName: "",
+  maxStoresAllowed: 1,
+  entitlements: "",
+  billingCycle: "MONTHLY",
+  trialDays: 0,
+  price: 0,
+  status: "ACTIVE",
+  currentPeriodStart: "",
+  currentPeriodEnd: "",
+};
+
+const crudPlanCode = (plan) => plan?.planCode || plan?.code || plan?.id || "";
+const crudPlanName = (plan) => plan?.planName || plan?.name || plan?.planCode || plan?.code || "Plan";
+const crudPlanFeatures = (plan) => {
+  const features = plan?.entitlements || plan?.includedFeatures || plan?.included_features || plan?.features || [];
+  return Array.isArray(features)
+    ? features.map((item) => typeof item === "string" ? item : item?.name || item?.featureKey || item?.code).filter(Boolean)
+    : String(features || "").split(",").map((item) => item.trim()).filter(Boolean);
+};
 
 const planKey = (plan) => String(plan?.id || plan?.planCode || plan?.code || plan?.name || "");
 
@@ -319,261 +330,342 @@ function DetailRow({ label, value }) {
 
 \======================================== */
 
-function SubscriptionList({ subscriptions, loading, error, onReload, onView }) {
+function SubscriptionList({
+  subscriptions,
+  loading,
+  error,
+  onReload,
+  onView,
+  onAdd,
+  onEdit,
+  onDelete,
+  crudBusy,
+}) {
+const [search, setSearch] = useState("");
+const [plan, setPlan] = useState("");
+const [status, setStatus] = useState("");
+const [stores, setStores] = useState("");
 
-  const [search, setSearch] = useState("");
+const [dateRange, setDateRange] = useState("");
+const [startDate, setStartDate] = useState("");
+const [endDate, setEndDate] = useState("");
+const [datePickerOpen, setDatePickerOpen] = useState(false);
 
-  const [plan, setPlan] = useState("");
+const [page, setPage] = useState(1);
+const [pageSize, setPageSize] = useState(10);
 
-  const [status, setStatus] = useState("");
+const handlePageSizeChange = (size) => {
+  setPageSize(size);
+  setPage(1);
+};
 
-  const [stores, setStores] = useState("");
-
-  const [startDate, setStartDate] = useState("");
-
-  const [endDate, setEndDate] = useState("");
-
-  const [page, setPage] = useState(1);
-
-  const PAGE_SIZE = 10;
-
-  // Overview stats dynamically calculated from API data
+  /* ========================================
+     OVERVIEW STATS
+  ======================================== */
 
   const stats = useMemo(() => {
-
     const total = subscriptions.length;
 
     const active = subscriptions.filter(
-
-      (s) => String(s.status).toLowerCase() === "active"
-
+      (s) => String(s.status || "").toLowerCase() === "active"
     ).length;
 
-    const inactive = subscriptions.filter(
+    const inactive = subscriptions.filter((s) => {
+      const value = String(s.status || "").toLowerCase();
 
-      (s) =>
+      return value === "inactive" || value === "cancelled";
+    }).length;
 
-        String(s.status).toLowerCase() === "inactive" ||
+    const expiring = subscriptions.filter((s) => {
+      const value = String(s.status || "").toLowerCase();
 
-        String(s.status).toLowerCase() === "cancelled"
+      return value === "expiring soon" || value === "expired";
+    }).length;
 
-    ).length;
+    const activePercentage =
+      total > 0 ? ((active / total) * 100).toFixed(1) : "0.0";
 
-    const expiring = subscriptions.filter(
+    const inactivePercentage =
+      total > 0 ? ((inactive / total) * 100).toFixed(1) : "0.0";
 
-      (s) =>
-
-        String(s.status).toLowerCase() === "expiring soon" ||
-
-        String(s.status).toLowerCase() === "expired"
-
-    ).length;
-
-    const activePercentage = total > 0 ? ((active / total) * 100).toFixed(1) : "0.0";
-
-    const inactivePercentage = total > 0 ? ((inactive / total) * 100).toFixed(1) : "0.0";
-
-    return { total, active, inactive, expiring, activePercentage, inactivePercentage };
-
+    return {
+      total,
+      active,
+      inactive,
+      expiring,
+      activePercentage,
+      inactivePercentage,
+    };
   }, [subscriptions]);
 
-  // Dynamic Subscription Plan Distribution
-
-  const planDistribution = useMemo(() => {
-
-    const counts = {};
-
-    subscriptions.forEach((s) => {
-
-      const pName = s.plan || "Unassigned";
-
-      counts[pName] = (counts[pName] || 0) + 1;
-
-    });
-
-    const total = subscriptions.length || 1;
-
-    const colors = ["purple", "blue", "orange", "green", "red"];
-
-    return Object.entries(counts).map(([name, count], index) => ({
-
-      name,
-
-      count,
-
-      percentage: ((count / total) * 100).toFixed(1),
-
-      color: colors[index % colors.length],
-
-    }));
-
-  }, [subscriptions]);
-
-  // UI-only dynamic donut from existing planDistribution data.
-
-  const distributionDonutStyle = useMemo(() => {
-
-    if (!planDistribution.length) return { background: "#e9eef6" };
-
-    const palette = ["#737bd1", "#4d8de8", "#ef8b17", "#28a873", "#e0a755"];
-
-    let cursor = 0;
-
-    const segments = planDistribution.map((item, index) => {
-
-      const start = cursor;
-
-      cursor += Number(item.percentage || 0);
-
-      return `${palette[index % palette.length]} ${start}% ${cursor}%`;
-
-    });
-
-    return { background: `conic-gradient(${segments.join(", ")})` };
-
-  }, [planDistribution]);
-
-  // Dynamic filter dropdown options
+  /* ========================================
+     FILTER OPTIONS
+  ======================================== */
 
   const availablePlans = useMemo(() => {
-
-    return [...new Set(subscriptions.map((s) => s.plan).filter(Boolean))];
-
+    return [
+      ...new Set(
+        subscriptions
+          .map((s) => s.plan)
+          .filter(Boolean)
+      ),
+    ];
   }, [subscriptions]);
 
   const availableStatuses = useMemo(() => {
-
-    return [...new Set(subscriptions.map((s) => s.status).filter(Boolean))];
-
+    const list = ["Active", "Inactive"];
+    subscriptions.forEach((s) => {
+      if (s.status) {
+        const formatted =
+          String(s.status).trim().charAt(0).toUpperCase() +
+          String(s.status).trim().slice(1).toLowerCase();
+        if (
+          !list.some(
+            (item) => item.toLowerCase() === formatted.toLowerCase()
+          )
+        ) {
+          list.push(formatted);
+        }
+      }
+    });
+    return list;
   }, [subscriptions]);
 
   const availableStoreCounts = useMemo(() => {
-
-    return [...new Set(subscriptions.map((s) => s.stores).filter(Boolean))].sort(
-
-      (a, b) => a - b
-
-    );
-
+    return [
+      ...new Set(
+        subscriptions
+          .map((s) => s.stores)
+          .filter(
+            (value) =>
+              value !== undefined &&
+              value !== null &&
+              value !== ""
+          )
+      ),
+    ].sort((a, b) => Number(a) - Number(b));
   }, [subscriptions]);
 
+  /* ========================================
+     FILTERED DATA
+  ======================================== */
+
   const filtered = useMemo(() => {
+    const searchValue = search.trim().toLowerCase();
 
     return subscriptions.filter((item) => {
+      const merchantName = String(item.merchant || "").toLowerCase();
+      const subscriptionId = String(item.id || "").toLowerCase();
+      const merchantId = String(item.merchantId || "").toLowerCase();
+      const itemPlan = String(item.plan || "").toLowerCase();
+      const itemStatus = String(item.status || "").toLowerCase();
+      const itemStores = String(item.stores ?? "");
 
-      const searchValue = search.toLowerCase();
+      /*
+       * Normalize subscription start date.
+       * rawStart is preferred because it contains the API date.
+       */
+      const itemStartDate = item.rawStart
+        ? String(item.rawStart).slice(0, 10)
+        : "";
 
       const matchesSearch =
+        !searchValue ||
+        merchantName.includes(searchValue) ||
+        subscriptionId.includes(searchValue) ||
+        merchantId.includes(searchValue);
 
-        !search ||
+      const matchesPlan =
+        !plan ||
+        itemPlan === String(plan).toLowerCase();
 
-        item.merchant.toLowerCase().includes(searchValue) ||
+      const filterStatus = String(status || "").trim().toLowerCase();
 
-        item.id.toLowerCase().includes(searchValue) ||
+      const matchesStatus =
+        !status ||
+        itemStatus === filterStatus ||
+        (filterStatus === "inactive" &&
+          (itemStatus === "inactive" ||
+            itemStatus === "cancelled" ||
+            itemStatus === "canceled" ||
+            itemStatus === "expired" ||
+            item.is_deleted === true ||
+            Boolean(item.deletedAt))) ||
+        (filterStatus === "active" && itemStatus === "active");
 
-        (item.merchantId && item.merchantId.toLowerCase().includes(searchValue));
+      const matchesStores =
+        !stores ||
+        itemStores === String(stores);
 
-      const matchesPlan = !plan || item.plan.toLowerCase() === plan.toLowerCase();
+      /*
+       * Date range:
+       * Start Date From = inclusive
+       * Start Date To   = inclusive
+       */
+      const matchesStartDateFrom =
+        !startDate ||
+        (itemStartDate && itemStartDate >= startDate);
 
-      const matchesStatus = !status || item.status.toLowerCase() === status.toLowerCase();
-
-      const matchesStores = !stores || String(item.stores) === stores;
-
-      const matchesStartDateFrom = !startDate || (item.rawStart && item.rawStart.slice(0, 10) >= startDate);
-
-      const matchesStartDateTo = !endDate || (item.rawStart && item.rawStart.slice(0, 10) <= endDate);
+      const matchesStartDateTo =
+        !endDate ||
+        (itemStartDate && itemStartDate <= endDate);
 
       return (
-
         matchesSearch &&
-
         matchesPlan &&
-
         matchesStatus &&
-
         matchesStores &&
-
         matchesStartDateFrom &&
-
         matchesStartDateTo
-
       );
-
     });
+  }, [
+    subscriptions,
+    search,
+    plan,
+    status,
+    stores,
+    startDate,
+    endDate,
+  ]); 
 
-  }, [subscriptions, search, plan, status, stores, startDate, endDate]);
+  /* ========================================
+     PAGINATION
+  ======================================== */
 
-  const totalPages = Math.ceil(filtered.length / PAGE_SIZE) || 1;
+ const totalPages = Math.ceil(filtered.length / pageSize) || 1;
 
-  const paginatedData = useMemo(() => {
+const currentPage = Math.min(page, totalPages);
 
-    const startIdx = (page - 1) * PAGE_SIZE;
+const paginatedData = filtered.slice(
+  (currentPage - 1) * pageSize,
+  currentPage * pageSize
+);
 
-    return filtered.slice(startIdx, startIdx + PAGE_SIZE);
+useEffect(() => {
+  setPage(1);
+}, [
+  search,
+  plan,
+  status,
+  stores,
+  startDate,
+  endDate,
+]);
 
-  }, [filtered, page]);
+useEffect(() => {
+  setPage((currentPage) =>
+    Math.min(currentPage, totalPages)
+  );
+}, [totalPages]); 
+
+const handleDateRangeChange = (value) => {
+    setDateRange(value);
+
+    const today = new Date();
+
+    if (value === "") {
+        setStartDate("");
+        setEndDate("");
+    } else if (value === "today") {
+        const date = today.toISOString().split("T")[0];
+
+        setStartDate(date);
+        setEndDate(date);
+    } else if (value === "7days") {
+        const from = new Date(today);
+        from.setDate(today.getDate() - 6);
+
+        setStartDate(from.toISOString().split("T")[0]);
+        setEndDate(today.toISOString().split("T")[0]);
+    } else if (value === "30days") {
+        const from = new Date(today);
+        from.setDate(today.getDate() - 29);
+
+        setStartDate(from.toISOString().split("T")[0]);
+        setEndDate(today.toISOString().split("T")[0]);
+    } else if (value === "month") {
+        const from = new Date(
+            today.getFullYear(),
+            today.getMonth(),
+            1
+        );
+
+        setStartDate(from.toISOString().split("T")[0]);
+        setEndDate(today.toISOString().split("T")[0]);
+    } else if (value === "custom") {
+        setDatePickerOpen(true);
+    }
+
+    setPage(1);
+};
+
+
+  /* ========================================
+     RESET FILTERS
+  ======================================== */
+
+  const resetFilters = () => {
+    setSearch("");
+    setPlan("");
+    setStatus("");
+    setStores("");
+    setDateRange("");
+    setStartDate("");
+    setEndDate("");
+    setDatePickerOpen(false);
+    setPage(1);
+};
+
+  const hasActiveFilters =
+    search !== "" ||
+    plan !== "" ||
+    status !== "" ||
+    stores !== "" ||
+    startDate !== "" ||
+    endDate !== "";
+
+  /* ========================================
+     EXPORT
+  ======================================== */
 
   const handleExport = () => {
-
     if (!filtered.length) return;
 
     const headers = [
-
       "Subscription ID",
-
       "Merchant",
-
       "Merchant ID",
-
       "Plan",
-
       "Stores",
-
       "Devices",
-
       "Start Date",
-
       "End Date",
-
       "Status",
-
       "Price",
-
       "Billing Cycle",
-
     ];
 
     const rows = filtered.map((item) => [
-
-      `"${item.id}"`,
-
-      `"${item.merchant.replace(/"/g, '""')}"`,
-
-      `"${item.merchantId}"`,
-
-      `"${item.plan}"`,
-
-      item.stores,
-
-      item.devices,
-
-      `"${item.start}"`,
-
-      `"${item.end}"`,
-
-      `"${item.status}"`,
-
-      `"${item.currency} ${item.price}"`,
-
-      `"${item.billingCycle}"`,
-
+      `"${item.id || ""}"`,
+      `"${String(item.merchant || "").replace(/"/g, '""')}"`,
+      `"${item.merchantId || ""}"`,
+      `"${item.plan || ""}"`,
+      item.stores ?? "",
+      item.devices ?? "",
+      `"${item.start || ""}"`,
+      `"${item.end || ""}"`,
+      `"${item.status || ""}"`,
+      `"${item.currency || "INR"} ${item.price ?? 0}"`,
+      `"${item.billingCycle || ""}"`,
     ]);
 
     const csvContent =
-
       "data:text/csv;charset=utf-8," +
-
-      [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
+      [
+        headers.join(","),
+        ...rows.map((row) => row.join(",")),
+      ].join("\n");
 
     const encodedUri = encodeURI(csvContent);
 
@@ -582,11 +674,10 @@ function SubscriptionList({ subscriptions, loading, error, onReload, onView }) {
     link.setAttribute("href", encodedUri);
 
     link.setAttribute(
-
       "download",
-
-      `subscriptions_${new Date().toISOString().slice(0, 10)}.csv`
-
+      `subscriptions_${new Date()
+        .toISOString()
+        .slice(0, 10)}.csv`
     );
 
     document.body.appendChild(link);
@@ -594,62 +685,102 @@ function SubscriptionList({ subscriptions, loading, error, onReload, onView }) {
     link.click();
 
     document.body.removeChild(link);
-
   };
 
-  return (
 
+  /* ========================================
+     RENDER
+  ======================================== */
+
+  return (
     <section className="merchant-subscriptions-page">
+
+      {/* ========================================
+          PAGE HEADER
+      ======================================== */}
 
       <div className="subscriptions-heading-row">
 
         <div>
-
           <h1>Merchant Subscriptions</h1>
 
-          <p>View and manage subscription details for all merchants.</p>
-
+          <p>
+            View and manage subscription details for all merchants.
+          </p>
         </div>
 
-        <div style={{ display: "flex", gap: "10px" }}>
+        <div
+          style={{
+            display: "flex",
+            gap: "10px",
+          }}
+        >
 
-          <button className="export-button" onClick={onReload} title="Refresh Subscriptions">
-
-            <RefreshCw size={16} />
-
-            Refresh
-
+ <button
+            type="button"
+            className="flow-button primary"
+            onClick={onAdd}
+            disabled={crudBusy}
+            title="Add Subscription"
+          >
+             <i className="bi bi-plus-lg" />
+            Add Subscription
           </button>
 
-          <button className="export-button" onClick={handleExport} disabled={!filtered.length}>
-
+          <button
+            className="flow-button secondary"
+            onClick={handleExport}
+            disabled={!filtered.length}
+          >
             <Download size={17} />
-
             Export
-
           </button>
+
+         
 
         </div>
 
       </div>
 
+      {/* ========================================
+          ERROR
+      ======================================== */}
+
       {error && (
-
-        <div style={{ padding: "12px 16px", marginBottom: "16px", backgroundColor: "#fee2e2", color: "#991b1b", borderRadius: "8px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-
+        <div
+          style={{
+            padding: "12px 16px",
+            marginBottom: "16px",
+            backgroundColor: "#fee2e2",
+            color: "#991b1b",
+            borderRadius: "8px",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
           <span>{error}</span>
 
-          <button type="button" onClick={onReload} style={{ background: "none", border: "none", color: "#991b1b", textDecoration: "underline", cursor: "pointer", fontWeight: "600" }}>
-
+          <button
+            type="button"
+            onClick={onReload}
+            style={{
+              background: "none",
+              border: "none",
+              color: "#991b1b",
+              textDecoration: "underline",
+              cursor: "pointer",
+              fontWeight: "600",
+            }}
+          >
             Retry
-
           </button>
-
         </div>
-
       )}
 
-      {/* OVERVIEW CARDS */}
+      {/* ========================================
+          OVERVIEW
+      ======================================== */}
 
       <div className="subscription-overview subscription-overview-refined">
 
@@ -658,23 +789,17 @@ function SubscriptionList({ subscriptions, loading, error, onReload, onView }) {
           <div className="overview-card total-card">
 
             <span className="overview-icon purple">
-
-              <Store size={24} />
-
+              <i className="bi bi-shop-window" aria-hidden="true" />
             </span>
 
             <div>
-
               <p>Total Subscriptions</p>
 
               <strong>{stats.total}</strong>
 
               <small className="positive overview-meta">
-
                 <i /> Live Records
-
               </small>
-
             </div>
 
           </div>
@@ -682,23 +807,17 @@ function SubscriptionList({ subscriptions, loading, error, onReload, onView }) {
           <div className="overview-card active-card">
 
             <span className="overview-icon green">
-
-              <CheckCircle2 size={25} />
-
+              <i className="bi bi-check-circle-fill" aria-hidden="true" />
             </span>
 
             <div>
-
               <p>Active Subscriptions</p>
 
               <strong>{stats.active}</strong>
 
               <small className="positive overview-meta">
-
                 <i /> {stats.activePercentage}% of total
-
               </small>
-
             </div>
 
           </div>
@@ -706,23 +825,17 @@ function SubscriptionList({ subscriptions, loading, error, onReload, onView }) {
           <div className="overview-card inactive-card">
 
             <span className="overview-icon red">
-
-              <XCircle size={25} />
-
+              <i className="bi bi-x-circle-fill" aria-hidden="true" />
             </span>
 
             <div>
-
               <p>Inactive Subscriptions</p>
 
               <strong>{stats.inactive}</strong>
 
               <small className="negative overview-meta">
-
                 <i /> {stats.inactivePercentage}% of total
-
               </small>
-
             </div>
 
           </div>
@@ -730,97 +843,20 @@ function SubscriptionList({ subscriptions, loading, error, onReload, onView }) {
           <div className="overview-card expiring-card">
 
             <span className="overview-icon orange">
-
-              <Clock3 size={25} />
-
+              <i className="bi bi-clock-fill" aria-hidden="true" />
             </span>
 
             <div>
-
               <p>Expiring Soon</p>
 
               <strong>{stats.expiring}</strong>
 
               <small className="warning overview-meta">
-
-                <i /> {stats.expiring > 0 ? "Within next 30 days" : "Review required"}
-
+                <i />{" "}
+                {stats.expiring > 0
+                  ? "Within next 30 days"
+                  : "Review required"}
               </small>
-
-            </div>
-
-          </div>
-
-        </div>
-
-        {/* PLAN DISTRIBUTION */}
-
-        <div className="distribution-card">
-
-          <div className="distribution-header">
-
-            <div>
-
-              <h2>Subscription Plan Distribution</h2>
-
-              <p>Number of merchants by subscription plan</p>
-
-            </div>
-
-            <div
-
-              className="distribution-plan-count distribution-plan-count-badge"
-
-              aria-label={`${availablePlans.length} Plans`}
-
-            >
-
-              <span>
-
-                {availablePlans.length} {availablePlans.length === 1 ? "Plan" : "Plans"}
-
-              </span>
-
-            </div>
-
-          </div>
-
-          <div className="distribution-content">
-
-            <div className="donut" style={distributionDonutStyle}>
-
-              <div>
-
-                <strong>{stats.total}</strong>
-
-                <span>Records</span>
-
-              </div>
-
-            </div>
-
-            <div className="plan-legend">
-
-              {planDistribution.map((item, index) => (
-
-                <div key={item.name} className="legend-row">
-
-                  <span className="legend-name">
-
-                    <i className="legend-dot" style={{ backgroundColor: ["#737bd1", "#4d8de8", "#ef8b17", "#28a873", "#e0a755"][index % 5] }} />
-
-                    {item.name}
-
-                  </span>
-
-                  <b>{item.count}</b>
-
-                  <span>{item.percentage}%</span>
-
-                </div>
-
-              ))}
-
             </div>
 
           </div>
@@ -829,283 +865,218 @@ function SubscriptionList({ subscriptions, loading, error, onReload, onView }) {
 
       </div>
 
-      {/* FILTERS */}
-
-      <div className="subscription-filter-card">
-
-        <div className="search-field">
-
-          <Search size={18} />
-
-          <input
-
-            value={search}
-
-            onChange={(e) => {
-
-              setSearch(e.target.value);
-
-              setPage(1);
-
-            }}
-
-            placeholder="Search merchant name, code or ID..."
-
-          />
-
-        </div>
-
-        <SelectField
-
-          value={plan}
-
-          onChange={(e) => {
-
-            setPlan(e.target.value);
-
-            setPage(1);
-
-          }}
-
-        >
-
-          <option value="">All Plans</option>
-
-          {availablePlans.map((p) => (
-
-            <option key={p} value={p}>
-
-              {p}
-
-            </option>
-
-          ))}
-
-        </SelectField>
-
-        <SelectField
-
-          value={status}
-
-          onChange={(e) => {
-
-            setStatus(e.target.value);
-
-            setPage(1);
-
-          }}
-
-        >
-
-          <option value="">All Statuses</option>
-
-          {availableStatuses.map((s) => (
-
-            <option key={s} value={s}>
-
-              {s}
-
-            </option>
-
-          ))}
-
-        </SelectField>
-
-        <SelectField
-
-          value={stores}
-
-          onChange={(e) => {
-
-            setStores(e.target.value);
-
-            setPage(1);
-
-          }}
-
-        >
-
-          <option value="">All Store Counts</option>
-
-          {availableStoreCounts.map((n) => (
-
-            <option key={n} value={n}>
-
-              {n} {n === 1 ? "Store" : "Stores"}
-
-            </option>
-
-          ))}
-
-        </SelectField>
-
-        <label className="date-field">
-
-          <span>Start Date From</span>
-
-          <input
-
-            type="date"
-
-            value={startDate}
-
-            onChange={(e) => setStartDate(e.target.value)}
-
-          />
-
-        </label>
-
-        <label className="date-field">
-
-          <span>Start Date To</span>
-
-          <input
-
-            type="date"
-
-            value={endDate}
-
-            onChange={(e) => setEndDate(e.target.value)}
-
-          />
-
-        </label>
-
-      </div>
-
-      {/* TABLE */}
+      {/* ========================================
+          TABLE CARD
+      ======================================== */}
 
       <div className="subscription-table-card">
 
-        <div className="table-scroll">
+        {/* ========================================
+            FILTER BAR
+        ======================================== */}
 
-          <table>
+       <FiltersBar
+    searchValue={search}
+    onSearchChange={(value) => {
+        setSearch(value);
+        setPage(1);
+    }}
+    searchPlaceholder="Search merchant name, code or ID"
+    filters={[
+        {
+            key: "plan",
+            label: "Plan",
+            value: plan,
+            options: [
+                { label: "All Plans", value: "" },
+                ...availablePlans.map((item) => ({
+                    label: item,
+                    value: item,
+                })),
+            ],
+            onChange: (value) => {
+                setPlan(value);
+                setPage(1);
+            },
+        },
+        {
+            key: "status",
+            label: "Status",
+            value: status,
+            options: [
+                { label: "All Statuses", value: "" },
+                ...availableStatuses.map((item) => ({
+                    label: item,
+                    value: item,
+                })),
+            ],
+            onChange: (value) => {
+                setStatus(value);
+                setPage(1);
+            },
+        },
+        {
+            key: "stores",
+            label: "Store Count",
+            value: stores,
+            options: [
+                { label: "Any Store Count", value: "" },
+                ...availableStoreCounts.map((item) => ({
+                    label: `${item} ${
+                        Number(item) === 1 ? "Store" : "Stores"
+                    }`,
+                    value: String(item),
+                })),
+            ],
+            onChange: (value) => {
+                setStores(value);
+                setPage(1);
+            },
+        },
+        {
+            key: "dateRange",
+            label: "Date Range",
+            value: dateRange,
+            options: [
+                { label: "Any Date", value: "" },
+                { label: "Today", value: "today" },
+                { label: "Last 7 Days", value: "7days" },
+                { label: "Last 30 Days", value: "30days" },
+                { label: "This Month", value: "month" },
+                { label: "Custom Range", value: "custom" },
+            ],
+            onChange: handleDateRangeChange,
+        },
+    ]}
+    onClear={resetFilters}
+/>
+
+        {/* ========================================
+            FILTER RESULT INFO
+        ======================================== */}
+
+  
+
+        {/* ========================================
+            TABLE
+        ======================================== */}
+
+        <div className="subscription-table-wrapper">
+
+          <table className="subscription-table">
 
             <thead>
 
               <tr>
-
-                <th>#</th>
-
                 <th>Merchant</th>
-
                 <th>Plan</th>
-
                 <th>Stores</th>
-
                 <th>Devices</th>
-
                 <th>Start Date</th>
-
                 <th>End Date</th>
-
                 <th>Status</th>
-
                 <th>Actions</th>
-
               </tr>
 
             </thead>
 
             <tbody>
 
-              {loading && (
+              {loading ? (
 
                 <tr>
-
-                  <td colSpan="9" className="empty-row" style={{ padding: "32px", textAlign: "center" }}>
-
-                    Loading live subscription data…
-
+                  <td
+                    colSpan="9"
+                    style={{
+                      textAlign: "center",
+                      padding: "40px",
+                    }}
+                  >
+                    Loading subscriptions...
                   </td>
-
                 </tr>
 
-              )}
-
-              {!loading && paginatedData.map((item, index) => (
-
-                <tr key={item.id + index}>
-
-                  <td>{(page - 1) * PAGE_SIZE + index + 1}</td>
-
-                  <td>
-
-                    <div className="merchant-cell">
-
-                      <span className="merchant-icon">
-
-                        <Store size={19} />
-
-                      </span>
-
-                      <div>
-
-                        <strong>{item.merchant}</strong>
-
-                        <small>{item.merchantId || item.id}</small>
-
-                      </div>
-
-                    </div>
-
-                  </td>
-
-                  <td>{item.plan}</td>
-
-                  <td>{item.stores}</td>
-
-                  <td>{item.devices}</td>
-
-                  <td>{item.start}</td>
-
-                  <td>{item.end}</td>
-
-                  <td>
-
-                    <StatusBadge status={item.status} />
-
-                  </td>
-
-                  <td>
-
-                    <div className="row-actions">
-
-                      <button
-
-                        className="view-action-button"
-
-                        title="View Subscription"
-
-                        aria-label={`View subscription for ${item.merchant}`}
-
-                        onClick={() => onView(item)}
-
-                      >
-
-                        <Eye size={18} />
-
-                      </button>
-
-                    </div>
-
-                  </td>
-
-                </tr>
-
-              ))}
-
-              {!loading && filtered.length === 0 && (
+              ) : paginatedData.length === 0 ? (
 
                 <tr>
-
-                  <td colSpan="9" className="empty-row">
-
-                    No subscriptions found matching your filters.
-
+                  <td
+                    colSpan="9"
+                    style={{
+                      textAlign: "center",
+                      padding: "40px",
+                    }}
+                  >
+                    No subscriptions found.
                   </td>
-
                 </tr>
+
+              ) : (
+
+                paginatedData.map(
+                  (item, index) => (
+                    <tr
+                      key={item.id || index}
+                      onClick={() => onView(item)}
+                      style={{ cursor: "pointer" }}
+                    >
+
+
+                      <td>
+                        <div className="subscription-merchant-cell">
+
+                          <strong>
+                            {item.merchant}
+                          </strong>
+
+                          {item.merchantId && item.merchantId !== item.merchant && (
+                            
+                            <small>
+                              {item.merchantId}
+                            </small>
+                            
+                          )}
+
+                        </div>
+                      </td>
+
+                      <td>
+                        {item.plan || "-"}
+                      </td>
+
+                      <td>
+                        {item.stores ?? "-"}
+                      </td>
+
+                      <td>
+                        {item.devices ?? "-"}
+                      </td>
+
+                      <td>
+                        {item.start || "-"}
+                      </td>
+
+                      <td>
+                        {item.end || "-"}
+                      </td>
+
+                      <td>
+                        <StatusBadge
+                          status={
+                            item.status ||
+                            "Inactive"
+                          }
+                        />
+                      </td>
+
+                      <td onClick={(e) => e.stopPropagation()}>
+    <ListActions
+        onView={() => onView(item)}
+        viewLabel={`View ${item.merchant || "Subscription"}`}
+    />
+</td>
+                    </tr>
+                  )
+                )
 
               )}
 
@@ -1115,70 +1086,26 @@ function SubscriptionList({ subscriptions, loading, error, onReload, onView }) {
 
         </div>
 
-        <div className="table-footer">
+        {/* ========================================
+            PAGINATION
+        ======================================== */}
 
-          <span>
-
-            Showing {filtered.length === 0 ? 0 : (page - 1) * PAGE_SIZE + 1} to{" "}
-
-            {Math.min(page * PAGE_SIZE, filtered.length)} of {filtered.length} results
-
-          </span>
-
-          <div className="pagination">
-
-            <button
-
-              disabled={page === 1}
-
-              onClick={() => setPage(Math.max(1, page - 1))}
-
-            >
-
-              <ChevronLeft size={17} />
-
-            </button>
-
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map((n) => (
-
-              <button
-
-                key={n}
-
-                className={page === n ? "active" : ""}
-
-                onClick={() => setPage(n)}
-
-              >
-
-                {n}
-
-              </button>
-
-            ))}
-
-            <button
-
-              disabled={page >= totalPages}
-
-              onClick={() => setPage(Math.min(totalPages, page + 1))}
-
-            >
-
-              <ChevronRight size={17} />
-
-            </button>
-
-          </div>
-
-        </div>
+      
+ <Pagination
+  currentPage={currentPage}
+  totalPages={totalPages}
+  totalItems={filtered.length}
+  pageSize={pageSize}
+  onPageChange={setPage}
+  onPageSizeChange={handlePageSizeChange}
+  itemLabel="subscriptions"
+  showWhenEmpty={true}
+/>
 
       </div>
 
     </section>
-
   );
-
 }
 
 /* ========================================
@@ -1188,6 +1115,7 @@ function SubscriptionList({ subscriptions, loading, error, onReload, onView }) {
 \======================================== */
 
 function SubscriptionDetails({ merchant, onBack, onChangePlan }) {
+
 
   if (!merchant) return null;
 
@@ -1202,6 +1130,40 @@ function SubscriptionDetails({ merchant, onBack, onChangePlan }) {
   const planLabel = merchant.plan || "Current Plan";
 
   const billingLabel = merchant.billingCycle || "MONTHLY";
+
+  const entitlementItems = entitlements.map((entry, index) => {
+
+    const value = typeof entry === "object" && entry ? entry : {};
+
+    const reference = String(
+
+      value.id || value.featureId || value.feature_id || value.code || entry || "",
+
+    ).trim();
+
+
+    return {
+
+      id: reference || String(index),
+
+      name:
+
+
+        value.name ||
+
+        value.featureName ||
+
+        value.feature_name ||
+
+        value.featureKey ||
+
+        value.code ||
+
+        reference,
+
+    };
+
+  });
 
   return (
 
@@ -1269,7 +1231,7 @@ function SubscriptionDetails({ merchant, onBack, onChangePlan }) {
 
             <span>Plan Validity</span>
 
-            <strong className="validity-dates">{merchant.start}<br />to {merchant.end}</strong>
+            <strong className="validity-dates">{merchant.start} to {merchant.end}</strong>
 
             <small>{billingLabel === "YEARLY" || billingLabel === "ANNUAL" ? "(1 Year)" : billingLabel}</small>
 
@@ -1335,7 +1297,7 @@ function SubscriptionDetails({ merchant, onBack, onChangePlan }) {
 
             <div>
 
-              <h3>Plan Features &amp; Entitlements <span className="subscription-entitlements-count">{entitlements.length}</span></h3>
+              <h3>Plan Features &amp; Entitlements <span className="subscription-entitlements-count">{entitlementItems.length}</span></h3>
 
               <p>Features included in the {planLabel} for this merchant.</p>
 
@@ -1345,13 +1307,13 @@ function SubscriptionDetails({ merchant, onBack, onChangePlan }) {
 
           <div className="subscription-entitlements-list">
 
-            {entitlements.map((feature, idx) => (
+            {entitlementItems.map((feature) => (
 
-              <div className="subscription-entitlement-item" key={feature + idx}>
+              <div className="subscription-entitlement-item" key={feature.id}>
 
                 <span className="subscription-feature-check"><Check size={17} /></span>
 
-                <div className="subscription-feature-copy"><strong>{feature}</strong></div>
+                <div className="subscription-feature-copy"><strong>{feature.name}</strong></div>
 
                 <span className="subscription-included-pill">Included</span>
 
@@ -1359,7 +1321,7 @@ function SubscriptionDetails({ merchant, onBack, onChangePlan }) {
 
             ))}
 
-            {entitlements.length === 0 && (
+            {entitlementItems.length === 0 && (
 
               <div className="subscription-empty-entitlements">No plan features are available for this subscription.</div>
 
@@ -2073,15 +2035,13 @@ function PaymentScreen({
 
         <div className="payment-actions">
 
-          <button className="secondary-flow-button" onClick={onBack}>
+         <button className="flow-button secondary">
+            Back
+            </button>
 
-            Cancel
 
-          </button>
 
-          <button
-
-            className="primary-flow-button"
+            <button className="flow-button primary"
 
             disabled={paymentSubmitting}
 
@@ -2205,6 +2165,240 @@ function PaymentSuccess({
   );
 }
 
+function SubscriptionCrudForm({
+  form,
+  setForm,
+  editing,
+  merchants,
+  plans,
+  reference,
+  busy,
+  error,
+  onCancel,
+  onSubmit,
+}) {
+  const field = (key, value) => setForm((previous) => ({ ...previous, [key]: value }));
+
+  const activePlans = plans.filter((plan) =>
+    !plan.status || String(plan.status).toUpperCase() === "ACTIVE"
+  );
+
+  const choosePlan = (code) => {
+    const selected = plans.find((plan) => crudPlanCode(plan) === code);
+
+    if (!selected) {
+      field("planCode", code);
+      return;
+    }
+
+    const features = crudPlanFeatures(selected);
+
+    setForm((previous) => ({
+      ...previous,
+      planCode: crudPlanCode(selected),
+      planName: crudPlanName(selected),
+      maxStoresAllowed: selected.maxStoresAllowed ?? selected.includedStores ?? previous.maxStoresAllowed ?? 1,
+      entitlements: features.join(", "),
+      billingCycle: selected.billingCycle || selected.billing_cycle || previous.billingCycle || "MONTHLY",
+      trialDays: selected.trialDays ?? selected.trial_days ?? previous.trialDays ?? 0,
+      price: selected.price ?? selected.basePrice ?? selected.base_price ?? previous.price ?? 0,
+    }));
+  };
+
+  const billingCycles = reference?.billingCycles?.length
+    ? reference.billingCycles
+    : ["MONTHLY", "YEARLY"];
+
+  const statuses = reference?.subscriptionStatuses?.length
+    ? reference.subscriptionStatuses
+    : ["ACTIVE", "INACTIVE", "CANCELLED"];
+
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="subscription-crud-title"
+      style={{
+        position: "fixed",
+        inset: 0,
+        zIndex: 1000,
+        background: "rgba(15, 23, 42, 0.45)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "24px",
+      }}
+    >
+      <form
+        onSubmit={onSubmit}
+        style={{
+          width: "min(920px, 100%)",
+          maxHeight: "90vh",
+          overflowY: "auto",
+          background: "#fff",
+          borderRadius: "12px",
+          boxShadow: "0 20px 60px rgba(15, 23, 42, 0.2)",
+          padding: "24px",
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "20px" }}>
+          <div>
+            <h2 id="subscription-crud-title" style={{ margin: 0 }}>
+              {editing ? "Edit Subscription" : "Add Subscription"}
+            </h2>
+            <p style={{ margin: "6px 0 0", color: "#667085", fontSize: "13px" }}>
+              Manage the merchant subscription record and billing details.
+            </p>
+          </div>
+          <button type="button" onClick={onCancel} disabled={busy} aria-label="Close" style={{ border: 0, background: "transparent", cursor: "pointer" }}>
+            <X size={20} />
+          </button>
+        </div>
+
+        {error && (
+          <div style={{ padding: "10px 12px", marginBottom: "16px", background: "#fff1f2", color: "#b42318", borderRadius: "8px", fontSize: "13px" }} role="alert">
+            {error}
+          </div>
+        )}
+
+        <fieldset disabled={busy} style={{ border: 0, padding: 0, margin: 0 }}>
+          <div className="form-grid">
+            <label className="form-group">
+              Merchant
+              <select
+                required
+                disabled={Boolean(editing)}
+                value={form.merchantId || ""}
+                onChange={(event) => field("merchantId", event.target.value)}
+              >
+                <option value="">Select merchant</option>
+                {merchants.map((merchant) => (
+                  <option key={merchant.id} value={merchant.id}>
+                    {merchant.name || merchant.businessName || merchant.business_name || merchant.id} ({merchant.id})
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <label className="form-group">
+              Plan
+              <select
+                required
+                value={form.planCode || ""}
+                onChange={(event) => choosePlan(event.target.value)}
+              >
+                <option value="">Select plan</option>
+                {[
+                  ...new Map(
+                    [...activePlans, ...(form.planCode ? [{ planCode: form.planCode, planName: form.planName }] : [])]
+                      .map((plan) => [crudPlanCode(plan), plan])
+                  ).values(),
+                ].map((plan) => (
+                  <option key={crudPlanCode(plan)} value={crudPlanCode(plan)}>
+                    {crudPlanName(plan)}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <label className="form-group">
+              Plan name
+              <input readOnly value={form.planName || ""} />
+            </label>
+
+            <label className="form-group">
+              Maximum stores
+              <input
+                required
+                type="number"
+                min="1"
+                value={form.maxStoresAllowed ?? 1}
+                readOnly
+                onChange={(event) => field("maxStoresAllowed", event.target.value)}
+              />
+            </label>
+
+            <label className="form-group">
+              Trial days
+              <input
+                required
+                type="number"
+                min="0"
+                value={form.trialDays ?? 0}
+                readOnly
+                onChange={(event) => field("trialDays", event.target.value)}
+              />
+            </label>
+
+            <label className="form-group">
+              Price
+              <input
+                required
+                type="number"
+                min="0"
+                step="0.01"
+                value={form.price ?? 0}
+                readOnly
+                onChange={(event) => field("price", event.target.value)}
+              />
+            </label>
+
+            <label className="form-group">
+              Billing cycle
+              <select
+                disabled
+                value={form.billingCycle || "MONTHLY"}
+                onChange={(event) => field("billingCycle", event.target.value)}
+              >
+                {billingCycles.map((value) => <option key={value}>{value}</option>)}
+              </select>
+            </label>
+
+            <label className="form-group">
+              Status
+              <select value={form.status || "ACTIVE"} onChange={(event) => field("status", event.target.value)}>
+                {statuses.map((value) => <option key={value}>{value}</option>)}
+              </select>
+            </label>
+
+            <label className="form-group">
+              Period start (UTC)
+              <input
+                type="datetime-local"
+                value={form.currentPeriodStart ? String(form.currentPeriodStart).slice(0, 16) : ""}
+                onChange={(event) => field("currentPeriodStart", event.target.value ? `${event.target.value}:00Z` : "")}
+              />
+            </label>
+
+            <label className="form-group">
+              Period end (UTC)
+              <input
+                type="datetime-local"
+                value={form.currentPeriodEnd ? String(form.currentPeriodEnd).slice(0, 16) : ""}
+                onChange={(event) => field("currentPeriodEnd", event.target.value ? `${event.target.value}:00Z` : "")}
+              />
+            </label>
+
+            <label className="form-group" style={{ gridColumn: "1 / -1" }}>
+              Entitlements (comma-separated)
+              <input readOnly value={form.entitlements || ""} />
+            </label>
+          </div>
+
+          <div className="form-actions" style={{ marginTop: "20px", display: "flex", justifyContent: "flex-end", gap: "10px" }}>
+            <button type="button" className="btn btn-secondary" onClick={onCancel} disabled={busy}>
+              Cancel
+            </button>
+            <button type="submit" className="btn btn-primary" disabled={busy}>
+              {busy ? "Saving…" : editing ? "Update subscription" : "Save subscription"}
+            </button>
+          </div>
+        </fieldset>
+      </form>
+    </div>
+  );
+}
+
 /* ========================================
 
    MAIN COMPONENT
@@ -2212,6 +2406,8 @@ function PaymentSuccess({
 \======================================== */
 
 export default function MerchantSubscriptions() {
+
+
 
   const [subscriptions, setSubscriptions] = useState([]);
 
@@ -2243,6 +2439,18 @@ export default function MerchantSubscriptions() {
 
   const [paymentSubmitting, setPaymentSubmitting] = useState(false);
 
+  const [crudMerchants, setCrudMerchants] = useState([]);
+
+  const [crudPlans, setCrudPlans] = useState([]);
+
+  const [crudForm, setCrudForm] = useState(null);
+
+  const [crudEditing, setCrudEditing] = useState(null);
+
+  const [crudBusy, setCrudBusy] = useState(false);
+
+  const [crudError, setCrudError] = useState("");
+
   const [paymentDetails, setPaymentDetails] = useState({
 
     cardNumber: "",
@@ -2262,6 +2470,139 @@ export default function MerchantSubscriptions() {
   });
 
   const loadData = () => setReloadToken((n) => n + 1);
+
+  useEffect(() => {
+    let active = true;
+
+    if (!crudForm) return;
+    Promise.all([crudEditing ? Promise.resolve([]) : pendingStoreRead("subscription-form-merchants", () => listMerchants()), listSubscriptionPlans()])
+      .then(([merchantResponse, planResponse]) => {
+        if (!active) return;
+
+        const merchantList = Array.isArray(merchantResponse)
+          ? merchantResponse
+          : Array.isArray(merchantResponse?.merchants)
+          ? merchantResponse.merchants
+          : Array.isArray(merchantResponse?.data)
+          ? merchantResponse.data
+          : [];
+
+        const planList = Array.isArray(planResponse)
+          ? planResponse
+          : Array.isArray(planResponse?.plans)
+          ? planResponse.plans
+          : Array.isArray(planResponse?.data?.plans)
+          ? planResponse.data.plans
+          : [];
+
+        setCrudMerchants(merchantList);
+        setCrudPlans(planList);
+      })
+      .catch((err) => {
+        if (active) setCrudError(err.message || "Failed to load subscription form data.");
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [Boolean(crudForm), crudEditing]);
+
+  const openAddSubscription = () => {
+    setCrudEditing(null);
+    setCrudForm({ ...emptySubscription });
+    setCrudError("");
+  };
+
+  const openEditSubscription = async (row) => {
+    setCrudBusy(true);
+    setCrudError("");
+
+    try {
+      const response = await getSubscription(row.id);
+      const subscription = response?.subscription || response?.data?.subscription || response?.data || response;
+      const entitlements = Array.isArray(subscription?.entitlements)
+        ? subscription.entitlements.join(", ")
+        : String(subscription?.entitlements || "");
+
+      setCrudForm({
+        ...emptySubscription,
+        ...subscription,
+        merchantId: subscription?.merchantId || row?.merchantId || "",
+        planCode: subscription?.planCode || row?.planCode || "",
+        planName: subscription?.planName || row?.plan || "",
+        maxStoresAllowed: subscription?.maxStoresAllowed ?? subscription?.includedStores ?? row?.stores ?? 1,
+        entitlements,
+        billingCycle: subscription?.billingCycle || row?.billingCycle || "MONTHLY",
+        trialDays: subscription?.trialDays ?? 0,
+        price: subscription?.price ?? row?.price ?? 0,
+        status: subscription?.status || row?.status || "ACTIVE",
+        currentPeriodStart: subscription?.currentPeriodStart || subscription?.startDate || row?.rawStart || "",
+        currentPeriodEnd: subscription?.currentPeriodEnd || subscription?.renewalDate || row?.rawEnd || "",
+      });
+      setCrudEditing(row.id);
+    } catch (err) {
+      setCrudError(err.message || "Unable to load the subscription.");
+    } finally {
+      setCrudBusy(false);
+    }
+  };
+
+  const saveSubscription = async (event) => {
+    event.preventDefault();
+    if (!crudForm) return;
+
+    setCrudBusy(true);
+    setCrudError("");
+
+    try {
+      const selectedPlan = crudPlans.find((plan) => crudPlanCode(plan) === String(crudForm.planCode));
+      const selectedPlanStatus = selectedPlan?.status;
+
+      if (!selectedPlan || (selectedPlanStatus && String(selectedPlanStatus).toUpperCase() !== "ACTIVE")) {
+        throw new Error("Select an active master plan.");
+      }
+
+      const payload = subscriptionPayload(crudForm);
+
+      if (crudEditing) {
+        await updateSubscription(crudEditing, payload);
+      } else {
+        await createSubscription({ ...payload, merchantId: crudForm.merchantId });
+      }
+
+      setCrudForm(null);
+      setCrudEditing(null);
+      setCrudError("");
+      loadData();
+    } catch (err) {
+      setCrudError(err.message || "Unable to save the subscription.");
+    } finally {
+      setCrudBusy(false);
+    }
+  };
+
+  const removeSubscription = async (row) => {
+    const confirmed = window.confirm(`Delete subscription ${row?.id || ""} for ${row?.merchantId || row?.merchant || "this merchant"}?`);
+    if (!confirmed) return;
+
+    setCrudBusy(true);
+    setCrudError("");
+
+    try {
+      await deleteSubscription(row.id);
+
+      if (selectedMerchant?.id === row.id) {
+        setSelectedMerchant(null);
+        setScreen("list");
+      }
+
+      loadData();
+    } catch (err) {
+      setCrudError(err.message || "Unable to delete the subscription.");
+    } finally {
+      setCrudBusy(false);
+    }
+  };
 
   useEffect(() => {
 
@@ -2359,7 +2700,7 @@ export default function MerchantSubscriptions() {
 
     }
 
-    listPlans()
+    getMerchantFormPlans()
 
       .then((allPlans) => {
 
@@ -2409,6 +2750,8 @@ export default function MerchantSubscriptions() {
 
   }, [screen, selectedMerchant]);
 
+  
+
   const updatePaymentField = (field, value) => {
 
     setPaymentDetails((previous) => ({
@@ -2423,12 +2766,21 @@ export default function MerchantSubscriptions() {
 
   };
 
-  const openDetails = (merchant) => {
-
-    setSelectedMerchant(merchant);
-
-    setScreen("details");
-
+  const openDetails = async (merchant) => {
+    setCrudBusy(true);
+    setCrudError("");
+    try {
+      const response = await getSubscription(merchant.id);
+      const data = response?.subscription || response?.data?.subscription || response?.data || response;
+      const mapped = mapSubscriptionToRow(data);
+      if (!mapped) throw new Error("Subscription not found.");
+      setSelectedMerchant({ ...merchant, ...mapped });
+      setScreen("details");
+    } catch (error) {
+      setCrudError(error.message || "Unable to load subscription.");
+    } finally {
+      setCrudBusy(false);
+    }
   };
 
   const openChoosePlan = () => {
@@ -2732,21 +3084,37 @@ export default function MerchantSubscriptions() {
   }
 
   return (
+    <>
+      <SubscriptionList
+        subscriptions={subscriptions}
+        loading={loading}
+        error={error || crudError}
+        onReload={loadData}
+        onView={openDetails}
+        onAdd={openAddSubscription}
+        onEdit={openEditSubscription}
+        onDelete={removeSubscription}
+        crudBusy={crudBusy}
+      />
 
-    <SubscriptionList
-
-      subscriptions={subscriptions}
-
-      loading={loading}
-
-      error={error}
-
-      onReload={loadData}
-
-      onView={openDetails}
-
-    />
-
+      {crudForm && (
+        <SubscriptionCrudForm
+          form={crudForm}
+          setForm={setCrudForm}
+          editing={crudEditing}
+          merchants={crudMerchants}
+          plans={crudPlans}
+          busy={crudBusy}
+          error={crudError}
+          onCancel={() => {
+            setCrudForm(null);
+            setCrudEditing(null);
+            setCrudError("");
+          }}
+          onSubmit={saveSubscription}
+        />
+      )}
+    </>
   );
 
 }

@@ -86,7 +86,7 @@ export default function ViewPlanOverview() {
         <>
           {/* PAGE HEADING */}
           <div className="plan-details-heading">
-            <div className="plan-details-title-line">
+            <div className="plan-details-details-top">
               <button
                 type="button"
                 className="plan-details-back"
@@ -97,18 +97,16 @@ export default function ViewPlanOverview() {
                   <i className="bi bi-arrow-left" />
                 </span>
               </button>
-              <h1> {plan.name || "Unnamed plan"} </h1>
-              {/* <span
-                className={`plan-details-active-badge ${
-                  plan.status === "Inactive"
-                    ? "plan-details-inactive-badge"
-                    : ""
-                }`}
-              >
-                <i className="bi bi-circle-fill" /> {plan.status || "—"}
-              </span> */}
-            </div>
-            <p> {plan.description || "No description provided."} </p>
+                <div className="plan-details-heading">
+                     <div className="plan-details-title-line">
+                           <h1> {plan.name || "Unnamed plan"} </h1>
+                     </div>
+
+                     <p> {plan.description || "No description provided."} </p>
+                </div>
+                   
+            </div>  
+           
           </div>
 
           {/* TABS */}
@@ -133,8 +131,8 @@ export default function ViewPlanOverview() {
                 <i className="bi bi-card-text" />
               </div>
               <div>
-                <h2> Plan Information </h2>
-                <p>View the core plan details and its applicable store type.</p>
+                <h2> Plan Details </h2>
+                <p>View plan details and the applicable store type.</p>
               </div>
             </div>
 
@@ -146,7 +144,7 @@ export default function ViewPlanOverview() {
                   Plan Code <b>*</b>
                 </span>
                 <input value={plan.code || ""} readOnly />
-                <small>Unique identifier for this subscription plan.</small>
+              
               </label>
 
               {/* Row 1: Status */}
@@ -163,9 +161,7 @@ export default function ViewPlanOverview() {
                   value={plan.status ? `● ${plan.status}` : "—"}
                   readOnly
                 />
-                <small>
-                  Inactive plans cannot be assigned to new subscriptions.
-                </small>
+               
               </label>
 
               {/* Row 2: Plan Name */}
@@ -176,12 +172,12 @@ export default function ViewPlanOverview() {
                 <input value={plan.name || ""} readOnly />
               </label>
 
-              {/* Row 2: Applicable Business/Store Type */}
+              {/* Row 2: Applicable Store Type*/}
               <label className="plan-details-field">
                 <span>
-                  Applicable Business/Store Type <b>*</b>
+                  Applicable Store Type <b>*</b>
                 </span>
-                <input value={plan.storeType || ""} readOnly />
+                <input value={plan.storeTypeName || plan.storeType || ""} readOnly />
                 {/* <small>The store type this plan can be assigned to.</small> */}
               </label>
 
@@ -189,7 +185,7 @@ export default function ViewPlanOverview() {
               <label className="plan-details-field plan-details-description">
                 <span>Description</span>
                 <textarea value={plan.description || ""} readOnly />
-                <small>{(plan.description || "").length}/500</small>
+              
               </label>
             </div>
           </section>

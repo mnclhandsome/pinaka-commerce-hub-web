@@ -1,3 +1,4 @@
+import FilterDropdown from "../components/FilterDropdown";
 import {
     useEffect,
     useMemo,
@@ -218,8 +219,7 @@ export default function Users({
        PIN VISIBILITY
     ===================================================== */
 
-    const [showPin, setShowPin] =
-        useState(false);
+
 
 
     /* =====================================================
@@ -481,8 +481,6 @@ export default function Users({
                 user.profilePhoto ||
                 "",
         });
-
-        setShowPin(false);
     };
 
 
@@ -497,8 +495,6 @@ export default function Users({
         setForm(
             EMPTY_FORM
         );
-
-        setShowPin(false);
     };
 
 
@@ -849,8 +845,6 @@ export default function Users({
             EMPTY_FORM
         );
 
-        setShowPin(false);
-
         alert(
             "User updated successfully."
         );
@@ -1123,12 +1117,6 @@ export default function Users({
                 onPhotoChange={
                     handlePhotoChange
                 }
-                showPin={
-                    showPin
-                }
-                setShowPin={
-                    setShowPin
-                }
                 currentStore={
                     currentStore
                 }
@@ -1319,7 +1307,7 @@ export default function Users({
 
                     </div>
 
-                    <select
+                    <FilterDropdown
                         className="role-filter"
                         value={
                             roleFilter
@@ -1358,7 +1346,7 @@ export default function Users({
                             )
                         )}
 
-                    </select>
+                    </FilterDropdown>
 
                 </div>
 
@@ -1699,8 +1687,6 @@ function UserEditForm({
     onCancel,
     photo,
     onPhotoChange,
-    showPin,
-    setShowPin,
     currentStore,
 }) {
 
@@ -1960,11 +1946,7 @@ function UserEditForm({
                             <div className="input-with-action">
 
                                 <input
-                                    type={
-                                        showPin
-                                            ? "text"
-                                            : "password"
-                                    }
+                                    type="text"
                                     value={
                                         form.loginPin
                                     }
@@ -1990,26 +1972,7 @@ function UserEditForm({
                                     }
                                 />
 
-                                <button
-                                    type="button"
-                                    className="input-action"
-                                    onClick={() =>
-                                        setShowPin(
-                                            (
-                                                previous
-                                            ) =>
-                                                !previous
-                                        )
-                                    }
-                                >
-                                    <i
-                                        className={`bi ${
-                                            showPin
-                                                ? "bi-eye-slash"
-                                                : "bi-eye"
-                                        }`}
-                                    />
-                                </button>
+                                
 
                             </div>
 

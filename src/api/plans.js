@@ -1,4 +1,6 @@
-import { api } from "./http";
+import { getStoreType } from "./storeTypes";
+import { listFeatures } from "./features";
+import { api, pendingStoreRead } from "./http";
 import { endpoints } from "./endpoints";
 
 
@@ -16,9 +18,9 @@ const toApiBillingModel = (value) => {
 
   if (
     normalized === "PER TERMINAL" ||
-    normalized === "PER_TERMINAL"
+    normalized === "PER_TERMINAL" || normalized === "PER_DEVICE" || normalized === "PER DEVICE"
   ) {
-    return "PER_TERMINAL";
+    return "PER_DEVICE";
   }
 
   if (
@@ -52,7 +54,7 @@ const toApiBillingCycle = (value) => {
     normalized === "YEARLY" ||
     normalized === "ANNUAL"
   ) {
-    return "YEARLY";
+    return "ANNUAL";
   }
 
   return normalized;
@@ -155,30 +157,27 @@ export function planPayload(
         : "";
 
   const payload = {
-    planCode: String(form.code || "")
-      .trim()
-      .toUpperCase(),
     name: String(form.name || "").trim(),
     description: String(form.description || "").trim(),
-    billingModel: toApiBillingModel(form.billingModel),
-    basePrice: toNumberOrZero(form.basePrice),
-    currency: String(form.currency || "").trim().toUpperCase(),
-    billingCycle: toApiBillingCycle(form.billingCycle),
+    billing_model: toApiBillingModel(form.billingModel),
+    base_price: toNumberOrZero(form.basePrice),
+    currency: String(form.currency || "USD").trim().toUpperCase(),
+    billing_cycle: toApiBillingCycle(form.billingCycle),
     status: toApiStatus(form.status),
-    storeType: normalizedStoreType,
-    includedStores: toNumberOrZero(form.includedStores),
-    includedTerminals: toNumberOrZero(form.includedTerminals),
-    additionalTerminalPrice: toNumberOrZero(form.additionalTerminalPrice),
-    includedEmployees: toNumberOrZero(form.includedUsers),
-    additionalEmployeePrice: toNumberOrZero(form.additionalUserPrice),
-    trialPeriod: toTrialDays(form.trialPeriod),
-    includedFeatures: Array.isArray(includedFeatures) ? includedFeatures : [],
+    store_type_id: normalizedStoreType || null,
+    stores_limit: toNumberOrZero(form.includedStores),
+    terminal_limit: toNumberOrZero(form.includedTerminals),
+    additional_terminal_price: toNumberOrZero(form.additionalTerminalPrice),
+    employees_limit: toNumberOrZero(form.includedUsers),
+    additional_employee_price: toNumberOrZero(form.additionalUserPrice),
+    trial_period: toTrialDays(form.trialPeriod),
+    included_features: includedFeatures.map(feature => String(
+      typeof feature === "object" ? feature.featureId ?? feature.id : feature
+    )),
+    effective_from: toEffectiveFrom(form.effectiveFrom) || null,
   };
-
-  const effectiveFrom = toEffectiveFrom(form.effectiveFrom);
-
-  if (effectiveFrom) {
-    payload.effectiveFrom = effectiveFrom;
+  if (form.planEndDate !== undefined) {
+    payload.plan_end_date = toEffectiveFrom(form.planEndDate) || null;
   }
 
   return payload;
@@ -213,30 +212,61 @@ const unwrapPlan = (response) => {
  * possible API response formats.
  */
 const extractPlans = (response) => {
+  if (!response) return [];
+
   // API returned an array directly.
   if (Array.isArray(response)) {
     return response;
   }
 
-  // API returned:
-  // { plans: [...] }
+  // API returned planGroups (e.g. GET /plans/merchant-form or GET /connector/api/v1/plans/merchant-form)
+  const planGroups =
+    response?.planGroups ||
+    response?.data?.planGroups ||
+    response?.result?.planGroups;
+
+  if (Array.isArray(planGroups)) {
+    const list = [];
+    planGroups.forEach((group) => {
+      const groupStoreType =
+        group.storeType || group.store_type || group.storeTypeId || "";
+      const groupPlans = Array.isArray(group.plans)
+        ? group.plans
+        : Array.isArray(group.items)
+        ? group.items
+        : [];
+
+      groupPlans.forEach((plan) => {
+        list.push({
+          ...plan,
+          storeType: plan.storeType || plan.store_type || groupStoreType,
+          storeTypeId:
+            plan.storeTypeId ||
+            plan.store_type_id ||
+            group.storeTypeId ||
+            (typeof groupStoreType === "object" ? groupStoreType?.id : groupStoreType) ||
+            "",
+        });
+      });
+    });
+
+    if (list.length > 0) {
+      return list;
+    }
+  }
+
+  // API returned: { plans: [...] }
   if (Array.isArray(response?.plans)) {
     return response.plans;
   }
 
-  // API returned:
-  // { data: [...] }
+  // API returned: { data: [...] }
   if (Array.isArray(response?.data)) {
     return response.data;
   }
 
-  // API returned:
-  // { data: { plans: [...] } }
-  if (
-    Array.isArray(
-      response?.data?.plans
-    )
-  ) {
+  // API returned: { data: { plans: [...] } }
+  if (Array.isArray(response?.data?.plans)) {
     return response.data.plans;
   }
 
@@ -263,6 +293,7 @@ const displayBillingModel = (value) => {
   }
 
   if (
+    normalized === "PER_DEVICE" ||
     normalized === "PER_TERMINAL" ||
     normalized === "PER TERMINAL"
   ) {
@@ -276,6 +307,7 @@ const displayBillingModel = (value) => {
     return "Flat rate";
   }
 
+  if (normalized === "CUSTOM") return "Custom";
   return value || "";
 };
 
@@ -372,6 +404,7 @@ export function normalizePlan(item) {
    * Plan code
    * ---------------------------------------------------------- */
   const code =
+    item.plan_code ||
     item.planCode ||
     item.code ||
     "";
@@ -449,6 +482,9 @@ export function normalizePlan(item) {
           feature.categoryName ??
           feature.category_name ??
           feature.featureCategory ??
+          feature.feature_category ??
+          feature.feature_type ??
+          feature.featureType ??
           "",
       };
     }).filter(Boolean)
@@ -492,12 +528,14 @@ export function normalizePlan(item) {
 
     /* Store type */
     storeType:
+      item.store_type_id ||
       item.store_type ||
       item.storeType ||
       item.applicableStoreType ||
       "",
 
     applicableStoreType:
+      item.store_type_id ||
       item.store_type ||
       item.storeType ||
       item.applicableStoreType ||
@@ -550,14 +588,16 @@ export function normalizePlan(item) {
 
     /* Included stores */
     includedStores:
-      item.included_stores ??
       item.includedStores ??
+      item.included_stores ??
+      item.stores_limit ??
       0,
 
     /* Included terminals */
     includedTerminals:
-      item.included_terminals ??
       item.includedTerminals ??
+      item.included_terminals ??
+      item.terminal_limit ??
       0,
 
     /* Additional terminal price */
@@ -567,9 +607,17 @@ export function normalizePlan(item) {
       0,
 
     /* Included employees/users */
+    includedEmployees:
+      item.includedEmployees ??
+      item.included_employees ??
+      item.employees_limit ??
+      item.includedUsers ??
+      0,
+
     includedUsers:
       item.includedEmployees ??
       item.included_employees ??
+      item.employees_limit ??
       item.includedUsers ??
       0,
 
@@ -592,6 +640,8 @@ export function normalizePlan(item) {
       item.effective_from ||
       item.effectiveFrom ||
       "",
+
+    planEndDate: item.plan_end_date ?? item.planEndDate ?? "",
 
     /* Features */
     includedFeatures,
@@ -632,18 +682,28 @@ export function normalizePlan(item) {
 /**
  * GET /plans
  */
+export async function getMerchantFormPlans() {
+  let response = null;
+  try {
+    response = await api.get(endpoints.plansMerchantForm || "/plans/merchant-form");
+  } catch {
+    try {
+      response = await api.get("/connector/api/v1/plans/merchant-form");
+    } catch {
+      response = await api.get(endpoints.plans);
+    }
+  }
+
+  const plans = extractPlans(response);
+  return plans.map(normalizePlan).filter(Boolean);
+}
+
+/**
+ * GET /plans
+ */
 export async function listPlans() {
-  const response =
-    await api.get(
-      endpoints.plans
-    );
-
-  const plans =
-    extractPlans(response);
-
-  return plans
-    .map(normalizePlan)
-    .filter(Boolean);
+  const response = await pendingStoreRead("plans-list", () => api.get(endpoints.plans));
+  return extractPlans(response).map(normalizePlan).filter(Boolean);
 }
 
 /* ============================================================
@@ -653,15 +713,46 @@ export async function listPlans() {
 /**
  * GET /plans/:id
  */
-export async function getPlan(id) {
+const pendingPlanRequests = new Map();
+export function getPlan(id) {
+  if (!pendingPlanRequests.has(id)) {
+    pendingPlanRequests.set(id, loadPlan(id).finally(() => pendingPlanRequests.delete(id)));
+  }
+  return pendingPlanRequests.get(id);
+}
+
+async function loadPlan(id) {
   const response =
     await api.get(
       endpoints.plan(id)
     );
 
-  return normalizePlan(
-    unwrapPlan(response)
-  );
+  const plan = normalizePlan(unwrapPlan(response));
+  if (!plan) return plan;
+  const raw = unwrapPlan(response);
+  const storeType = raw.storeType || raw.store_type;
+  const storeTypeName = raw.storeTypeName || raw.store_type_name ||
+    (typeof storeType === "object" ? storeType?.name : "");
+  const isUuid = (value) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(value || ""));
+  plan.storeTypeName = storeTypeName || plan.storeType;
+  const needsStoreType = !storeTypeName && isUuid(plan.storeType);
+  const needsFeatures = plan.includedFeatures.some(entry => !entry.name || isUuid(entry.name) || !entry.category);
+  const [types, features] = await Promise.allSettled([
+    needsStoreType ? getStoreType(plan.storeType).then(type => [type]) : Promise.resolve([]),
+    needsFeatures ? listFeatures() : Promise.resolve([]),
+  ]);
+  if (needsStoreType && types.status === "fulfilled") {
+    plan.storeTypeName = types.value.find(type => String(type.id) === String(plan.storeType))?.name || plan.storeType;
+  }
+  if (needsFeatures && features.status === "fulfilled") {
+    plan.includedFeatures = plan.includedFeatures.map(entry => {
+            const same = (a, b) => Boolean(a && b) && String(a).trim().toLowerCase() === String(b).trim().toLowerCase();
+      const feature = features.value.find(feature => same(feature.id, entry.featureId)) ||
+        features.value.find(feature => same(feature.name, entry.name) || same(feature.code, entry.featureId));
+      return feature ? { ...entry, name: feature.name || entry.name, category: entry.category || feature.category } : entry;
+    });
+  }
+  return plan;
 }
 
 /* ============================================================

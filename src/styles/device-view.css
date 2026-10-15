@@ -1,1 +1,68 @@
-.device-view-page{width:100%;min-height:calc(100vh - 64px);box-sizing:border-box;padding:18px 24px 28px;background:#f5f7fb;color:#183354}.device-view-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px}.device-view-header h1{margin:0;color:#132d50;font-size:27px;line-height:32px;font-weight:750}.device-view-breadcrumb{display:flex;align-items:center;gap:8px;margin-top:5px;color:#8193ad;font-size:12px}.device-view-breadcrumb strong{color:#405b7d;font-weight:500}.device-view-header-actions{display:flex;gap:10px}.device-view-back,.device-view-edit{height:42px;padding:0 16px;display:flex;align-items:center;gap:8px;border-radius:6px;font-family:inherit;font-size:12px;cursor:pointer}.device-view-back{border:1px solid #d7e1ed;background:#fff;color:#294466}.device-view-edit,.device-view-save{border:0;background:linear-gradient(90deg,#5d3ddd,#6740e5);color:#fff;box-shadow:0 4px 10px rgba(93,61,221,.16)}.device-view-card{width:100%;box-sizing:border-box;padding:18px 16px 17px;background:#fff;border:1px solid #e1e8f1;border-radius:8px}.device-view-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px 12px}.device-view-field{min-width:0}.device-view-field label{display:block;margin-bottom:6px;color:#243e60;font-size:10px;font-weight:600}.device-view-value,.edit-field input,.device-edit-select select{height:35px;box-sizing:border-box;width:100%;display:flex;align-items:center;padding:0 10px;border:1px solid #d5e0ed;border-radius:5px;background:#fbfcfe;color:#294668;font:10px inherit}.device-view-status{height:24px;padding:0 10px;display:inline-flex;align-items:center;border-radius:5px;font-size:9px;font-weight:650}.device-view-status.online,.device-view-status.active{background:#dcf7e9;color:#07975d}.device-view-status.offline{background:#ffe3e7;color:#ee3b53}.device-view-status.inactive{background:#e8edf5;color:#385171}.device-view-enabled{display:flex;align-items:center;gap:8px;margin-top:14px;color:#344e70;font-size:10px}.device-view-check{width:15px;height:15px;display:inline-flex;align-items:center;justify-content:center;border-radius:3px;background:#5d3ddd;color:#fff;font-size:10px}.device-view-section{margin-top:17px;padding-top:15px;border-top:1px solid #edf1f6}.device-view-section-title{display:flex;align-items:center;gap:8px;margin-bottom:9px;color:#243e60;font-size:11px;font-weight:650}.device-view-notes{min-height:65px;padding:10px;border:1px solid #e1e7ef;border-radius:5px;background:#fbfcfe;color:#8294ab;font-size:10px}.device-view-meta-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:12px}.device-view-meta-card{display:flex;align-items:center;gap:11px;padding:13px 14px;background:#fff;border:1px solid #e1e8f1;border-radius:8px}.device-view-meta-icon{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#eeeaff;color:#5d3ddd}.device-view-meta-card span{display:block;color:#8193ad;font-size:9px;margin-bottom:3px}.device-view-meta-card strong{color:#294466;font-size:11px}.edit-field input{outline:none;background:#fff}.edit-field input:focus,.device-edit-select select:focus,.device-edit-notes-wrap textarea:focus{border-color:#6744dc;box-shadow:0 0 0 2px rgba(103,68,220,.08)}.device-edit-select{position:relative}.device-edit-select select{appearance:none;padding-right:30px;outline:none;cursor:pointer}.device-edit-select svg{position:absolute;right:9px;top:50%;transform:translateY(-50%);pointer-events:none;color:#425b79}.edit-notes{margin-top:17px}.device-edit-notes-wrap{position:relative}.device-edit-notes-wrap textarea{width:100%;box-sizing:border-box;min-height:78px;padding:10px;resize:vertical;border:1px solid #d5e0ed;border-radius:5px;outline:none;font:10px inherit;color:#294668}.device-edit-notes-wrap textarea::placeholder{color:#8ca0b9}.device-edit-notes-wrap span{position:absolute;right:7px;bottom:5px;color:#91a0b3;font-size:8px}.device-view-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:14px;padding-top:13px;border-top:1px solid #e2e8f0}.device-view-cancel,.device-view-save{height:39px;padding:0 19px;border-radius:6px;font:11px inherit;cursor:pointer}.device-view-cancel{border:1px solid #d6e0ec;background:#fff;color:#334e70}.device-view-save{display:flex;align-items:center;gap:7px}.required-star{margin-left:3px;color:#ed4052}@media(max-width:700px){.device-view-page{padding:14px}.device-view-header,.device-view-header-actions{flex-direction:column;gap:10px}.device-view-grid,.device-view-meta-grid{grid-template-columns:1fr}.device-view-header-actions{align-items:stretch}.device-view-back,.device-view-edit{justify-content:center}}
+.device-view-page .device-view-status-field{height:35px;padding:0 10px;display:flex;align-items:center;box-sizing:border-box;width:100%;border:1px solid #d5e0ed;border-radius:5px;font-size:12px;font-weight:600}
+.device-view-page .device-view-status-field.active,.device-view-page .device-view-status-field.online{border-color:#b9ead2;background:#f7fffb;color:#08a961}
+.device-view-page .device-view-status-field.inactive,.device-view-page .device-view-status-field.offline{border-color:#f3c0c8;background:#fff8f9;color:#ed304d}
+.device-view-page{width:100%;min-height:calc(100vh - 64px);box-sizing:border-box;padding:18px 24px 28px;background:#f5f7fb;color:#183354}.device-view-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px}.device-view-header h1{margin:0;color:#132d50;font-size:27px;line-height:32px;font-weight:750}.device-view-header-actions{display:flex;gap:10px}.device-view-back,.device-view-edit{height:42px;padding:0 16px;display:flex;align-items:center;gap:8px;border-radius:6px;font-family:inherit;font-size:12px;cursor:pointer}.device-view-back{border:1px solid #d7e1ed;background:#fff;color:#294466}.device-view-edit,.device-view-save{border:0;background:linear-gradient(90deg,#5d3ddd,#6740e5);color:#fff;box-shadow:0 4px 10px rgba(93,61,221,.16)}.device-view-card{width:100%;box-sizing:border-box;padding:18px 16px 17px;background:#fff;border:1px solid #e1e8f1;border-radius:8px}.device-view-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px 12px}.device-view-field{min-width:0}.device-view-field label{display:block;margin-bottom:6px;color:#243e60;font-size:10px;font-weight:600}.device-view-value,.edit-field input,.device-edit-select select{height:35px;box-sizing:border-box;width:100%;display:flex;align-items:center;padding:0 10px;border:1px solid #d5e0ed;border-radius:5px;background:#fbfcfe;color:#294668;font:10px inherit}.device-view-status{height:24px;padding:0 10px;display:inline-flex;align-items:center;border-radius:5px;font-size:9px;font-weight:650}.device-view-status.online,.device-view-status.active{background:#dcf7e9;color:#07975d}.device-view-status.offline{background:#ffe3e7;color:#ee3b53}.device-view-status.inactive{background:#e8edf5;color:#385171}.device-view-enabled{display:flex;align-items:center;gap:8px;margin-top:14px;color:#344e70;font-size:10px}.device-view-check{width:15px;height:15px;display:inline-flex;align-items:center;justify-content:center;border-radius:3px;background:#5d3ddd;color:#fff;font-size:10px}.device-view-section{margin-top:17px;padding-top:15px;border-top:1px solid #edf1f6}.device-view-section-title{display:flex;align-items:center;gap:8px;margin-bottom:9px;color:#243e60;font-size:11px;font-weight:650}.device-view-notes{min-height:65px;padding:10px;border:1px solid #e1e7ef;border-radius:5px;background:#fbfcfe;color:#8294ab;font-size:10px}.device-view-meta-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:12px}.device-view-meta-card{display:flex;align-items:center;gap:11px;padding:13px 14px;background:#fff;border:1px solid #e1e8f1;border-radius:8px}.device-view-meta-icon{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#eeeaff;color:#5d3ddd}.device-view-meta-card span{display:block;color:#8193ad;font-size:9px;margin-bottom:3px}.device-view-meta-card strong{color:#294466;font-size:11px}.edit-field input{outline:none;background:#fff}.edit-field input:focus,.device-edit-select select:focus,.device-edit-notes-wrap textarea:focus{border-color:#6744dc;box-shadow:0 0 0 2px rgba(103,68,220,.08)}.device-edit-select{position:relative}.device-edit-select select{appearance:none;padding-right:30px;outline:none;cursor:pointer}.device-edit-select svg{position:absolute;right:9px;top:50%;transform:translateY(-50%);pointer-events:none;color:#425b79}.edit-notes{margin-top:17px}.device-edit-notes-wrap{position:relative}.device-edit-notes-wrap textarea{width:100%;box-sizing:border-box;min-height:78px;padding:10px;resize:vertical;border:1px solid #d5e0ed;border-radius:5px;outline:none;font:10px inherit;color:#294668}.device-edit-notes-wrap textarea::placeholder{color:#8ca0b9}.device-edit-notes-wrap span{position:absolute;right:7px;bottom:5px;color:#91a0b3;font-size:8px}.device-view-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:16px}.device-view-cancel,.device-view-save{height:39px;padding:0 19px;border-radius:6px;font:11px inherit;cursor:pointer}.device-view-cancel{border:1px solid #d6e0ec;background:#fff;color:#334e70}.device-view-save{display:flex;align-items:center;gap:7px}.required-star{margin-left:3px;color:#ed4052}@media(max-width:700px){.device-view-page{padding:14px}.device-view-header,.device-view-header-actions{flex-direction:column;gap:10px}.device-view-grid,.device-view-meta-grid{grid-template-columns:1fr}.device-view-header-actions{align-items:stretch}.device-view-back,.device-view-edit{justify-content:center}}
+#edit-device-form {
+  margin-top: 0;
+}
+
+.device-view-topbar {
+  min-height: 64px;
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding: 0 28px;
+  margin: -18px -24px 20px;
+  background: #fff;
+  border-bottom: 1px solid #cdccd7;
+  color: #24324d;
+  font: 14px/1.45 Inter, "Segoe UI", sans-serif;
+}
+
+.device-view-topbar > strong {
+  font-weight: 600;
+}
+
+.device-view-topbar > span {
+  color: #a3acc0;
+}
+
+.device-view-back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 0;
+  padding: 0;
+  background: none;
+  color: #5143bc;
+  font-family: inherit;
+  font-size: 14px;
+  line-height: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.device-view-back-link:focus-visible {
+  outline: 3px solid #b9adff;
+  outline-offset: 2px;
+}
+
+.device-view-header p {
+  margin: 6px 0 0;
+  color: #75819a;
+  font-size: 14px;
+  line-height: 1.45;
+}
+@media (max-width: 700px) {
+  .device-view-topbar {
+    margin: -14px -14px 20px;
+  }
+}
+
+@media (max-width: 620px) {
+  .device-view-topbar {
+    min-height: 55px;
+    gap: 8px;
+    padding: 0 12px;
+  }
+}

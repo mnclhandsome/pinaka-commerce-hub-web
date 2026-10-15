@@ -1,3 +1,5 @@
+import { pendingStoreRead } from "../api/http";
+import FilterDropdown from "../components/FilterDropdown";
 import { useEffect, useMemo, useState } from "react";
 import Pagination from "../components/Pagination";
 import ViewDetailsModal from "../components/ViewDetailsModal";
@@ -69,7 +71,7 @@ export default function Products({
             }
 
             const response =
-                await productsApi.getCatalog(storeId);
+                await pendingStoreRead(`store-products:${storeId}`, () => productsApi.getCatalog(storeId));
 
             const catalog =
                 normalizeCatalog(response);
@@ -452,24 +454,6 @@ export default function Products({
                         )}
                     </button>
 
-                    {/* STORE CONTEXT */}
-
-                    {store && (
-                        <div className="products-store-context">
-
-                            <i className="bi bi-shop" />
-
-                            <div>
-                                <span>STORE</span>
-
-                                <strong>
-                                    {store.name}
-                                </strong>
-                            </div>
-
-                        </div>
-                    )}
-
                 </div>
             </div>
 
@@ -624,13 +608,11 @@ export default function Products({
                 PRODUCTS CARD
             ================================================= */}
 
-            <div className="products-card">
+            {/* =================================================
+                TOOLBAR
+            ================================================= */}
 
-                {/* =================================================
-                    TOOLBAR
-                ================================================= */}
-
-                <div className="products-toolbar">
+            <div className="products-toolbar">
 
                     {/* SEARCH */}
 
@@ -653,7 +635,7 @@ export default function Products({
 
                     {/* CATEGORY */}
 
-                    <select
+                    <FilterDropdown
                         value={category}
                         onChange={(e) =>
                             setCategory(
@@ -675,11 +657,11 @@ export default function Products({
                                 </option>
                             )
                         )}
-                    </select>
+                    </FilterDropdown>
 
                     {/* TYPE */}
 
-                    <select
+                    <FilterDropdown
                         value={type}
                         onChange={(e) =>
                             setType(
@@ -701,11 +683,11 @@ export default function Products({
                                 </option>
                             )
                         )}
-                    </select>
+                    </FilterDropdown>
 
                     {/* STOCK */}
 
-                    <select
+                    <FilterDropdown
                         value={stockStatus}
                         onChange={(e) =>
                             setStockStatus(
@@ -728,7 +710,7 @@ export default function Products({
                         <option value="Out of stock">
                             Out of Stock
                         </option>
-                    </select>
+                    </FilterDropdown>
 
                     {/* CLEAR */}
 
@@ -743,7 +725,9 @@ export default function Products({
                         Clear
                     </button>
 
-                </div>
+            </div>
+
+            <div className="products-card">
 
                 {/* =================================================
                     TABLE HEADER
@@ -793,15 +777,15 @@ export default function Products({
 
                                 <tr>
 
-                                    <th>PRODUCT</th>
+                                    <th>Product</th>
                                     <th>SKU</th>
-                                    <th>STOCK</th>
-                                    <th>PRICE</th>
-                                    <th>CATEGORY</th>
-                                    <th>TAGS</th>
-                                    <th>BRAND</th>
-                                    <th>UPDATED</th>
-                                    <th>STATUS</th>
+                                    <th>Stock</th>
+                                    <th>Price</th>
+                                    <th>Category</th>
+                                    <th>Tags</th>
+                                    <th>Brand</th>
+                                    <th>Updated</th>
+                                    <th>Status</th>
 
                                 </tr>
 
@@ -969,17 +953,17 @@ function ProductRow({
     const normalizedStockStatus =
         String(
             product.stockStatus || ""
-        ).toLowerCase();
+        ).toLowerCase().replace(/[\s_-]+/g, "");
 
     const stockClass =
         normalizedStockStatus ===
-        "in stock"
+        "instock"
             ? "in-stock"
             : normalizedStockStatus ===
-              "low stock"
+              "lowstock"
             ? "low-stock"
             : normalizedStockStatus ===
-              "out of stock"
+              "outofstock"
             ? "out-stock"
             : "out-stock";
 

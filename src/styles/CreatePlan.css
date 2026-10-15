@@ -22,14 +22,16 @@
 }
 
 .plans-page-heading {
-  margin: 6px 0 13px;
+  margin: 0 0 12px;
 }
 
 .plans-page-heading h1 {
-  margin: 0 0 5px;
+  margin-bottom: 5px;
   color: #10254a;
-  font-size: 22px;
+  font-size: 20px;
   font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.5px;
 }
 
 .plans-page-heading p {
@@ -80,13 +82,13 @@
 
 .plan-step.active,
 .plan-step.complete {
-  color: #684ee3;
+  color: #5143bc;
 }
 
 .plan-step.active span,
 .plan-step.complete span {
   color: #fff;
-  background: #684ee3;
+  background: #5143bc;
 }
 
 .plan-step-line {
@@ -99,7 +101,7 @@
 
 .plan-form-card,
 .plans-list-card {
-  margin-top: 10px;
+  margin-top: 12px;
   margin-bottom: 20px;
   padding: 17px 18px 10px;
   border: 1px solid #e1ebf5;
@@ -162,6 +164,7 @@
   color: #23426e;
   font-size: 12px;
   font-weight: 600;
+  
 }
 
 .plan-field b {
@@ -197,6 +200,17 @@
   color: #6380b0;
 }
 
+
+.plan-placeholder {
+  text-transform: none;
+  letter-spacing: 0.15px;
+  font-weight: 500;
+  cursor: not-allowed;
+  background-color: #f5f7fa !important;
+}
+
+
+
 .plan-input-wrap input {
   height: auto;
   padding: 0;
@@ -220,6 +234,15 @@
   width: calc(50% - 9px);
   max-width: calc(50% - 9px);
   margin-top: 14px;
+}
+
+.plan-description-text { 
+  display: block;
+  width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+   
 }
 
 .plan-textarea-wrap {
@@ -256,13 +279,6 @@
   margin-top: 14px;
 }
 
-.plan-status-select.active {
-  color: #1c9b4d;
-}
-
-.plan-status-select.inactive {
-  color: #d72d47;
-}
 .plan-price-input {
   display: flex;
   height: 34px;
@@ -320,11 +336,14 @@
 .plan-submit-button {
   border: 0;
   color: #fff;
-  background: #684ee3;
+  background: #5143bc;
 }
 
 .plan-submit-button:disabled {
-  opacity: 0.5;
+  cursor: not-allowed;
+  background-color:#e6eaf1;
+  border-color: #dce3ed;
+  color: #8a96a8;
   cursor: not-allowed;
 }
 
@@ -382,6 +401,8 @@
   background: #e7f2ff;
   font-size: 12px;
 }
+
+
 
 .plan-feature-check>span:last-child,
 .plan-addon-row>span:nth-child(2) {
@@ -690,12 +711,12 @@
     130px
     90px;
   gap: 16px;
-  min-height: 62px;
+  min-height: 52px;
   align-items: center;
-  padding: 0 13px;
-  border-bottom: 1px solid #edf0f4;
+  padding: 0 14px;
+  border-bottom: 1px solid #e4e8ef;
   color: #4d5970;
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .plans-row:last-child {
@@ -716,10 +737,10 @@
 }
 
 .plans-row-head {
-  min-height: 39px;
+  min-height: 44px;
   color: #102d59;
   background: #f1f3fd;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
 }
 
@@ -735,9 +756,9 @@
 }
 
 .plan-description-cell {
-  color: #6380ae;
-  font-size: 13px;
-  line-height: 1.5;
+   min-width: 0;
+  width: 100%;
+  overflow: hidden;
 }
 
 .plan-price-cell {
@@ -787,8 +808,8 @@
   place-items: center;
   border: 1px solid #dce9f5;
   border-radius: 7px;
-  color: #274970;
-  background: #fff;
+   color: #5367f0;
+  background: #fcfdff;
   cursor: pointer;
   padding: 0;
 }
@@ -796,6 +817,22 @@
 .plan-delete-icon {
   color: #ef3b5c !important;
 }
+
+.plan-delete-icon:hover {
+  border-color: #ffd8e1 !important;
+  background: #fff0f3 !important;
+}
+
+.plan-edit-icon{
+ color: #5367f0;
+}
+
+ .plan-edit-icon:hover {
+  color: #0b63c7 !important;
+  background: #e8f2ff !important;
+  border-color: #bcd9ff !important;
+}
+
 
 .plans-pagination {
   display: flex;
@@ -889,8 +926,8 @@
 }
 
 .delete-plan-keep-button {
-  border: 1.5px solid #0873f9;
-  color: #0873f9;
+  border: 1px solid #8995a3;
+  color: #8995a3;
   background: #fff;
 }
 
@@ -1248,10 +1285,22 @@
   grid-row: 2;
 }
 
-.plan-information-grid .plan-status-select.active { color: #1c9b4d; }
-.plan-information-grid .plan-status-select.inactive { color: #d72d47; }
-.plan-information-grid .plan-status-select option { color: #25314c; }
-.plan-information-grid .plan-status-select option[value="Inactive"] { color: #d72d47; }
+
+.plan-information-grid .plan-status-select {
+  color: #25314c;
+}
+
+.plan-information-grid .plan-status-select.active {
+  color: #1c9b4d;
+}
+
+.plan-information-grid .plan-status-select.inactive {
+  color: #d72d47;
+}
+
+.plan-information-grid .plan-status-select option {
+  color: #25314c;
+}
 
 .plan-information-actions {
   display: flex;
@@ -1308,10 +1357,14 @@
   line-height: 1.25;
 }
 .plan-date-cell strong {
-  color: #4d5970;
-  font-weight: 600;
+  color: #10264d;
+  font-weight: 500;
+  font-size: 13px;
 }
-.plan-date-cell span { font-weight: 400; }
+.plan-date-cell span {
+  color: #7290ba;
+  font-weight: 400;
+  font-size: 11px; }
 
 /* Preserve requested action icon treatment */
 .plan-table-actions button:first-child { color: #5b67ff; }
@@ -1489,3 +1542,4 @@
   width: 0 !important;
   height: 0 !important;
 }
+

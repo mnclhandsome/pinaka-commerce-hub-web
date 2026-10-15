@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { getPlan } from "../api/plans";
 function formatAmount(value, currency) {
   if (value === "" || value == null) {
@@ -38,6 +38,7 @@ function formatPlanDate(value) {
 export default function ViewPlanPricing() {
   const navigate = useNavigate();
   const { planId } = useParams();
+  const navigationPlan = useLocation().state?.plan;
   const [retry, setRetry] = useState(0);
   const [result, setResult] = useState({
     id: null,
@@ -54,7 +55,7 @@ export default function ViewPlanPricing() {
           throw new Error("The plan ID is missing from the URL.");
         }
         /* * getPlan() already: * 1. Calls GET /plans/:id * 2. Extracts the plan response * 3. Normalizes the API response */ const plan =
-          await getPlan(planId);
+          retry === 0 && String(navigationPlan?.id) === String(planId) ? navigationPlan : await getPlan(planId);
         if (!cancelled) {
           setResult({ id: planId, loading: false, plan, error: "" });
         }
@@ -117,10 +118,8 @@ export default function ViewPlanPricing() {
         <>
           {" "}
           {/* ================================================= PAGE HEADING ================================================= */}{" "}
-          <div className="plan-details-heading">
-            {" "}
-            <div className="plan-details-title-line">
-              {" "}
+           <div className="plan-details-heading">
+            <div className="plan-details-details-top">
               <button
                 type="button"
                 className="plan-details-back"
@@ -131,16 +130,17 @@ export default function ViewPlanPricing() {
                   <i className="bi bi-arrow-left" />
                 </span>
               </button>
-              <h1> {plan.name || "Unnamed plan"} </h1>{" "}
-              {/* <span
-                className={`plan-details-active-badge ${plan.status === "Inactive" ? "plan-details-inactive-badge" : ""}`}
-              >
-                {" "}
-                <i className="bi bi-circle-fill" /> {plan.status || "—"}{" "}
-              </span>{" "} */}
-            </div>{" "}
-            <p> {plan.description || "No description provided."} </p>{" "}
-          </div>{" "}
+                <div className="plan-details-heading">
+                     <div className="plan-details-title-line">
+                           <h1> {plan.name || "Unnamed plan"} </h1>
+                     </div>
+
+                     <p> {plan.description || "No description provided."} </p>
+                </div>
+                   
+            </div>  
+           
+          </div>
           {/* ================================================= TABS ================================================= */}{" "}
           <nav className="plan-details-tabs" aria-label="Plan sections">
             {" "}
@@ -168,20 +168,19 @@ export default function ViewPlanPricing() {
               </div>{" "}
               <div>
                 {" "}
-                <h2>Pricing</h2>{" "}
+                <h2>Pricing & Limits</h2>{" "}
                 <p>
                   {" "}
-                  View billing model, pricing, limits, and trial
-                  configuration.{" "}
+                 View pricing, included limits, and trial details.{" "}
                 </p>{" "}
               </div>{" "}
             </div>{" "}
             <div className="plan-pricing-fields">
               {" "}
-              {/* BILLING MODEL */}{" "}
+              {/* PRICING BASIS */}{" "}
               <label className="plan-details-field">
                 {" "}
-                <span> Billing Model </span>{" "}
+                <span> Pricing Basis </span>{" "}
                 <input value={plan.billingModel || "—"} readOnly />{" "}
               </label>{" "}
               {/* CURRENCY */}{" "}
@@ -196,10 +195,10 @@ export default function ViewPlanPricing() {
                 <span> Billing Cycle </span>{" "}
                 <input value={plan.cycle || "—"} readOnly />{" "}
               </label>{" "}
-              {/* BASE PRICE */}{" "}
+              {/* BASE SUBSCRIPTION PRICE */}{" "}
               <label className="plan-details-field">
                 {" "}
-                <span> Base Price </span>{" "}
+                <span> Base Subscription Price </span>{" "}
                 <input
                   value={formatAmount(plan.price, plan.currency)}
                   readOnly
@@ -211,22 +210,22 @@ export default function ViewPlanPricing() {
                 <span> Trial Period </span>{" "}
                 <input value={formatTrial(plan.trialPeriod)} readOnly />{" "}
               </label>{" "}
-              {/* INCLUDED STORES */}{" "}
+              {/* STORES INCLUDED */}{" "}
               <label className="plan-details-field">
                 {" "}
-                <span> Included Stores </span>{" "}
+                <span> Stores Included </span>{" "}
                 <input value={plan.includedStores ?? "—"} readOnly />{" "}
               </label>{" "}
-              {/* INCLUDED TERMINALS */}{" "}
+              {/* POS TERMINALS INCLUDED */}{" "}
               <label className="plan-details-field">
                 {" "}
-                <span> Included Terminals </span>{" "}
+                <span> POS Terminals Included </span>{" "}
                 <input value={plan.includedTerminals ?? "—"} readOnly />{" "}
               </label>{" "}
-              {/* ADDITIONAL TERMINAL PRICE */}{" "}
+              {/* Price per Additional POS Terminal */}{" "}
               <label className="plan-details-field">
                 {" "}
-                <span> Additional Terminal Price </span>{" "}
+                <span> Price per Additional POS Terminal </span>{" "}
                 <input
                   value={formatAmount(
                     plan.additionalTerminalPrice,
@@ -238,24 +237,24 @@ export default function ViewPlanPricing() {
               {/* INCLUDED USERS */}{" "}
               <label className="plan-details-field">
                 {" "}
-                <span> Included Users/Employees </span>{" "}
+                <span> Employee Licenses Included </span>{" "}
                 <input value={plan.includedUsers ?? "—"} readOnly />{" "}
               </label>{" "}
-              {/* ADDITIONAL USER PRICE */}{" "}
+              {/* Price per Additional Employee License */}{" "}
               <label className="plan-details-field">
                 {" "}
-                <span> Additional User Price </span>{" "}
+                <span> Price per Additional Employee License </span>{" "}
                 <input
                   value={formatAmount(plan.additionalUserPrice, plan.currency)}
                   readOnly
                 />{" "}
               </label>{" "}
-              {/* EFFECTIVE FROM */}{" "}
+              {/* EFFECTIVE DATE */}{" "}
               <label className="plan-details-field">
                 {" "}
-                <span> Effective From </span>{" "}
+                <span> Effective Date </span>{" "}
                 <input
-                  value={formatPlanDate(plan.effectiveFrom)}
+                  value={formatPlanDate(plan.effectiveDate)}
                   readOnly
                 />{" "}
               </label>{" "}

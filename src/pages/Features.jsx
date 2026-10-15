@@ -1,40 +1,48 @@
+import FilterDropdown from "../components/FilterDropdown";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import Pagination from "../components/Pagination";
+import DeleteConfirmationDialog from "../components/DeleteConfirmationDialog";
 import "../styles/features.css";
 import { listFeatures, createFeature as createFeatureApi, updateFeature as updateFeatureApi, deleteFeature as deleteFeatureApi } from "../api/features";
 
 const initialFeatures = [];
 
-const emptyForm = { code: "", name: "", description: "", category: "", status: "Active" };
+const emptyForm = {
+  code: "",
+  name: "",
+  description: "",
+  category: "",
+  status: "Select Status",
+};
 
+const defaultCategories = [
+  "Inventory",
+  "Payments",
+  "Operations",
+  "Cash Management",
+  "Refund",
+  "Promotions",
+  "Peripheral",
+  "Billing",
+  "Store Management",
+  "Reports",
+  "Administration",
+  "Integration",
+  "KOT Management",
+  "Kitchen Management",
+  "Financial",
+  "Marketing",
+  "Hardware",
+];
 
 function FeatureDescriptionCell({ description = "" }) {
-  const textRef = useRef(null);
-  const [isTruncated, setIsTruncated] = useState(false);
-
-  useEffect(() => {
-    const checkTruncation = () => {
-      const element = textRef.current;
-      if (!element) return;
-      setIsTruncated(element.scrollHeight > element.clientHeight + 1);
-    };
-
-    checkTruncation();
-    window.addEventListener("resize", checkTruncation);
-    return () => window.removeEventListener("resize", checkTruncation);
-  }, [description]);
-
   return (
     <td className="feature-description">
-      <div className="feature-description-tooltip-wrap">
-        <span ref={textRef} className="feature-description-clamp">
+      <div className="feature-description-content">
+        <span className="feature-description-clamp">
           {description || "—"}
         </span>
-        {isTruncated && (
-          <div className="feature-description-tooltip" role="tooltip">
-            {description}
-          </div>
-        )}
       </div>
     </td>
   );
@@ -52,26 +60,34 @@ export default function Features() {
   const [sortBy, setSortBy] = useState("newest");
   const [formErrors, setFormErrors] = useState({});
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5;
+  const [itemsPerPage, setItemsPerPage] = useState(5);
 
   const isEditing = editingId !== null;
   const editingFeature = features.find((item) => item.id === editingId);
 
+  const categoryOptions = useMemo(() => {
+    const set = new Set(defaultCategories);
+    features.forEach((f) => {
+      if (f.category && f.category.trim()) {
+        set.add(f.category.trim());
+      }
+    });
+    if (form.category && form.category.trim()) {
+      set.add(form.category.trim());
+    }
+    return Array.from(set);
+  }, [features, form.category]);
+
   const requiredFieldsComplete =
-    form.code.trim() !== "" &&
     form.name.trim() !== "" &&
     form.category.trim() !== "";
 
   const hasEditChanges =
     !isEditing ||
     !editingFeature ||
-    form.code.trim().toUpperCase() !==
-      String(
-        editingFeature.code ||
-          editingFeature.name?.toUpperCase().replace(/\s+/g, "_") ||
-          ""
-      ).trim().toUpperCase() ||
     form.name.trim() !== String(editingFeature.name || "").trim() ||
     form.description.trim() !== String(editingFeature.description || "").trim() ||
     form.category !== String(editingFeature.category || "") ||
@@ -92,20 +108,10 @@ export default function Features() {
 
   const validateFeature = () => {
     const errors = {};
-    const code = form.code.trim();
     const name = form.name.trim();
 
-    if (!code) errors.code = "Feature Code is required.";
     if (!name) errors.name = "Feature Name is required.";
     if (!form.category) errors.category = "Category is required.";
-
-    if (code && features.some(
-      (item) =>
-        String(item.id) !== String(editingId) &&
-        (item.code || "").trim().toLowerCase() === code.toLowerCase()
-    )) {
-      errors.code = "Feature Code already exists. Enter a unique code.";
-    }
 
     if (name && features.some(
       (item) =>
@@ -125,14 +131,14 @@ export default function Features() {
     setFormErrors({});
   };
 
-  const editFeature = (feature) => {
+    const editFeature = (feature) => {
     setEditingId(feature.id);
     setForm({
-      code: feature.code || feature.name.toUpperCase().replace(/\s+/g, "_"),
-      name: feature.name,
-      description: feature.description,
-      category: feature.category,
-      status: feature.status,
+      code: feature.feature_code || "",
+      name: feature.name || "",
+      description: feature.description || "",
+      category: feature.feature_type || feature.category || "",
+      status: feature.status || "Active",
     });
     setFormErrors({});
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -141,11 +147,18 @@ export default function Features() {
   const saveFeature = async () => {
     if (!validateFeature()) return;
     try {
-      const payload = { ...form, code: form.code.trim().toUpperCase() };
-      await createFeatureApi(payload);
+      const payload = {
+        ...form,
+        category: form.category,
+      };
+      const created = await createFeatureApi(payload);
+      if (created && created.id) {
+        setFeatures((prev) => [created, ...prev.filter((f) => f.id !== created.id)]);
+      }
       const latestFeatures = await listFeatures();
-
-      setFeatures(latestFeatures);
+      if (Array.isArray(latestFeatures)) {
+        setFeatures(latestFeatures);
+      }
       setCurrentPage(1);
       clearForm();
       setApiError("");
@@ -157,11 +170,28 @@ export default function Features() {
   const updateFeature = async () => {
     if (!validateFeature()) return;
     try {
-      const payload = { ...form, code: form.code.trim().toUpperCase() };
-      await updateFeatureApi(editingId, payload);
+      const payload = {
+        ...form,
+        category: form.category,
+      };
+      const updated = await updateFeatureApi(editingId, payload);
+      setFeatures((prev) =>
+        prev.map((item) =>
+          String(item.id) === String(editingId)
+            ? {
+                ...item,
+                ...payload,
+                ...(updated || {}),
+                category: form.category,
+                feature_type: form.category,
+              }
+            : item
+        )
+      );
       const latestFeatures = await listFeatures();
-
-      setFeatures(latestFeatures);
+      if (Array.isArray(latestFeatures)) {
+        setFeatures(latestFeatures);
+      }
       setCurrentPage(1);
       clearForm();
       setApiError("");
@@ -179,10 +209,11 @@ export default function Features() {
   const deleteFeature = async (featureId) => {
     try {
       await deleteFeatureApi(featureId);
-
-      // Re-fetch from the API after delete so the table reflects the persisted backend state.
+      setFeatures((prev) => prev.filter((item) => String(item.id) !== String(featureId)));
       const latestFeatures = await listFeatures();
-      setFeatures(latestFeatures);
+      if (Array.isArray(latestFeatures)) {
+        setFeatures(latestFeatures);
+      }
       setApiError("");
     } catch (e) {
       setApiError(e.message || "Unable to delete feature.");
@@ -190,27 +221,37 @@ export default function Features() {
     }
   };
 
-  const confirmDeleteFeature = async () => {
-    if (!deleteTarget) return;
-    try {
-      await deleteFeature(deleteTarget.id);
-      setDeleteTarget(null);
-    } catch {
-      // Keep the modal open when the delete request fails.
-    }
-  };
+  
+const confirmDeleteFeature = async () => {
+  if (!deleteTarget || deleting) return;
+
+  setDeleting(true);
+  setDeleteError("");
+
+  try {
+    await deleteFeature(deleteTarget.id);
+    setDeleteTarget(null);
+  } catch (e) {
+    setDeleteError(
+      e.message || "Unable to deactivate feature. Please try again."
+    );
+  } finally {
+    setDeleting(false);
+  }
+};
+
 
   const filteredFeatures = useMemo(() => {
     const q = search.trim().toLowerCase();
 
     const getCreatedTime = (item) => {
-      const value = item.createdAt || item.createdOn || item.createdDate || item.created_at;
+      const value = item.created_at;
       const time = value ? new Date(value).getTime() : 0;
       return Number.isNaN(time) ? 0 : time;
     };
 
     const getUpdatedTime = (item) => {
-      const value = item.updatedAt || item.updatedOn || item.updatedDate || item.updated_at;
+      const value = item.updated_at;
       const time = value ? new Date(value).getTime() : 0;
       return Number.isNaN(time) ? 0 : time;
     };
@@ -279,7 +320,7 @@ export default function Features() {
     <div className="features-page">
       <header className="features-page-heading">
         <h1>Features</h1>
-        <p>Manage platform features and their details.</p>
+        <p>Manage features available in PCH.</p>
       </header>
 
       {apiError && <p role="alert">{apiError}</p>}
@@ -291,21 +332,23 @@ export default function Features() {
           </div>
           <div>
             <h2>{isEditing ? "Edit Feature" : "Add Feature"}</h2>
-            <p>Provide the basic details and configuration for this feature.</p>
+            <p>Enter the feature details.</p>
           </div>
         </div>
 
         <div className="feature-form-grid">
-          <div className="feature-field">
+          <div className="feature-field ">
             <label>Feature Code<span>*</span></label>
             <input
               data-field="code"
               value={form.code}
-              onChange={updateField}
+              readOnly
+              disabled
               autoComplete="off"
-              placeholder="Enter a unique code, e.g. INVENTORY_MANAGEMENT"
-              className={formErrors.code ? "feature-input-error" : ""}
+              placeholder="Auto Generated"
+              className={formErrors.code ? "feature-input-error" : "feature-placeholder"}
             />
+            
             {formErrors.code ? (
               <small className="feature-error-text">{formErrors.code}</small>
             ) : (
@@ -345,8 +388,6 @@ export default function Features() {
               maxLength={500}
             />
             <div className="feature-description-meta">
-              <small></small>
-              <span>{form.description.length}/500</span>
             </div>
           </div>
 
@@ -354,28 +395,20 @@ export default function Features() {
             <label>Feature Category<span>*</span></label>
             <div className="select-shell">
               <select
-                  name="category"
-                  value={form.category}
-                  onChange={updateField}
-                  autoComplete="off"
-                >
-                  <option value="">Select category</option>
-                  <option value="Inventory">Inventory</option>
-                  <option value="Payments">Payments</option>
-                  <option value="Operations">Operations</option>
-                  <option value="Cash Management">Cash Management</option>
-                  <option value="Refund">Refund</option>
-                  <option value="Promotions">Promotions</option>
-                  <option value="Peripheral">Peripheral</option>
-                  <option value="Billing">Billing</option>
-                  <option value="Store Management">Store Management</option>
-                  <option value="Reports">Reports</option>
-                  <option value="Administration">Administration</option>
-                  <option value="Integration">Integration</option>
-                  <option value="KOT Management">KOT Management</option>
-                  <option value="Kitchen Management">Kitchen Management</option>
-                </select>
-              <i className="bi bi-chevron-down" />
+                name="category"
+                data-field="category"
+                value={form.category}
+                onChange={updateField}
+                autoComplete="off"
+                className={formErrors.category ? "feature-input-error" : ""}
+              >
+                <option value="">Select category</option>
+                {categoryOptions.map((cat) => (
+                  <option key={cat} value={cat}>
+                    {cat}
+                  </option>
+                ))}
+              </select>
             </div>
             {formErrors.category ? (
               <small className="feature-error-text">{formErrors.category}</small>
@@ -385,22 +418,30 @@ export default function Features() {
           </div>
 
           <div className="feature-field feature-form-status-field">
-            <label>Status</label>
-            <div className="select-shell">
-              <select
-                name="status"
-                value={form.status}
-                onChange={updateField}
-                autoComplete="off"
-                className={`feature-form-status-select ${form.status === "Inactive" ? "inactive" : "active"}`}
-              >
-                <option value="Active">Active</option>
-                <option value="Inactive">Inactive</option>
-              </select>
-              <i className="bi bi-chevron-down" />
-            </div>
-            <small> </small>
-          </div>
+  <label>Status</label>
+
+  <div className="select-shell">
+    <select
+      name="status"
+      value={form.status}
+      onChange={updateField}
+      autoComplete="off"
+      className={`feature-form-status-select ${
+        form.status === "Active"
+          ? "active"
+          : form.status === "Inactive"
+          ? "inactive"
+          : ""
+      }`}
+    >
+      <option value="Select Status">Select Status</option>
+      <option value="Active">Active</option>
+      <option value="Inactive">Inactive</option>
+    </select>
+  </div>
+
+  <small></small>
+</div>
         </div>
 
         <div className="feature-form-footer">
@@ -414,7 +455,7 @@ export default function Features() {
               onClick={isEditing ? updateFeature : saveFeature}
               disabled={!canSubmitFeature}
             >
-              {isEditing ? "Update Feature" : "Create Feature"}
+              {isEditing ? "Update Feature" : "Add Feature"}
             </button>
           </div>
         </div>
@@ -422,9 +463,9 @@ export default function Features() {
 
       <section className="features-list-card">
         <div className="features-list-toolbar">
-          <h2>Features List</h2>
-          <div className="features-filters">
-            <div className="feature-search">
+          <h2>Features</h2>
+          <div className="features-filters pch-master-toolbar pch-master-control">
+            <div className="feature-search pch-master-search pch-master-control">
               <i className="bi bi-search" />
               <input
                 type="text"
@@ -436,20 +477,20 @@ export default function Features() {
             </div>
 
             <div className="feature-filter-control">
-              <select
+              <FilterDropdown preserveToolbarLayout
                 className="features-filter-select features-status-select"
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
               >
-                <option value="All Statuses">All Status</option>
+                <option value="All Statuses">All Statuses</option>
                 <option value="Active">Active</option>
                 <option value="Inactive">Inactive</option>
-              </select>
+              </FilterDropdown>
               <i className="bi bi-chevron-down feature-filter-chevron" />
             </div>
 
             <div className="feature-filter-control feature-sort-control">
-              <select
+              <FilterDropdown preserveToolbarLayout
                 className="features-filter-select"
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
@@ -460,11 +501,11 @@ export default function Features() {
                 <option value="updated">Recently Updated</option>
                 <option value="name-asc">Name A-Z</option>
                 <option value="name-desc">Name Z-A</option>
-              </select>
+              </FilterDropdown>
               <i className="bi bi-chevron-down feature-filter-chevron" />
             </div>
 
-            <button className="reset-filter" type="button" onClick={resetFilters}>
+            <button className="reset-filter pch-master-reset pch-master-control" type="button" onClick={resetFilters}>
               <i className="bi bi-arrow-counterclockwise" />
             
             </button>
@@ -520,15 +561,19 @@ export default function Features() {
                   aria-label={`Open ${item.name} feature overview`}
                 >
                   <td className="feature-code-cell">
-                    {(item.code || item.name?.replace(/\s+/g, "_") || "—").toUpperCase()}
+                    {item.code || "—"}
                   </td>
                   <td className="feature-name-cell">
                     <span className="feature-name feature-name-button">
                       {item.name}
                     </span>
                   </td>
-                  <td>{item.category}</td>
+
+                  <td>{item.feature_type || item.category || "—"}</td>
+
                   <FeatureDescriptionCell description={item.description} />
+                  
+                  
                   <td>
                     <span className={`feature-status ${item.status.toLowerCase()}`}>
                       <b />{item.status}
@@ -536,7 +581,7 @@ export default function Features() {
                   </td>
                   <td className="feature-created">
                     {(() => {
-                      const created = formatFeatureDate(item.createdAt || item.createdOn || item.createdDate || item.created_at);
+                      const created = formatFeatureDate(item.created_at);
                       return (
                         <div className="feature-date-stack">
                           <strong>{created.date}</strong>
@@ -547,7 +592,7 @@ export default function Features() {
                   </td>
                   <td className="feature-updated">
                     {(() => {
-                      const updated = formatFeatureDate(item.updatedAt || item.updatedOn || item.updatedDate || item.updated_at);
+                      const updated = formatFeatureDate(item.updated_at);
                       return (
                         <div className="feature-date-stack">
                           <strong>{updated.date}</strong>
@@ -572,10 +617,7 @@ export default function Features() {
                       <button
                         type="button"
                         className="delete-button"
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          setDeleteTarget(item);
-                        }}
+                       onClick={(event) => {event.stopPropagation(); setDeleteError(""); setDeleteTarget(item);}}
                         aria-label={`Delete ${item.name}`}
                         title={`Delete ${item.name}`}
                       >
@@ -590,89 +632,45 @@ export default function Features() {
         </div>
 
         <div className="feature-pagination-row">
-          <span>
-            Showing {totalEntries === 0 ? 0 : startIndex + 1} to {endIndex} of {totalEntries} entries
-          </span>
-          <div className="feature-pagination">
-            <button
-              type="button"
-              aria-label="Previous page"
-              onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
-              disabled={currentPage === 1}
-            >
-              <i className="bi bi-chevron-left" />
-            </button>
-
-            {Array.from({ length: totalPages }, (_, index) => index + 1).map((page) => (
-              <button
-                key={page}
-                type="button"
-                className={currentPage === page ? "current" : ""}
-                onClick={() => setCurrentPage(page)}
-                aria-current={currentPage === page ? "page" : undefined}
-              >
-                {page}
-              </button>
-            ))}
-
-            <button
-              type="button"
-              aria-label="Next page"
-              onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}
-              disabled={currentPage === totalPages}
-            >
-              <i className="bi bi-chevron-right" />
-            </button>
-          </div>
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalItems={totalEntries}
+            pageSize={itemsPerPage}
+            onPageChange={setCurrentPage}
+            onPageSizeChange={(pageSize) => {
+              setItemsPerPage(pageSize);
+              setCurrentPage(1);
+            }}
+            itemLabel="features"
+          />
         </div>
       </section>
 
-      {deleteTarget && (
-        <div
-          className="features-delete-overlay"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="delete-feature-title"
-          onClick={() => setDeleteTarget(null)}
-        >
-          <div
-            className="features-delete-modal"
-            onClick={(event) => event.stopPropagation()}
-          >
-            <div className="features-delete-icon">
-              <i className="bi bi-trash" />
-            </div>
+      
+<DeleteConfirmationDialog
+  isOpen={Boolean(deleteTarget)}
+  title="Deactivate Feature?"
+  message={
+    deleteTarget
+      ? `Are you sure you want to deactivate "${deleteTarget.name}"?`
+      : ""
+  }
+  cancelLabel="Cancel"
+  confirmLabel="Deactivate"
+  busyLabel="Deactivating..."
+  busy={deleting}
+  error={deleteError}
+  iconClassName="bi bi-trash"
+  onCancel={() => {
+    if (!deleting) {
+      setDeleteTarget(null);
+      setDeleteError("");
+    }
+  }}
+  onConfirm={confirmDeleteFeature}
+/>
 
-            <h2 id="delete-feature-title">Delete Feature?</h2>
-
-            <p>
-              Are you sure you want to delete <strong>{deleteTarget.name}</strong>?
-            </p>
-
-            <p className="features-delete-final-warning">
-              This action cannot be undone.
-            </p>
-
-            <div className="features-delete-actions">
-              <button
-                type="button"
-                className="features-delete-keep-button"
-                onClick={() => setDeleteTarget(null)}
-              >
-                Cancel
-              </button>
-
-              <button
-                type="button"
-                className="features-delete-confirm-button"
-                onClick={confirmDeleteFeature}
-              >
-                Delete
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
     </div>
   );

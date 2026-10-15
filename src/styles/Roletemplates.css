@@ -372,8 +372,9 @@
 .role-table th,
 .role-table td {
   box-sizing: border-box;
-  padding: 15px 16px;
-  border-bottom: 1px solid #e3edf7;
+  height: 52px;
+  padding: 10px 14px;
+  border-bottom: 1px solid #e4e8ef;
   color: #23426e;
   font-size: 13px;
   text-align: left;
@@ -381,10 +382,11 @@
 }
 
 .role-table th {
+  height: 44px;
   color: #163762;
-  background: #f1f7ff;
-  font-size: 13px;
-  font-weight: 700;
+  background: #f1f3fd;
+  font-size: 12px;
+  font-weight: 600;
   white-space: nowrap;
 }
 
@@ -682,11 +684,11 @@
 /* Create Role Template heading – same as Create Store Type */
 
 .role-templates-page-heading {
-  margin-bottom: 13px;
+  margin-bottom: 12px;
 }
 
 .role-templates-page-heading h1 {
-  margin: 0 0 6px;
+  margin-bottom: 5px;
   color: #10264d;
   font-size: 20px;
   font-weight: 600;
@@ -870,22 +872,12 @@
   max-width: 125px;
 }
 
-/* Keep descriptions to one constant line.
-   The native title tooltip shows the complete description on hover. */
+/* Keep descriptions to one constant line. */
 .role-description-cell {
   max-width: 285px;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
-}
-
-.role-description-text {
-  display: block;
-  max-width: 100%;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  cursor: help;
 }
 
 /* Action colours */
@@ -1072,14 +1064,6 @@
   color: #65728b !important;
 }
 
-.role-description-text {
-  display: block;
-  width: 100%;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
 
 /* Dates */
 .role-table td.role-created-cell,
@@ -1285,7 +1269,6 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-
 /* Dates */
 .role-created-cell,
 .role-updated-cell {
@@ -1455,6 +1438,15 @@
   color: #25314c;
   font-family: inherit;
   font-size: 14px;
+  font-weight: 500;
+}
+
+.role-placeholder {
+  text-transform: none;
+  letter-spacing: 0.15px;
+  font-weight: 500;
+  cursor: not-allowed;
+  background-color: #f5f7fa !important;
 }
 
 .role-create-fields-grid .role-input-wrap input::placeholder,
@@ -1584,7 +1576,7 @@
 }
 
 .role-templates-page-heading h1 {
-  margin: 0 0 6px;
+  margin-bottom: 5px;
   color: #10264d;
   font-size: 20px;
   line-height: 1.2;
@@ -1654,7 +1646,7 @@
 }
 
 .role-table thead th {
-  border-bottom: 1px solid #dce8f4;
+  border-bottom: 1px solid #dfe5ef;
 }
 
 /* Role code is text-only; no decorative icon. */
@@ -2080,7 +2072,7 @@
    ========================================================= */
 
 .role-templates-page-heading h1 {
-  margin: 0 0 5px;
+  margin-bottom: 5px;
   color: #10254a;
   font-size: 25px;
   line-height: 1.2;
@@ -2316,32 +2308,6 @@
 }
 
 
-/* Final Role Template action colors */
-.role-table .role-actions .role-edit-action {
-  color: #1677e8 !important;
-  background: #f2f7ff !important;
-  border: 1px solid #d8e8ff !important;
-}
-
-.role-table .role-actions .role-edit-action:hover {
-  color: #0b63c7 !important;
-  background: #e8f2ff !important;
-  border-color: #bcd9ff !important;
-}
-
-.role-table .role-actions .role-delete-action {
-  color: #e34d5b !important;
-  background: #fff4f4 !important;
-  border: 1px solid #f8d9dc !important;
-}
-
-.role-table .role-actions .role-delete-action:hover {
-  color: #c93443 !important;
-  background: #ffe9eb !important;
-  border-color: #f2bfc5 !important;
-}
-
-
 /* =========================================================
    FINAL EQUAL TABLE COLUMN RULE
    JSX uses .role-equal-col on every table column/header/cell.
@@ -2432,14 +2398,14 @@
 }
 
 .role-date-value {
-  color: #173861;
+  color: #10264d;
   font-size: 13px;
   font-weight: 500;
 }
 
 .role-time-value {
   margin-top: 2px;
-  color: #6c86ad;
+  color: #7290ba;
   font-size: 11px;
   font-weight: 400;
 }
@@ -2547,7 +2513,7 @@
 
 /* Outer page heading must stay fixed in both create and edit modes. */
 .role-templates-page-heading h1 {
-  margin: 0 0 5px;
+  margin-bottom: 5px;
   color: #10254a;
   font-size: 20px;
   line-height: 1.2;
@@ -2930,13 +2896,13 @@
 }
 
 .role-search {
-  width: 250px !important;
-  min-width: 250px !important;
-  max-width: 250px !important;
-  height: 38px !important;
-  min-height: 38px !important;
-  flex: 0 0 250px !important;
-  padding: 0 12px !important;
+  width: 250px;
+  min-width: 250px;
+  max-width: 250px;
+  height: 38px;
+  min-height: 38px;
+  flex: 0 0 250px;
+  padding: 0 12px;
   box-sizing: border-box;
 }
 
@@ -2945,39 +2911,39 @@
 }
 
 .role-filters > select:first-of-type {
-  width: 150px !important;
-  min-width: 150px !important;
-  max-width: 150px !important;
-  height: 38px !important;
-  min-height: 38px !important;
-  flex: 0 0 150px !important;
+  width: 150px;
+  min-width: 150px;
+  max-width: 150px;
+  height: 38px;
+  min-height: 38px;
+  flex: 0 0 150px;
   box-sizing: border-box;
 
   /* right spacing */
-  padding-right: 28px !important;
+  padding-right: 28px;
 }
 
 .role-filters > select:last-of-type {
-  width: 150px !important;
-  min-width: 150px !important;
-  max-width: 150px !important;
-  height: 38px !important;
-  min-height: 38px !important;
-  flex: 0 0 150px !important;
+  width: 150px;
+  min-width: 150px;
+  max-width: 150px;
+  height: 38px;
+  min-height: 38px;
+  flex: 0 0 150px;
   box-sizing: border-box;
 
   /* right spacing */
-  padding-right: 28px !important;
+  padding-right: 28px;
 }
 
 .role-reset-icon-btn {
-  width: 38px !important;
-  min-width: 38px !important;
-  max-width: 38px !important;
-  height: 38px !important;
-  min-height: 38px !important;
-  padding: 0 !important;
-  flex: 0 0 38px !important;
+  width: 38px;
+  min-width: 38px;
+  max-width: 38px;
+  height: 38px;
+  min-height: 38px;
+  padding: 0;
+  flex: 0 0 38px;
   box-sizing: border-box;
 }
 
@@ -2989,34 +2955,38 @@
 
 .role-table .role-actions .role-edit-action,
 .role-table .role-actions .role-delete-action {
-  width: 32px !important;
-  min-width: 32px !important;
-  height: 32px !important;
-  margin: 0 !important;
-  padding: 0 !important;
+  width: 35px;
+  min-width: 35px;
+  height: 35px;
+  margin: 0 ;
+  padding: 0 ;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid #edf0f5 !important;
-  border-radius: 7px !important;
-  background: #f8faff !important;
+  border: 1px solid #edf0f5;
+  border-radius: 7px;
+  background: #f8faff;
   box-shadow: none !important;
   cursor: pointer;
 }
 
-.role-table .role-actions .role-edit-action {
-  color: #5367f0 !important;
+.role-table .role-actions .role-edit-action:hover {
+  color: #0b63c7 !important;
+  background: #e8f2ff !important;
+  border-color: #bcd9ff !important;
 }
 
 .role-table .role-actions .role-delete-action {
   margin-left: 8px !important;
   color: #d9485f !important;
+  
 }
 
-.role-table .role-actions .role-edit-action:hover,
+
 .role-table .role-actions .role-delete-action:hover {
-  background: #f0f3fb !important;
-  border-color: #edf0f5 !important;
+ 
+  border-color: #ffd8e1 !important;
+  background: #fff0f3 !important;
 }
 
 .role-table .role-actions .role-edit-action i,
@@ -3039,14 +3009,6 @@
 }
 
 @media (max-width: 700px) {
-  .role-search,
-  .role-filters > select:first-of-type,
-  .role-filters > select:last-of-type {
-    width: 100% !important;
-    min-width: 0 !important;
-    max-width: none !important;
-    flex: 1 1 100% !important;
-  }
 }
 
 
@@ -3223,22 +3185,73 @@
     flex-direction: column;
   }
 }
+/* =========================================================
+   ROLE TEMPLATE CODE — MATCH OTHER FORM FIELD HEIGHT
+   Backend-generated / read-only
+   ========================================================= */
 
-/* Role Template List - custom dropdown arrow */
-.role-filters > select:first-of-type,
-.role-filters > select:last-of-type {
-  appearance: none !important;
-  -webkit-appearance: none !important;
+.role-create-fields-grid .role-code-field .role-code-readonly {
+  width: 100%;
+  height: 44px;
+  min-height: 44px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  padding: 0 13px;
 
-  padding-left: 12px !important;
-  padding-right: 30px !important;
+  border: 1px solid #dce3ed;
+  border-radius: 7px;
+  background: #f7f8fa;
+}
 
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23173861' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") !important;
+/* Same typography/alignment as Role Template Name */
+.role-create-fields-grid .role-code-field .role-code-readonly input {
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  padding: 0;
+  margin: 0;
 
-  background-repeat: no-repeat !important;
+  border: 0;
+  outline: 0;
+  background: transparent;
 
-  /* THIS controls arrow right padding */
-  background-position: right 12px center !important;
+  color: #25314c;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 44px;
 
-  background-size: 12px !important;
+  box-sizing: border-box;
+}
+
+/* Disabled input should still look readable */
+.role-create-fields-grid .role-code-field .role-code-readonly input:disabled {
+  color: #25314c;
+  -webkit-text-fill-color: #25314c;
+  opacity: 1;
+  cursor: not-allowed;
+}
+
+/* Placeholder */
+.role-create-fields-grid .role-code-field .role-code-readonly input::placeholder {
+  color: #9aa8bd;
+  opacity: 1;
+}
+
+/* Validation state */
+.role-create-fields-grid
+.role-code-field
+.role-code-readonly:has(input.role-input-invalid) {
+  border-color: #e5455d;
+  background: #fffafb;
+}
+
+.role-create-fields-grid
+.role-code-field
+.role-code-readonly:has(input.role-input-invalid)
+input {
+  color: #c93443;
+  -webkit-text-fill-color: #c93443;
 }

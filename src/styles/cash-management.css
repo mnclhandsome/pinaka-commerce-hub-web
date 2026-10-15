@@ -8,6 +8,10 @@
   padding-bottom: 30px;
 }
 
+.page-content {
+    padding: 18px 24px 0;
+    flex: 1;
+}
 
 /* =========================================================
    PAGE HEADER
@@ -38,10 +42,8 @@
 
 .cash-page-header h1 {
   margin: 0 0 4px;
-
   color: #17233e;
-
-  font-size: 28px;
+  font-size: 20px;
   line-height: 1.15;
   font-weight: 700;
 }
@@ -65,7 +67,7 @@
 
   grid-template-columns: repeat(4, minmax(0, 1fr));
 
-  gap: 18px;
+  gap: 10px;
 
   margin-bottom: 16px;
 }
@@ -79,19 +81,19 @@
 .cash-kpi-card {
   position: relative;
 
-  min-height: 105px;
-  height: 105px;
+  min-height: 95px;
+  height: 95px;
 
-  padding: 16px;
+  padding: 10px;
 
   display: flex;
   align-items: center;
 
-  gap: 12px;
+  gap: 0;
 
   background: #ffffff;
 
-  border: 1px solid #e4e7ed;
+  border: 1px solid #e4dcf5;
 
   border-radius: 8px;
 
@@ -100,17 +102,26 @@
   overflow: hidden;
 
   box-shadow: none;
+  background: linear-gradient(135deg, #fff 0%, #f3efff 100%);
 }
 
+.cash-kpi-card.green {
+  background: linear-gradient(135deg, #fff 0%, #eafaf2 100%);
+  border-color: #d6ecdf;
+}
 
-/* Remove colored card borders */
+.cash-kpi-card.orange {
+  background: linear-gradient(135deg, #fff 0%, #fff5e5 100%);
+  border-color: #f2e3cb;
+}
 
-.cash-kpi-card.purple,
-.cash-kpi-card.green,
-.cash-kpi-card.orange,
 .cash-kpi-card.blue {
-  border-color: #e4e7ed;
+  background: linear-gradient(135deg, #fff 0%, #edf6ff 100%);
+  border-color: #dbe8f4;
 }
+
+
+
 
 
 /* =========================================================
@@ -118,10 +129,11 @@
 ========================================================= */
 
 .cash-kpi-icon {
-  width: 43px;
-  height: 43px;
+  width: 40px;
+  height: 40px;
 
-  flex: 0 0 43px;
+  flex: 0 0 40px;
+  margin: 0 18px 0 6px;
 
   display: flex;
   align-items: center;
@@ -129,27 +141,27 @@
 
   border-radius: 50%;
 
-  font-size: 19px;
+  font-size: 16px;
 }
 
 .cash-kpi-card.purple .cash-kpi-icon {
-  background: #eeeaff;
-  color: #6250cf;
+  background: #eeebff;
+  color: #674ed9;
 }
 
 .cash-kpi-card.green .cash-kpi-icon {
-  background: #e5f6eb;
-  color: #35a467;
+  background: #e4f7eb;
+  color: #2eaa62;
 }
 
 .cash-kpi-card.orange .cash-kpi-icon {
-  background: #fff1dc;
-  color: #e59c2d;
+  background: #fff1df;
+  color: #e99b2b;
 }
 
 .cash-kpi-card.blue .cash-kpi-icon {
-  background: #e4f0ff;
-  color: #4181d5;
+  background: #e7f1ff;
+  color: #4185dd;
 }
 
 
@@ -172,13 +184,15 @@
 .cash-kpi-content > span {
   display: block;
 
-  color: #697286;
+  color: #536b8c;
 
-  font-size: 12px;
+  font-size: 11px;
 
-  line-height: 1.2;
+  line-height: 15px;
 
-  margin-bottom: 3px;
+  margin-bottom: 0;
+
+  font-weight: 400;
 }
 
 
@@ -187,13 +201,13 @@
 .cash-kpi-content > strong {
   display: block;
 
-  color: #1d2942;
+  color: #152d4e;
 
-  font-size: 20px;
+  font-size: 22px;
 
-  line-height: 1.1;
+  line-height: 25px;
 
-  font-weight: 700;
+  font-weight: 750;
 }
 
 
@@ -205,25 +219,29 @@
   display: flex;
   align-items: center;
 
-  gap: 3px;
+  gap: 5px;
 
-  margin-top: 5px;
+  margin-top: 2px;
 
-  font-size: 8px;
+  font-size: 10px;
 
-  line-height: 1.2;
+  line-height: 14px;
 
   white-space: nowrap;
 }
 
+.cash-kpi-content small:empty {
+  display: none;
+}
+
 .cash-kpi-content small i {
-  font-size: 9px;
+  font-size: 6px;
 }
 
 .cash-kpi-content small span {
   color: #8d95a5;
 
-  font-size: 8px;
+  font-size: 10px;
 
   font-weight: 400;
 
@@ -247,218 +265,17 @@
   display: none;
 }
 
-
-/* =========================================================
-   FILTER BAR
-   Compact like Stores toolbar
-========================================================= */
-
-.cash-filter-bar {
-  min-height: 58px;
-
-  padding: 11px 13px;
-
-  margin-bottom: 16px;
-
-  display: grid;
-
-  grid-template-columns:
-    minmax(270px, 2fr)
-    minmax(125px, 1fr)
-    minmax(125px, 1fr)
-    minmax(125px, 1fr)
-    90px;
-
-  gap: 8px;
-
-  align-items: center;
-
-  background: #ffffff;
-
-  border: 1px solid #e4e7ed;
-
-  border-radius: 8px;
-
-  box-sizing: border-box;
-}
-
-
-/* =========================================================
-   SEARCH
-========================================================= */
-
-.cash-search-box {
-  height: 32px;
-
-  display: flex;
-  align-items: center;
-
-  gap: 8px;
-
-  padding: 0 9px;
-
-  background: #ffffff;
-
-  border: 1px solid #dfe3ea;
-
-  border-radius: 5px;
-
-  box-sizing: border-box;
-}
-
-.cash-search-box > i {
-  color: #929aaa;
-
-  font-size: 12px;
-}
-
-.cash-search-box input {
-  width: 100%;
-
-  border: 0;
-  outline: 0;
-
-  padding-left: 2px;
-
-  background: transparent;
-
-  color: #3e485d;
-
-  font-size: 10px;
-}
-
-.cash-search-box input::placeholder {
-  color: #9ca3b1;
-}
-
-
-/* =========================================================
-   SELECT
-========================================================= */
-
-.cash-select-wrapper {
-  position: relative;
-
-  height: 32px;
-
-  display: flex;
-  align-items: center;
-
-  gap: 6px;
-
-  padding: 0 9px;
-
-  background: #ffffff;
-
-  border: 1px solid #dfe3ea;
-
-  border-radius: 5px;
-
-  box-sizing: border-box;
-}
-
-.cash-select-wrapper > i:first-child {
-  color: #667994;
-
-  font-size: 12px;
-
-  flex: 0 0 auto;
-}
-
-.cash-select-wrapper select {
-  width: 100%;
-
-  height: 100%;
-
-  padding: 0 20px 0 0;
-
-  border: none;
-
-  outline: none;
-
-  appearance: none;
-
-  background: transparent;
-
-  color: #596378;
-
-  font-size: 9px;
-
-  cursor: pointer;
-}
-
-.cash-select-arrow {
-  position: absolute;
-
-  right: 9px;
-
-  color: #596378 !important;
-
-  font-size: 10px !important;
-
-  pointer-events: none;
-}
-
-
-/* =========================================================
-   CLEAR BUTTON
-========================================================= */
-
-.cash-clear-button {
-  height: 32px;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  gap: 6px;
-
-  padding: 0 11px;
-
-  border: 1px solid #dfe3ea;
-
-  border-radius: 5px;
-
-  background: #ffffff;
-
-  color: #596378;
-
-  font-size: 9px;
-
-  font-weight: 400;
-
-  cursor: pointer;
-
-  transition: all 0.2s ease;
-}
-
-.cash-clear-button i {
-  font-size: 11px;
-}
-
-.cash-clear-button:hover {
-  background: #f5f6fa;
-
-  border-color: #cfd5df;
-
-  color: #172b4d;
-}
-
-
 /* =========================================================
    TABLE CARD
 ========================================================= */
 
 .cash-table-card {
   background: #ffffff;
-
-  border: 1px solid #e4e7ed;
-
+  border: 1px solid #e5e8ee;
   border-radius: 8px;
-
   overflow: hidden;
-
   box-shadow: none;
+  margin-bottom: 12px;
 }
 
 
@@ -467,88 +284,44 @@
 ========================================================= */
 
 .cash-table-header {
-  min-height: 58px;
-
+  min-height: 55px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-
   padding: 0 18px;
-
   border-bottom: 1px solid #eceef2;
-
   box-sizing: border-box;
 }
 
 .cash-table-title {
-  display: flex;
-  align-items: center;
-
-  gap: 10px;
+   display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
 .cash-table-title h2 {
-  margin: 0;
-
-  color: #17233e;
-
-  font-size: 18px;
-
-  font-weight: 700;
+    margin: 0;
+    color: #17233e;
+    font-size: 17px;
+    font-weight: 700;
 }
 
 .cash-table-title > span {
   min-width: 30px;
   height: 30px;
-
   display: flex;
   align-items: center;
   justify-content: center;
-
   padding: 0 8px;
-
   border-radius: 50%;
-
   background: #eeeaff;
-
   color: #6250cf;
-
   font-size: 12px;
-
   font-weight: 700;
-
   box-sizing: border-box;
 }
 
 
-/* =========================================================
-   READ ONLY
-========================================================= */
-
-.cash-read-only {
-  height: 36px;
-
-  display: flex;
-  align-items: center;
-
-  gap: 6px;
-
-  padding: 0 12px;
-
-  background: #f4f6fa;
-
-  border-radius: 7px;
-
-  color: #62728c;
-
-  font-size: 11px;
-
-  font-weight: 500;
-}
-
-.cash-read-only i {
-  font-size: 13px;
-}
 
 
 /* =========================================================
@@ -558,7 +331,6 @@
 .cash-table-wrapper {
   width: 100%;
 
-  overflow-x: auto;
 }
 
 
@@ -566,14 +338,14 @@
    TABLE
 ========================================================= */
 
+
+
 .cash-table {
   width: 100%;
-
-  min-width: 1120px;
-
+  min-width: 1500px;
   border-collapse: collapse;
-
-  table-layout: fixed;
+  table-layout: auto;
+  margin: 0;
 }
 
 
@@ -582,33 +354,24 @@
 ========================================================= */
 
 .cash-table th {
-  height: 50px;
-
-  padding: 0 12px;
-
-  background: #fafbfc;
-
-  border-right: 1px solid #e9ebef;
-
-  border-bottom: 1px solid #e9ebef;
-
-  color: #9199aa;
-
-  font-size: 11px;
-
+  background: #f5f9fe;
+  height: 44px;
+  padding: 0 14px;
+  background: #f1f3fd;
+  color: #484c56;
+  font-size: 12px;
   font-weight: 600;
-
   text-align: left;
-
-  text-transform: uppercase;
-
-  letter-spacing: 0.2px;
-
   vertical-align: middle;
+  border-top: 1px solid #dfe5ef;
+  border-bottom: 1px solid #dfe5ef;
+  background: #f1f3fd;
+  white-space: nowrap;
 }
 
 .cash-table th:last-child {
   border-right: none;
+  border-right: 0;
 }
 
 
@@ -617,29 +380,40 @@
 ========================================================= */
 
 .cash-table td {
-  height: 64px;
-
-  padding: 10px 12px;
-
-  border-right: 1px solid #f0f1f4;
-
-  border-bottom: 1px solid #f0f1f4;
-
-  color: #5e687b;
-
-  font-size: 12px;
-
+  height: 52px;
+  min-height: 52px;
+  padding: 10px 14px;
+  border: 0;
+  border-bottom: 1px solid #e4e8ef;
+  color: #697285;
+  font-size: 13px;
   vertical-align: middle;
-
   box-sizing: border-box;
+  white-space: nowrap;
 }
 
 .cash-table td:last-child {
   border-right: none;
+   border-right: 0;
+}
+
+.cash-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.cash-table-card > .pagination-container {
+  width: calc(100% - 24px);
+  max-width: calc(100% - 24px);
+  margin: 0 12px;
+  padding: 16px 8px;
+  box-sizing: border-box;
+  border-top: 0;
+  min-width: 0;
 }
 
 .cash-table tbody tr:hover {
-  background: #fafbff;
+background: #fcfcff;
+    
 }
 
 
@@ -649,52 +423,56 @@
 
 .cash-table th:nth-child(1),
 .cash-table td:nth-child(1) {
-  width: 17%;
+  width: 20%;
+  border-right: 0 !important;
 }
 
 .cash-table th:nth-child(2),
 .cash-table td:nth-child(2) {
-  width: 9%;
+  width: 8%;
+  border-right: 0 !important;
 }
 
 .cash-table th:nth-child(3),
 .cash-table td:nth-child(3) {
-  width: 9%;
+  width: 10%;
+  border-right: 0 !important;
 }
 
 .cash-table th:nth-child(4),
 .cash-table td:nth-child(4) {
-  width: 10%;
+  width: 9%;
+  border-right: 0 !important;
 }
 
 .cash-table th:nth-child(5),
 .cash-table td:nth-child(5) {
-  width: 10%;
+  width: 9%;
+  border-right: 0 !important;
 }
 
 .cash-table th:nth-child(6),
 .cash-table td:nth-child(6) {
-  width: 10%;
+  width: 9%;
+  border-right: 0 !important;
 }
 
 .cash-table th:nth-child(7),
 .cash-table td:nth-child(7) {
-  width: 11%;
+  width: 12%;
+  border-right: 0 !important;
 }
 
 .cash-table th:nth-child(8),
 .cash-table td:nth-child(8) {
   width: 12%;
+  border-right: 0 !important;
 }
 
 .cash-table th:nth-child(9),
 .cash-table td:nth-child(9) {
-  width: 8%;
-}
-
-.cash-table th:nth-child(10),
-.cash-table td:nth-child(10) {
-  width: 4%;
+  width: 11%;
+  border-right: 0 !important;
 }
 
 
@@ -704,21 +482,18 @@
 
 .cash-title {
   display: block;
-
-  color: #684ee8;
-
-  font-size: 12px;
-
+  font-size: 13px;
   font-weight: 600;
-
   line-height: 1.35;
-
   text-decoration: none;
+  width: 100%;
+  line-height: 20px;
+  white-space: nowrap;
+  color: #697285;
 }
 
 .cash-title:hover {
   color: #573adf;
-
   text-decoration: underline;
 }
 
@@ -728,11 +503,9 @@
 ========================================================= */
 
 .cash-sort-icon {
-  margin-left: 4px;
-
-  color: #8493a8;
-
-  font-size: 11px;
+  margin-left: 3px;
+  color: #9aa1ae;
+  font-size: 10px; 
 }
 
 
@@ -752,25 +525,21 @@
 ========================================================= */
 
 .cash-date {
-  display: flex;
-
-  flex-direction: column;
-
-  gap: 3px;
+  display: table-cell;
 }
 
 .cash-date strong {
-  color: #526784;
-
-  font-size: 11px;
-
-  font-weight: 500;
+  color: #536078;
+  font-size: 12px;
+  font-weight: 600;
+  display: block;
 }
 
 .cash-date span {
-  color: #8b9ab0;
-
+  color: #9aa1ae;
   font-size: 10px;
+  display: block;
+  margin-top: 3px;
 }
 
 
@@ -781,24 +550,20 @@
 .cash-action-button {
   width: 28px;
   height: 28px;
-
   display: flex;
   align-items: center;
   justify-content: center;
-
   border: 0;
-
   background: transparent;
-
-  color: #788195;
-
-  border-radius: 4px;
-
+  color: #7a8497;
+  border-radius: 5px;
   cursor: pointer;
+  font-size: 13px
 }
 
 .cash-action-button:hover {
-  background: #f1f2f6;
+    background: #f1f2f6;
+    color: #5143bc;
 }
 
 .cash-action-button i {
@@ -846,52 +611,6 @@
 }
 
 
-/* =========================================================
-   PAGINATION
-========================================================= */
-
-.cash-pagination {
-  display: flex;
-  align-items: center;
-
-  gap: 4px;
-}
-
-.cash-pagination button {
-  min-width: 26px;
-  height: 26px;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  border: 1px solid #e0e3e9;
-
-  border-radius: 4px;
-
-  background: #ffffff;
-
-  color: #667085;
-
-  font-size: 8px;
-
-  cursor: pointer;
-}
-
-.cash-pagination button:hover {
-  background: #f5f4ff;
-}
-
-.cash-pagination button.active {
-  background: #5547c7;
-
-  border-color: #5547c7;
-
-  color: #ffffff;
-
-  font-weight: 600;
-}
-
 
 /* =========================================================
    RESPONSIVE
@@ -900,24 +619,57 @@
 @media (max-width: 1250px) {
 
   .cash-filter-bar {
-    grid-template-columns:
-      2fr
-      1fr
-      1fr;
+    flex-wrap: wrap;
   }
 
   .cash-search-box {
-    grid-column: span 2;
+      flex: 1 1 230px;
+  }
+
+    .cash-select-wrapper {
+    flex: 1 1 125px;
   }
 
   .cash-clear-button {
     grid-column: span 1;
+     margin-left: auto;
   }
 
   .cash-kpi-grid {
     grid-template-columns: repeat(2, 1fr);
   }
 
+}
+
+.cash-table-card,
+.cash-table-wrapper {
+  min-width: 0;
+}
+
+.cash-table-wrapper {
+  box-sizing: border-box;
+  width: calc(100% - 24px);
+  max-width: calc(100% - 24px);
+  margin: 0 12px;
+  overflow: hidden;
+  border: 1px solid #dfe9f4;
+  border-radius: 8px;
+  background: #fff;
+  border-top: 0;
+}
+
+.cash-table-scroll {
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+}
+
+@media (max-width: 600px) {
+  .cash-table-wrapper {
+    width: calc(100% - 20px);
+    max-width: calc(100% - 20px);
+    margin-right: 10px;
+    margin-left: 10px;
+  }
 }
 
 
@@ -962,14 +714,24 @@
 
   .cash-filter-bar {
     grid-template-columns: 1fr;
+    align-items: stretch;
+    flex-wrap: wrap;
   }
 
   .cash-search-box {
     grid-column: auto;
+    width: 100%;
+    flex: 1 1 100%;
+  }
+
+   .cash-select-wrapper {
+    flex: 1;
   }
 
   .cash-clear-button {
     grid-column: auto;
+    margin-left: 0;
+    flex: 1;
   }
 
 }
@@ -982,8 +744,8 @@
   }
 
   .cash-kpi-card {
-    min-height: 105px;
-    height: 105px;
+    min-height: 95px;
+    height: 95px;
   }
 
 }
@@ -1007,26 +769,56 @@
   }
 
   .cash-kpi-card {
-    padding: 14px;
+    padding: 10px;
   }
 
   .cash-kpi-icon {
-    width: 43px;
-    height: 43px;
-    flex-basis: 43px;
-    font-size: 18px;
+    width: 40px;
+    height: 40px;
+    flex-basis: 40px;
+    font-size: 16px;
   }
 
   .cash-kpi-content > span {
-    font-size: 12px;
+    font-size: 11px;
   }
 
   .cash-kpi-content > strong {
-    font-size: 20px;
+    font-size: 22px;
   }
 
   .cash-kpi-content small {
     font-size: 8px;
   }
 
+    .cash-search-box {
+    width: 100%;
+
+    flex: none;
+  }
+
+  .cash-select-wrapper,
+  .cash-clear-button {
+    width: 100%;
+
+    flex: none;
+  }
+
 }
+
+.cash-table-card > .pagination-container > * {
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+/* Mobile — match the table wrapper */
+@media (max-width: 600px) {
+  .cash-table-card > .pagination-container {
+    width: calc(100% - 20px);
+    max-width: calc(100% - 20px);
+    margin-right: 10px;
+    margin-left: 10px;
+    padding: 12px 4px;
+  }
+}
+

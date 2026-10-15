@@ -1,4 +1,4 @@
-import { api } from "./http";
+import { api, pendingStoreRead } from "./http";
 import { endpoints } from "./endpoints";
 function isUuid(val) {
   return (
@@ -66,14 +66,14 @@ function computeRenewalDate(startDateStr, billingCycleStr) {
   }
   const day = date.getUTCDate();
   date.setUTCDate(1);
-  const isAnnual =
-    String(billingCycleStr || "")
-      .toUpperCase()
-      .includes("ANNUAL") ||
-    String(billingCycleStr || "")
-      .toUpperCase()
-      .includes("YEAR");
-  date.setUTCMonth(date.getUTCMonth() + (isAnnual ? 12 : 1));
+  const cycle = String(billingCycleStr || "").toUpperCase();
+  const months =
+    cycle.includes("ANNUAL") || cycle.includes("YEAR")
+      ? 12
+      : cycle.includes("QUARTER")
+        ? 3
+        : 1;
+  date.setUTCMonth(date.getUTCMonth() + months);
   const last = new Date(
     Date.UTC(date.getUTCFullYear(), date.getUTCMonth() + 1, 0),
   ).getUTCDate();
@@ -134,7 +134,7 @@ export function toNestedMerchantPayload(data) {
   if (!isUuid(planId)) planId = DEFAULT_PLAN_ID;
 
   const billingCycle = String(
-    s.billingCycle || data.cycle || data.billingCycle || "MONTHLY",
+    s.billingCycle || s.billing_cycle || data.cycle || data.billingCycle || data.billing_cycle || m.billingCycle || m.billing_cycle || "MONTHLY",
   ).toUpperCase();
   const startDate =
     s.startDate ||
@@ -163,6 +163,9 @@ export function toNestedMerchantPayload(data) {
 
   return {
     merchant: {
+      ein: m.ein || m.EIN || "",
+      firstName: m.firstName || "",
+      lastName: m.lastName || "",
       business: businessName,
       display: businessDisplayName,
       name: merchantName,
@@ -257,12 +260,14 @@ export function toFlatMerchantPayload(data) {
   if (!isUuid(planId)) planId = DEFAULT_PLAN_ID;
 
   const rawCycle = String(
-    s.billingCycle || data.cycle || data.billingCycle || "MONTHLY",
+    s.billingCycle || s.billing_cycle || data.cycle || data.billingCycle || data.billing_cycle || m.billingCycle || m.billing_cycle || "MONTHLY",
   ).toUpperCase();
   const billingCycle =
     rawCycle.includes("ANNUAL") || rawCycle.includes("YEAR")
       ? "ANNUAL"
-      : "MONTHLY";
+      : rawCycle.includes("QUARTER")
+        ? "QUARTERLY"
+        : "MONTHLY";
 
   const startDate =
     s.startDate ||
@@ -305,6 +310,9 @@ export function toFlatMerchantPayload(data) {
     : "CARD";
 
   return {
+    ein: m.ein || m.EIN || "",
+      firstName: m.firstName || "",
+      lastName: m.lastName || "",
     merchantName,
     merchantEmail,
     merchantPhoneNumber,
@@ -417,30 +425,66 @@ function merchantApiId(merchant) {
 export function mapMerchantToRow(item) {
   if (!item) return null;
   const merchant = item.merchant || item.data?.merchant || item.data || item;
-  const plan = item.plan || merchant.plan || item.subscription?.plan || {};
   const subscription = item.subscription || merchant.subscription || {};
+  const plan = item.plan || merchant.plan || subscription.plan || {};
 
   const name =
     merchant.businessDisplayName ||
+    merchant.business_display_name ||
     merchant.businessName ||
+    merchant.business_name ||
     merchant.legalBusinessName ||
     merchant.merchantName ||
     merchant.ownerName ||
+    [merchant.firstName || merchant.first_name, merchant.lastName || merchant.last_name].filter(Boolean).join(" ") ||
     merchant.name ||
     "Merchant";
 
-  const id = merchantApiId(merchant) || merchant.code || merchant.merchantCode || "";
+    const uuid = [
+    item.uuid,
+    item.id,
+    item.data?.uuid,
+    item.data?.id,
+    item.data?.merchantUuid,
+    item.data?.merchant_uuid,
+    item.merchantUuid,
+    item.merchant_uuid,
+    item.merchant?.uuid,
+    item.merchant?.id,
+    item.merchant?.merchantUuid,
+    item.merchant?.merchant_uuid,
+    merchant.uuid,
+    merchant.id,
+    merchant.merchantUuid,
+    merchant.merchant_uuid,
+    merchant._id,
+  ].find((value) =>
+    typeof value === "string" &&
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value),
+  ) || "";
+  const id = uuid || merchant.id || merchant.merchantId || merchant.merchant_id || merchant.merchantCode || merchant.merchant_code || "";
   const email = merchant.merchantEmail || merchant.email || "";
   const phone = merchant.merchantPhoneNumber || merchant.phone || "";
   const stores = Array.isArray(merchant.stores || item.stores)
     ? (merchant.stores || item.stores).length
-    : (merchant.storeCount ?? merchant.storesCount ?? 0);
+    : (item.storeCount ??
+      item.store_count ??
+      subscription.storeCount ??
+      subscription.store_count ??
+      merchant.storeCount ??
+      merchant.store_count ??
+      merchant.storesCount ??
+      0);
 
   const planName =
     subscription.planName ||
+    subscription.plan_name ||
     plan.name ||
+    plan.planName ||
     subscription.planCode ||
+    subscription.plan_code ||
     plan.code ||
+    plan.plan_code ||
     merchant.plan ||
     merchant.subscriptionPlan ||
     "—";
@@ -448,6 +492,7 @@ export function mapMerchantToRow(item) {
   const renewal =
     subscription.renewalDate ||
     subscription.renewal_date ||
+    subscription.renewalDate ||
     merchant.renewal ||
     merchant.renewsOn ||
     "";
@@ -459,13 +504,16 @@ export function mapMerchantToRow(item) {
     "ACTIVE";
 
   const createdAt =
-    merchant.createdDate || merchant.createdAt || merchant.joined || "";
-
-  const updatedAt = merchant.updatedDate || merchant.updatedAt || createdAt;
+    merchant.createdAt || merchant.created_at || merchant.createdDate ||
+    merchant.created_date || merchant.joined || "";
+  const updatedAt =
+    merchant.updatedAt || merchant.updated_at || merchant.updatedDate ||
+    merchant.updated_date || createdAt;
 
   return {
     id,
-    merchantId: merchant.merchantId || id,
+    uuid,
+    merchantId: merchant.merchantId || merchant.merchant_id || merchant.merchantCode || merchant.merchant_code || id,
     name,
     email,
     phone,
@@ -477,6 +525,7 @@ export function mapMerchantToRow(item) {
     active: formatRelative(updatedAt),
     initials: toInitials(name),
     createdAt,
+    updatedAt,
     country: merchant.country || "",
     state: merchant.state || "",
     city: merchant.city || "",
@@ -485,7 +534,7 @@ export function mapMerchantToRow(item) {
 }
 
 export async function getMerchant(id) {
-  const data = await api.get(endpoints.merchant(id));
+  const data = await pendingStoreRead(`merchant-detail:${id}`, () => api.get(endpoints.merchant(id)));
   const merchant = data?.merchant || data?.data?.merchant || data?.data || data;
   const stores = Array.isArray(data?.stores)
     ? data.stores
@@ -574,6 +623,20 @@ export async function deleteMerchant(id) {
   return result;
 }
 
+export async function updateMerchantStatus(id, status) {
+  const normalizedStatus = String(status || "").trim().toUpperCase();
+  if (!["ACTIVE", "INACTIVE"].includes(normalizedStatus)) {
+    throw new Error("Merchant status must be ACTIVE or INACTIVE.");
+  }
+  const result = await api.patch(`${endpoints.merchant(id)}/status`, {
+    status: normalizedStatus,
+  });
+  if (result && result.success === false) {
+    throw new Error(result.message || "Unable to update merchant status.");
+  }
+  return result;
+}
+
 export async function getMerchantForm(id) {
   const { raw } = await getMerchant(id);
   const merchant = raw.merchant || raw;
@@ -595,7 +658,14 @@ export async function getMerchantForm(id) {
       "",
     plan: subscription?.planCode || subscription?.plan_id || "",
     billingCycle:
-      subscription?.billingCycle || subscription?.billing_cycle || "",
+      subscription?.billingCycle ||
+      subscription?.billing_cycle ||
+      raw.billingCycle ||
+      raw.billing_cycle ||
+      raw.cycle ||
+      merchant.billingCycle ||
+      merchant.billing_cycle ||
+      "MONTHLY",
     trialPeriod: String(subscription?.trialDays ?? 0),
     stores: (raw.stores || []).map((store) => ({
       persisted: true,

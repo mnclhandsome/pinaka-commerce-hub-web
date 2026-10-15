@@ -126,18 +126,19 @@
 ========================================================= */
 
 .categories-toolbar {
+  box-sizing: border-box;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 14px;
-  padding: 14px 18px;
-  border-bottom: 1px solid #e8ebf0;
-  background: #fafbfc;
+  gap: 8px;
+  width: calc(100% - 24px);
+  margin: 0 12px;
+  padding: 12px 0 16px;
 }
 
 .categories-search {
   position: relative;
-  width: 320px;
+  flex: 1 1 360px;
+  width: auto;
   max-width: 100%;
 }
 
@@ -177,8 +178,20 @@
 ========================================================= */
 
 .categories-table-wrap {
-  width: 100%;
+  box-sizing: border-box;
+  width: calc(100% - 24px);
+  max-width: calc(100% - 24px);
+  margin: 0 12px;
   overflow-x: auto;
+  border: 1px solid #dfe9f4;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.categories-table-wrap + .pagination-container {
+  box-sizing: border-box;
+  width: calc(100% - 24px);
+  margin: 0 12px;
 }
 
 .categories-table {
@@ -188,24 +201,24 @@
 }
 
 .categories-table thead th {
-  height: 42px;
-  padding: 0 18px;
-  border-bottom: 1px solid #e5e8ef;
-  background: #fafbfc;
+  height: 44px;
+  padding: 0 14px;
+  border-bottom: 1px solid #dfe5ef;
+  background: #f1f3fd;
   color: #8a94a6;
-  font-size: 10px;
-  font-weight: 700;
+  font-size: 14px;
+  font-weight: 600;
   letter-spacing: 0.05em;
   text-align: left;
   white-space: nowrap;
 }
 
 .categories-table tbody td {
-  height: 64px;
-  padding: 10px 18px;
-  border-bottom: 1px solid #edf0f4;
+  height: 52px;
+  padding: 10px 14px;
+  border-bottom: 1px solid #e4e8ef;
   color: #536077;
-  font-size: 12px;
+  font-size: 14px;
   vertical-align: middle;
 }
 
@@ -257,7 +270,7 @@
 .category-name-cell strong {
   display: block;
   color: #354159;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 600;
 }
 
@@ -265,7 +278,7 @@
   display: block;
   margin-top: 3px;
   color: #929caf;
-  font-size: 11px;
+  font-size: 12px;
 }
 
 /* =========================================================
@@ -275,7 +288,7 @@
 .slug-text {
   color: #69758a;
   font-family: monospace;
-  font-size: 11px;
+  font-size: 12px;
 }
 
 /* =========================================================
@@ -284,7 +297,7 @@
 
 .count-value {
   color: #44516a;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 600;
 }
 
@@ -300,7 +313,7 @@
   border-radius: 12px;
   background: #eef1f5;
   color: #68758a;
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 600;
 }
 
@@ -335,7 +348,7 @@
   border-radius: 5px;
   background: #f8f9fb;
   color: #657187;
-  font-size: 10px;
+  font-size: 12px;
 }
 
 .attribute-terms .more-terms {
@@ -460,7 +473,7 @@
   }
 
   .categories-toolbar {
-    padding: 12px;
+    padding: 12px 0 16px;
   }
 
   .categories-search {
@@ -494,5 +507,20 @@
   .categories-tab {
     height: 48px;
     font-size: 12px;
+  }
+}
+
+@media (max-width: 600px) {
+  .categories-table-wrap {
+    width: calc(100% - 20px);
+    max-width: calc(100% - 20px);
+    margin-right: 10px;
+    margin-left: 10px;
+  }
+
+  .categories-table-wrap + .pagination-container {
+    width: calc(100% - 20px);
+    margin-right: 10px;
+    margin-left: 10px;
   }
 }

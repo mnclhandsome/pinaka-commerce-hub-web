@@ -1,11 +1,15 @@
+import { isUuid, normalizeStoreForConfiguration } from "../api/storeDetails";
 import { useEffect, useMemo, useState } from "react";
-import { NavLink, useNavigate, useParams } from "react-router-dom";
+import { NavLink, useLocation, useNavigate, useParams } from "react-router-dom";
 
 import { getMerchant } from "../api/merchants";
-import Users from "./Users";
+import AddStore from "./AddStore";
+import { getActiveSubscriptions, extractActiveSubscription } from "../api/subscriptions_stores";
+
 import PosConfiguration from "./pos/PosConfiguration";
 import Products from "./Products";
 import Coupons from "./Coupons";
+import Discounts from "./Discounts";
 import Orders from "./Orders";
 import StoreCustomers from "./StoreCustomers";
 import FastKeys from "./FastKeys";
@@ -13,14 +17,21 @@ import StoreCategories from "./StoreCategories";
 import StoreShifts from "./StoreShifts";
 import StorePaymentRecords from "./StorePaymentRecords";
 import VendorPayments from "./VendorPayments";
+import MerchantVendors from "./MerchantVendors";
+import EmployeeAttendance, { AttendanceDetails } from "./EmployeeAttendance";
 
-import { ApiError } from "../api/http";
-import { listStores } from "../api/stores";
+import { api, ApiError, pendingStoreRead } from "../api/http";
+import { endpoints } from "../api/endpoints";
+
 
 import {
+  fetchWordpressConnector,
   getWordpressConnector,
   saveWordpressConnector,
-  testWordpressConnection,
+  syncWordpressAttributes,
+  syncWordpressCategories,
+  syncWordpressProducts,
+  syncWordpressTags,
 } from "../api/storeConnector";
 
 
@@ -32,18 +43,27 @@ const navGroups = [
   {
     id: "store-setup",
     label: "Store Overview",
-    collapsible: false,
     items: [
-      ["overview", "bi-shop", "Store Overview"],
+      ["details", "bi-shop", "Store Details"],
+      ["subscription", "bi-credit-card", "Subscription"],
+    ],
+  },
+  {
+    id: "access",
+    label: "Access & Permissions",
+    items: [
+      ["features", "bi-grid", "Features"],
+      ["roles", "bi-shield-check", "Roles & Permissions"],
     ],
   },
 
   {
     id: "configurations",
-    label: "Configurations",
-    collapsible: false,
+    label: "Configuration",
+    collapsible: true,
     items: [
-      ["pos", "bi-phone", "POS Configurations"],
+      ["overview", "bi-globe", "Website Connection"],
+      ["pos", "bi-phone", "POS Configuration"],
     ],
   },
 
@@ -52,7 +72,9 @@ const navGroups = [
     label: "People",
     items: [
       ["users", "bi-people", "Employees"],
+      ["attendance", "bi-calendar-check", "Employee Attendance"],
       ["customers", "bi-person-lines-fill", "Customers"],
+      ["vendors", "bi-truck", "Vendors"],
     ],
   },
 
@@ -63,7 +85,6 @@ const navGroups = [
       ["categories", "bi-tags", "Categories"],
       ["products", "bi-box-seam", "Products"],
       ["fastkeys", "bi-key-fill", "Fast Keys"],
-      ["vendors", "bi-truck", "Vendors Directory"],
     ],
   },
 
@@ -72,7 +93,8 @@ const navGroups = [
     label: "Sales & Payments",
     items: [
       ["orders", "bi-receipt", "Orders"],
-      ["paymentrecords", "bi-credit-card", "Payment Records"],
+      ["paymentrecords", "bi-credit-card", "Payment History"],
+      ["vendorhistory", "bi-clock-history", "Vendor History"],
     ],
   },
 
@@ -81,6 +103,7 @@ const navGroups = [
     label: "Promotions",
     items: [
       ["coupons", "bi-ticket-perforated", "Coupons"],
+      ["discounts", "bi-percent", "Discounts"],
     ],
   },
 
@@ -93,64 +116,106 @@ const navGroups = [
   },
 ];
 
-function isUuid(value) {
-  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(value || ""));
-}
-
-function storeListFromResponse(response) {
-  if (Array.isArray(response)) return response;
-  for (const key of ["stores", "items", "results", "data"]) {
-    const value = response?.[key];
-    if (Array.isArray(value)) return value;
-    if (value && typeof value === "object") {
-      const nested = storeListFromResponse(value);
-      if (nested.length) return nested;
-    }
-  }
-  return [];
-}
-
-function normalizeStoreForConfiguration(store) {
-  const address = store.address && typeof store.address === "object" ? store.address : {};
-  const storeCode = [store.storeCode, store.store_code, store.code, store.storeId, store.storeID]
-    .find(value => value && !isUuid(value)) || "";
-  const type = store.storeType?.name || store.storeType || store.type?.name || store.type || "";
-  const location = [
-    address.street || (typeof store.address === "string" ? store.address : ""),
-    address.city || store.city,
-    address.state || store.state,
-  ].filter(Boolean).join(", ");
-
-  return {
-    ...store,
-    id: store.id || store._id || store.storeUUID || store.storeId || store.storeID,
-    storeCode,
-    name: store.storeName || store.name || storeCode || "Store",
-    type,
-    location: location || store.location || "—",
-    status: store.status || store.operationalStatus || "Active",
-    url: store.baseUrl || store.websiteUrl || store.url || "",
-  };
-}
-
 /* =========================================================
    STORE CONFIGURATION
    ========================================================= */
+
+function SummaryFields({ title, items }) {
+  return <section className="store-overview-card">
+    <h2>{title}</h2>
+    <dl>{items.map(([label, value]) => <div key={label}>
+      <dt>{label}</dt><dd>{value == null || value === "" ? "—" : value}</dd>
+    </div>)}</dl>
+  </section>;
+}
+
+function StoreDetailsSummary({ store, merchant }) {
+  const address = typeof store.address === "object" && store.address ? store.address : {};
+  const hours = store.hours || store.onboardingSetup?.hours || [];
+  return <>
+    <SummaryFields title="Store Details" items={[
+      ["Store Name", store.name], ["Store Code", store.storeCode || store.id],
+      ["Merchant", merchant?.name || store.merchantName],
+      ["Store Type", typeof store.type === "object" ? store.type.name || store.type.code : store.type],
+      ["Status", store.status], ["Currency", store.currency],
+    ]} />
+    <SummaryFields title="Contact & Location" items={[
+      ["Phone", store.phone], ["Email", store.email || store.storeEmail], ["Website", store.url],
+      ["Address", store.addressLine1 || address.street || address.addressLine1 || (typeof store.address === "string" ? store.address : "")],
+      ["Address Line 2", store.addressLine2 || address.addressLine2],
+      ["City", store.city || address.city], ["State / Province", store.state || address.state],
+      ["Country", store.country || address.country], ["Postal Code", store.zip || store.postalCode || address.zipCode || address.postalCode],
+    ]} />
+    <section className="store-overview-card"><h2>Operating Hours</h2>
+      <div className="store-overview-table"><table>
+        <thead><tr>{["Day", "Status", "Open", "Close", "Shifts"].map(label => <th key={label}>{label}</th>)}</tr></thead>
+        <tbody>{Array.isArray(hours) && hours.length ? hours.map((row, index) => <tr key={row.day || index}>
+          <td>{row.day || "—"}</td><td>{row.status || "—"}</td><td>{row.open || "—"}</td><td>{row.close || "—"}</td><td>{row.shifts ?? "—"}</td>
+        </tr>) : <tr><td colSpan={5}>No operating hours saved.</td></tr>}</tbody>
+      </table></div>
+    </section>
+  </>;
+}
+
+function StoreSubscriptionSummary({ merchantId }) {
+  const [subscription, setSubscription] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [attempt, setAttempt] = useState(0);
+  useEffect(() => {
+    let active = true;
+    setLoading(true); setError(""); setSubscription(null);
+    async function load() {
+      try {
+        if (!merchantId) throw new Error("Merchant information is unavailable for this store.");
+        const result = await pendingStoreRead(`merchant-active-subscriptions:${merchantId}`, () => getActiveSubscriptions(merchantId));
+        if (active) setSubscription(extractActiveSubscription(result));
+      } catch (err) {
+        if (active) setError(err.message || "Unable to load subscription.");
+      } finally {
+        if (active) setLoading(false);
+      }
+    }
+    load();
+    return () => { active = false; };
+  }, [merchantId, attempt]);
+  if (loading) return <p role="status">Loading subscription…</p>;
+  if (error) return <div className="alert alert-danger" role="alert">{error} <button type="button" className="btn btn-secondary" onClick={() => setAttempt(value => value + 1)}>Retry</button></div>;
+  if (!subscription) return <section className="store-overview-card"><h2>Subscription</h2><p className="store-overview-empty">No active subscription found.</p></section>;
+  const plan = subscription.plan || subscription.subscriptionPlan || {};
+  return <SummaryFields title="Subscription" items={[
+    ["Plan", subscription.planName || plan.name || (typeof plan === "string" ? plan : "")],
+    ["Status", subscription.status], ["Billing", subscription.billingCycle || subscription.billingPeriod || plan.billingCycle],
+    ["Price", subscription.price ?? subscription.amount ?? plan.price], ["Currency", subscription.currency || plan.currency],
+    ["Start Date", subscription.startDate || subscription.startsAt],
+    ["Renewal / End Date", subscription.renewalDate || subscription.endDate || subscription.expiresAt],
+    ["Store Limit", subscription.storeLimit ?? subscription.locationLimit ?? plan.includedStores ?? plan.included_stores],
+  ]} />;
+}
 
 export default function StoreConfiguration() {
   const {
     merchantId,
     storeId,
-    section = "overview",
+    section = "details",
   } = useParams();
 
   const nav = useNavigate();
+  const location = useLocation();
+  const [editingSection, setEditingSection] = useState(false);
+  const [revision, setRevision] = useState(0);
+  const [attendanceDetailRecord, setAttendanceDetailRecord] = useState(null);
+  useEffect(() => {
+    setEditingSection(false);
+    setAttendanceDetailRecord(null);
+  }, [section, storeId]);
 
   /* =======================================================
      STORE STATE
      ======================================================= */
 
   const [merchant, setMerchant] = useState(null);
+  const [storeResponse, setStoreResponse] = useState(null);
   const [store, setStore] = useState(null);
 
   const [loading, setLoading] = useState(true);
@@ -165,10 +230,12 @@ export default function StoreConfiguration() {
   const [showToken, setShowToken] = useState(false);
 
   const [saving, setSaving] = useState(false);
-  const [testing, setTesting] = useState(false);
+  const [syncing, setSyncing] = useState(false);
+  const [syncProgress, setSyncProgress] = useState(null);
 
   const [message, setMessage] = useState("");
   const [connected, setConnected] = useState(false);
+  const [jwtConfigured, setJwtConfigured] = useState(false);
 
   /* =======================================================
      SIDEBAR GROUP STATE
@@ -215,50 +282,18 @@ export default function StoreConfiguration() {
       setError("");
 
       try {
-        if (merchantId) {
-          const result = await getMerchant(merchantId);
-          const apiStores = Array.isArray(result?.stores) ? result.stores : [];
-          const rawStores = result?.raw?.stores || result?.raw?.merchant?.stores || result?.raw?.data?.stores || [];
-
-          console.log("[STORE CONFIGURATION] Raw merchant API response:", result?.raw);
-          console.log("[STORE CONFIGURATION] Stores from API response:", rawStores);
-          console.log("[STORE CONFIGURATION] Normalized stores:", apiStores);
-
-          const found =
-            apiStores.find((item) =>
-              [item.id, item.storeCode].some((value) => String(value || "") === String(storeId || ""))
-            ) || null;
-
-          if (!cancelled) {
-            setMerchant(result?.merchant || null);
-            setStore(found);
-          }
-        } else {
-          const response = await listStores();
-          const rawStores = storeListFromResponse(response);
-          console.log("[STORE CONFIGURATION] GET /stores response:", response);
-          console.log("[STORE CONFIGURATION] Stores from API response:", rawStores);
-
-          const rawStore = rawStores.find((item) =>
-            [item.id, item._id, item.storeUUID, item.storeId, item.storeID, item.storeCode, item.store_code, item.code]
-              .some((value) => String(value || "") === String(storeId || ""))
-          );
-          const found = rawStore ? normalizeStoreForConfiguration(rawStore) : null;
-          console.log("[STORE CONFIGURATION] Selected store:", found);
-
-          if (!cancelled) {
-            if (!found) {
-              setStore(null);
-              setError(`Store ${storeId} was not found in the stores API response.`);
-              return;
-            }
-            setMerchant({
-              name: found.merchantName || found.merchant?.name || "Merchant",
-              id: found.merchantId || found.merchant?.id || "",
-            });
-            setStore(found);
-          }
-        }
+        const response = await pendingStoreRead(`store:${storeId}`, () => api.get(endpoints.store(encodeURIComponent(storeId))));
+        const raw = response?.store || response?.data?.store || response?.data || response;
+        if (!raw || typeof raw !== "object" || ![raw.id,raw.storeId,raw.storeID,raw.storeName,raw.name].some(Boolean)) throw new Error("Store not found.");
+        const found = normalizeStoreForConfiguration(raw);
+        found.uuid = [raw.id, raw._id, raw.storeUUID, raw.storeUuid, raw.store_uuid, raw.uuid, raw.storeId, raw.storeID]
+          .find(isUuid) || "";
+        const owner = found.merchantId || found.merchant_id || found.merchant?.id || found.merchant_uuid || merchantId;
+        const hasMerchantName = Boolean(found.merchantName || found.merchant?.name);
+        const result = owner && !hasMerchantName
+          ? await pendingStoreRead(`merchant:${owner}`, () => getMerchant(owner)).catch(() => null)
+          : null;
+        if (!cancelled) { setStoreResponse(raw); setStore(found); setMerchant(result?.merchant || {name:found.merchantName || found.merchant?.name || "",id:owner}); }
       } catch (err) {
         if (!cancelled) {
           setError(
@@ -279,7 +314,7 @@ export default function StoreConfiguration() {
     return () => {
       cancelled = true;
     };
-  }, [merchantId, storeId]);
+  }, [merchantId, storeId, revision]);
 
   /* =======================================================
      LOAD WORDPRESS CONNECTOR
@@ -290,21 +325,16 @@ export default function StoreConfiguration() {
 
     async function loadConnector() {
       /*
-       * Load saved connector information.
+       * Load saved connector information from the store record.
        */
       try {
-        const saved = getWordpressConnector(storeId);
+        const saved = await pendingStoreRead(`connector:${storeId}:${merchantId}`, () => fetchWordpressConnector(storeId, merchantId));
 
         if (saved && !cancelled) {
-          if (saved.siteUrl) {
-            setSiteUrl(saved.siteUrl);
-          }
-
-          if (saved.jwtToken) {
-            setJwtToken(saved.jwtToken);
-          }
-
+          setSiteUrl(saved.siteUrl || "");
+          setJwtToken(saved.jwtToken || "");
           setConnected(Boolean(saved.connected));
+          setJwtConfigured(Boolean(saved.wordpressJwtConfigured || saved.jwtToken));
 
           if (saved.lastTestMessage) {
             setMessage(saved.lastTestMessage);
@@ -318,14 +348,14 @@ export default function StoreConfiguration() {
       }
     }
 
-    if (storeId) {
+    if (storeId && section === "overview") {
       loadConnector();
     }
 
     return () => {
       cancelled = true;
     };
-  }, [storeId]);
+  }, [merchantId, storeId, section]);
 
   /* =======================================================
      SET WEBSITE URL FROM STORE
@@ -338,23 +368,22 @@ export default function StoreConfiguration() {
   }, [store, siteUrl]);
 
   /* =======================================================
-     STORE STATUS
-     ======================================================= */
-
-  const statusClass = useMemo(
-    () =>
-      (store?.status || "active")
-        .toLowerCase()
-        .replace(/\s+/g, "-"),
-    [store]
-  );
-
-  /* =======================================================
      SAVE WORDPRESS CONNECTION
      ======================================================= */
 
+  const restoreConnection = () => {
+    const saved = getWordpressConnector(storeId);
+    setSiteUrl(saved?.siteUrl || store?.url || "");
+    setJwtToken(saved?.jwtToken || "");
+    setConnected(Boolean(saved?.connected));
+    setJwtConfigured(Boolean(saved?.wordpressJwtConfigured || saved?.jwtToken));
+    setMessage("");
+    setShowToken(false);
+  };
+
   const handleSave = async (event) => {
     event.preventDefault();
+    if (!editingSection || saving || syncing) return;
 
     if (!siteUrl.trim() || !jwtToken.trim()) {
       setMessage(
@@ -377,11 +406,16 @@ export default function StoreConfiguration() {
         }
       );
 
+      setConnected(Boolean(saved?.connected));
+      setJwtConfigured(Boolean(saved?.wordpressJwtConfigured || saved?.jwtToken));
       setMessage(
-        saved?.syncedToApi
-          ? "WordPress JWT saved for this store."
-          : "WordPress JWT saved for this store on this browser."
+        saved?.lastTestMessage ||
+          (saved?.syncedToApi
+            ? "WordPress JWT saved for this store."
+            : "WordPress JWT saved for this store on this browser.")
       );
+      setEditingSection(false);
+      setShowToken(false);
     } catch (err) {
       setMessage(
         err?.message ||
@@ -396,68 +430,66 @@ export default function StoreConfiguration() {
      TEST WORDPRESS CONNECTION
      ======================================================= */
 
-  const handleTest = async () => {
-    if (!siteUrl.trim() || !jwtToken.trim()) {
-      setMessage(
-        "Enter the WordPress site URL and JWT token first."
-      );
-      return;
-    }
-
-    setTesting(true);
+  const runSyncSteps = async (steps, doneMessage) => {
+    if (syncing || saving || !connected) return;
+    setSyncing(true);
     setMessage("");
-
     try {
-      const result =
-        await testWordpressConnection(
-          siteUrl,
-          jwtToken,
-          storeId,
-          merchantId
-        );
-
-      setConnected(Boolean(result?.ok));
-      setMessage(
-        result?.message ||
-          "Connection test completed."
-      );
-
-      await saveWordpressConnector(
-        storeId,
-        merchantId,
-        {
-          siteUrl,
-          jwtToken,
-          connected: Boolean(result?.ok),
-          lastTestedAt:
-            new Date().toISOString(),
-          lastTestMessage:
-            result?.message || "",
-        }
-      );
+      for (let index = 0; index < steps.length; index += 1) {
+        const [label, action] = steps[index];
+        setSyncProgress({
+          label,
+          percent: Math.round((index / steps.length) * 100),
+        });
+        await action(storeId);
+      }
+      setSyncProgress({ label: "Sync complete", percent: 100 });
+      setMessage(doneMessage);
     } catch (err) {
-      setConnected(false);
-
-      setMessage(
-        err?.message ||
-          "Connection test failed."
-      );
+      setMessage(err?.message || "Unable to sync WordPress data.");
+      setSyncProgress(null);
     } finally {
-      setTesting(false);
+      setSyncing(false);
     }
   };
+
+  const handleSyncProducts = () => runSyncSteps(
+    [["Syncing Products", syncWordpressProducts]],
+    "Products synced.",
+  );
+
+  const handleSyncCategories = () => runSyncSteps(
+    [
+      ["Syncing Categories", syncWordpressCategories],
+      ["Syncing Attributes", syncWordpressAttributes],
+      ["Syncing Tags", syncWordpressTags],
+    ],
+    "Categories, attributes, and tags synced.",
+  );
 
   /* =======================================================
      BACK TO STORES
      ======================================================= */
 
   const backToStores = () => {
+    if (location.state?.returnTo) {
+      nav(location.state.returnTo);
+      return;
+    }
     if (merchantId) {
       nav(`/merchants?view=${encodeURIComponent(merchantId)}&tab=stores`);
     } else {
       nav("/stores");
     }
   };
+
+  const statusClass = useMemo(
+    () =>
+      (store?.status || "active")
+        .toLowerCase()
+        .replace(/\s+/g, "-"),
+    [store]
+  );
 
   const displayStoreCode = store?.storeCode || (String(store?.id || "").startsWith("STR-") ? store.id : "");
   const displayStoreName = store?.name && !isUuid(store.name)
@@ -475,21 +507,17 @@ export default function StoreConfiguration() {
           BREADCRUMB
           =================================================== */}
 
-      <div className="breadcrumb-area">
+      <header className="breadcrumb-area store-workspace-topbar">
 
-        <button
-          className="link-button"
-          onClick={backToStores}
-        >
-          <i className="bi bi-arrow-left" />
-          Stores
-        </button>
+        {section === "attendance" && attendanceDetailRecord ? <>
+          <button className="link-button" onClick={backToStores}><i className="bi bi-arrow-left" />Stores</button>
+          <span>/</span><span>Store Details &amp; Configuration</span><span>/</span><span>Employee Attendance</span><span>/</span><strong>View Details</strong>
+        </> : <>
+          <button className="link-button" onClick={backToStores}><i className="bi bi-arrow-left" />Stores</button>
+          <span>/</span><strong>Store Details &amp; Configuration</strong>
+        </>}
 
-        <span>/</span>
-
-        <span>Store Configuration</span>
-
-      </div>
+      </header>
 
       {/* ===================================================
           LOADING
@@ -508,34 +536,6 @@ export default function StoreConfiguration() {
           {/* ===============================================
               STORE HEADER
               =============================================== */}
-
-          <div className="store-workspace-header">
-
-            <div>
-
-              <h1>
-                {displayStoreName}
-              </h1>
-
-              <p>
-                {displayStoreCode || "Store ID unavailable"}
-
-                {merchant?.name
-                  ? ` • ${merchant.name}`
-                  : ""}
-              </p>
-
-            </div>
-
-            <span
-              className={`store-status ${statusClass}`}
-            >
-              {connected
-                ? "Website Connected"
-                : store?.status || "Active"}
-            </span>
-
-          </div>
 
           {/* ===============================================
               WORKSPACE
@@ -639,308 +639,107 @@ export default function StoreConfiguration() {
                 ============================================= */}
 
             <section className="store-workspace-main">
+              <div className="store-workspace-header">
+
+                <div>
+
+                  <h1>
+                    {displayStoreName}
+                  </h1>
+
+                  <p>
+                    {displayStoreCode || "Store ID unavailable"}
+
+                    {merchant?.name
+                      ? ` • ${merchant.name}`
+                      : ""}
+                  </p>
+
+                </div>
+
+                <span
+                  className={`store-status ${statusClass}`}
+                >
+                  {connected
+                    ? "Website Connected"
+                    : store?.status || "Active"}
+                </span>
+
+              </div>
 
               {/* ===========================================
                   STORE OVERVIEW & SETUP
                   =========================================== */}
 
-              {section === "overview" ? (
-
-                <div className="store-panel">
-
-                  {/* PAGE HEADER */}
-
-                  <div className="store-panel-heading">
-
-                    <div>
-
-                      <h2>
-                        Store Overview & Setup
-                      </h2>
-
-                      <p>
-                        Manage your store information
-                        and website connection settings.
-                      </p>
-
-                    </div>
-
-                    <span
-                      className={`connection-pill ${
-                        connected
-                          ? "connected"
-                          : "disconnected"
-                      }`}
-                    >
-                      {connected
-                        ? "Website Connected"
-                        : "Website Not Connected"}
-                    </span>
-
-                  </div>
-
-                  {/* =====================================
-                      STORE OVERVIEW
-                      ===================================== */}
-
-                  <div className="store-section-block">
-
-                    <div className="store-section-title">
-
-                      <h3>
-                        Store Overview
-                      </h3>
-
-                      <p>
-                        Store information used by
-                        Pinaka Commerce Hub.
-                      </p>
-
-                    </div>
-
-                    <div className="store-overview-grid">
-
-                      <div>
-                        <span>
-                          Store Name
-                        </span>
-
-                        <strong>
-                          {displayStoreName}
-                        </strong>
-                      </div>
-
-                      <div>
-                        <span>
-                          Store ID
-                        </span>
-
-                        <strong>
-                          {displayStoreCode || "—"}
-                        </strong>
-                      </div>
-
-                      <div>
-                        <span>
-                          Type
-                        </span>
-
-                        <strong>
-                          {store?.type || "—"}
-                        </strong>
-                      </div>
-
-                      <div>
-                        <span>
-                          Location
-                        </span>
-
-                        <strong>
-                          {store?.location || "—"}
-                        </strong>
-                      </div>
-
-                      <div>
-                        <span>
-                          Website
-                        </span>
-
-                        <strong>
-                          {siteUrl ||
-                            store?.url ||
-                            "Not connected"}
-                        </strong>
-                      </div>
-
-                      <div>
-                        <span>
-                          JWT Status
-                        </span>
-
-                        <strong>
-                          {connected
-                            ? "Connected"
-                            : "Not connected"}
-                        </strong>
-                      </div>
-
-                    </div>
-
-                  </div>
-
-                  {/* =====================================
-                      WEBSITE CONNECTION
-                      ===================================== */}
-
-                  <div className="store-section-block store-connection-section">
-
-                    <div className="store-section-title">
-
-                      <h3>
-                        Website Connection
-                      </h3>
-
-                      <p>
-                        Connect this store with
-                        its WordPress website.
-                      </p>
-
-                    </div>
-
-                    {/* WORDPRESS SITE URL */}
-
-                    <label className="store-field">
-
-                      WordPress Site URL
-
-                      <input
-                        type="url"
-                        placeholder="https://your-store.com"
-                        value={siteUrl}
-                        onChange={(event) =>
-                          setSiteUrl(
-                            event.target.value
-                          )
-                        }
-                        required
-                      />
-
-                    </label>
-
-                    {/* JWT TOKEN */}
-
-                    <label className="store-field">
-
-                      WordPress JWT Token
-
-                      <div className="token-input">
-
-                        <textarea
-                          rows={5}
-                          placeholder="Paste the JWT generated by WordPress"
-                          value={jwtToken}
-                          onChange={(event) =>
-                            setJwtToken(
-                              event.target.value
-                            )
-                          }
-                          required
-                          spellCheck={false}
-                          style={{
-                            WebkitTextSecurity:
-                              showToken
-                                ? "none"
-                                : "disc",
-                          }}
-                        />
-
-                        <button
-                          type="button"
-                          className="token-toggle-btn"
-                          onClick={() =>
-                            setShowToken(
-                              (current) =>
-                                !current
-                            )
-                          }
-                        >
-
-                          <i
-                            className={`bi ${
-                              showToken
-                                ? "bi-eye-slash"
-                                : "bi-eye"
-                            }`}
-                          />
-
-                          {showToken
-                            ? "Hide Token"
-                            : "Show Token"}
-
-                        </button>
-
-                      </div>
-
-                    </label>
-
-                    {/* MESSAGE */}
-
-                    {message ? (
-                      <div
-                        role="status"
-                        className={`store-message ${
-                          connected
-                            ? "success"
-                            : "info"
-                        }`}
-                      >
-                        {message}
-                      </div>
-                    ) : null}
-
-                    {/* ACTIONS */}
-
-                    <div className="store-form-actions">
-
-                      <button
-                        type="button"
-                        className="store-edit-btn"
-                        onClick={handleTest}
-                        disabled={
-                          testing || saving
-                        }
-                      >
-                        {testing
-                          ? "Syncing Categories & Products..."
-                          : "Sync Categories & Products"}
-                      </button>
-
-                      <button
-                        type="button"
-                        className="store-config-btn"
-                        onClick={handleSave}
-                        disabled={
-                          saving || testing
-                        }
-                      >
-                        {saving
-                          ? "Saving..."
-                          : "Save JWT Token"}
-                      </button>
-
-                    </div>
-
-                  </div>
-
+              <div className="store-workspace-card">
+              {section === "attendance" && attendanceDetailRecord ? (
+                <AttendanceDetails record={attendanceDetailRecord} store={store} onBack={() => setAttendanceDetailRecord(null)} />
+              ) : section === "details" ? (
+                <StoreDetailsSummary store={store} merchant={merchant} />
+              ) : section === "subscription" ? (
+                <StoreSubscriptionSummary merchantId={merchantId || store.merchantId || merchant?.id} />
+              ) : ["features", "roles", "users"].includes(section) ? (
+                <div>
+                  <AddStore existingStore={storeResponse} key={section + ":" + revision + ":" + editingSection} embeddedStep={{features:2,roles:3,users:4}[section]} readOnly={!editingSection} onEdit={() => setEditingSection(true)} onDone={() => {setEditingSection(false);setRevision(v => v + 1);}} />
                 </div>
-
-              /* ===========================================
-                 POS CONFIGURATION
-                 =========================================== */
+              ) : section === "overview" ? (
+                <div className="store-panel">
+                  <div className="store-panel-heading">
+                    <div><h2>Website Connection</h2><p>{editingSection ? "Update the website URL and JWT token for this store." : "View the saved JWT connection status."}</p></div>
+                    <div className="store-panel-actions">
+                      {connected && <>
+                        <button type="button" className="sf-outline" onClick={handleSyncCategories} disabled={syncing || saving}>Sync Category</button>
+                        <button type="button" className="sf-outline" onClick={handleSyncProducts} disabled={syncing || saving}>Sync Product</button>
+                      </>}
+                      {!editingSection && <button type="button" className="store-config-btn" onClick={() => {restoreConnection();setEditingSection(true);}}><i className="bi bi-pencil" aria-hidden="true" /> Edit</button>}
+                    </div>
+                  </div>
+                  {!editingSection ? (
+                    <SummaryFields title="Website Connection" items={[
+                      ["Connection Status", <span className={`connection-pill ${connected ? "connected" : "not-connected"}`}>{connected ? "Connected" : "Not connected"}</span>],
+                      ["Website URL", siteUrl],
+                      ["JWT Token", jwtConfigured || jwtToken ? "Configured" : "Not configured"],
+                    ]} />
+                  ) : (
+                    <form className="store-connection-section" onSubmit={handleSave}>
+                      <fieldset disabled={saving || syncing} style={{border:0,padding:0,margin:0,minWidth:0}}>
+                        <label className="store-field">WordPress Site URL
+                          <input type="url" placeholder="https://your-store.com" value={siteUrl} onChange={event => setSiteUrl(event.target.value)} required />
+                        </label>
+                        <label className="store-field">WordPress JWT Token
+                          <div className="token-input">
+                            <textarea rows={5} placeholder="Paste the JWT generated by WordPress" value={jwtToken} onChange={event => setJwtToken(event.target.value)} required spellCheck={false} style={{WebkitTextSecurity:showToken ? "none" : "disc"}} />
+                            <button type="button" className="token-toggle-btn" onClick={() => setShowToken(value => !value)} aria-pressed={showToken}>{showToken ? "Hide Token" : "Show Token"}</button>
+                          </div>
+                        </label>
+                        <div className="store-form-actions">
+                          <button type="button" className="sf-outline" onClick={() => {restoreConnection();setEditingSection(false);}}>Cancel</button>
+                          <button type="submit" className="store-config-btn">{saving ? "Saving…" : "Save Changes"}</button>
+                        </div>
+                      </fieldset>
+                    </form>
+                  )}
+                  {syncProgress && <div className="store-sync-progress" role="status">
+                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
+                      <span>{syncProgress.label}</span>
+                      <span>{syncProgress.percent}%</span>
+                    </div>
+                    <progress max={100} value={syncProgress.percent} style={{ width: "100%" }} />
+                  </div>}
+                  {message && <div className="store-message info" role="status">{message}</div>}
+                </div>
 
               ) : section === "pos" ? (
 
                 <PosConfiguration
-                  merchantId={merchantId}
-                  storeId={storeId}
+                  merchantId={merchant?.id || merchant?.merchantId || merchant?.merchant_id || store?.merchantId || store?.merchant_id || store?.merchant?.id || merchantId}
+                  storeId={store?.uuid || ""}
                   store={store}
                   embedded
                 />
 
               /* ===========================================
                  EMPLOYEES
-                 =========================================== */
-
-              ) : section === "users" ? (
-
-                <Users
-                  merchantId={merchantId}
-                  storeId={storeId}
-                  store={store}
-                />
-
-              /* ===========================================
-                 PRODUCTS
                  =========================================== */
 
               ) : section === "products" ? (
@@ -971,7 +770,16 @@ export default function StoreConfiguration() {
 
               ) : section === "vendors" ? (
 
+                <MerchantVendors
+                  storeId={store?.uuid || storeId}
+                  merchantId={merchant?.id || merchant?.merchantId || merchant?.merchant_id || store?.merchantId || store?.merchant_id || store?.merchant?.id || merchantId}
+                />
+
+              ) : section === "vendorhistory" ? (
+
                 <VendorPayments
+                  key={section}
+                  viewMode="payments"
                   merchantId={merchantId}
                   storeId={storeId}
                   store={store}
@@ -985,6 +793,15 @@ export default function StoreConfiguration() {
               ) : section === "coupons" ? (
 
                 <Coupons
+                  merchantId={merchantId}
+                  storeId={storeId}
+                  store={store}
+                  embedded
+                />
+
+              ) : section === "discounts" ? (
+
+                <Discounts
                   merchantId={merchantId}
                   storeId={storeId}
                   store={store}
@@ -1024,6 +841,10 @@ export default function StoreConfiguration() {
                   store={store}
                   embedded
                 />
+
+              ) : section === "attendance" ? (
+
+                <EmployeeAttendance store={store} embedded onViewRecord={setAttendanceDetailRecord} />
 
               /* ===========================================
                  PAYMENT RECORDS
@@ -1072,6 +893,7 @@ export default function StoreConfiguration() {
 
               )}
 
+              </div>
             </section>
 
           </div>
@@ -1080,3 +902,6 @@ export default function StoreConfiguration() {
     </div>
   );
 }
+
+
+

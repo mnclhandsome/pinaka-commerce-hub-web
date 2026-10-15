@@ -1,5 +1,9 @@
+import { pendingStoreRead } from "../api/http";
+import FilterDropdown from "../components/FilterDropdown";
 import React, { useMemo, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
+import Pagination from "../components/Pagination";
+import DeleteConfirmationDialog from "../components/DeleteConfirmationDialog";
 import {
   Search,
   Trash2,
@@ -22,24 +26,29 @@ import "../styles/feature-detail-header.css";
 const FeaturePermissions = () => {
   const navigate = useNavigate();
   const { featureId } = useParams();
+  const suppliedFeature = useLocation().state?.feature;
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(5);
 
   const [permissions, setPermissions] = useState([]);
   const [feature, setFeature] = useState(null);
   const [error, setError] = useState("");
 
   React.useEffect(() => {
-    Promise.all([getFeature(featureId), listFeaturePermissions(featureId)])
+    Promise.all([suppliedFeature ? Promise.resolve(suppliedFeature) : getFeature(featureId), pendingStoreRead(`feature-permissions:${featureId}`, () => listFeaturePermissions(featureId))])
       .then(([f, list]) => {
         setFeature(f);
 
         setPermissions(
           (Array.isArray(list) ? list : []).map((p) => ({
             ...p,
-            key: p.permissionKey || p.key || "",
-            name: p.permissionName || p.name || "",
-            feature: f?.name || p.feature?.name || "",
+            id: p.permission_id ?? p.id,
+            key: p.permission_code || p.permission_key || p.permissionKey || "",
+            name: p.permission_name || p.name || "",
+            feature: f?.name || p.feature?.feature_name || "",
             description:
-              p.permissionDescription || p.description || "",
+              p.permission_description || p.description || "",
             active:
               String(p.status || "ACTIVE").toUpperCase() === "ACTIVE",
           }))
@@ -63,7 +72,8 @@ const FeaturePermissions = () => {
   });
 
   const [deleteTarget, setDeleteTarget] = useState(null);
-  const [deleting, setDeleting] = useState(false);
+const [deleting, setDeleting] = useState(false);
+const [deleteError, setDeleteError] = useState("");
 
   /* =====================================================
      FILTER PERMISSIONS
@@ -88,30 +98,69 @@ const FeaturePermissions = () => {
     });
   }, [permissions, search, filter]);
 
+  const totalPages = Math.max(
+  1,
+  Math.ceil(filteredPermissions.length / pageSize)
+);
+
+const paginatedPermissions = useMemo(() => {
+  const startIndex = (currentPage - 1) * pageSize;
+
+  return filteredPermissions.slice(
+    startIndex,
+    startIndex + pageSize
+  );
+}, [filteredPermissions, currentPage, pageSize]);
+
+React.useEffect(() => {
+  if (currentPage > totalPages) {
+    setCurrentPage(totalPages);
+  }
+}, [currentPage, totalPages]);
+
   /* =====================================================
      DELETE PERMISSION
   ====================================================== */
 
-  const confirmDeletePermission = async () => {
-    if (!deleteTarget?.id || deleting) return;
+  
+const confirmDeletePermission = async () => {
+  if (!deleteTarget?.id || deleting) return;
 
-    try {
-      setDeleting(true);
-      setError("");
+  try {
+    setDeleting(true);
+    setDeleteError("");
+    setError("");
 
-      await deleteFeaturePermission(featureId, deleteTarget.id);
+    await deleteFeaturePermission(featureId, deleteTarget.id);
 
-      setPermissions((current) =>
-        current.filter((permission) => permission.id !== deleteTarget.id),
-      );
+    const latest = await listFeaturePermissions(featureId);
 
-      setDeleteTarget(null);
-    } catch (e) {
-      setError(e.message || "Unable to delete permission.");
-    } finally {
-      setDeleting(false);
-    }
-  };
+    setPermissions(
+      (Array.isArray(latest) ? latest : []).map((p) => ({
+        ...p,
+        id: p.permission_id ?? p.id,
+        key:
+          p.permission_code ||
+          p.permission_key ||
+          p.permissionKey ||
+          "",
+        name: p.permission_name || p.name || "",
+        feature: feature?.name || p.feature?.feature_name || "",
+        description:
+          p.permission_description || p.description || "",
+        active:
+          String(p.status || "ACTIVE").toUpperCase() === "ACTIVE",
+      }))
+    );
+
+    setDeleteTarget(null);
+  } catch (e) {
+    setDeleteError(e.message || "Unable to delete permission.");
+  } finally {
+    setDeleting(false);
+  }
+};
+
 
   /* =====================================================
      CREATE PERMISSION
@@ -132,11 +181,10 @@ const FeaturePermissions = () => {
   const saveNewPermission = async (event) => {
     event.preventDefault();
 
-    const key = form.key.trim();
     const name = form.name.trim();
 
-    if (!key || !name) {
-      setFormError("Permission Key and Permission Name are required.");
+    if (!name) {
+      setFormError("Permission Name is required.");
       return;
     }
 
@@ -144,34 +192,23 @@ const FeaturePermissions = () => {
     setFormError("");
 
     try {
-      const created = await createFeaturePermission(featureId, {
-        permissionKey: key.toUpperCase(),
+      await createFeaturePermission(featureId, {
+        permissionType: "READ",
         name,
         description: form.description.trim(),
         status: form.status.toUpperCase(),
       });
 
-      const item = created?.data || created?.permission || created || {};
-
-      setPermissions((current) => [
-        {
-          ...item,
-
-          id: item.id || `${featureId}-${Date.now()}`,
-
-          key: item.permissionKey || item.key || key,
-
-          name: item.permissionName || item.name || name,
-
-          feature: feature?.name || item.feature?.name || "",
-
-          description: item.description || form.description.trim(),
-
-          active: String(item.status || form.status).toUpperCase() === "ACTIVE",
-        },
-
-        ...current,
-      ]);
+      const latest = await listFeaturePermissions(featureId);
+      setPermissions(latest.map((p) => ({
+        ...p,
+        id: p.permission_id ?? p.id,
+        key: p.permission_code || p.permission_key || p.permissionKey || "",
+        name: p.permission_name || p.name || "",
+        feature: feature?.name || "",
+        description: p.permission_description || p.description || "",
+        active: String(p.status || "ACTIVE").toUpperCase() === "ACTIVE",
+      })));
 
       setIsCreateOpen(false);
     } catch (e) {
@@ -222,13 +259,13 @@ const FeaturePermissions = () => {
           <button
             type="button"
             className="feature-detail-tab"
-            onClick={() => navigate(`/features/${featureId}/store-types`)}
+            onClick={() => navigate(`/features/${featureId}/store-types`, { state: { feature } })}
           >
             Applicable Store Types
           </button>
 
           <button type="button" className="feature-detail-tab active">
-            Feature &amp; Permission Access
+            Permissions
           </button>
         </nav>
       </section>
@@ -247,15 +284,15 @@ const FeaturePermissions = () => {
             </div>
 
             <div className="fp-title-copy">
-              <h2>Permissions List ({permissions.length})</h2>
+              <h2>Feature Permissions</h2>
 
-              <p>Manage and configure permissions for this feature.</p>
+              <p>Manage permissions for this feature.</p>
             </div>
           </div>
 
           {/* TOOLBAR */}
 
-          <div className="fp-toolbar">
+          <div className="fp-toolbar pch-master-toolbar pch-master-control">
             {/* <button
               type="button"
               className="fp-create-permission-btn"
@@ -267,23 +304,26 @@ const FeaturePermissions = () => {
 
             {/* SEARCH */}
 
-            <div className="fp-search-box">
+            <div className="fp-search-box pch-master-search pch-master-control">
               <Search size={17} strokeWidth={2} />
 
               <input
                 type="text"
                 placeholder="Search permissions..."
                 value={search}
-                onChange={(event) => setSearch(event.target.value)}
+                onChange={(event) => {
+                setSearch(event.target.value);
+                setCurrentPage(1);
+                  }}
               />
             </div>
 
             {/* FILTER */}
 
             <div className="fp-filter-wrapper">
-              <select
+              <FilterDropdown preserveToolbarLayout
                 value={filter}
-                onChange={(event) => setFilter(event.target.value)}
+                 onChange={(event) => { setFilter(event.target.value); setCurrentPage(1);}}
                 className="fp-filter"
               >
                 <option value="all">All Permissions</option>
@@ -291,7 +331,7 @@ const FeaturePermissions = () => {
                 <option value="active">Active Permissions</option>
 
                 <option value="inactive">Inactive Permissions</option>
-              </select>
+              </FilterDropdown>
 
               <ChevronDown
                 size={16}
@@ -311,7 +351,7 @@ const FeaturePermissions = () => {
             <thead>
               <tr>
                 <th>
-                  <div className="fp-table-heading">Permission Key</div>
+                  <div className="fp-table-heading">Permission Code</div>
                 </th>
 
                 <th>
@@ -319,7 +359,7 @@ const FeaturePermissions = () => {
                 </th>
 
                 <th>
-                  <div className="fp-table-heading">Feature</div>
+                  <div className="fp-table-heading">Feature Name</div>
                 </th>
 
                 <th>
@@ -339,7 +379,7 @@ const FeaturePermissions = () => {
                 </tr>
               )}
 
-              {filteredPermissions.map((permission) => (
+              {paginatedPermissions.map((permission) => (
                 <tr key={permission.key}>
                   <td className="fp-permission-key">{permission.key}</td>
 
@@ -353,7 +393,8 @@ const FeaturePermissions = () => {
                     <button
                       type="button"
                       className="fp-delete"
-                      onClick={() => setDeleteTarget(permission)}
+                      title="Remove Assignment"
+                      onClick={() => { setDeleteError(""); setDeleteTarget(permission);}}
                       aria-label={`Delete ${permission.name}`}
                     >
                       <Trash2 size={15} strokeWidth={2} />
@@ -380,25 +421,19 @@ const FeaturePermissions = () => {
         ====================================================== */}
 
         <div className="fp-table-footer">
-          <p className="fp-results-text">
-            Showing {filteredPermissions.length > 0 ? 1 : 0} to{" "}
-            {filteredPermissions.length} of {filteredPermissions.length} entries
-          </p>
-
-          <div className="fp-pagination">
-            <button type="button" className="fp-page-button fp-arrow" disabled>
-              <ChevronLeft size={16} strokeWidth={2} />
-            </button>
-
-            <button type="button" className="fp-page-button active">
-              1
-            </button>
-
-            <button type="button" className="fp-page-button fp-arrow" disabled>
-              <ChevronRight size={16} strokeWidth={2} />
-            </button>
-          </div>
-        </div>
+  <Pagination
+    currentPage={currentPage}
+    totalPages={totalPages}
+    totalItems={filteredPermissions.length}
+    pageSize={pageSize}
+    onPageChange={setCurrentPage}
+    onPageSizeChange={(newPageSize) => {
+      setPageSize(newPageSize);
+      setCurrentPage(1);
+    }}
+    itemLabel="permissions"
+  />
+</div>
       </section>
 
       {/* =====================================================
@@ -443,14 +478,8 @@ const FeaturePermissions = () => {
                   Permission Key <span>*</span>
                   <input
                     value={form.key}
-                    onChange={(e) =>
-                      setForm({
-                        ...form,
-                        key: e.target.value,
-                      })
-                    }
-                    placeholder="e.g. refunds.view"
-                    autoFocus
+                    readOnly
+                    placeholder="Generated automatically"
                   />
                 </label>
 
@@ -534,53 +563,30 @@ const FeaturePermissions = () => {
           DELETE CONFIRMATION
       ====================================================== */}
 
-      {deleteTarget && (
-        <div
-          className="fp-delete-overlay"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="fp-delete-title"
-          onMouseDown={() => !deleting && setDeleteTarget(null)}
-        >
-          <div
-            className="fp-delete-modal"
-            onMouseDown={(event) => event.stopPropagation()}
-          >
-            <div className="fp-delete-modal-icon">
-              <Trash2 size={23} strokeWidth={2} />
-            </div>
+      
+<DeleteConfirmationDialog
+  isOpen={Boolean(deleteTarget)}
+  title="Delete Permission?"
+  message={
+    deleteTarget
+      ? `Are you sure you want to delete "${deleteTarget.name || deleteTarget.key}"?`
+      : ""
+  }
+  cancelLabel="Cancel"
+  confirmLabel="Delete"
+  busyLabel="Deleting..."
+  busy={deleting}
+  error={deleteError}
+  iconClassName="bi bi-trash"
+  onCancel={() => {
+    if (!deleting) {
+      setDeleteTarget(null);
+      setDeleteError("");
+    }
+  }}
+  onConfirm={confirmDeletePermission}
+/>
 
-            <h2 id="fp-delete-title">Delete Permission?</h2>
-
-            <p>
-              Are you sure you want to delete{" "}
-              <strong>{deleteTarget.name || deleteTarget.key}</strong>?
-            </p>
-
-            <p className="fp-delete-warning">This action cannot be undone.</p>
-
-            <div className="fp-delete-modal-actions">
-              <button
-                type="button"
-                className="fp-delete-cancel-button"
-                onClick={() => setDeleteTarget(null)}
-                disabled={deleting}
-              >
-                Cancel
-              </button>
-
-              <button
-                type="button"
-                className="fp-delete-confirm-button"
-                onClick={confirmDeletePermission}
-                disabled={deleting}
-              >
-                {deleting ? "Deleting..." : "Delete"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

@@ -1,11 +1,7 @@
+import { useLocationOptions } from "../data/useLocationOptions";
+import { EmployeeToast, EmployeeDeleteDialog } from "../components/EmployeeFeedback";
 import React, { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import PhoneInputModule from "react-phone-input-2";
-
-const PhoneInput = PhoneInputModule.default || PhoneInputModule;
-
-import "react-phone-input-2/lib/style.css";
-import { listMerchants } from "../api/merchants";
 
 import {
   User,
@@ -19,10 +15,13 @@ import {
   Eye,
   EyeOff,
   ArrowLeft,
+  Save,
 } from "lucide-react";
 
+import DeviceNavigation from "../components/DeviceNavigation";
 import "../styles/add-employee.css";
 import "../styles/editemployee.css";
+import "../styles/employee-device-edit.css";
 
 // import { updateEmployee } from "../api/employees";
 import {
@@ -171,41 +170,19 @@ function getMerchantName(m) {
    EDIT EMPLOYEE COMPONENT
 ========================================================= */
 
-export default function EditEmployee() {
+export default function EditEmployee({ employee: employeeProp, onBack: onBackProp, onSave: onSaveProp } = {}) {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const employee = location.state?.employee || {};
+  const employee =  employeeProp ||  location.state?.employee || {};
   const employeeId = useMemo(() => getEmployeeId(employee), [employee]);
 
   const [showPassword, setShowPassword] = useState(false);
   const [saving, setSaving] = useState(false);
   const [apiError, setApiError] = useState("");
+  const [notice, setNotice] = useState("");
+  const [confirmPhotoDelete, setConfirmPhotoDelete] = useState(false);
 
-  // DYNAMIC MERCHANTS STATE
-  const [merchants, setMerchants] = useState([]);
-  const [loadingMerchants, setLoadingMerchants] = useState(true);
-
-  // FETCH MERCHANTS FROM API ON MOUNT
-  useEffect(() => {
-    let active = true;
-
-    listMerchants()
-      .then((data) => {
-        if (active) {
-          setMerchants(data);
-          setLoadingMerchants(false);
-        }
-      })
-      .catch((err) => {
-        console.error("Failed to load merchants:", err);
-        if (active) setLoadingMerchants(false);
-      });
-
-    return () => {
-      active = false;
-    };
-  }, []);
 
   const [profileImage, setProfileImage] = useState(
     employee.profileImageUrl || employee.profileImage || null,
@@ -214,6 +191,24 @@ export default function EditEmployee() {
   const [profileImageFile, setProfileImageFile] = useState(null);
   const [uploadingProfileImage, setUploadingProfileImage] = useState(false);
   const [deletingProfileImage, setDeletingProfileImage] = useState(false);
+  useEffect(() => {
+    if (!employeeId) return;
+    let active = true;
+    getEmployeeProfileImage(employeeId)
+      .then((response) => {
+        if (!active) return;
+        const savedEmployee = response?.employee;
+        setProfileImage(savedEmployee?.profileImageUrl || null);
+        const savedPin = savedEmployee?.loginPin || savedEmployee?.employeeLoginPin || savedEmployee?.login_pin || savedEmployee?.pin;
+        if (savedPin) {
+          setFormData((current) => ({ ...current, employeeLoginPin: String(savedPin) }));
+        }
+      })
+      .catch((error) => {
+        if (active) setNotice(error.message || "Unable to load the saved profile photo.");
+      });
+    return () => { active = false; };
+  }, [employeeId]);
 
   const [formData, setFormData] = useState({
     firstName: employee.firstName || employee.name?.split(" ")[0] || "",
@@ -228,7 +223,7 @@ export default function EditEmployee() {
     city: employee.city || "",
     state: employee.state || "",
     pinCode: employee.postalCode || employee.pinCode || "",
-    country: employee.country || "India",
+    country: employee.country || "",
 
     // Set initial merchant to Business Name or merchant string
     merchantId:
@@ -240,12 +235,15 @@ export default function EditEmployee() {
 
     merchant: getMerchantName(employee.merchant) || employee.merchantName || "",
 
-    employeeLoginPin: employee.loginPin || employee.employeeLoginPin || "",
+    employeeLoginPin: employee.loginPin || employee.employeeLoginPin || employee.login_pin || employee.pin || "",
     manager: employee.manager || "",
     username: employee.username || employee.employeeCode || employee.id || "",
+    status: String(employee.status || "INACTIVE").toUpperCase() === "ACTIVE" ? "Active" : "Inactive",
     password: "",
     sendCredentials: employee.sendCredentials ?? true,
   });
+  const locationOptions = useLocationOptions(formData);
+
 
   const [errors, setErrors] = useState({});
 
@@ -257,6 +255,10 @@ export default function EditEmployee() {
     const trimmed = typeof value === "string" ? value.trim() : value;
 
     switch (name) {
+      case "employeeLoginPin":
+        if (!trimmed) return "";
+        return /^\d{6}$/.test(trimmed) ? "" : "Employee Login PIN must be exactly 6 digits.";
+
       case "firstName":
         if (!trimmed) return "First Name is required.";
         if (!/^[A-Za-z]+(?:[ '-][A-Za-z]+)*$/.test(trimmed)) {
@@ -326,12 +328,7 @@ export default function EditEmployee() {
 
       case "city":
         if (!trimmed) return "City is required.";
-        if (!/^[A-Za-z]+(?:[ '-][A-Za-z]+)*$/.test(trimmed)) {
-          return "City can contain letters, spaces, apostrophes and hyphens only.";
-        }
-        if (trimmed.length < 2 || trimmed.length > 50) {
-          return "City must be between 2 and 50 characters.";
-        }
+        if (trimmed.length > 50) return "City cannot exceed 50 characters.";
         return "";
 
       case "state":
@@ -339,13 +336,8 @@ export default function EditEmployee() {
         return "";
 
       case "pinCode":
-        if (!/^\d{6}$/.test(trimmed)) {
-          return "PIN Code must be exactly 6 digits.";
-        }
-        if (trimmed.startsWith("0")) {
-          return "PIN Code cannot start with 0.";
-        }
-        return "";
+        return trimmed ? "" : "PIN Code is required.";
+
 
       case "country":
         if (!trimmed) return "Country is required.";
@@ -362,19 +354,13 @@ export default function EditEmployee() {
         }
         return "";
 
+      case "status":
+        return ["Active", "Inactive"].includes(value) ? "" : "Select Active or Inactive.";
+
       case "password":
-        if (!trimmed) return "";
-        if (trimmed.length < 8)
-          return "Password must be at least 8 characters.";
-        if (trimmed.length > 64) return "Password cannot exceed 64 characters.";
-        if (
-          !/[A-Z]/.test(trimmed) ||
-          !/[a-z]/.test(trimmed) ||
-          !/\d/.test(trimmed) ||
-          !/[^A-Za-z0-9]/.test(trimmed)
-        ) {
-          return "Password must contain uppercase, lowercase, number and special character.";
-        }
+        if (!value) return "";
+        if (trimmed.length < 8) return "Temporary password must be at least 8 characters.";
+        if (trimmed.length > 128) return "Temporary password cannot exceed 128 characters.";
         return "";
 
       default:
@@ -399,6 +385,7 @@ export default function EditEmployee() {
       "country",
       "merchant",
       "username",
+      "status",
     ];
 
     requiredFields.forEach((name) => {
@@ -409,6 +396,11 @@ export default function EditEmployee() {
     if (formData.address2) {
       const error = validateField("address2", formData.address2);
       if (error) nextErrors.address2 = error;
+    }
+
+    if (formData.employeeLoginPin) {
+      const error = validateField("employeeLoginPin", formData.employeeLoginPin);
+      if (error) nextErrors.employeeLoginPin = error;
     }
 
     if (formData.password) {
@@ -428,7 +420,7 @@ export default function EditEmployee() {
     const { name, value, type, checked } = e.target;
 
     const nextValue =
-      name === "pinCode"
+      name === "employeeLoginPin"
         ? value.replace(/\D/g, "").slice(0, 6)
         : type === "checkbox"
           ? checked
@@ -437,6 +429,7 @@ export default function EditEmployee() {
     setFormData((prev) => ({
       ...prev,
       [name]: nextValue,
+      ...(name === "country" ? { state: "", city: "" } : name === "state" ? { city: "" } : {}),
     }));
 
     if (errors[name]) {
@@ -471,19 +464,19 @@ export default function EditEmployee() {
     if (!file) return;
 
     if (!employeeId) {
-      alert("Employee ID is missing.");
+      setNotice("Employee ID is missing.");
       e.target.value = "";
       return;
     }
 
     if (!file.type.startsWith("image/")) {
-      alert("Please select a JPG or PNG image.");
+      setNotice("Please select a JPG or PNG image.");
       e.target.value = "";
       return;
     }
 
     if (file.size > 2 * 1024 * 1024) {
-      alert("Image size must be less than 2MB.");
+      setNotice("Image size must be less than 2MB.");
       e.target.value = "";
       return;
     }
@@ -505,13 +498,14 @@ export default function EditEmployee() {
         response?.employee?.profileImageUrl ||
         null;
 
-      if (uploadedImageUrl) {
-        setProfileImage(uploadedImageUrl);
+      if (!uploadedImageUrl || response?.success === false) {
+        throw new Error(response?.message || "The server did not return a saved profile image.");
       }
+      setProfileImage(uploadedImageUrl);
 
       setProfileImageFile(null);
 
-      alert("Profile photo updated successfully.");
+      setNotice("Profile photo updated successfully.");
     } catch (error) {
       console.error("Profile image upload failed:", error);
 
@@ -528,7 +522,7 @@ export default function EditEmployee() {
         error?.message ||
         "Failed to upload profile photo.";
 
-      alert(Array.isArray(message) ? message.join(", ") : String(message));
+      setNotice(Array.isArray(message) ? message.join(", ") : String(message));
     } finally {
       setUploadingProfileImage(false);
       e.target.value = "";
@@ -545,11 +539,7 @@ export default function EditEmployee() {
   const handleDeleteProfileImage = async () => {
     if (!employeeId || !profileImage) return;
 
-    const confirmed = window.confirm(
-      "Are you sure you want to delete the employee profile photo?",
-    );
-
-    if (!confirmed) return;
+    setConfirmPhotoDelete(false);
 
     try {
       setDeletingProfileImage(true);
@@ -559,7 +549,7 @@ export default function EditEmployee() {
       setProfileImage(null);
       setProfileImageFile(null);
 
-      alert("Profile photo deleted successfully.");
+      setNotice("Profile photo deleted successfully.");
     } catch (error) {
       console.error("Delete profile image failed:", error);
 
@@ -569,7 +559,7 @@ export default function EditEmployee() {
         error?.message ||
         "Failed to delete profile photo.";
 
-      alert(Array.isArray(message) ? message.join(", ") : String(message));
+      setNotice(Array.isArray(message) ? message.join(", ") : String(message));
     } finally {
       setDeletingProfileImage(false);
     }
@@ -602,11 +592,14 @@ export default function EditEmployee() {
     setSaving(true);
 
     try {
-      const response = await updateEmployee(employeeId, formData);
+       const response = await updateEmployee(employeeId, formData);
       console.log("Employee update response:", response);
 
-      alert("Employee updated successfully");
-      navigate("/employees");
+      if (onSaveProp) {
+        await onSaveProp(response);
+      } else {
+        navigate("/employees", { state: { employeeMessage: "Employee updated successfully." } });
+      }
     } catch (error) {
       console.error("Update employee failed:", error);
 
@@ -625,43 +618,70 @@ export default function EditEmployee() {
   };
 
   const handleBack = () => {
-    navigate("/employees");
+    if (onBackProp) onBackProp();
+    else navigate("/employees");
   };
 
+
   return (
-    <div className="add-employee-page">
+    <div className={`add-employee-page${employeeProp ? " merchant-employee-edit" : " employee-device-edit-page"}`}>
       <StoreRoleAssignmentStyles />
+
+      {!employeeProp && (
+        <DeviceNavigation
+          title="Edit Employee"
+          listLabel="Employees"
+          onBack={handleBack}
+        />
+      )}
 
       {/* PAGE HEADER */}
       <div className="add-employee-header">
         <div>
           <h1>Edit Employee</h1>
-
-          <div className="add-employee-breadcrumb">
-            <span>Home</span>
-            <span className="breadcrumb-arrow">›</span>
-            <span>Employees</span>
-            <span className="breadcrumb-arrow">›</span>
-            <strong>Edit Employee</strong>
-          </div>
+          {employeeProp ? (
+            <div className="add-employee-breadcrumb">
+              <span>Home</span>
+              <span className="breadcrumb-arrow">›</span>
+              <span>Employees</span>
+              <span className="breadcrumb-arrow">›</span>
+              <strong>Edit Employee</strong>
+            </div>
+          ) : (
+            <p>Update employee information, access, and settings.</p>
+          )}
         </div>
-
-        <button
-          type="button"
-          className="back-employees-btn"
-          onClick={handleBack}
-        >
-          <ArrowLeft size={17} />
-          Back to Employees
-        </button>
+        {employeeProp && (
+          <button
+            type="button"
+            className="back-employees-btn"
+            onClick={handleBack}
+          >
+            <ArrowLeft size={17} />
+            {onBackProp ? "Back to Merchant Employees" : "Back to Employees"}
+          </button>
+        )}
       </div>
 
       {/* API ERROR BANNER */}
-      {apiError && <div className="employee-api-error">{apiError}</div>}
+      <EmployeeToast message={notice || apiError} onClose={() => { setNotice(""); setApiError(""); }} />
+      {confirmPhotoDelete && <EmployeeDeleteDialog title="Delete Profile Photo?" description="Are you sure you want to remove this employee’s profile photo?" busy={deletingProfileImage} onCancel={() => setConfirmPhotoDelete(false)} onConfirm={handleDeleteProfileImage} />}
 
       {/* FORM */}
-      <form onSubmit={handleSave} autoComplete="off">
-        <div className="add-employee-layout">
+      <form id="edit-employee-form" onSubmit={handleSave} autoComplete="off">
+        <div className={employeeProp ? undefined : "employee-edit-main-card"}>
+          {!employeeProp && (
+            <div className="device-card-header employee-edit-card-header">
+              <div className="device-card-icon">
+                <Settings size={19} />
+              </div>
+              <div>
+                <h2>Employee Details</h2>
+                <p>Update employee information, roles, and account settings.</p>
+              </div>
+            </div>
+          )}
+          <div className="add-employee-layout">
           {/* LEFT COLUMN */}
           <div className="add-employee-left">
             {/* PERSONAL INFORMATION */}
@@ -714,19 +734,17 @@ export default function EditEmployee() {
                     Phone Number <span>*</span>
                   </label>
 
-                  <PhoneInput
-                    country="in"
-                    enableSearch
-                    countryCodeEditable={false}
-                    autoFormat
-                    placeholder="Enter phone number"
+                  <input
+                    type="tel"
+                    id="employee-phone"
+                    name="phone"
+                    aria-label="Phone Number"
+                    placeholder="Enter phone number, including country code"
                     value={formData.phone}
-                    onChange={handlePhoneChange}
-                    inputProps={{
-                      name: "phone",
-                      required: true,
-                      autoComplete: "tel",
-                    }}
+                    onChange={(event) => handlePhoneChange(event.target.value)}
+                    required
+                    autoComplete="tel"
+                    className={errors.phone ? "field-invalid" : ""}
                   />
 
                   {errors.phone && (
@@ -798,61 +816,19 @@ export default function EditEmployee() {
                 />
               </div>
 
-              <div className="employee-form-grid three-columns">
-                <FormField
-                  label="City"
-                  required
-                  name="city"
-                  placeholder="Enter city"
-                  value={formData.city}
-                  onChange={handleChange}
-                  error={errors.city}
-                />
-
-                <SelectField
-                  label="State"
-                  required
-                  name="state"
-                  value={formData.state}
-                  onChange={handleChange}
-                  error={errors.state}
-                  placeholder="Select state"
-                  options={[
-                    "Telangana",
-                    "Andhra Pradesh",
-                    "Karnataka",
-                    "Tamil Nadu",
-                    "Maharashtra",
-                    "Kerala",
-                  ]}
-                />
-
-                <FormField
-                  label="PIN Code"
-                  required
-                  name="pinCode"
-                  placeholder="Enter PIN code"
-                  value={formData.pinCode}
-                  onChange={handleChange}
-                  error={errors.pinCode}
-                />
-              </div>
-
-              <div className="country-field">
-                <SelectField
-                  label="Country"
-                  required
-                  name="country"
-                  value={formData.country}
-                  onChange={handleChange}
-                  error={errors.country}
-                  options={[
-                    "India",
-                    "United States",
-                    "United Kingdom",
-                    "Australia",
-                  ]}
-                />
+              {locationOptions.error && <p role="alert" className="field-error">{locationOptions.error}</p>}
+              <div className="employee-form-grid two-columns" style={{ columnGap: "28px", rowGap: "18px", marginTop: "24px" }}>
+                <SelectField label="Country" required name="country" value={formData.country}
+                  onChange={handleChange} error={errors.country} options={locationOptions.countries}
+                  placeholder={locationOptions.loading ? "Loading countries..." : "Select country"} disabled={locationOptions.loading} />
+                <SelectField label="State" required name="state" value={formData.state}
+                  onChange={handleChange} error={errors.state} options={locationOptions.states}
+                  placeholder={formData.country ? "Select state" : "Select country first"} disabled={locationOptions.loading || !formData.country} />
+                <SelectField label="City" required name="city" value={formData.city}
+                  onChange={handleChange} error={errors.city} options={locationOptions.cities}
+                  placeholder={formData.state ? "Select city" : "Select state first"} disabled={locationOptions.loading || !formData.state} />
+                <FormField label="PIN Code" required name="pinCode" placeholder="Enter PIN code"
+                  value={formData.pinCode} onChange={handleChange} error={errors.pinCode} />
               </div>
             </section>
           </div>
@@ -913,6 +889,23 @@ export default function EditEmployee() {
                 description="Assign roles to one or more stores under the selected merchant."
               />
 
+              <div className="employee-field">
+                <label htmlFor="employee-code">Employee Code</label>
+                <input id="employee-code" name="employeeCode" value={employee.employeeCode || employee.employee_code || ""} readOnly />
+              </div>
+
+              <div style={{ marginTop: "24px" }}>
+                <SelectField
+                  label="Status"
+                  required
+                  name="status"
+                  value={formData.status}
+                  onChange={handleChange}
+                  options={["Active", "Inactive"]}
+                  error={errors.status}
+                />
+              </div>
+
               {/* DYNAMIC MERCHANT DROPDOWN */}
               {/* MERCHANT - DISPLAY ONLY */}
               <div className="employee-field work-merchant-field">
@@ -950,37 +943,90 @@ export default function EditEmployee() {
                 />
 
                 <div className="employee-field">
-                  <label>Temporary Password</label>
+                  <label htmlFor="employee-temporary-password">Temporary Password</label>
 
                   <div className="password-input">
                     <input
                       type={showPassword ? "text" : "password"}
+                      id="employee-temporary-password"
                       name="password"
-                      placeholder="Enter new password (optional)"
+                      placeholder="Enter a new temporary password"
                       value={formData.password}
                       onChange={handleChange}
                       autoComplete="new-password"
+                      spellCheck={false}
+                      autoCapitalize="none"
+
                       className={errors.password ? "field-invalid" : ""}
                     />
 
                     <button
                       type="button"
-                      onClick={() => setShowPassword(!showPassword)}
+                      aria-label={showPassword ? "Hide temporary password" : "Show temporary password"}
+                      aria-pressed={showPassword}
+                      onMouseDown={(event) => event.preventDefault()}
+                      onClick={() => {
+                        setShowPassword((visible) => !visible);
+                        document.getElementById("employee-temporary-password")?.focus();
+                      }}
                     >
                       {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
                     </button>
                   </div>
 
+
+
                   {errors.password && (
                     <span className="field-error">{errors.password}</span>
                   )}
                 </div>
+
+                <div className="employee-login-pin-field">
+                  <label htmlFor="edit-employee-login-pin">Employee Login PIN</label>
+                  <input
+                    id="edit-employee-login-pin"
+                    name="employeeLoginPin"
+                    type="text"
+                    inputMode="numeric"
+                    maxLength={6}
+                    value={formData.employeeLoginPin}
+                    onChange={handleChange}
+                    placeholder="Enter 6-digit PIN"
+                  />
+                  <small className="employee-login-pin-help">PIN is shown openly. Enter 6 digits to update it.</small>
+                  {errors.employeeLoginPin && <span className="field-error">{errors.employeeLoginPin}</span>}
+                </div>
               </div>
             </section>
           </div>
+          </div>
         </div>
+      </form>
 
-        {/* BOTTOM ACTION BAR */}
+      {/* BOTTOM ACTION BAR */}
+      {!employeeProp && (
+        <div className="employee-form-actions">
+        <button
+          type="button"
+          className="cancel-employee-btn"
+          onClick={handleBack}
+          disabled={saving}
+        >
+          Cancel
+        </button>
+
+        <button
+          type="submit"
+          form="edit-employee-form"
+          className="save-employee-btn"
+          disabled={saving}
+        >
+          <Save size={15} />
+          {saving ? "Updating..." : "Save Changes"}
+        </button>
+        </div>
+      )}
+      {employeeProp && (
         <div className="employee-form-actions">
           <button
             type="button"
@@ -991,11 +1037,11 @@ export default function EditEmployee() {
             Cancel
           </button>
 
-          <button type="submit" className="save-employee-btn" disabled={saving}>
+          <button type="submit" form="edit-employee-form" className="save-employee-btn" disabled={saving}>
             {saving ? "Updating..." : "Update Employee"}
           </button>
         </div>
-      </form>
+      )}
     </div>
   );
 }
@@ -1066,6 +1112,7 @@ function SelectField({
   placeholder,
   options = [],
   error,
+  disabled = false,
 }) {
   return (
     <div className="employee-field">
@@ -1077,6 +1124,7 @@ function SelectField({
       <div className="employee-select">
         <select
           name={name}
+          disabled={disabled}
           value={value}
           onChange={onChange}
           className={error ? "field-invalid" : ""}

@@ -1,0 +1,28 @@
+.employee-view-page { width: 100%; min-height: calc(100vh - 64px); box-sizing: border-box; padding: 18px 24px 28px; background: #f5f7fb; color: #183354; }
+.employee-view-topbar { min-height: 64px; display: flex; align-items: center; gap: 13px; padding: 0 28px; margin: -18px -24px 20px; background: #fff; border-bottom: 1px solid #cdccd7; font-size: 14px; }
+.employee-view-topbar button { display: inline-flex; align-items: center; gap: 8px; border: 0; padding: 0; background: none; color: #5143bc; font: inherit; font-weight: 600; cursor: pointer; }
+.employee-view-topbar > span { color: #a3acc0; }
+.employee-view-header { margin-bottom: 20px; }
+.employee-view-header h1 { margin: 0; color: #132d50; font-size: 27px; line-height: 32px; font-weight: 750; }
+.employee-view-header p { margin: 6px 0 0; color: #75819a; font-size: 14px; line-height: 1.45; }
+.employee-view-sections { display: grid; gap: 16px; }
+.employee-view-card { padding: 18px 16px; background: #fff; border: 1px solid #e1e8f1; border-radius: 8px; min-width: 0; }
+.employee-view-card-header { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; }
+.employee-view-card-header > span { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 8px; background: #eeeaff; color: #5d3ddd; }
+.employee-view-card h2 { margin: 0; font-size: 16px; }
+.employee-view-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 13px 12px; margin: 0; }
+.employee-view-field { min-width: 0; }
+.employee-view-field dt { margin-bottom: 6px; color: #243e60; font-size: 12px; font-weight: 600; }
+.employee-view-field dd { margin: 0; min-height: 35px; box-sizing: border-box; padding: 9px 10px; border: 1px solid #d5e0ed; border-radius: 5px; background: #fbfcfe; color: #294668; font-size: 13px; overflow-wrap: anywhere; }
+.employee-view-photo { width: 80px; height: 80px; object-fit: cover; border-radius: 50%; margin-bottom: 18px; }
+.employee-view-assignments { margin-bottom: 18px; }
+.employee-view-assignments h3 { font-size: 13px; }
+.employee-view-assignments dl + dl { margin-top: 12px; }
+.employee-view-error { padding: 16px; border: 1px solid #fecaca; border-radius: 8px; background: #fef2f2; color: #b91c1c; }
+.employee-view-error button { margin-left: 12px; cursor: pointer; }
+.employee-view-page button:focus-visible { outline: 3px solid #b9adff; outline-offset: 3px; }
+@media (max-width: 700px) {
+  .employee-view-page { padding: 14px; }
+  .employee-view-topbar { margin: -14px -14px 20px; padding: 0 12px; gap: 8px; }
+  .employee-view-grid { grid-template-columns: 1fr; }
+}

@@ -1,631 +1,159 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
+import FilterDropdown from "../components/FilterDropdown";
+import Pagination from "../components/Pagination";
 import "../styles/store-shifts.css";
 
-const DAILY_SHIFTS = [
-  {
-    date: "2026-09-16",
-    totalShifts: 2,
-    cashSales: 158.08,
-    cardSales: 0,
-    ebtSales: 0,
-    payLater: 0,
-    payouts: 0,
-    voidItems: 0,
-    totalOrders: 4,
-    cancelledOrders: 0,
-    openingBalance: 0,
-    closingBalance: 0,
-    safeDrop: 0,
-  },
-  {
-    date: "2026-09-15",
-    totalShifts: 12,
-    cashSales: 1217.19,
-    cardSales: 0,
-    ebtSales: 0,
-    payLater: 0,
-    payouts: 0,
-    voidItems: 0,
-    totalOrders: 13,
-    cancelledOrders: 0,
-    openingBalance: 0,
-    closingBalance: 0,
-    safeDrop: 0,
-    refund: 273.12,
-  },
-  {
-    date: "2026-09-12",
-    totalShifts: 5,
-    cashSales: 418.14,
-    cardSales: 0,
-    ebtSales: 0,
-    payLater: 0,
-    payouts: 0,
-    voidItems: 1,
-    totalOrders: 7,
-    cancelledOrders: 0,
-    openingBalance: 0,
-    closingBalance: 0,
-    safeDrop: 0,
-  },
-  {
-    date: "2026-09-10",
-    totalShifts: 18,
-    cashSales: 13228.08,
-    cardSales: 0,
-    ebtSales: 0,
-    payLater: 0,
-    payouts: -20,
-    voidItems: 0,
-    totalOrders: 0,
-    cancelledOrders: 0,
-    openingBalance: 0,
-    closingBalance: 500,
-    safeDrop: 0,
-    cashback: 33,
-    cashbackFee: 3,
-    refund: 214.77,
-  },
-  {
-    date: "2026-09-09",
-    totalShifts: 7,
-    cashSales: 103.98,
-    cardSales: 0,
-    ebtSales: 0,
-    payLater: 0,
-    payouts: 0,
-    voidItems: 2,
-    totalOrders: 0,
-    cancelledOrders: 0,
-    openingBalance: 0,
-    closingBalance: 800,
-    safeDrop: 0,
-  },
-  {
-    date: "2026-09-08",
-    totalShifts: 12,
-    cashSales: 168.72,
-    cardSales: 0,
-    ebtSales: 0,
-    payLater: 0,
-    payouts: 0,
-    voidItems: 0,
-    totalOrders: 0,
-    cancelledOrders: 0,
-    openingBalance: 200,
-    closingBalance: 0,
-    safeDrop: 0,
-  },
-  {
-    date: "2026-09-07",
-    totalShifts: 2,
-    cashSales: 64.77,
-    cardSales: 0,
-    ebtSales: 0,
-    payLater: 0,
-    payouts: 0,
-    voidItems: 0,
-    totalOrders: 3,
-    cancelledOrders: 0,
-    openingBalance: 0,
-    closingBalance: 0,
-    safeDrop: 0,
-  },
-  {
-    date: "2026-09-02",
-    totalShifts: 2,
-    cashSales: 347.30,
-    cardSales: 0,
-    ebtSales: 0,
-    payLater: 0,
-    payouts: -40,
-    voidItems: 24,
-    totalOrders: 0,
-    cancelledOrders: 0,
-    openingBalance: 1000,
-    closingBalance: 0,
-    safeDrop: 0,
-    cashback: 148,
-    cashbackFee: 8,
-  },
-  {
-    date: "2026-08-06",
-    totalShifts: 1,
-    cashSales: 11083.94,
-    cardSales: 0,
-    ebtSales: 0,
-    payLater: 0,
-    payouts: -1020.22,
-    voidItems: 171,
-    totalOrders: 116,
-    cancelledOrders: 0,
-    openingBalance: 0,
-    closingBalance: 0,
-    safeDrop: 0,
-    cashback: 131,
-    cashbackFee: 11,
-  },
-  {
-    date: "2026-08-04",
-    totalShifts: 3,
-    cashSales: 279.28,
-    cardSales: 0,
-    ebtSales: 0,
-    payLater: 0,
-    payouts: -1060,
-    voidItems: 34,
-    totalOrders: 3,
-    cancelledOrders: 0,
-    openingBalance: 2000,
-    closingBalance: 1000,
-    safeDrop: 0,
-    cashback: 56,
-    cashbackFee: 5,
-  },
+const SHIFT_RECORDS = [
+  { id: "SHF-001", date: "2026-10-08", openedBy: "Ravi Kumar", openedCode: "EMP001", openDevice: "POS-01", openTime: "08:05", closedBy: "Sathwika", closedCode: "EMP005", closeDevice: "POS-02", closeTime: "12:30", duration: "4h 25m", openingBalance: 3200, safeDrop: 0, closingBalance: 2300, status: "Closed", orders: 28, sales: 1204.5, payouts: 0, cashback: 0, refund: 0, voidItems: 12, cancelledOrders: 0, cashSales: 1906.48, cardSales: 600, ebtSales: 0, payLater: 200, paymentCounts: { Cash: 42, Card: 12, EBT: 0, "Pay Later": 10 }, expectedClosing: 5106.48, actualClosing: 2300 },
+  { id: "SHF-002", date: "2026-10-08", openedBy: "Suma Reddy", openedCode: "EMP007", openDevice: "POS-02", openTime: "13:00", closedBy: "", closedCode: "", closeDevice: "", closeTime: "", duration: "—", openingBalance: 0, safeDrop: 0, closingBalance: null, status: "Open", orders: 0, sales: 0, payouts: 0, cashback: 0, refund: 0, voidItems: 0, cancelledOrders: 0, cashSales: 0, cardSales: 0, ebtSales: 0, payLater: 0, paymentCounts: { Cash: 0, Card: 0, EBT: 0, "Pay Later": 0 }, expectedClosing: null, actualClosing: null },
+  { id: "SHF-003", date: "2026-10-07", openedBy: "Kiran Das", openedCode: "EMP009", openDevice: "POS-03", openTime: "06:15", closedBy: "Praveen", closedCode: "EMP012", closeDevice: "POS-01", closeTime: "14:40", duration: "9h 25m", openingBalance: 1500, safeDrop: 0, closingBalance: 1425, status: "Closed", orders: 46, sales: 2240, payouts: 0, cashback: 15, refund: 0, voidItems: 3, cancelledOrders: 1, cashSales: 1400, cardSales: 840, ebtSales: 0, payLater: 0, paymentCounts: { Cash: 31, Card: 15, EBT: 0, "Pay Later": 0 }, expectedClosing: 2900, actualClosing: 1425 },
+  { id: "SHF-004", date: "2026-10-07", openedBy: "Priya Singh", openedCode: "EMP010", openDevice: "POS-01", openTime: "15:10", closedBy: "", closedCode: "", closeDevice: "", closeTime: "", duration: "—", openingBalance: 0, safeDrop: 0, closingBalance: null, status: "Open", orders: 0, sales: 0, payouts: 0, cashback: 0, refund: 0, voidItems: 0, cancelledOrders: 0, cashSales: 0, cardSales: 0, ebtSales: 0, payLater: 0, paymentCounts: { Cash: 0, Card: 0, EBT: 0, "Pay Later": 0 }, expectedClosing: null, actualClosing: null },
 ];
 
-const SHIFT_DETAILS = {
-  "2026-09-16": [
-    {
-      id: "SHIFT-001",
-      title: "Shift Start - manager 1 2026-09-16 02:23:01",
-      startTime: "2026-09-16 02:23:01",
-      sales: 0,
-      payouts: 0,
-      cashback: 0,
-      refund: 0,
-      voidItems: 0,
-      safeDropTotal: 0,
-      status: "open",
-      openingBalance: 0,
-      closingBalance: 0,
-      tillAmount: 0,
-    },
-    {
-      id: "SHIFT-002",
-      title: "Shift Start - manager 1 2026-09-16 00:59:17",
-      startTime: "2026-09-16 00:59:17",
-      sales: 158.08,
-      payouts: 0,
-      cashback: 0,
-      refund: 0,
-      voidItems: 0,
-      safeDropTotal: 0,
-      status: "closed",
-      openingBalance: 0,
-      closingBalance: 0,
-      overShort: -158.08,
-      tillAmount: 158.08,
-    },
-  ],
+const dateLabel = (value) => new Date(`${value}T12:00:00`).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
+const localIsoDate = (date) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+function dateBoundsForPreset(preset) {
+  const today = new Date();
+  const end = localIsoDate(today);
+  if (preset === "today") return [end, end];
+  if (preset === "week") {
+    const start = new Date(today);
+    start.setDate(today.getDate() - ((today.getDay() + 6) % 7));
+    return [localIsoDate(start), end];
+  }
+  if (preset === "month") return [localIsoDate(new Date(today.getFullYear(), today.getMonth(), 1)), end];
+  return ["", ""];
+}
+const timeLabel = (value) => {
+  if (!value) return "—";
+  const [hour, minute] = value.split(":").map(Number);
+  return `${String(hour % 12 || 12).padStart(2, "0")}:${String(minute).padStart(2, "0")} ${hour >= 12 ? "PM" : "AM"}`;
 };
+const money = (value) => value == null ? "—" : `$${Number(value).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
-export default function Shifts() {
-  const [selectedDate, setSelectedDate] = useState(null);
-  const [search, setSearch] = useState("");
-  const [dateFilter, setDateFilter] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
+export default function StoreShifts({ store }) {
+  const [selectedShift, setSelectedShift] = useState(null);
+  const [draft, setDraft] = useState({ from: "", to: "", status: "", startedBy: "", closedBy: "", device: "" });
+  const [filters, setFilters] = useState(draft);
+  const [datePreset, setDatePreset] = useState("any");
+  const [showDateRange, setShowDateRange] = useState(false);
+  const [customStart, setCustomStart] = useState("");
+  const [customEnd, setCustomEnd] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const datePresetBeforeCustom = useRef("any");
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
-  const selectedShifts = selectedDate
-    ? SHIFT_DETAILS[selectedDate] || []
-    : [];
-
-  const filteredShifts = useMemo(() => {
-    const value = search.trim().toLowerCase();
-    if (!value) return selectedShifts;
-
-    return selectedShifts.filter((shift) =>
-      `${shift.title} ${shift.startTime} ${shift.status}`
-        .toLowerCase()
-        .includes(value)
-    );
-  }, [search, selectedShifts]);
-
-  const summary = useMemo(() => {
-    return DAILY_SHIFTS.reduce(
-      (acc, row) => {
-        acc.totalShifts += row.totalShifts;
-        acc.cash += row.cashSales;
-        acc.card += row.cardSales || 0;
-        acc.ebt += row.ebtSales || 0;
-        acc.payLater += row.payLater || 0;
-        acc.payouts += row.payouts || 0;
-        acc.voidItems += row.voidItems || 0;
-        acc.orders += row.totalOrders || 0;
-        acc.cancelled += row.cancelledOrders || 0;
-        acc.opening += row.openingBalance || 0;
-        acc.closing += row.closingBalance || 0;
-        acc.safeDrop += row.safeDrop || 0;
-        return acc;
-      },
-      {
-        totalShifts: 0,
-        cash: 0,
-        card: 0,
-        ebt: 0,
-        payLater: 0,
-        payouts: 0,
-        voidItems: 0,
-        orders: 0,
-        cancelled: 0,
-        opening: 0,
-        closing: 0,
-        safeDrop: 0,
-      }
-    );
-  }, []);
-
-  const visibleDailyRows = useMemo(() => {
-    if (!dateFilter) return DAILY_SHIFTS;
-    return DAILY_SHIFTS.filter((row) => row.date === dateFilter);
-  }, [dateFilter]);
-
-  const clearFilters = () => {
-    setDateFilter("");
-    setCurrentPage(1);
+  const employees = useMemo(() => [...new Set(SHIFT_RECORDS.flatMap((row) => [row.openedBy, row.closedBy]).filter(Boolean))].sort(), []);
+  const devices = useMemo(() => [...new Set(SHIFT_RECORDS.flatMap((row) => [row.openDevice, row.closeDevice]).filter(Boolean))].sort(), []);
+  const filtered = useMemo(() => SHIFT_RECORDS.filter((row) =>
+    (!filters.from || row.date >= filters.from) && (!filters.to || row.date <= filters.to)
+    && (!searchQuery || `${row.id} ${row.openedBy} ${row.openedCode} ${row.closedBy} ${row.closedCode} ${row.openDevice} ${row.closeDevice}`.toLowerCase().includes(searchQuery.trim().toLowerCase()))
+    && (!filters.status || row.status.toLowerCase() === filters.status)
+    && (!filters.startedBy || row.openedBy === filters.startedBy)
+    && (!filters.closedBy || row.closedBy === filters.closedBy)
+    && (!filters.device || row.openDevice === filters.device || row.closeDevice === filters.device),
+  ), [filters, searchQuery]);
+  const visible = filtered.slice((page - 1) * pageSize, page * pageSize);
+  const updateDraft = (key, value) => {
+    setDraft((current) => ({ ...current, [key]: value }));
+    setFilters((current) => ({ ...current, [key]: value }));
+    setPage(1);
+  };
+  const reset = () => {
+    const cleared = { from: "", to: "", status: "", startedBy: "", closedBy: "", device: "" };
+    setDraft(cleared); setFilters(cleared); setDatePreset("any"); setShowDateRange(false); setCustomStart(""); setCustomEnd(""); setSearchQuery(""); setPage(1);
+  };
+  const chooseDatePreset = (preset) => {
+    setDatePreset(preset);
+    if (preset === "custom") {
+      datePresetBeforeCustom.current = datePreset;
+      setCustomStart(draft.from);
+      setCustomEnd(draft.to);
+      setShowDateRange(true);
+      return;
+    }
+    const [from, to] = dateBoundsForPreset(preset);
+    setDraft((current) => ({ ...current, from, to }));
+    setFilters((current) => ({ ...current, from, to }));
+    setPage(1);
+    setShowDateRange(false);
+  };
+  const applyCustomRange = () => {
+    if (!customStart || !customEnd || customStart > customEnd) return;
+    setDraft((current) => ({ ...current, from: customStart, to: customEnd }));
+    setFilters((current) => ({ ...current, from: customStart, to: customEnd }));
+    setPage(1);
+    setDatePreset("custom");
+    setShowDateRange(false);
   };
 
-  const goToDaily = () => {
-    setSelectedDate(null);
-    setSearch("");
-    setCurrentPage(1);
-  };
+  if (selectedShift) return <ShiftDetails shift={selectedShift} store={store} onBack={() => setSelectedShift(null)} />;
 
-  return (
-    <div className="shifts-page">
-      {!selectedDate ? (
-        <DailyShiftSummary
-          rows={visibleDailyRows}
-          summary={summary}
-          dateFilter={dateFilter}
-          onDateFilterChange={(value) => {
-            setDateFilter(value);
-            setCurrentPage(1);
-          }}
-          onClear={clearFilters}
-          onSelectDate={setSelectedDate}
-          onAddShift={() => {}}
-        />
-      ) : (
-        <DailyShiftDetails
-          date={selectedDate}
-          shifts={filteredShifts}
-          search={search}
-          onSearchChange={setSearch}
-          onBack={goToDaily}
-          currentPage={currentPage}
-          onPageChange={setCurrentPage}
-        />
-      )}
+  return <section className="sm-screen" aria-label="Store shift management">
+    <header className="sm-page-heading">
+      <div><h1>Shift Management</h1><p>View and manage store-level shifts. A shift remains open until it is closed.</p></div>
+    </header>
+
+    <div className="sm-filter-card">
+      <label className="sm-search-control"><i className="bi bi-search" aria-hidden="true" /><span className="sr-only">Search shifts</span><input aria-label="Search shifts" placeholder="Search shifts..." value={searchQuery} onChange={(event) => { setSearchQuery(event.target.value); setPage(1); }} /></label>
+      <FilterDropdown aria-label="Filter by date" value={datePreset} onChange={(event) => chooseDatePreset(event.target.value)}><option value="any">Any Date</option><option value="today">Today</option><option value="week">This Week</option><option value="month">This Month</option><option value="custom">Custom Date Range</option></FilterDropdown>
+      <FilterDropdown aria-label="Filter by status" value={draft.status} onChange={(event) => updateDraft("status", event.target.value)}><option value="">Status</option><option value="open">Open</option><option value="closed">Closed</option></FilterDropdown>
+      <FilterDropdown aria-label="Filter by started by" value={draft.startedBy} onChange={(event) => updateDraft("startedBy", event.target.value)}><option value="">Started By</option>{employees.map((employee) => <option key={employee}>{employee}</option>)}</FilterDropdown>
+      <FilterDropdown aria-label="Filter by closed by" value={draft.closedBy} onChange={(event) => updateDraft("closedBy", event.target.value)}><option value="">Closed By</option>{employees.map((employee) => <option key={employee}>{employee}</option>)}</FilterDropdown>
+      <FilterDropdown aria-label="Filter by device" value={draft.device} onChange={(event) => updateDraft("device", event.target.value)}><option value="">Device</option>{devices.map((device) => <option key={device}>{device}</option>)}</FilterDropdown>
+      <button type="button" className="sm-reset-button" onClick={reset}><i className="bi bi-arrow-counterclockwise" aria-hidden="true" /> Reset</button>
     </div>
-  );
+
+    {showDateRange ? <div className="sm-custom-range" role="group" aria-label="Custom date range">
+      <label>From date<input type="date" value={customStart} onChange={(event) => setCustomStart(event.target.value)} /></label>
+      <label>To date<input type="date" value={customEnd} onChange={(event) => setCustomEnd(event.target.value)} /></label>
+      <button type="button" className="sm-button-primary" disabled={!customStart || !customEnd || customStart > customEnd} onClick={applyCustomRange}>Apply date range</button>
+      <button type="button" className="sm-button-outline" onClick={() => { setShowDateRange(false); setDatePreset(datePresetBeforeCustom.current); }}>Cancel</button>
+      <button type="button" className="sm-text-button" onClick={() => { setCustomStart(""); setCustomEnd(""); setDraft((current) => ({ ...current, from: "", to: "" })); setFilters((current) => ({ ...current, from: "", to: "" })); setDatePreset("any"); setShowDateRange(false); }}>Clear dates</button>
+    </div> : null}
+
+      <div className="sm-table-wrap"><table className="sm-table"><thead><tr><th>#</th><th>Shift ID</th><th>Shift Date</th><th>Opened By</th><th>Opening Device</th><th>Open Time</th><th>Closed By</th><th>Closing Device</th><th>Close Time</th><th>Duration</th><th>Opening Balance</th><th>Closing Balance</th><th>Status</th><th>View</th></tr></thead>
+        <tbody>{visible.map((shift, index) => <tr key={shift.id}><td>{(page - 1) * pageSize + index + 1}</td><td><button type="button" className="sm-link" onClick={() => setSelectedShift(shift)}>{shift.id}</button></td><td>{dateLabel(shift.date)}</td><td>{shift.openedBy}<small>({shift.openedCode})</small></td><td>{shift.openDevice}</td><td>{timeLabel(shift.openTime)}</td><td>{shift.closedBy ? <>{shift.closedBy}<small>({shift.closedCode})</small></> : "—"}</td><td>{shift.closeDevice || "—"}</td><td>{timeLabel(shift.closeTime)}</td><td>{shift.duration}</td><td>{money(shift.openingBalance)}</td><td>{money(shift.closingBalance)}</td><td><span className={`sm-status ${shift.status.toLowerCase()}`}>{shift.status}</span></td><td><button type="button" className="sm-button-outline sm-view-button" aria-label={`View shift ${shift.id}`} onClick={() => setSelectedShift(shift)}><i className="bi bi-eye" aria-hidden="true" /></button></td></tr>)}
+          {!visible.length && <tr><td colSpan={14} className="sm-empty">No shift records match these filters.</td></tr>}
+        </tbody>
+      </table></div>
+      <Pagination
+        currentPage={page}
+        totalPages={Math.max(1, Math.ceil(filtered.length / pageSize))}
+        totalItems={filtered.length}
+        pageSize={pageSize}
+        onPageChange={setPage}
+        onPageSizeChange={(size) => { setPageSize(size); setPage(1); }}
+        itemLabel="items"
+        showWhenEmpty
+        pageSizeOptions={[10, 25, 50]}
+      />
+  </section>;
 }
 
-function DailyShiftSummary({
-  rows,
-  summary,
-  dateFilter,
-  onDateFilterChange,
-  onClear,
-  onSelectDate,
-  onAddShift,
-}) {
-  return (
-    <>
-      <div className="shifts-page-header">
-        <div className="shifts-title-row">
-          <h1>Shifts</h1>
-          <button type="button" className="shift-add-btn" onClick={onAddShift}>
-            Add New Shift
-          </button>
-        </div>
-      </div>
-
-      <ShiftSummaryCards summary={summary} />
-
-      <div className="shift-filter-bar">
-        <select defaultValue="">
-          <option value="">Bulk actions</option>
-          <option value="export">Export</option>
-        </select>
-
-        <button type="button" className="shift-small-btn">
-          Apply
-        </button>
-
-        <select defaultValue="">
-          <option value="">All dates</option>
-        </select>
-
-        <button type="button" className="shift-small-btn">Today</button>
-        <button type="button" className="shift-small-btn">This Week</button>
-        <button type="button" className="shift-small-btn">This Month</button>
-
-        <input
-          type="date"
-          value={dateFilter}
-          onChange={(event) => onDateFilterChange(event.target.value)}
-          aria-label="Filter by date"
-        />
-
-        <button type="button" className="shift-small-btn" onClick={onClear}>
-          Filter
-        </button>
-
-        <div className="shift-list-count">{rows.length || 90} items</div>
-
-        <div className="shift-pagination-mini">
-          <button type="button" disabled>«</button>
-          <button type="button" disabled>‹</button>
-          <button type="button" className="active">1</button>
-          <span>of 5</span>
-          <button type="button">›</button>
-          <button type="button">»</button>
-        </div>
-      </div>
-
-      <div className="shift-table-card">
-        <table className="shifts-table">
-          <thead>
-            <tr>
-              <th className="check-col"><input type="checkbox" /></th>
-              <th>DATE</th>
-              <th>TOTAL SHIFTS</th>
-              <th>TOTAL SALES</th>
-              <th>PAYOUTS</th>
-              <th>CASHBACK</th>
-              <th>REFUND</th>
-              <th>VOID ITEMS</th>
-              <th>TOTAL ORDERS</th>
-              <th>CANCELLED ORDERS</th>
-              <th>OPENING BAL</th>
-              <th>CLOSING BAL</th>
-              <th>SAFE DROP</th>
-              <th>DETAILS</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {rows.map((row) => (
-              <tr key={row.date}>
-                <td className="check-col">
-                  <input type="checkbox" onClick={(e) => e.stopPropagation()} />
-                </td>
-                <td>
-                  <button
-                    type="button"
-                    className="shift-date-link"
-                    onClick={() => onSelectDate(row.date)}
-                  >
-                    {row.date}
-                  </button>
-                </td>
-                <td>{row.totalShifts}</td>
-                <td>Cash {money(row.cashSales)}</td>
-                <td>{money(row.payouts)}</td>
-                <td>
-                  {money(row.cashback || 0)}
-                  {row.cashbackFee ? (
-                    <small> (${row.cashbackFee.toFixed(2)} Fee)</small>
-                  ) : null}
-                </td>
-                <td>{money(row.refund || 0)}</td>
-                <td>{row.voidItems || 0}</td>
-                <td>{row.totalOrders || 0}</td>
-                <td>{row.cancelledOrders || 0}</td>
-                <td>{money(row.openingBalance)}</td>
-                <td>{money(row.closingBalance)}</td>
-                <td>{money(row.safeDrop)}</td>
-                <td>
-                  <button
-                    type="button"
-                    className="shift-more-btn"
-                    onClick={() => onSelectDate(row.date)}
-                  >
-                    More
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </>
-  );
-}
-
-function ShiftSummaryCards({ summary }) {
-  const cards = [
-    ["Total Shifts", summary.totalShifts],
-    ["Total Sales", null],
-    ["Cash", money(summary.cash)],
-    ["Card", money(summary.card)],
-    ["EBT", money(summary.ebt)],
-    ["Pay later", money(summary.payLater)],
-    ["Payouts", money(summary.payouts)],
-    ["Void Items", summary.voidItems],
-    ["Total Orders", summary.orders],
-    ["Cancelled Orders", summary.cancelled],
-    ["Opening Bal", money(summary.opening)],
-    ["Closing Bal", money(summary.closing)],
-    ["Safe Drop", money(summary.safeDrop)],
+function ShiftDetails({ shift, store, onBack }) {
+  const metrics = [
+    ["Total Orders", shift.orders, "bi-file-earmark-text"],
+    ["Total Sales", money(shift.sales), "bi-currency-rupee"],
+    ["Payouts", money(shift.payouts), "bi-credit-card"],
+    ["Cashback", money(shift.cashback), "bi-gift"],
+    ["Refund", money(shift.refund), "bi-arrow-repeat"],
+    ["Void Items", shift.voidItems, "bi-slash-circle"],
+    ["Cancelled Orders", shift.cancelledOrders, "bi-x-circle"],
   ];
-
-  return (
-    <div className="shift-summary-card">
-      <div className="shift-summary-title">Shift Summary</div>
-      <div className="shift-summary-pills">
-        {cards.map(([label, value], index) => (
-          <div className="shift-summary-pill" key={label}>
-            <span>{label}</span>
-            <strong>{index === 1 ? "" : value}</strong>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function DailyShiftDetails({
-  date,
-  shifts,
-  search,
-  onSearchChange,
-  onBack,
-  currentPage,
-  onPageChange,
-}) {
-  const totalSales = shifts.reduce((sum, shift) => sum + shift.sales, 0);
-  const totalPayouts = shifts.reduce((sum, shift) => sum + shift.payouts, 0);
-  const totalCashback = shifts.reduce((sum, shift) => sum + shift.cashback, 0);
-  const totalRefund = shifts.reduce((sum, shift) => sum + shift.refund, 0);
-  const totalVoid = shifts.reduce((sum, shift) => sum + shift.voidItems, 0);
-  const totalOrders = shifts.reduce((sum, shift) => sum + (shift.orders || 0), 0);
-  const totalSafeDrop = shifts.reduce(
-    (sum, shift) => sum + shift.safeDropTotal,
-    0
-  );
-
-  return (
-    <>
-      <div className="shifts-page-header">
-        <div className="shifts-title-row">
-          <h1>Shifts</h1>
-          <button type="button" className="shift-add-btn">
-            Add New Shift
-          </button>
-        </div>
-      </div>
-
-      <div className="shift-details-top">
-        <div className="shift-details-summary">
-          <div className="shift-summary-title">Shift Summary</div>
-          <div className="shift-summary-pills">
-            <SummaryPill label="Total Shifts" value={shifts.length} />
-            <SummaryPill label="Total Sales" value={money(totalSales)} />
-            <SummaryPill label="Cash" value={money(totalSales)} />
-            <SummaryPill label="Payouts" value={money(totalPayouts)} />
-            <SummaryPill label="Void Items" value={totalVoid} />
-            <SummaryPill label="Total Orders" value={totalOrders} />
-            <SummaryPill label="Cancelled Orders" value={0} />
-            <SummaryPill label="Opening Bal" value={money(0)} />
-            <SummaryPill label="Closing Bal" value={money(0)} />
-            <SummaryPill label="Safe Drop" value={money(totalSafeDrop)} />
-          </div>
-        </div>
-
-        <div className="shift-search-area">
-          <input
-            type="search"
-            value={search}
-            onChange={(event) => onSearchChange(event.target.value)}
-            placeholder=""
-            aria-label="Search shifts"
-          />
-          <button type="button" className="shift-small-btn">
-            Search Shifts
-          </button>
-        </div>
-      </div>
-
-      <div className="shift-filter-bar detail-filter-bar">
-        <select defaultValue="">
-          <option value="">Bulk actions</option>
-          <option value="export">Export</option>
-        </select>
-
-        <button type="button" className="shift-small-btn">Apply</button>
-
-        <button type="button" className="shift-back-btn" onClick={onBack}>
-          ← Back to Daily Summary
-        </button>
-
-        <div className="shift-list-count">{shifts.length} items</div>
-      </div>
-
-      <div className="shift-table-card">
-        <table className="shifts-table shift-details-table">
-          <thead>
-            <tr>
-              <th className="check-col"><input type="checkbox" /></th>
-              <th>TITLE</th>
-              <th>START TIME</th>
-              <th>SALES</th>
-              <th>PAYOUTS</th>
-              <th>CASHBACK</th>
-              <th>REFUND</th>
-              <th>VOID ITEMS</th>
-              <th>SAFE DROP TOTAL</th>
-              <th>STATUS</th>
-              <th>OPENING BAL</th>
-              <th>CLOSING BAL</th>
-              <th>OVER/SHORT</th>
-              <th>TILL AMOUNT</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {shifts.map((shift) => (
-              <tr key={shift.id}>
-                <td className="check-col">
-                  <input type="checkbox" />
-                </td>
-                <td>
-                  <button type="button" className="shift-title-link">
-                    {shift.title}
-                  </button>
-                </td>
-                <td>{shift.startTime}</td>
-                <td>{shift.sales ? `Cash ${money(shift.sales)}` : ""}</td>
-                <td>{money(shift.payouts)}</td>
-                <td>{money(shift.cashback)}</td>
-                <td>{money(shift.refund)}</td>
-                <td>{shift.voidItems}</td>
-                <td>{money(shift.safeDropTotal)}</td>
-                <td>{shift.status}</td>
-                <td>{money(shift.openingBalance)}</td>
-                <td>{money(shift.closingBalance)}</td>
-                <td
-                  className={
-                    shift.overShort < 0
-                      ? "over-short negative"
-                      : "over-short positive"
-                  }
-                >
-                  {shift.overShort !== undefined
-                    ? money(shift.overShort)
-                    : money(0)}
-                </td>
-                <td>{money(shift.tillAmount)}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      <div className="shift-bottom-toolbar">
-        <select defaultValue="">
-          <option value="">Bulk actions</option>
-        </select>
-        <button type="button" className="shift-small-btn">Apply</button>
-        <span>{shifts.length} items</span>
-      </div>
-    </>
-  );
-}
-
-function SummaryPill({ label, value }) {
-  return (
-    <div className="shift-summary-pill">
-      <span>{label}</span>
-      <strong>{value}</strong>
-    </div>
-  );
-}
-
-function money(value) {
-  return `$${Number(value || 0).toLocaleString("en-US", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })}`;
+  const difference = shift.actualClosing == null ? null : shift.actualClosing - shift.expectedClosing;
+  return <section className="sm-screen sm-detail-screen" aria-label="Shift details">
+    <nav className="sm-breadcrumb" aria-label="Shift navigation"><button type="button" onClick={onBack}>Shift Management</button><b>/</b><strong>Shift Details</strong></nav>
+    <header className="sm-detail-heading"><div><h1>Shift Details</h1><p>View complete information for the selected shift.</p></div><button type="button" className="sm-button-outline" onClick={onBack}><i className="bi bi-arrow-left" /> Back to Shift Management</button></header>
+    <section className="sm-detail-overview">
+      <span className={`sm-detail-status ${shift.status.toLowerCase()}`}><i className={`bi ${shift.status === "Closed" ? "bi-check-lg" : "bi-clock"}`} /> {shift.status}</span>
+      <div className="sm-info-block"><h2><i className="bi bi-clock" /> Shift Information</h2><dl><div><dt>Shift ID</dt><dd>{shift.id}</dd></div><div><dt>Shift Date</dt><dd>{dateLabel(shift.date)} ({new Date(`${shift.date}T12:00:00`).toLocaleDateString("en-GB", { weekday: "long" })})</dd></div><div><dt>Status</dt><dd><span className={`sm-status ${shift.status.toLowerCase()}`}>{shift.status}</span></dd></div><div><dt>Duration</dt><dd>{shift.duration}</dd></div><div><dt>Store</dt><dd>{store?.name || store?.storeName || "—"}</dd></div></dl></div>
+      <div className="sm-info-block"><h2><i className="bi bi-person-circle" /> Opened By</h2><dl><div><dt>Employee</dt><dd>{shift.openedBy} ({shift.openedCode})</dd></div><div><dt>Device</dt><dd>{shift.openDevice}</dd></div><div><dt>Open Time</dt><dd>{timeLabel(shift.openTime)}</dd></div><div><dt>Opening Balance</dt><dd>{money(shift.openingBalance)}</dd></div></dl></div>
+      <div className="sm-info-block"><h2><i className="bi bi-person-circle" /> Closed By</h2><dl><div><dt>Employee</dt><dd>{shift.closedBy ? `${shift.closedBy} (${shift.closedCode})` : "—"}</dd></div><div><dt>Device</dt><dd>{shift.closeDevice || "—"}</dd></div><div><dt>Close Time</dt><dd>{timeLabel(shift.closeTime)}</dd></div><div><dt>Closing Balance</dt><dd>{money(shift.closingBalance)}</dd></div></dl></div>
+    </section>
+    <section className="sm-detail-data-card"><div className="sm-metric-grid">{metrics.map(([label, value, icon]) => <div className="sm-metric" key={label}><span className="sm-metric-icon"><i className={`bi ${icon}`} aria-hidden="true" /></span><span className="sm-metric-copy"><span>{label}</span><strong>{value}</strong></span></div>)}</div>
+      <div className="sm-detail-tables"><section><h3><i className="bi bi-file-earmark-text" /> Transaction Summary</h3><table><thead><tr><th>Payment Method</th><th>Amount</th><th>Count</th></tr></thead><tbody>{["Cash", "Card", "EBT", "Pay Later"].map((method) => <tr key={method}><td>{method}</td><td>{money(shift.paymentCounts[method] ? method === "Cash" ? shift.cashSales : method === "Card" ? shift.cardSales : method === "EBT" ? shift.ebtSales : shift.payLater : 0)}</td><td>{shift.paymentCounts[method]}</td></tr>)}<tr className="sm-total-row"><td>Total</td><td>{money(shift.cashSales + shift.cardSales + shift.ebtSales + shift.payLater)}</td><td>{Object.values(shift.paymentCounts).reduce((sum, value) => sum + value, 0)}</td></tr></tbody></table></section><section><h3><i className="bi bi-cash-stack" /> Cash Details</h3><table><thead><tr><th>Cash Details</th><th>Amount</th></tr></thead><tbody><tr><td>Opening Balance</td><td>{money(shift.openingBalance)}</td></tr><tr><td>Safe Drop</td><td>{money(shift.safeDrop)}</td></tr><tr><td>Closing Balance</td><td>{money(shift.closingBalance)}</td></tr><tr className="sm-difference-row"><td>Over/Short</td><td>{money(difference)}</td></tr></tbody></table></section></div>
+    </section>
+  </section>;
 }

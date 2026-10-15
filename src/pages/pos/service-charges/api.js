@@ -1,18 +1,15 @@
-import { api } from "../../../api/http";
-import { endpoints } from "../../../api/endpoints";
+import { loadStorePosConfiguration, saveStorePosConfiguration } from "../storePosConfiguration";
 
-const path = (storeId) => endpoints.storeServiceCharges(storeId);
-
-const record = (response) => response?.serviceCharge || response?.data || response;
+const NAME = "service_charges";
 
 export function getPosServiceCharges(storeId) {
-  return api.get(path(storeId)).then(record);
+  return loadStorePosConfiguration(storeId, NAME);
 }
 
 export function createPosServiceCharges(storeId, payload) {
-  return api.post(path(storeId), payload).then(record);
+  return saveStorePosConfiguration(storeId, NAME, payload);
 }
 
 export function updatePosServiceCharges(storeId, payload) {
-  return api.put(path(storeId), payload).then(record);
+  return saveStorePosConfiguration(storeId, NAME, payload);
 }

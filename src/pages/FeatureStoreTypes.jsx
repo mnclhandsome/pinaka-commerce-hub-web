@@ -1,6 +1,9 @@
+import { pendingStoreRead } from "../api/http";
 import React, { useEffect, useMemo, useState } from 'react';
  
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
+import Pagination from '../components/Pagination';
+import DeleteConfirmationDialog from "../components/DeleteConfirmationDialog";
  
 import { Store, Search, Plus, X, Trash2 } from 'lucide-react';
  
@@ -9,8 +12,6 @@ import { getFeature } from '../api/features';
 import {
  
   listMappedStoreTypes,
- 
-  listAvailableStoreTypes,
  
   addStoreTypeToFeature,
  
@@ -171,9 +172,60 @@ const mapStore = (item = {}) => {
       item?._id ||
  
       '',
+
+    isAssigned:
+      item?.is_assigned ??
+      item?.isAssigned ??
+      item?.is_selected ??
+      item?.isSelected ??
+      item?.is_mapped ??
+      item?.isMapped ??
+      nestedStoreType?.is_assigned ??
+      nestedStoreType?.isAssigned ??
+      item?.selected ??
+      item?.assigned ??
+      true,
  
   };
  
+};
+
+const removedStoreTypesKey = (featureId) =>
+  `feature:${featureId}:unassigned-store-types`;
+
+const readRemovedStoreTypes = (featureId) => {
+  try {
+    const items = JSON.parse(localStorage.getItem(removedStoreTypesKey(featureId)) || "[]");
+    return Array.isArray(items) ? items : [];
+  } catch {
+    return [];
+  }
+};
+
+const rememberRemovedStoreType = (featureId, storeType) => {
+  try {
+    const items = readRemovedStoreTypes(featureId).filter(
+      (item) => String(item.id) !== String(storeType.id),
+    );
+    localStorage.setItem(
+      removedStoreTypesKey(featureId),
+      JSON.stringify([{ ...storeType, isAssigned: false }, ...items]),
+    );
+  } catch {
+    // The API operation remains successful if local persistence is unavailable.
+  }
+};
+
+const forgetAssignedStoreTypes = (featureId, storeTypeIds) => {
+  try {
+    const assignedIds = new Set(storeTypeIds.map(String));
+    const remaining = readRemovedStoreTypes(featureId).filter(
+      (item) => !assignedIds.has(String(item.id)),
+    );
+    localStorage.setItem(removedStoreTypesKey(featureId), JSON.stringify(remaining));
+  } catch {
+    // The API operation remains successful if local persistence is unavailable.
+  }
 };
  
 const FeatureStoreTypes = () => {
@@ -181,6 +233,7 @@ const FeatureStoreTypes = () => {
   const navigate = useNavigate();
  
   const { featureId } = useParams();
+  const suppliedFeature = useLocation().state?.feature;
  
   const [feature, setFeature] = useState(null);
  
@@ -191,6 +244,10 @@ const FeatureStoreTypes = () => {
   const [search, setSearch] = useState('');
  
   const [modalSearch, setModalSearch] = useState('');
+
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const [pageSize, setPageSize] = useState(5);
  
   const [showAddModal, setShowAddModal] = useState(false);
  
@@ -200,6 +257,7 @@ const FeatureStoreTypes = () => {
  
   const [removingId, setRemovingId] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [deleteError, setDeleteError] = useState("");
  
   const [error, setError] = useState('');
  
@@ -223,13 +281,11 @@ const FeatureStoreTypes = () => {
  
       setError('');
  
-      const [f, mapped, all] = await Promise.all([
+      const [f, featureStoreTypes] = await Promise.all([
  
-        getFeature(featureId),
+        suppliedFeature ? Promise.resolve(suppliedFeature) : getFeature(featureId),
  
-        listMappedStoreTypes(featureId),
- 
-        listAvailableStoreTypes(featureId),
+        pendingStoreRead(`feature-store-types:${featureId}`, () => listMappedStoreTypes(featureId)),
  
       ]);
  
@@ -241,25 +297,20 @@ const FeatureStoreTypes = () => {
  
        */
  
-      setStoreTypes(
- 
-        Array.isArray(mapped)
- 
-          ? mapped.map(mapStore)
- 
-          : []
- 
+      const scopedStoreTypes = Array.isArray(featureStoreTypes)
+        ? featureStoreTypes.map(mapStore)
+        : [];
+      const availableById = new Map(
+        scopedStoreTypes.map((storeType) => [String(storeType.id), storeType]),
       );
- 
-      setAvailable(
- 
-        Array.isArray(all)
- 
-          ? all.map(mapStore)
- 
-          : []
- 
-      );
+      readRemovedStoreTypes(featureId).forEach((storeType) => {
+        if (!availableById.has(String(storeType.id))) {
+          availableById.set(String(storeType.id), { ...storeType, isAssigned: false });
+        }
+      });
+
+      setStoreTypes(scopedStoreTypes.filter((storeType) => storeType.isAssigned));
+      setAvailable(Array.from(availableById.values()));
  
     } catch (e) {
  
@@ -326,6 +377,23 @@ const FeatureStoreTypes = () => {
     );
  
   }, [storeTypes, search]);
+
+  const totalPages = Math.max(
+  1,
+  Math.ceil(filtered.length / pageSize)
+);
+
+const paginatedStoreTypes = useMemo(() => {
+  const startIndex = (currentPage - 1) * pageSize;
+
+  return filtered.slice(startIndex, startIndex + pageSize);
+}, [filtered, currentPage, pageSize]);
+
+useEffect(() => {
+  if (currentPage > totalPages) {
+    setCurrentPage(totalPages);
+  }
+}, [currentPage, totalPages]);
  
   /*
  
@@ -508,6 +576,8 @@ const FeatureStoreTypes = () => {
         )
  
       );
+
+      forgetAssignedStoreTypes(featureId, selected);
  
       /*
  
@@ -561,11 +631,13 @@ const FeatureStoreTypes = () => {
  
    */
  
-  const remove = async (storeTypeId) => {
+  const remove = async (storeType) => {
+
+    const storeTypeId = typeof storeType === 'object' ? storeType?.id : storeType;
  
     if (!featureId || !storeTypeId || removingId) {
  
-      return;
+      return false;
  
     }
  
@@ -608,6 +680,10 @@ const FeatureStoreTypes = () => {
         String(storeTypeId)
  
       );
+
+      if (typeof storeType === 'object') {
+        rememberRemovedStoreType(featureId, storeType);
+      }
  
       /*
  
@@ -616,6 +692,8 @@ const FeatureStoreTypes = () => {
        */
  
       await load();
+
+      return true;
  
     } catch (e) {
  
@@ -634,6 +712,7 @@ const FeatureStoreTypes = () => {
         'Unable to remove store type.'
  
       );
+      return false;
  
     } finally {
  
@@ -755,7 +834,7 @@ const FeatureStoreTypes = () => {
  
               navigate(
  
-                `/features/${featureId}/permissions`
+                `/features/${featureId}/permissions`, { state: { feature } }
  
               )
  
@@ -763,7 +842,7 @@ const FeatureStoreTypes = () => {
  
           >
  
-            Feature &amp; Permission Access
+            Permissions
  
           </button>
  
@@ -821,9 +900,9 @@ const FeatureStoreTypes = () => {
  
           ========================== */}
  
-          <div className="st-toolbar">
+          <div className="st-toolbar pch-master-toolbar pch-master-control">
  
-            <div className="st-search">
+            <div className="st-search pch-master-search pch-master-control">
  
               <Search size={17} />
  
@@ -833,11 +912,10 @@ const FeatureStoreTypes = () => {
  
                 value={search}
  
-                onChange={(e) =>
- 
-                  setSearch(e.target.value)
- 
-                }
+                onChange={(e) => {
+                 setSearch(e.target.value);
+                 setCurrentPage(1);
+                      }}
  
               />
  
@@ -935,9 +1013,8 @@ const FeatureStoreTypes = () => {
  
             <tbody>
  
-              {filtered.length > 0 ? (
- 
-                filtered.map((s) => {
+              {paginatedStoreTypes.length > 0 ? (
+                   paginatedStoreTypes.map((s) => {
  
                   /*
  
@@ -980,12 +1057,7 @@ const FeatureStoreTypes = () => {
                           type="button"
  
                           className="st-delete-button"
- 
-                          onClick={() =>
- 
-                            setDeleteTarget(s)
- 
-                          }
+                           onClick={() => {setDeleteError(""); setDeleteTarget(s);}}
  
                           disabled={isRemoving}
  
@@ -997,7 +1069,7 @@ const FeatureStoreTypes = () => {
  
                               ? 'Removing...'
  
-                              : `Delete ${s.name}`
+                              :  'Remove Assignment'
  
                           }
  
@@ -1066,63 +1138,67 @@ const FeatureStoreTypes = () => {
           </table>
  
         </div>
+
+        <Pagination
+  currentPage={currentPage}
+  totalPages={totalPages}
+  totalItems={filtered.length}
+  pageSize={pageSize}
+  onPageChange={setCurrentPage}
+  onPageSizeChange={(newPageSize) => {
+    setPageSize(newPageSize);
+    setCurrentPage(1);
+  }}
+  itemLabel="store types"
+/>
  
       </section>
  
       {/** =========================
           DELETE CONFIRMATION
       ========================== */}
-      {deleteTarget && (
-        <div
-          className="st-delete-overlay"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="st-delete-title"
-          onMouseDown={() => !removingId && setDeleteTarget(null)}
-        >
-          <div
-            className="st-delete-modal"
-            onMouseDown={(event) => event.stopPropagation()}
-          >
-            <div className="st-delete-modal-icon">
-              <Trash2 size={23} strokeWidth={2} />
-            </div>
- 
-            <h2 id="st-delete-title">Delete Store Type?</h2>
- 
-            <p>
-              Are you sure you want to delete{" "}
-              <strong>{deleteTarget.name || deleteTarget.code}</strong>?
-            </p>
- 
-            <p className="st-delete-warning">This action cannot be undone.</p>
- 
-            <div className="st-delete-modal-actions">
-              <button
-                type="button"
-                className="st-delete-cancel-button"
-                onClick={() => setDeleteTarget(null)}
-                disabled={Boolean(removingId)}
-              >
-                Cancel
-              </button>
- 
-              <button
-                type="button"
-                className="st-delete-confirm-button"
-                onClick={async () => {
-                  const storeTypeId = deleteTarget.id;
-                  await remove(storeTypeId);
-                  setDeleteTarget(null);
-                }}
-                disabled={Boolean(removingId)}
-              >
-                {removingId ? 'Deleting...' : 'Delete'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      
+<DeleteConfirmationDialog
+  isOpen={Boolean(deleteTarget)}
+  title="Unassign Store Type?"
+  message={
+    deleteTarget
+      ? `Are you sure you want to unassign "${deleteTarget.name || deleteTarget.code}" from this feature?`
+      : ""
+  }
+  cancelLabel="Cancel"
+  confirmLabel="Unassign"
+  busyLabel="Unassigning..."
+  busy={Boolean(removingId)}
+  error={deleteError}
+  iconClassName="bi bi-exclamation-triangle"
+  onCancel={() => {
+    if (!removingId) {
+      setDeleteTarget(null);
+      setDeleteError("");
+    }
+  }}
+  onConfirm={async () => {
+    if (!deleteTarget || removingId) return;
+
+    setDeleteError("");
+
+    const removed = await remove(deleteTarget);
+
+    if (removed) {
+      setDeleteTarget(null);
+      setDeleteError("");
+      setSelected([]);
+      setModalSearch("");
+      setShowAddModal(true);
+    } else {
+      setDeleteError(
+        "Unable to unassign this store type. Please try again."
+      );
+    }
+  }}
+/>
+
  
       {/* =========================
  
@@ -1170,9 +1246,7 @@ const FeatureStoreTypes = () => {
  
                 <p>
  
-                  Select the store types to make
- 
-                  available for this feature.
+                  Manage store types where this feature is available.
  
                 </p>
  
@@ -1204,7 +1278,7 @@ const FeatureStoreTypes = () => {
  
             ========================== */}
  
-            <div className="st-modal-search">
+            <div className="st-modal-search pch-master-search pch-master-control">
  
               <Search size={19} />
  
@@ -1361,5 +1435,3 @@ const FeatureStoreTypes = () => {
 };
  
 export default FeatureStoreTypes;
- 
- 

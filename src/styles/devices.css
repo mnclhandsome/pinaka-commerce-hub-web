@@ -5,54 +5,37 @@
 .devices-page {
   width: 100%;
   min-height: calc(100vh - 64px);
-
-  padding: 20px 24px 24px;
-
+  padding: 24px;
   box-sizing: border-box;
-
   background: #f5f7fb;
-
   color: #193354;
 }
 
+
 /* =========================================================
-   HEADER
+   PAGE HEADER
 ========================================================= */
 
 .devices-page-header {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-
   margin-bottom: 22px;
 }
 
 .devices-page-header h1 {
   margin: 0;
-
   color: #142b4c;
-
-  font-size: 28px;
-  line-height: 32px;
-
-  font-weight: 750;
+  font-size: 20px;
+  line-height: 1.2;
+  font-weight: 700;
 }
 
-.devices-breadcrumb {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-
-  margin-top: 4px;
-
-  color: #8193ad;
-
+.devices-subtitle {
+  margin: 4px 0 0;
+  color: #7d8697;
   font-size: 13px;
-}
-
-.devices-breadcrumb strong {
-  color: #405b7d;
-  font-weight: 500;
+  line-height: 1.4;
 }
 
 .devices-header-actions {
@@ -63,38 +46,28 @@
 
 .devices-add-btn,
 .devices-export-btn {
-  height: 43px;
-
-  padding: 0 17px;
-
+  height: 40px;
+  padding: 0 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-
-  gap: 9px;
-
-  border-radius: 6px;
-
+  gap: 14px;
+  border-radius: 8px;
   font-family: inherit;
-  font-size: 13px;
-
+  font-size: 14px;
   cursor: pointer;
+  box-sizing: border-box;
 }
 
 .devices-add-btn {
-  border: none;
-
-  background: linear-gradient(
-    90deg,
-    #5b38dc,
-    #633de1
-  );
-
+  background: #5143bc;
+  border: 1px solid #5143bc;
   color: #fff;
+}
 
-  box-shadow:
-    0 4px 10px
-    rgba(91, 56, 220, 0.18);
+.devices-add-btn:hover {
+  background: #4537ad;
+  border-color: #4537ad;
 }
 
 .devices-add-btn span {
@@ -104,16 +77,68 @@
 }
 
 .devices-export-btn {
-  border: 1px solid #d8e1ed;
+  background: #f6f7fb;
+  border: 1.5px solid #4537ad;
+  color: #4537ad;
+}
 
-  background: #fff;
-
-  color: #2b4668;
+.devices-export-btn:hover {
+  background: #fafbfc;
 }
 
 .export-icon {
   font-size: 20px;
 }
+
+
+/* =========================================================
+   API ERROR
+========================================================= */
+
+.devices-api-error {
+  width: 100%;
+  min-height: 44px;
+  margin-bottom: 12px;
+  padding: 10px 12px;
+  box-sizing: border-box;
+
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  border: 1px solid #ffd2d8;
+  border-radius: 7px;
+  background: #fff5f6;
+  color: #c73547;
+
+  font-size: 13px;
+}
+
+.devices-api-error span {
+  flex: 1;
+  min-width: 0;
+}
+
+.devices-api-error button {
+  height: 30px;
+  padding: 0 12px;
+
+  border: 1px solid #e6aab2;
+  border-radius: 5px;
+
+  background: #fff;
+  color: #c73547;
+
+  font-size: 12px;
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+.devices-api-error button:hover {
+  background: #fff0f2;
+}
+
 
 /* =========================================================
    STAT CARDS
@@ -121,44 +146,68 @@
 
 .devices-stats {
   width: 100%;
-
   display: grid;
-
-  grid-template-columns:
-    repeat(4, minmax(0, 1fr));
-
-  gap: 14px;
-
-  margin-bottom: 14px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 16px;
 }
 
 .device-stat-card {
   min-width: 0;
-  height: 134px;
-
-  padding: 20px;
-
+  height: 95px;
+  min-height: 95px;
+  padding: 10px;
   box-sizing: border-box;
 
   display: flex;
   align-items: center;
+  gap: 0;
 
-  gap: 18px;
+  background: linear-gradient(
+    135deg,
+    #fff 0%,
+    #f3efff 100%
+  );
 
-  background: #fff;
-
-  border: 1px solid #e7edf5;
-
+  border: 1px solid #edf0f5;
   border-radius: 8px;
 }
 
+.device-stat-card:has(.device-stat-icon.green) {
+  background: linear-gradient(
+    135deg,
+    #fff 0%,
+    #eafaf2 100%
+  );
+}
+
+.device-stat-card:has(.device-stat-icon.orange) {
+  background: linear-gradient(
+    135deg,
+    #fff 0%,
+    #fff5e5 100%
+  );
+}
+
+.device-stat-card:has(.device-stat-icon.red) {
+  background: linear-gradient(
+    135deg,
+    #fff 0%,
+    #fff0f2 100%
+  );
+}
+
 .device-stat-icon {
-  width: 62px;
-  height: 62px;
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  flex-shrink: 0;
 
-  min-width: 62px;
+  margin: 0 18px 0 6px;
 
-  border-radius: 18px;
+  border-radius: 50%;
+
+  font-size: 16px;
 
   display: flex;
   align-items: center;
@@ -166,23 +215,23 @@
 }
 
 .device-stat-icon.purple {
-  color: #5d3ddd;
-  background: #eeeaff;
+  color: #674ed9;
+  background: #eeebff;
 }
 
 .device-stat-icon.green {
-  color: #08a866;
-  background: #e2f8ec;
+  color: #2eaa62;
+  background: #e4f7eb;
 }
 
 .device-stat-icon.orange {
-  color: #f5a000;
-  background: #fff2db;
+  color: #e99b2b;
+  background: #fff1df;
 }
 
 .device-stat-icon.red {
-  color: #ee3d55;
-  background: #ffe8ed;
+  color: #df5c66;
+  background: #ffe9ea;
 }
 
 .device-stat-content {
@@ -191,346 +240,488 @@
 }
 
 .device-stat-title {
-  margin-bottom: 4px;
-
-  color: #557091;
-
-  font-size: 13px;
-
+  margin-bottom: 0;
+  color: #536b8c;
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 15px;
   white-space: nowrap;
 }
 
 .device-stat-value {
-  margin-bottom: 4px;
-
-  color: #162e50;
-
-  font-size: 28px;
-  line-height: 30px;
-
+  color: #152d4e;
+  font-size: 22px;
   font-weight: 750;
+  line-height: 25px;
 }
 
-.device-stat-change {
-  font-size: 11px;
-  line-height: 15px;
+.device-stat-description {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+
+  margin-top: 2px;
+
+  font-size: 10px;
+  font-weight: 400;
+  line-height: 14px;
+  white-space: nowrap;
 }
 
-.device-stat-change.purple {
-  color: #09a968;
+.device-stat-description i {
+  font-size: 6px;
 }
 
-.device-stat-change.green {
-  color: #304969;
+.device-stat-description.purple,
+.device-stat-description.green {
+  color: #06a866;
 }
 
-.device-stat-change.orange {
-  color: #f03e50;
+.device-stat-description.orange {
+  color: #ea8a00;
 }
 
-.device-stat-change.red {
-  color: #304969;
+.device-stat-description.red {
+  color: #ea354d;
 }
 
-.device-stat-progress {
-  width: 100%;
-  max-width: 198px;
-
-  height: 7px;
-
-  margin-top: 7px;
-
-  border-radius: 10px;
-
-  background: #e8edf4;
-
-  overflow: hidden;
-}
-
-.device-progress-bar {
-  height: 100%;
-
-  border-radius: 10px;
-}
-
-.device-progress-bar.green {
-  background: #08ae68;
-}
-
-.device-progress-bar.orange {
-  background: #f5a000;
-}
-
-.device-progress-bar.red {
-  background: #ee3d55;
-}
 
 /* =========================================================
-   LIST CARD
+   DEVICES LIST CARD
+   Merchant-style card
 ========================================================= */
 
 .devices-list-card {
   width: 100%;
+  min-width: 0;
 
   background: #fff;
 
-  border: 1px solid #e4eaf2;
-
+  border: 1px solid #e5e8ee;
   border-radius: 8px;
 
   overflow: hidden;
+  margin-bottom: 12px;
 
   box-sizing: border-box;
 }
+
+
+/* =========================================================
+   DEVICES PAGINATION — ALIGN WITH TABLE WIDTH
+========================================================= */
+
+.devices-list-card > .pagination-container {
+  width: calc(100% - 24px);
+  max-width: calc(100% - 24px);
+  margin: 0 12px;
+  padding: 16px 8px;
+  box-sizing: border-box;
+  border-top: 0;
+  min-width: 0;
+}
+
+.devices-list-card > .pagination-container > * {
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+/* Mobile — match the devices table wrapper */
+@media (max-width: 600px) {
+  .devices-list-card > .pagination-container {
+    width: calc(100% - 20px);
+    max-width: calc(100% - 20px);
+    margin-right: 10px;
+    margin-left: 10px;
+    padding: 12px 4px;
+  }
+}
+
+
 
 /* =========================================================
    FILTER BAR
+   Supports reusable FiltersBar component
 ========================================================= */
 
+.devices-list-card > .filters-bar,
 .devices-filter-bar {
-  min-height: 62px;
+  min-height: 48px;
 
-  padding: 10px;
-
-  display: grid;
-
-  grid-template-columns:
-    minmax(240px, 1.55fr)
-    minmax(125px, 0.8fr)
-    minmax(125px, 0.8fr)
-    minmax(145px, 0.9fr)
-    minmax(125px, 0.8fr)
-    minmax(175px, 1fr)
-    110px;
-
-  gap: 9px;
-
-  box-sizing: border-box;
-
-  border-bottom: 1px solid #e5ebf2;
-}
-
-/* =========================================================
-   SEARCH
-========================================================= */
-
-.devices-search {
-  height: 42px;
-
-  padding: 0 11px;
+  padding: 12px 12px 16px;
 
   display: flex;
   align-items: center;
 
-  gap: 9px;
+  gap: 10px;
+
+  border-bottom: 0;
 
   box-sizing: border-box;
 
-  border: 1px solid #d6e0ec;
-
-  border-radius: 6px;
-
   background: #fff;
-
-  color: #627895;
 }
 
+
+/* =========================================================
+   FILTER SEARCH
+========================================================= */
+
+.devices-list-card .filter-search,
+.devices-search {
+  width: 230px;
+  height: 35px;
+
+  padding: 0 9px;
+
+  display: flex;
+  align-items: center;
+
+  box-sizing: border-box;
+
+  border: 1px solid #e1e4eb;
+  border-radius: 5px;
+
+  background: #fff;
+  color: #9aa2b3;
+
+  flex-shrink: 0;
+}
+
+.devices-list-card .filter-search i,
+.devices-search i {
+  font-size: 12px;
+  line-height: 1;
+}
+
+.devices-list-card .filter-search input,
 .devices-search input {
-  width: 100%;
+  flex: 1;
   min-width: 0;
 
-  border: none;
-  outline: none;
+  height: 100%;
+
+  padding: 0 8px;
+
+  border: 0;
+  outline: 0;
 
   background: transparent;
 
-  color: #304a6c;
+  color: #3c465a;
 
   font-family: inherit;
-  font-size: 11px;
+  font-size: 12px;
 }
 
+.devices-list-card .filter-search input::placeholder,
 .devices-search input::placeholder {
-  color: #8193ad;
+  color: #a0a6b5;
 }
+
+.devices-list-card .filter-search:focus-within,
+.devices-search:focus-within {
+  border-color: #c8c1f2;
+}
+
 
 /* =========================================================
-   FILTER SELECT
+   FILTER GROUPS / SELECTS
+========================================================= */
+
+.devices-list-card .filter-group {
+  position: relative;
+
+  min-width: 125px;
+  height: 35px;
+
+  flex-shrink: 0;
+}
+
+.devices-list-card .filter-group select,
+.devices-list-card .filter-select,
+.device-filter-select select {
+  width: 100%;
+  height: 35px;
+
+  padding: 0 34px 0 12px;
+
+  box-sizing: border-box;
+
+  border: 1px solid #e1e4eb;
+  border-radius: 6px;
+
+  outline: none;
+
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+
+  background-color: #fff;
+
+  color: #59647a;
+
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 500;
+
+  cursor: pointer;
+}
+
+.devices-list-card .filter-group select:hover,
+.devices-list-card .filter-select:hover,
+.device-filter-select select:hover {
+  border-color: #d3d7e0;
+}
+
+.devices-list-card .filter-group select:focus,
+.devices-list-card .filter-select:focus,
+.device-filter-select select:focus {
+  border-color: #c8c1f2;
+}
+
+
+/* =========================================================
+   FILTER ARROW
 ========================================================= */
 
 .device-filter-select {
   position: relative;
 
-  height: 42px;
+  width: auto;
+  min-width: 125px;
+  height: 35px;
 
-  min-width: 0;
-}
-
-.device-filter-select select {
-  width: 100%;
-  height: 100%;
-
-  padding: 0 29px 0 11px;
-
-  box-sizing: border-box;
-
-  appearance: none;
-  -webkit-appearance: none;
-
-  border: 1px solid #d6e0ec;
-
-  border-radius: 6px;
-
-  outline: none;
-
-  background: #fff;
-
-  color: #294363;
-
-  font-family: inherit;
-
-  font-size: 11px;
-
-  cursor: pointer;
-}
-
-.device-filter-select select:focus {
-  border-color: #6a4ce0;
+  flex-shrink: 0;
 }
 
 .device-filter-arrow {
   position: absolute;
 
-  right: 9px;
+  right: 10px;
   top: 50%;
 
   transform: translateY(-50%);
 
-  color: #405a7a;
+  color: #59647a;
+
+  font-size: 13px;
 
   pointer-events: none;
 }
 
+
 /* =========================================================
-   DATE
+   GENERIC FILTER ICON / CLEAR BUTTON
 ========================================================= */
 
-.devices-date-btn {
-  height: 42px;
+.devices-list-card .filter-clear,
+.devices-list-card .clear-filter-btn,
+.devices-filter-btn {
+  height: 35px;
 
-  min-width: 0;
+  padding: 0 12px;
 
-  padding: 0 11px;
-
-  display: flex;
+  display: inline-flex;
   align-items: center;
+  justify-content: center;
 
-  gap: 9px;
+  gap: 6px;
 
-  border: 1px solid #d6e0ec;
-
+  border: 1px solid #e1e4eb;
   border-radius: 6px;
 
   background: #fff;
-
-  color: #506b8d;
+  color: #59647a;
 
   font-family: inherit;
+  font-size: 12px;
+  font-weight: 500;
 
-  font-size: 11px;
+  cursor: pointer;
+
+  white-space: nowrap;
+
+  box-sizing: border-box;
+}
+
+.devices-list-card .filter-clear:hover,
+.devices-list-card .clear-filter-btn:hover,
+.devices-filter-btn:hover {
+  background: #fafbfc;
+  border-color: #d3d7e0;
+}
+
+.devices-list-card .filter-clear i,
+.devices-list-card .clear-filter-btn i,
+.devices-filter-btn i {
+  font-size: 13px;
+  line-height: 1;
+}
+
+
+/* =========================================================
+   DATE BUTTON
+========================================================= */
+
+.devices-date-btn {
+  height: 35px;
+  min-width: 125px;
+
+  padding: 0 10px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 6px;
+
+  border: 1px solid #e1e4eb;
+  border-radius: 6px;
+
+  background: #fff;
+  color: #59647a;
+
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 500;
 
   white-space: nowrap;
 
   cursor: pointer;
+
+  box-sizing: border-box;
 }
+
+.devices-date-btn:hover {
+  background: #fafbfc;
+  border-color: #d3d7e0;
+}
+
+.devices-date-btn i {
+  font-size: 12px;
+}
+
 
 /* =========================================================
-   FILTER BUTTON
+   FILTERS BAR LAST BUTTON ALIGNMENT
 ========================================================= */
 
-.devices-filter-btn {
-  height: 42px;
+.devices-list-card > .filters-bar .filter-clear:last-child,
+.devices-list-card > .filters-bar .clear-filter-btn:last-child {
+  margin-left: auto;
+}
 
-  padding: 0 12px;
 
-  display: flex;
-  align-items: center;
-  justify-content: center;
+/* =========================================================
+   TABLE WRAPPER
+   Same structure as Merchant table-wrapper
+========================================================= */
 
-  gap: 8px;
+.devices-table-wrap {
+  box-sizing: border-box;
 
-  border: 1px solid #d6e0ec;
+  width: calc(100% - 24px);
+  max-width: calc(100% - 24px);
 
-  border-radius: 6px;
+  min-width: 0;
+
+  margin: 0 12px;
+
+  overflow-x: auto;
+
+  overscroll-behavior-x: contain;
+
+  border: 1px solid #dfe9f4;
+  border-radius: 8px;
 
   background: #fff;
-
-  color: #2c4768;
-
-  font-family: inherit;
-
-  font-size: 11px;
-
-  cursor: pointer;
 }
+
 
 /* =========================================================
    TABLE
 ========================================================= */
 
-.devices-table-wrap {
-  width: 100%;
-
-  overflow-x: auto;
-}
-
 .devices-table {
   width: 100%;
 
-  table-layout: fixed;
+  min-width: 1360px;
+
+  margin: 0;
 
   border-collapse: collapse;
+
+  table-layout: fixed;
 }
 
+
+/* =========================================================
+   TABLE HEADER
+   Merchant format
+========================================================= */
+
+.devices-table thead th,
 .devices-table th {
-  height: 38px;
+  height: 44px;
 
-  padding: 0 10px;
+  padding: 0 14px;
 
-  background: #fbfcfe;
+  background: #f1f3fd;
 
-  border-bottom: 1px solid #e5eaf1;
+  border-bottom: 1px solid #eceef2;
 
-  color: #526b8a;
+  color: #484c56;
 
-  font-size: 8px;
+  font-size: 12px;
+  font-weight: 600;
 
-  font-weight: 700;
+  white-space: nowrap;
 
   text-align: left;
 
-  white-space: nowrap;
+  box-sizing: border-box;
 }
 
+
+/* =========================================================
+   TABLE BODY
+   Merchant format
+========================================================= */
+
+.devices-table tbody td,
 .devices-table td {
-  height: 49px;
+  height: 52px;
 
-  padding: 5px 10px;
+  padding: 10px 14px;
 
-  box-sizing: border-box;
+  border-bottom: 1px solid #f1f2f5;
 
-  border-bottom: 1px solid #edf1f5;
+  color: #697285;
 
-  color: #385474;
+  font-size: 13px;
 
-  font-size: 10px;
+  line-height: normal;
+
+  vertical-align: middle;
 
   white-space: nowrap;
 
   overflow: hidden;
 
   text-overflow: ellipsis;
+
+  box-sizing: border-box;
 }
+
+.devices-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.devices-table tbody tr:hover {
+  background: #fafbfe;
+}
+
 
 /* =========================================================
    COLUMN WIDTHS
@@ -538,67 +729,46 @@
 
 .devices-table th:nth-child(1),
 .devices-table td:nth-child(1) {
-  width: 45px;
+  width: 10%;
 }
 
 .devices-table th:nth-child(2),
 .devices-table td:nth-child(2) {
-  width: 215px;
+  width: 14%;
 }
 
 .devices-table th:nth-child(3),
 .devices-table td:nth-child(3) {
-  width: 170px;
+  width: 16%;
 }
 
 .devices-table th:nth-child(4),
 .devices-table td:nth-child(4) {
-  width: 160px;
+  width: 10%;
 }
 
 .devices-table th:nth-child(5),
 .devices-table td:nth-child(5) {
-  width: 145px;
+  width: 13%;
 }
 
 .devices-table th:nth-child(6),
 .devices-table td:nth-child(6) {
-  width: 145px;
+  width: 13%;
 }
 
 .devices-table th:nth-child(7),
 .devices-table td:nth-child(7) {
-  width: 115px;
+  width: 11%;
 }
 
 .devices-table th:nth-child(8),
 .devices-table td:nth-child(8) {
-  width: 145px;
+  width: 13%;
 }
 
-.devices-table th:nth-child(9),
-.devices-table td:nth-child(9) {
-  width: 120px;
-}
 
-/* =========================================================
-   CHECKBOX
-========================================================= */
 
-.device-check-col {
-  text-align: center !important;
-}
-
-.device-check-col input {
-  width: 17px;
-  height: 17px;
-
-  margin: 0;
-
-  accent-color: #5b3ddd;
-
-  cursor: pointer;
-}
 
 /* =========================================================
    DEVICE NAME
@@ -616,7 +786,6 @@
 .device-type-icon {
   width: 39px;
   height: 39px;
-
   min-width: 39px;
 
   display: flex;
@@ -626,66 +795,70 @@
   border-radius: 50%;
 
   color: #5b3ddd;
-
   background: #eeeaff;
+
+  flex-shrink: 0;
 }
 
 .device-name {
   margin-bottom: 2px;
 
-  color: #263f60;
+  color: #364159;
 
-  font-size: 10px;
-
-  font-weight: 650;
+  font-size: 12px;
+  font-weight: 600;
 
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .device-id {
-  color: #778aa4;
+  color: #9aa1ae;
 
-  font-size: 9px;
+  font-size: 10px;
+
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
+
 /* =========================================================
-   STATUS
+   DEVICE STATUS
 ========================================================= */
 
 .device-status {
   min-width: 45px;
-
   height: 23px;
 
   padding: 0 9px;
 
   display: inline-flex;
-
   align-items: center;
   justify-content: center;
 
-  border-radius: 5px;
+  border-radius: 6px;
 
-  font-size: 9px;
+  font-size: 12px;
+  font-weight: 500;
 
-  font-weight: 650;
+  white-space: nowrap;
 }
 
 .device-status.online {
-  background: #dcf7e9;
-  color: #07975d;
+  background: #e5f6ea;
+  color: #319a5b;
 }
 
 .device-status.offline {
-  background: #ffe3e7;
-  color: #ee3b53;
+  background: #ffe8ea;
+  color: #dc5964;
 }
 
 .device-status.inactive {
-  background: #e8edf5;
-  color: #385171;
+  background: #eef0f3;
+  color: #858d9d;
 }
+
 
 /* =========================================================
    LAST SEEN
@@ -697,13 +870,12 @@
 
   gap: 7px;
 
-  font-size: 9px;
+  font-size: 10px;
 }
 
 .device-last-seen span {
   width: 7px;
   height: 7px;
-
   min-width: 7px;
 
   border-radius: 50%;
@@ -735,129 +907,145 @@
 
 
 /* =========================================================
-   DEVICE ACTIONS
-   Match the Merchants action alignment/style
+   ACTION COLUMN
 ========================================================= */
 
 .devices-table th:last-child,
 .devices-table td:last-child {
-  width: 96px;
-  min-width: 96px;
   text-align: center;
 }
 
-.device-actions {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 2px;
-  width: 100%;
+/* =========================================================
+   EMPTY / LOADING STATE
+========================================================= */
+
+.devices-empty {
+  height: 140px !important;
+
+  padding: 30px 20px !important;
+
+  text-align: center !important;
+  vertical-align: middle !important;
+
+  color: #8a94a6 !important;
+
+  font-size: 13px !important;
+
+  background: #fff;
 }
 
-.device-actions .action-btn {
-  width: 27px;
-  height: 27px;
-  padding: 0;
-  border: 0;
-  border-radius: 4px;
-  background: transparent;
-  color: #8991a2;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  font-size: 12px;
-}
-
-.device-actions .action-btn:hover {
-  background: #f2f0ff;
-  color: #5143bc;
-}
-
-.device-actions .edit-btn:hover {
-  background: #eeeaff;
-  color: #5143bc;
-}
-
-.device-actions .text-danger {
-  color: #ff3348;
-}
-
-.device-actions .text-danger:hover {
-  background: #fff0f1;
-  color: #ff3348;
-}
-
-.device-actions .action-btn i {
-  font-size: 13px;
-  line-height: 1;
-}
 
 /* =========================================================
-   DELETE CONFIRMATION MODAL
+   SHOWING TEXT
+========================================================= */
+
+.devices-showing {
+  flex: 1 1 auto;
+
+  font-size: 12px;
+
+  color: #697285;
+
+  white-space: nowrap;
+}
+
+
+/* =========================================================
+   DELETE / DEACTIVATE MODAL
 ========================================================= */
 
 .device-delete-overlay {
   position: fixed;
   inset: 0;
+
   z-index: 1000;
+
   display: flex;
   align-items: center;
   justify-content: center;
+
   padding: 24px;
+
   background: rgba(19, 38, 64, 0.34);
+
   backdrop-filter: blur(1px);
 }
 
 .device-delete-modal {
   position: relative;
+
   width: min(480px, calc(100vw - 32px));
   max-width: calc(100vw - 32px);
+
   box-sizing: border-box;
+
   padding: 24px;
+
   border: 1px solid #e4e9f1;
   border-radius: 12px;
+
   background: #ffffff;
-  box-shadow: 0 18px 60px rgba(23, 35, 62, 0.22);
+
+  box-shadow:
+    0 18px 60px rgba(23, 35, 62, 0.22);
 }
 
 .device-delete-close {
   position: absolute;
+
   top: 14px;
   right: 16px;
+
   width: 30px;
   height: 30px;
+
   border: 0;
+
   background: transparent;
+
   color: #5d7595;
+
   font-size: 27px;
   line-height: 1;
   font-weight: 300;
+
   cursor: pointer;
+}
+
+.device-delete-close:hover {
+  color: #233d5e;
 }
 
 .device-delete-heading {
   display: flex;
   align-items: center;
+
   gap: 14px;
+
   margin-bottom: 20px;
 }
 
 .device-delete-icon {
   width: 52px;
   height: 52px;
+
   flex: 0 0 52px;
+
   border-radius: 50%;
+
   display: flex;
   align-items: center;
   justify-content: center;
+
   color: #ff3348;
   background: #fff0f1;
 }
 
 .device-delete-heading h2 {
   margin: 0;
+
   color: #122f52;
+
   font-size: 20px;
   line-height: 1.2;
   font-weight: 700;
@@ -865,14 +1053,18 @@
 
 .device-delete-message {
   margin: 0 0 8px;
+
   color: #365273;
+
   font-size: 14px;
   line-height: 1.5;
 }
 
 .device-delete-warning {
   margin: 0;
+
   color: #7c91ad;
+
   font-size: 13px;
   line-height: 1.5;
 }
@@ -880,23 +1072,31 @@
 .device-delete-actions {
   display: flex;
   justify-content: flex-end;
+
   gap: 8px;
+
   margin-top: 22px;
 }
 
 .device-delete-actions button {
   min-width: 140px;
   height: 54px;
+
   padding: 0 28px;
+
   border-radius: 8px;
+
   font-size: 13px;
   font-weight: 600;
+
   cursor: pointer;
 }
 
 .device-delete-cancel {
   border: 1px solid #cbd8e8;
+
   background: #fff;
+
   color: #405b7b;
 }
 
@@ -906,7 +1106,9 @@
 
 .device-delete-confirm {
   border: 1px solid #ff3348;
+
   background: #ff3348;
+
   color: #fff;
 }
 
@@ -915,7 +1117,249 @@
   border-color: #e92339;
 }
 
+.device-delete-actions button:disabled,
+.device-delete-close:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+
+/* =========================================================
+   RESPONSIVE - 1300px
+========================================================= */
+
+@media (max-width: 1200px) {
+  .devices-page {
+    padding: 16px 18px 20px;
+  }
+
+  .devices-stats {
+    gap: 10px;
+  }
+
+  .device-stat-card {
+    height: 95px;
+    min-height: 95px;
+
+    padding: 10px;
+  }
+
+  .device-stat-icon {
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+  }
+
+  .device-stat-value {
+    font-size: 22px;
+  }
+
+  .devices-table th,
+  .devices-table td {
+    padding-left: 7px;
+    padding-right: 7px;
+  }
+
+  .device-type-icon {
+    width: 33px;
+    height: 33px;
+    min-width: 33px;
+  }
+
+  .device-name {
+    font-size: 11px;
+  }
+
+  .device-id {
+    font-size: 9px;
+  }
+}
+
+
+/* =========================================================
+   RESPONSIVE - 1100px
+========================================================= */
+
+@media (max-width: 1100px) {
+  .devices-page {
+    padding: 14px 14px 18px;
+  }
+
+  .devices-page-header h1 {
+    font-size: 20px;
+  }
+
+  .devices-stats {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+
+    gap: 8px;
+  }
+
+  .device-stat-card {
+    height: 95px;
+    min-height: 95px;
+
+    padding: 10px;
+  }
+
+  .device-stat-icon {
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+  }
+
+  .devices-list-card > .filters-bar,
+  .devices-filter-bar {
+    gap: 8px;
+  }
+
+  .devices-list-card .filter-search,
+  .devices-search {
+    width: 210px;
+  }
+}
+
+
+/* =========================================================
+   RESPONSIVE - 800px
+========================================================= */
+
+@media (max-width: 800px) {
+  .devices-page-header {
+    flex-direction: column;
+
+    gap: 14px;
+  }
+
+  .devices-header-actions {
+    width: 100%;
+  }
+
+  .devices-add-btn,
+  .devices-export-btn {
+    flex: 1;
+  }
+
+  .devices-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .devices-list-card > .filters-bar,
+  .devices-filter-bar {
+    display: flex;
+
+    flex-wrap: nowrap;
+
+    overflow-x: auto;
+
+    overscroll-behavior-x: contain;
+
+    padding: 12px 10px 16px;
+  }
+
+  .devices-list-card .filter-search,
+  .devices-search {
+    flex: 1 0 230px;
+
+    width: auto;
+  }
+
+  .devices-list-card .filter-group,
+  .device-filter-select {
+    flex: 0 0 125px;
+  }
+
+  .devices-list-card .filter-clear,
+  .devices-list-card .clear-filter-btn,
+  .devices-filter-btn {
+    flex: 0 0 auto;
+
+    margin-left: 0;
+  }
+
+  .devices-table {
+    min-width: 1360px;
+  }
+}
+
+
+/* =========================================================
+   RESPONSIVE - 640px
+========================================================= */
+
 @media (max-width: 640px) {
+  .devices-page {
+    padding: 14px 10px 18px;
+  }
+
+  .devices-page-header {
+    margin-bottom: 16px;
+  }
+
+  .devices-page-header h1 {
+    font-size: 19px;
+  }
+
+  .devices-subtitle {
+    font-size: 12px;
+  }
+
+  .devices-header-actions {
+    gap: 8px;
+  }
+
+  .devices-add-btn,
+  .devices-export-btn {
+    height: 38px;
+
+    font-size: 12px;
+
+    gap: 8px;
+  }
+
+  .devices-stats {
+    gap: 8px;
+
+    margin-bottom: 10px;
+  }
+
+  .device-stat-card {
+    height: 88px;
+    min-height: 88px;
+
+    padding: 8px;
+  }
+
+  .device-stat-icon {
+    width: 34px;
+    height: 34px;
+    min-width: 34px;
+
+    margin-right: 10px;
+
+    font-size: 14px;
+  }
+
+  .device-stat-title {
+    font-size: 10px;
+  }
+
+  .device-stat-value {
+    font-size: 20px;
+  }
+
+  .device-stat-description {
+    font-size: 9px;
+  }
+
+  .devices-table-wrap {
+    width: calc(100% - 20px);
+    max-width: calc(100% - 20px);
+
+    margin-right: 10px;
+    margin-left: 10px;
+  }
+
   .device-delete-modal {
     padding: 28px 22px 24px;
   }
@@ -945,288 +1389,57 @@
 
 
 /* =========================================================
-   PAGINATION
-   Match the compact pagination used on other PCH screens
+   RESPONSIVE - 600px
 ========================================================= */
 
-.devices-pagination {
-  min-height: 50px;
-  padding: 8px 12px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  border-top: 1px solid #f0f1f4;
-  background: #fff;
-  color: #697285;
-}
-
-.devices-showing {
-  flex: 1 1 auto;
-  font-size: 12px;
-  color: #697285;
-  white-space: nowrap;
-}
-
-.devices-pagination-controls {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 3px;
-}
-
-.devices-pagination-controls button {
-  min-width: 27px;
-  height: 28px;
-  padding: 0 7px;
-  border: 1px solid #e1e4eb;
-  border-radius: 4px;
-  background: #fff;
-  color: #7d8697;
-  font-size: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-}
-
-.devices-pagination-controls button:hover:not(:disabled) {
-  background: #f4f2ff;
-  border-color: #d8d2fa;
-  color: #5143bc;
-}
-
-.devices-pagination-controls button.active {
-  background: #5143bc;
-  border-color: #5143bc;
-  color: #fff;
-}
-
-.devices-pagination-controls button:disabled {
-  color: #c0c5cf;
-  background: #fafbfc;
-  cursor: not-allowed;
-}
-
-.devices-rows {
-  min-width: 150px;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 7px;
-  color: #697285;
-  font-size: 12px;
-  white-space: nowrap;
-}
-
-.devices-rows select {
-  width: 48px;
-  height: 30px;
-  padding: 0 6px;
-  border: 1px solid #dfe3ea;
-  border-radius: 6px;
-  background: #fff;
-  color: #3c465a;
-  font-size: 12px;
-  outline: none;
-}
-
-.devices-rows > svg {
-  margin-left: -25px;
-  pointer-events: none;
-  color: #64748b;
-}
-
-@media (max-width: 1300px) {
-
-  .devices-page {
-    padding: 16px 18px 20px;
-  }
-
+@media (max-width: 600px) {
   .devices-stats {
-    gap: 10px;
+    grid-template-columns: 1fr;
   }
 
-  .device-stat-card {
-    height: 125px;
-
-    padding: 15px;
-
-    gap: 12px;
-  }
-
-  .device-stat-icon {
-    width: 53px;
-    height: 53px;
-    min-width: 53px;
-  }
-
-  .device-stat-value {
-    font-size: 20px;
-  }
-
+  .devices-list-card > .filters-bar,
   .devices-filter-bar {
-    grid-template-columns:
-      minmax(210px, 1.4fr)
-      minmax(110px, 0.8fr)
-      minmax(110px, 0.8fr)
-      minmax(125px, 0.9fr)
-      minmax(110px, 0.8fr)
-      minmax(145px, 1fr)
-      95px;
+    padding-left: 10px;
+    padding-right: 10px;
   }
 
-  .devices-table th,
-  .devices-table td {
-    padding-left: 7px;
-    padding-right: 7px;
-  }
+  .devices-table-wrap {
+    width: calc(100% - 20px);
+    max-width: calc(100% - 20px);
 
-  .device-type-icon {
-    width: 33px;
-    height: 33px;
-    min-width: 33px;
-  }
-
-  .device-name {
-    font-size: 9px;
-  }
-
-  .device-id {
-    font-size: 8px;
+    margin-right: 10px;
+    margin-left: 10px;
   }
 }
+
 
 /* =========================================================
-   SMALL LAPTOP
+   ACCESSIBILITY / FOCUS
 ========================================================= */
 
-@media (max-width: 1100px) {
-
-  .devices-page {
-    padding: 14px 14px 18px;
-  }
-
-  .devices-page-header h1 {
-    font-size: 20px;
-  }
-
-  .devices-stats {
-    grid-template-columns:
-      repeat(4, minmax(0, 1fr));
-
-    gap: 8px;
-  }
-
-  .device-stat-card {
-    height: 112px;
-
-    padding: 11px;
-
-    gap: 8px;
-  }
-
-  .device-stat-icon {
-    width: 45px;
-    height: 45px;
-    min-width: 45px;
-
-    border-radius: 14px;
-  }
-
-  .device-stat-title {
-    font-size: 10px;
-  }
-
-  .device-stat-value {
-    font-size: 22px;
-    line-height: 24px;
-  }
-
-  .device-stat-change {
-    font-size: 9px;
-  }
-
-  .devices-filter-bar {
-    grid-template-columns:
-      minmax(180px, 1.4fr)
-      repeat(4, minmax(90px, 0.8fr));
-
-    grid-template-rows: 42px 42px;
-  }
-
-  .devices-search {
-    grid-column: span 2;
-  }
-
-  .devices-date-btn {
-    grid-column: span 1;
-  }
-
-  .devices-filter-btn {
-    grid-column: span 1;
-  }
-
-  .devices-pagination {
-    padding: 0 10px;
-  }
-
+.devices-add-btn:focus-visible,
+.devices-export-btn:focus-visible,
+.devices-list-card button:focus-visible,
+.devices-list-card select:focus-visible,
+.devices-table input:focus-visible,
+.device-delete-close:focus-visible,
+.device-delete-actions button:focus-visible {
+  outline: 2px solid #5143bc;
+  outline-offset: 2px;
 }
 
+
 /* =========================================================
-   MOBILE
+   END DEVICES CSS
 ========================================================= */
 
-@media (max-width: 800px) {
+.device-row-clickable { cursor: pointer; }
+.device-row-clickable:focus-visible { outline: 2px solid #6740e5; outline-offset: -2px; }
+.devices-table th:last-child,
+.devices-table td:last-child {
+  text-align: left;
+}
 
-  .devices-page-header {
-    flex-direction: column;
-
-    gap: 14px;
-  }
-
-  .devices-stats {
-    grid-template-columns:
-      repeat(2, minmax(0, 1fr));
-  }
-
-  .devices-filter-bar {
-    display: flex;
-
-    flex-wrap: wrap;
-
-    height: auto;
-  }
-
-  .devices-search,
-  .device-filter-select,
-  .devices-date-btn,
-  .devices-filter-btn {
-    flex: 1 1 180px;
-  }
-
-  .devices-table {
-    min-width: 1050px;
-  }
-
-  .devices-pagination {
-    flex-wrap: wrap;
-    height: auto;
-    padding: 10px 12px;
-    gap: 10px;
-  }
-
-  .devices-showing {
-    flex: 1 1 100%;
-  }
-
-  .devices-pagination-controls {
-    order: 2;
-  }
-
-  .devices-rows {
-    margin-left: auto;
-    order: 3;
-  }
-
+.devices-table td:last-child .list-actions {
+  justify-content: flex-start;
 }

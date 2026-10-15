@@ -577,8 +577,10 @@ width: 100%;
  
 .table-header {
 
-  background: #F8FAFC;
-  height: 52px;
+  background: #f1f3fd;
+  height: 44px;
+  padding: 0 14px;
+  font-size: 12px;
   font-weight: 600;
   color: #526581;
   border-radius: 8px;
@@ -587,19 +589,19 @@ width: 100%;
  
 .table-row {
 
-  min-height: 57px;
+  min-height: 52px;
 
-  padding: 0 12px;
+  padding: 0 14px;
 
   box-sizing: border-box;
 
-  border-top: 1px solid #edf0f5;
+  border-top: 1px solid #dfe5ef;
 
   color: #425b7a;
 
-  font-size: 15px;
-    height: 56px;
-  border-bottom: 1px solid #EEF2F7;
+  font-size: 13px;
+  height: 52px;
+  border-bottom: 1px solid #e4e8ef;
 
 }
  
@@ -613,7 +615,7 @@ width: 100%;
 
 }
  
-.row-actions button {
+/* .row-actions button {
 
   width: 31px;
 
@@ -645,7 +647,7 @@ width: 100%;
 
   background: #f8f6ff;
 
-}
+} */
  
 /* =========================================================
 

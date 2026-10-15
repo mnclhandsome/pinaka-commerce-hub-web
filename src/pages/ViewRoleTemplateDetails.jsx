@@ -114,13 +114,9 @@ export default function ViewRoleTemplateOverview() {
       <div className="role-details-heading">
         <div>
           <h1>{roleDetails.name}</h1>
-          <p>Configure store types, features and permissions for this role.</p>
+          <p>Configure store types, features, and permissions for this role template.</p>
         </div>
 
-        <span className="role-details-active">
-          <i className="bi bi-circle-fill" />
-          {roleDetails.status}
-        </span>
       </div>
 
       <nav className="role-details-tabs">
@@ -145,8 +141,8 @@ export default function ViewRoleTemplateOverview() {
           </span>
 
           <div>
-            <h2>Role Template Overview</h2>
-            <p>View the core configuration of this role template.</p>
+            <h2>Role Template Details</h2>
+            <p>View role template details.</p>
           </div>
         </div>
 
@@ -163,7 +159,7 @@ export default function ViewRoleTemplateOverview() {
           </div>
 
           <div>
-            <span>Role Code</span>
+            <span>Role Template Code</span>
             <strong>{loading ? "Loading..." : roleDetails.code}</strong>
           </div>
 

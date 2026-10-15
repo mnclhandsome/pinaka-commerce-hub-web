@@ -1,28 +1,24 @@
+import { listStores } from "../api/stores";
+import { pendingStoreRead } from "../api/http";
+import { EmployeeToast } from "../components/EmployeeFeedback";
 import React, { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { listEmployees } from "../api/employees";
+import Pagination from "../components/Pagination";
+import FiltersBar from "../components/FiltersBar";
+import DeleteConfirmationDialog from "../components/DeleteConfirmationDialog";
+import { useNavigate, useLocation } from "react-router-dom";
+import { getEmployeeList, deleteEmployee } from "../api/employees";
 
 import {
   Search,
   ChevronDown,
-  ChevronRight,
-  ChevronLeft,
-  ChevronsLeft,
-  ChevronsRight,
   Plus,
   Download,
   CalendarDays,
   Filter,
-  Pencil,
-  Users,
-  Check,
-  Pause,
-  X,
-  UserPlus,
 } from "lucide-react";
-
+import ListActions from "../components/ListActions";
 import "../styles/Employees.css";
-
 /* =========================================================
    AVATAR COMPONENT WITH SAFE FALLBACK
 ========================================================= */
@@ -31,28 +27,11 @@ function EmployeeAvatar({ src, name, initials, colorClass }) {
   useEffect(() => {
     setImgError(false);
   }, [src]);
-  return (
-    <div className={`employee-avatar ${colorClass || "purple"}`}>
-      {src && !imgError ? (
-        <img
-          src={src}
-          alt={name || "Employee"}
-          className="employee-avatar-img"
-          onError={() => setImgError(true)}
-        />
-      ) : initials ? (
-        <span>{initials}</span>
-      ) : (
-        <User size={18} />
-      )}
-    </div>
-  );
+  
 }
-
 /* =========================================================
    EMPLOYEE DATA
 ========================================================= */
-
 const employees = [
   {
     initials: "SK",
@@ -124,9 +103,7 @@ const employees = [
     active: "30 mins ago",
     avatar: "blue",
   },
-
   /* Extra data to test search + pagination */
-
   {
     initials: "VK",
     name: "Vikram Kumar",
@@ -198,7 +175,6 @@ const employees = [
     avatar: "blue",
   },
 ];
-
 export async function listMerchants() {
   const data = await api.get(endpoints.merchants);
   const items = Array.isArray(data)
@@ -214,20 +190,16 @@ export async function listMerchants() {
    STAT CARD
 ========================================================= */
 
-function StatCard({ icon: Icon, title, value, description, type, progress }) {
+function StatCard({ icon, title, value, description, type, progress }) {
   return (
     <div className="employees-stat-card">
       <div className={`employees-stat-icon ${type}`}>
-        <Icon size={24} />
+        <i className={`bi ${icon}`} aria-hidden="true" />
       </div>
-
       <div className="employees-stat-content">
         <div className="employees-stat-title">{title}</div>
-
         <div className="employees-stat-value">{value}</div>
-
         <div className={`employees-stat-change ${type}`}>{description}</div>
-
         {progress !== undefined && (
           <div className="employees-progress-track">
             <div
@@ -242,11 +214,9 @@ function StatCard({ icon: Icon, title, value, description, type, progress }) {
     </div>
   );
 }
-
 /* =========================================================
    FILTER DROPDOWN
 ========================================================= */
-
 function FilterSelect({ value, options, onChange }) {
   return (
     <div className="employees-select">
@@ -257,29 +227,98 @@ function FilterSelect({ value, options, onChange }) {
           </option>
         ))}
       </select>
-
       <ChevronDown size={15} className="employees-select-icon" />
     </div>
   );
 }
-
 /* =========================================================
    EMPLOYEES PAGE
 ========================================================= */
-
 export default function Employees() {
   /* SEARCH */
-
-  const [search, setSearch] = useState("");
   const navigate = useNavigate();
+  const openView = (employee) => navigate(`/employees/${encodeURIComponent(employee.employeeId || employee.id)}`);
+  const location = useLocation();
+  const [notice, setNotice] = useState(location.state?.employeeMessage || "");
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  useEffect(() => {
+    if (location.state?.employeeMessage) navigate(location.pathname, { replace: true, state: null });
+  }, [location.state, location.pathname, navigate]);
   const [employeeRows, setEmployeeRows] = useState([]);
+  const [storeOptions, setStoreOptions] = useState([]);
+  useEffect(() => {
+    let active = true;
+    pendingStoreRead("employee-filter-stores", () => listStores())
+      .then(rows => { if (active) setStoreOptions(Array.isArray(rows) ? rows : rows?.stores || []); })
+      .catch(error => { if (active) setLoadError(error.message || "Unable to load stores."); });
+    return () => { active = false; };
+  }, []);
+  const [statistics, setStatistics] = useState(null);
   const [loadError, setLoadError] = useState("");
+  const [deleteError, setDeleteError] = useState("");
+  const [deletingId, setDeletingId] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
+const [roleFilter, setRoleFilter] = useState("");
+const [statusFilter, setStatusFilter] = useState("");
+const [storeFilter, setStoreFilter] = useState("");
+
+ 
+async function handleDelete(employee) {
+  if (deletingId) return;
+
+  if (
+    employee.id === undefined ||
+    employee.id === null ||
+    String(employee.id).trim() === ""
+  ) {
+    setDeleteError("Employee ID is missing. Cannot delete employee.");
+    return;
+  }
+
+  setDeletingId(employee.id);
+  setDeleteError("");
+
+  try {
+    await deleteEmployee(employee.id);
+
+    const result = await getEmployeeList();
+    setEmployeeRows(result.employees);
+    setStatistics(result.statistics);
+
+    setDeleteTarget(null);
+    setNotice("Employee deleted successfully.");
+  } catch (error) {
+    setDeleteError(
+      error?.response?.data?.message ||
+      error?.message ||
+      "Unable to delete employee."
+    );
+  } finally {
+    setDeletingId(null);
+  }
+}
+
+
+  function displayTimestamp(value) {
+    if (!value) return "—";
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? "—" : (
+      <span className="employee-timestamp">
+        <strong>{date.toLocaleDateString("en-US", {
+          month: "short", day: "numeric", year: "numeric",
+        })}</strong>
+        <span>{date.toLocaleTimeString("en-US", {
+          hour: "numeric", minute: "2-digit",
+        })}</span>
+      </span>
+    );
+  }
 
   useEffect(() => {
     let active = true;
-    listEmployees()
-      .then((items) => {
-        if (active) setEmployeeRows(items);
+    getEmployeeList()
+      .then((result) => {
+        if (active) { setEmployeeRows(result.employees); setStatistics(result.statistics); }
       })
       .catch((error) => {
         if (active) setLoadError(error.message || "Unable to load employees.");
@@ -288,166 +327,99 @@ export default function Employees() {
       active = false;
     };
   }, []);
-  /* FILTERS */
-
-  const [merchant, setMerchant] = useState("All Merchants");
-
-  const [store, setStore] = useState("All Stores");
-
-  const [role, setRole] = useState("All Roles");
-
-  const [status, setStatus] = useState("All Statuses");
 
   /* PAGINATION */
-
   const [page, setPage] = useState(1);
+const [rowsPerPage, setRowsPerPage] = useState(10);
 
-  const [rowsPerPage, setRowsPerPage] = useState(5);
-
+const handlePageSizeChange = (size) => {
+  setRowsPerPage(size);
+  setPage(1);
+};
   /* =====================================================
      FILTER EMPLOYEES
   ===================================================== */
-
   const filteredEmployees = useMemo(() => {
-    return employeeRows.filter((employee) => {
-      const searchValue = search.trim().toLowerCase();
+  return employeeRows.filter((employee) => {
+    const searchValue = searchTerm.trim().toLowerCase();
 
-      const matchesSearch =
-        !searchValue ||
-        employee.name.toLowerCase().includes(searchValue) ||
-        employee.email.toLowerCase().includes(searchValue) ||
-        employee.phone.toLowerCase().includes(searchValue) ||
-        employee.role.toLowerCase().includes(searchValue) ||
-        employee.merchant.toLowerCase().includes(searchValue) ||
-        employee.store.toLowerCase().includes(searchValue);
+    const matchesSearch =
+      !searchValue ||
+      employee.name?.toLowerCase().includes(searchValue) ||
+      employee.email?.toLowerCase().includes(searchValue) ||
+      employee.phone?.toLowerCase().includes(searchValue) ||
+      employee.role?.toLowerCase().includes(searchValue) ||
+      employee.merchant?.toLowerCase().includes(searchValue) ||
+      employee.store?.toLowerCase().includes(searchValue);
 
-      const matchesMerchant =
-        merchant === "All Merchants" || employee.merchant === merchant;
+    const matchesRole =
+      !roleFilter || employee.role === roleFilter;
 
-      const matchesStore = store === "All Stores" || employee.store === store;
+    const matchesStatus =
+      !statusFilter || employee.status === statusFilter;
 
-      const matchesRole = role === "All Roles" || employee.role === role;
+    const matchesStore =
+      !storeFilter || employee.store === storeFilter;
 
-      const matchesStatus =
-        status === "All Statuses" || employee.status === status;
-
-      return (
-        matchesSearch &&
-        matchesMerchant &&
-        matchesStore &&
-        matchesRole &&
-        matchesStatus
-      );
-    });
-  }, [employeeRows, search, merchant, store, role, status]);
+    return (
+      matchesSearch &&
+      matchesRole &&
+      matchesStatus &&
+      matchesStore
+    );
+  });
+}, [
+  employeeRows,
+  searchTerm,
+  roleFilter,
+  statusFilter,
+  storeFilter,
+]);
 
   /* =====================================================
      PAGINATION CALCULATIONS
   ===================================================== */
-
   const totalPages = Math.max(
     1,
     Math.ceil(filteredEmployees.length / rowsPerPage),
   );
-
   const safePage = Math.min(page, totalPages);
-
   const startIndex = (safePage - 1) * rowsPerPage;
-
   const endIndex = startIndex + rowsPerPage;
-
   const visibleEmployees = filteredEmployees.slice(startIndex, endIndex);
-
-  /* =====================================================
-     SEARCH HANDLER
-  ===================================================== */
-
-  const handleSearch = (value) => {
-    setSearch(value);
-    setPage(1);
-  };
-
-  /* =====================================================
-     FILTER HANDLER
-  ===================================================== */
-
-  const handleMerchantChange = (value) => {
-    setMerchant(value);
-    setPage(1);
-  };
-
-  const handleStoreChange = (value) => {
-    setStore(value);
-    setPage(1);
-  };
-
-  const handleRoleChange = (value) => {
-    setRole(value);
-    setPage(1);
-  };
-
-  const handleStatusChange = (value) => {
-    setStatus(value);
-    setPage(1);
-  };
-
-  /* =====================================================
-     ROWS PER PAGE
-  ===================================================== */
-
-  const handleRowsChange = (value) => {
-    const newRows = Number(value);
-
-    setRowsPerPage(newRows);
-    setPage(1);
-  };
 
   /* =====================================================
      PAGINATION
   ===================================================== */
-
-  const goToPage = (newPage) => {
-    if (newPage >= 1 && newPage <= totalPages) {
-      setPage(newPage);
-    }
-  };
-
+  useEffect(() => {
+  setPage((currentPage) =>
+    Math.min(currentPage, totalPages)
+  );
+}, [totalPages]);
   /* =====================================================
      RESET FILTERS
   ===================================================== */
-
   const resetFilters = () => {
     setSearch("");
     setMerchant("All Merchants");
-    setStore("All Stores");
     setRole("All Roles");
-    setStatus("All Statuses");
     setPage(1);
   };
-
   /* =====================================================
      RETURN
   ===================================================== */
-
   return (
     <div className="employees-page">
       {/* =================================================
           PAGE HEADER
       ================================================= */}
-
       <div className="employees-page-header">
         <div>
           <h1>Employees</h1>
-
-          <div className="employees-breadcrumb">
-            <span>Home</span>
-
-            <ChevronRight size={14} />
-
-            <strong>Employees</strong>
-          </div>
+          <p className="employees-subtitle">
+            View and manage employees across your stores.
+          </p>
         </div>
-
         <div className="employees-header-actions">
           <button
             className="employees-add-btn"
@@ -465,205 +437,213 @@ export default function Employees() {
           </button>
         </div>
       </div>
-
       {/* =================================================
           STATISTICS
       ================================================= */}
-
       <div className="employees-stats">
         <StatCard
-          icon={Users}
+          icon="bi-people-fill"
           title="Total Employees"
-          value="128"
-          description="↑ 12 this month"
+          value={statistics?.total_employees ?? "—"}
+          description={statistics ? `${statistics.current_month_added_employees} this month` : ""}
           type="purple"
         />
-
         <StatCard
-          icon={Check}
+          icon="bi-check-circle-fill"
           title="Active Employees"
-          value="110"
-          description="↑ 85.9% of total"
+          value={statistics?.active_employees ?? "—"}
+          description={statistics ? `${statistics.active_employees_percentage}% of total` : ""}
           type="green"
-          progress={86}
+          progress={statistics?.active_employees_percentage ?? 0}
         />
-
         <StatCard
-          icon={Pause}
-          title="On Leave"
-          value="6"
-          description="↓ 4.7% of total"
-          type="orange"
-          progress={18}
-        />
-
-        <StatCard
-          icon={X}
+          icon="bi-x-circle-fill"
           title="Inactive Employees"
-          value="12"
-          description="↓ 9.4% of total"
+          value={statistics?.inactive_employees ?? "—"}
+          description={statistics ? `${statistics.inactive_employees_percentage}% of total` : ""}
           type="red"
-          progress={22}
+          progress={statistics?.inactive_employees_percentage ?? 0}
         />
-
         <StatCard
-          icon={UserPlus}
+          icon="bi-person-plus-fill"
           title="New This Month"
-          value="14"
-          description="↑ 12.3% vs last month"
+          value={statistics?.current_month_added_employees ?? "—"}
+          description={statistics ? `${statistics.monthly_growth_direction === "INCREASE" ? "↑" : statistics.monthly_growth_direction === "DECREASE" ? "↓" : "→"} ${Math.abs(statistics.monthly_growth_percentage)}% vs last month` : ""}
           type="blue"
         />
       </div>
-
       {/* =================================================
           EMPLOYEE LIST
       ================================================= */}
-
       <div className="employees-list-card">
         {/* FILTER BAR */}
-
-        <div className="employees-filter-bar">
-          {/* SEARCH */}
-
-          <div className="employees-search">
-            <Search size={18} />
-
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => handleSearch(e.target.value)}
-              placeholder="Search employees by name, email, phone or role..."
-            />
-          </div>
-
-          {/* MERCHANT */}
-
-          <FilterSelect
-            value={merchant}
-            onChange={handleMerchantChange}
-            options={[
-              "All Merchants",
-              ...Array.from(new Set(employeeRows.map((e) => e.merchant))),
-            ]}
-          />
-
-          {/* STORE */}
-
-          <FilterSelect
-            value={store}
-            onChange={handleStoreChange}
-            options={[
-              "All Stores",
-              ...Array.from(new Set(employeeRows.map((e) => e.store))),
-            ]}
-          />
-
-          {/* ROLE */}
-
-          <FilterSelect
-            value={role}
-            onChange={handleRoleChange}
-            options={[
-              "All Roles",
-              ...Array.from(new Set(employeeRows.map((e) => e.role))),
-            ]}
-          />
-
-          {/* STATUS */}
-
-          <FilterSelect
-            value={status}
-            onChange={handleStatusChange}
-            options={["All Statuses", "Active", "Inactive"]}
-          />
-        </div>
-
+       <FiltersBar
+    searchValue={searchTerm}
+    onSearchChange={(value) => {
+        setSearchTerm(value);
+        setPage(1);
+    }}
+    searchPlaceholder="Search employee name, email, or phone..."
+    filters={[
+        {
+            key: "role",
+            label: "Role",
+            value: roleFilter,
+            options: [
+                { label: "All Roles", value: "" },
+                ...[...new Set(employeeRows.map(employee => employee.role).filter(role => typeof role === "string" && role !== "—"))].map(role => ({ label: role, value: role })),
+            ],
+            onChange: (value) => {
+                setRoleFilter(value);
+                setPage(1);
+            },
+        },
+        {
+            key: "status",
+            label: "Status",
+            value: statusFilter,
+            options: [
+                { label: "All Status", value: "" },
+                { label: "Active", value: "Active" },
+                { label: "Inactive", value: "Inactive" },
+            ],
+            onChange: (value) => {
+                setStatusFilter(value);
+                setPage(1);
+            },
+        },
+        {
+            key: "store",
+            label: "Store",
+            value: storeFilter,
+            options: [
+                { label: "All Stores", value: "" },
+                ...storeOptions.map(store => ({
+                    label: store.storeName || store.name || store.storeCode || String(store.id),
+                    value: store.storeName || store.name || store.storeCode || String(store.id),
+                })), 
+            ],
+            onChange: (value) => {
+                setStoreFilter(value);
+                setPage(1);
+            },
+        },
+    ]}
+    onClear={() => {
+        setSearchTerm("");
+        setRoleFilter("");
+        setStatusFilter("");
+        setStoreFilter("");
+        setPage(1);
+    }}
+/>
         {/* =================================================
             TABLE
         ================================================= */}
+
+        <EmployeeToast message={deleteError || notice} onClose={() => { setDeleteError(""); setNotice(""); }} />
+        
+<DeleteConfirmationDialog
+  isOpen={Boolean(deleteTarget)}
+  title="Delete Employee?"
+  message={
+    deleteTarget
+      ? `Are you sure you want to delete "${deleteTarget.name}"?`
+      : ""
+  }
+  cancelLabel="Cancel"
+  confirmLabel="Delete"
+  busyLabel="Deleting..."
+  busy={Boolean(deletingId)}
+  error={deleteError}
+  iconClassName="bi bi-trash3"
+  onCancel={() => {
+    if (deletingId) return;
+    setDeleteTarget(null);
+    setDeleteError("");
+  }}
+  onConfirm={() => {
+    if (deleteTarget) {
+      handleDelete(deleteTarget);
+    }
+  }}
+/>
 
         <div className="employees-table-wrap">
           <table className="employees-table">
             <thead>
               <tr>
-                <th>EMPLOYEE</th>
+                <th>Employee</th>
 
-                <th>CONTACT</th>
+                <th>Contact</th>
 
-                <th>ROLE</th>
+                <th>Login PIN</th>
 
-                <th>MERCHANT</th>
+                <th>Merchant</th>
 
-                <th>STORE</th>
+                <th>Status</th>
 
-                <th>STATUS</th>
+                <th>Created At</th>
 
-                <th>JOINED ON</th>
+                <th>Updated At</th>
 
-                <th>LAST ACTIVE</th>
-
-                <th>ACTIONS</th>
+                <th>Actions</th>
               </tr>
             </thead>
-
             <tbody>
               {loadError ? (
                 <tr>
-                  <td colSpan="9" className="employees-no-results">
+                  <td colSpan="8" className="employees-no-results">
                     {loadError}
                   </td>
                 </tr>
               ) : visibleEmployees.length > 0 ? (
                 visibleEmployees.map((employee) => (
-                  <tr key={employee.rowKey}>
+                  <tr
+                    key={employee.id}
+                    tabIndex={0}
+                    aria-label={`View ${employee.name}`}
+                    style={{ cursor: "pointer" }}
+                    onClick={(event) => {
+                      if (event.target.closest('button, a, input, select, textarea, label, [role="button"], [contenteditable="true"]')) {
+                        event.stopPropagation();
+                        return;
+                      }
+                      openView(employee);
+                    }}
+                    onKeyDown={(event) => {
+                      if (event.target === event.currentTarget && (event.key === "Enter" || event.key === " ")) {
+                        event.preventDefault();
+                        openView(employee);
+                      }
+                    }}
+                  >
                     {/* EMPLOYEE */}
-
                     {/* EMPLOYEE COLUMN */}
                     {/* EMPLOYEE COLUMN */}
                     <td>
                       <div className="employee-person">
-                        <div className={`employee-avatar ${employee.avatar}`}>
-                          {employee.profilePhoto ? (
-                            <img
-                              src={employee.profilePhoto}
-                              alt={`${employee.name} profile`}
-                            />
-                          ) : (
-                            employee.initials
-                          )}
-                        </div>
-
                         <div>
                           <div className="employee-name">{employee.name}</div>
-                          <div className="employee-id">{employee.id}</div>
+                          <div className="employee-id">{employee.employeeCode || employee.employee_code || employee.id}</div>
                         </div>
                       </div>
                     </td>
-
                     {/* CONTACT */}
-
                     <td>
                       <div className="employee-contact">
                         <div>{employee.email}</div>
-
                         <div>{employee.phone}</div>
                       </div>
                     </td>
-
+                    <td>{employee.loginPin || "—"}</td>
                     {/* ROLE */}
 
-                    <td>{employee.role}</td>
-
                     {/* MERCHANT */}
-
-                    <td>{employee.merchant}</td>
-
+                    <td className="employee-merchant-cell"><span className="employee-merchant-name">{employee.merchant}</span></td>
                     {/* STORE */}
 
-                    <td>{employee.store}</td>
-
                     {/* STATUS */}
-
                     <td>
                       <span
                         className={`employee-status ${employee.status.toLowerCase()}`}
@@ -671,44 +651,39 @@ export default function Employees() {
                         {employee.status}
                       </span>
                     </td>
-
                     {/* JOINED */}
 
-                    <td>{employee.joined}</td>
+                    <td>{displayTimestamp(employee.createdAt)}</td>
 
                     {/* LAST ACTIVE */}
 
                     <td>
-                      <div
-                        className={`employee-last-active ${
-                          employee.status === "Inactive" ? "red" : "green"
-                        }`}
-                      >
-                        <span />
-
-                        {employee.active}
-                      </div>
+                      {Date.parse(employee.updatedAt || "") > Date.parse(employee.createdAt || "")
+                        ? displayTimestamp(employee.updatedAt)
+                        : "—"}
                     </td>
 
                     {/* ACTIONS */}
-
                     <td>
-                      <div className="employee-actions">
-                        <button
-                          title="Edit employee"
-                          onClick={() =>
-                            navigate("/employees/edit", { state: { employee } })
-                          }
-                        >
-                          <Pencil size={17} />
-                        </button>
-                      </div>
-                    </td>
+                      <ListActions
+                          onView={() => openView(employee)}
+                          viewLabel={`View ${employee.name}`}
+                          onEdit={() =>
+                          navigate("/employees/edit", {
+                          state: { employee }, }) }
+                          onDelete={() => {
+                            setDeleteError("");
+                            setDeleteTarget(employee); }}
+                            editLabel={`Edit ${employee.name}`}
+                            deleteLabel={`Delete ${employee.name}`}
+                            deleteDisabled={Boolean(deletingId)}
+                               />
+                   </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan="9" className="employees-no-results">
+                  <td colSpan="8" className="employees-no-results">
                     No employees found
                   </td>
                 </tr>
@@ -716,92 +691,20 @@ export default function Employees() {
             </tbody>
           </table>
         </div>
+       {/* ================================================= 
+    PAGINATION 
+================================================= */}
 
-        {/* =================================================
-            PAGINATION
-        ================================================= */}
-
-        <div className="employees-pagination">
-          {/* SHOWING */}
-
-          <div className="employees-showing">
-            Showing{" "}
-            <strong>
-              {filteredEmployees.length === 0 ? 0 : startIndex + 1}
-            </strong>{" "}
-            to <strong>{Math.min(endIndex, filteredEmployees.length)}</strong>{" "}
-            of <strong>{filteredEmployees.length}</strong> employees
-          </div>
-
-          {/* PAGE BUTTONS */}
-
-          <div className="employees-pages">
-            <button onClick={() => goToPage(1)} disabled={safePage === 1}>
-              <ChevronsLeft size={15} />
-            </button>
-
-            <button
-              onClick={() => goToPage(safePage - 1)}
-              disabled={safePage === 1}
-            >
-              <ChevronLeft size={15} />
-            </button>
-
-            {Array.from(
-              {
-                length: totalPages,
-              },
-              (_, index) => index + 1,
-            )
-              .slice(0, 5)
-              .map((number) => (
-                <button
-                  key={number}
-                  className={safePage === number ? "employees-page-active" : ""}
-                  onClick={() => goToPage(number)}
-                >
-                  {number}
-                </button>
-              ))}
-
-            <button
-              onClick={() => goToPage(safePage + 1)}
-              disabled={safePage === totalPages}
-            >
-              <ChevronRight size={15} />
-            </button>
-
-            <button
-              onClick={() => goToPage(totalPages)}
-              disabled={safePage === totalPages}
-            >
-              <ChevronsRight size={15} />
-            </button>
-          </div>
-
-          {/* ROWS PER PAGE */}
-
-          <div className="employees-rows">
-            <span>Rows per page</span>
-
-            <div className="employees-row-select">
-              <select
-                value={rowsPerPage}
-                onChange={(e) => handleRowsChange(e.target.value)}
-              >
-                <option value="5">5</option>
-
-                <option value="10">10</option>
-
-                <option value="15">15</option>
-
-                <option value="20">20</option>
-              </select>
-
-              <ChevronDown size={14} />
-            </div>
-          </div>
-        </div>
+<Pagination
+  currentPage={safePage}
+  totalPages={totalPages}
+  totalItems={filteredEmployees.length}
+  pageSize={rowsPerPage}
+  onPageChange={setPage}
+  onPageSizeChange={handlePageSizeChange}
+  itemLabel="employees"
+  showWhenEmpty={true}
+/>
       </div>
     </div>
   );

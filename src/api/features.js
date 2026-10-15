@@ -1,100 +1,66 @@
-import { api } from "./http";
+import { api, pendingStoreRead } from "./http";
 
 const path = (id) => `/features/${encodeURIComponent(id)}`;
 
-const normalize = (item = {}) => ({
-  ...item,
+// The collection contains both snake_case and camelCase feature examples.
+// Normalize either response shape for the existing screens.
+const normalize = (item = {}) => {
+  const featureType = item.feature_type ?? item.featureType ?? "";
+  const category =
+    item.category ??
+    item.feature_category ??
+    item.featureCategory ??
+    featureType;
+  const code = item.feature_code ?? item.featureCode ?? item.featureKey ?? "";
+  const status = String(item.status || "ACTIVE").toUpperCase();
 
-  // Backend featureKey -> UI code
-  code: item.featureKey || item.code || item.name?.toUpperCase().replace(/\s+/g, '_') || "",
-
-  name: item.name || item.title || "",
-  description: item.description || "",
-  category: item.category || "",
-  type: item.featureType || item.type || "TEXT",
-
-  status: String(item.status || "ACTIVE").toUpperCase() === "ACTIVE" ? "Active" : "Inactive",
-
-  createdAt: item.createdAt || item.created_at || item.createdDate || null,
-  updatedAt: item.updatedAt || item.updated_at || item.updatedDate || null,
-
-  icon: "bi-diamond",
-  tone: "purple",
-});
+  return {
+    ...item,
+    id: item.id ?? item.feature_id ?? item.featureId,
+    code,
+    feature_code: code,
+    name: item.name ?? item.feature_name ?? item.featureName ?? "",
+    description: item.description || "",
+    category,
+    feature_type: featureType || category,
+    status: status === "ACTIVE" ? "Active" : "Inactive",
+    created_at: item.created_at ?? item.createdAt ?? null,
+    updated_at: item.updated_at ?? item.updatedAt ?? null,
+    icon: "bi-diamond",
+    tone: "purple",
+  };
+};
 
 const payload = (form) => ({
   name: (form.name || "").trim(),
   description: (form.description || "").trim(),
-  category: (form.category || "").trim(),
-
-  // Existing Features form doesn't always provide type.
-  featureType: (form.type || form.featureType || "TEXT").trim(),
-
+  feature_type: (form.category || "").trim(),
   status: String(form.status || "ACTIVE").toUpperCase(),
 });
 
-export const getFeature = async (id) => {
-  const response = await api.get(path(id));
-  const feat = response?.feature || response?.data || response;
-  return normalize(feat);
-};
+const unwrapFeature = (response) =>
+  normalize(response?.feature || response?.data?.feature || response?.data || response);
+
+export const getFeature = async (id) => unwrapFeature(await pendingStoreRead(`feature:${id}`, () => api.get(path(id))));
 
 export const listFeatures = async () => {
-  const response = await api.get("/features");
-  const rawList = Array.isArray(response)
-    ? response
-    : Array.isArray(response?.features)
+  const response = await pendingStoreRead("features-list", () => api.get("/features"));
+  const list = Array.isArray(response?.features)
     ? response.features
-    : Array.isArray(response?.data)
-    ? response.data
-    : Array.isArray(response?.items)
-    ? response.items
-    : [];
-  return rawList.map(normalize);
+    : Array.isArray(response?.data?.features)
+      ? response.data.features
+      : Array.isArray(response?.data)
+        ? response.data
+        : [];
+  return list.map(normalize);
 };
 
-export const createFeature = async (form) => {
-  const response = await api.post("/features", {
-    ...payload(form),
+export const createFeature = async (form) => unwrapFeature(await api.post("/features", payload(form)));
 
-    // UI Feature Code -> Backend featureKey
-    featureKey: (form.code || form.name || "").trim().toUpperCase().replace(/\s+/g, '_'),
-  });
+// The Features-folder collection uses PATCH for partial updates.
+export const updateFeature = async (id, form) => unwrapFeature(await api.patch(path(id), payload(form)));
 
-  const feat = response?.feature || response?.data || response;
-  return normalize(feat);
-};
+export const setFeatureStatus = async (id, status) =>
+  unwrapFeature(await api.patch(`${path(id)}/status`, { status: String(status).toUpperCase() }));
 
-export const updateFeature = async (id, form) => {
-  const response = await api.put(path(id), {
-    ...payload(form),
-
-    // Keep Feature Code mapped correctly during update too
-    featureKey: (form.code || form.name || "").trim().toUpperCase().replace(/\s+/g, '_'),
-  });
-
-  const feat = response?.feature || response?.data || response;
-  return normalize(feat);
-};
-
-export const setFeatureStatus = async (id, status) => {
-  const response = await api.put(path(id) + "/status", { status: String(status).toUpperCase() });
-  const feat = response?.feature || response?.data || response;
-  return normalize(feat);
-};
-
-export const deleteFeature = (id) => {
-  return api.delete(path(id));
-};
-
-export async function getAllCategories() {
-  try {
-    const response = await api.get("/features/categories");
-    if (Array.isArray(response)) return response;
-    if (Array.isArray(response?.categories)) return response.categories;
-    if (Array.isArray(response?.data)) return response.data;
-    return [];
-  } catch {
-    return [];
-  }
-}
+export const deleteFeature = (id) => api.delete(path(id));

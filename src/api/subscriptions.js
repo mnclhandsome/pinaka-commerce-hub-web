@@ -1,12 +1,12 @@
-import { api } from "./http";
+import { api, pendingStoreRead } from "./http";
 
 const path = (id) => `/subscriptions/${encodeURIComponent(id)}`;
 
-export const listSubscriptions = (params) => api.get("/subscriptions", { params });
-export const listSubscriptionPlans = () => api.get("/subscription-plans");
+export const listSubscriptions = (params) => pendingStoreRead(`subscription-list:${JSON.stringify(params || {})}`, () => api.get("/subscriptions", { params }));
+export const listSubscriptionPlans = () => pendingStoreRead("subscription-plans", () => api.get("/subscription-plans"));
 export const changeSubscriptionPlan = (data) =>
   api.post("/subscriptions/subscription-plan-changes", data);
-export const getSubscription = (id) => api.get(path(id));
+export const getSubscription = (id) => pendingStoreRead(`subscription:${id}`, () => api.get(path(id)));
 export const createSubscription = (data) => api.post("/subscriptions", data);
 export const updateSubscription = (id, data) => api.put(path(id), data);
 export const deleteSubscription = (id) => api.delete(path(id));
@@ -40,10 +40,17 @@ export function mapSubscriptionToRow(item, index = 0) {
   const storeType = item.storeType || item.store_type || m.storeType || {};
 
   const merchantName =
+    (typeof item.merchant === "string" ? item.merchant : null) ||
+    item.merchantName ||
+    item.merchant_name ||
+    item.businessName ||
+    item.businessDisplayName ||
+    item.business_name ||
+    m.merchantName ||
+    m.merchant_name ||
     m.businessDisplayName ||
     m.businessName ||
     m.legalBusinessName ||
-    m.merchantName ||
     m.ownerName ||
     m.name ||
     item.merchantCode ||
@@ -99,16 +106,19 @@ export function mapSubscriptionToRow(item, index = 0) {
     "";
 
   const storesCount =
-    item.maxStoresAllowed ??
-    item.max_stores_allowed ??
-    plan.included_stores ??
-    item.licensedStoreCount ??
+    (item.includedStores || item.included_stores || item.stores_limit || item.maxStoresAllowed || item.max_stores_allowed || item.licensedStoreCount) ||
+    (plan.stores_limit || plan.storesLimit || plan.includedStores || plan.included_stores) ||
     1;
 
   const devicesCount =
-    item.licensedDeviceCount ??
-    plan.included_terminals ??
+    (item.includedTerminals || item.included_terminals || item.terminal_limit || item.licensedDeviceCount) ||
+    (plan.terminal_limit || plan.terminalLimit || plan.includedTerminals || plan.included_terminals) ||
     1;
+
+  const employeesCount =
+    (item.includedEmployees || item.included_employees || item.employees_limit) ||
+    (plan.employees_limit || plan.employeesLimit || plan.includedEmployees || plan.included_employees || plan.includedUsers) ||
+    0;
 
   const rawStart =
     item.startDate ||
@@ -127,6 +137,8 @@ export function mapSubscriptionToRow(item, index = 0) {
       ? item.entitlements
       : Array.isArray(plan.included_features)
       ? plan.included_features
+      : Array.isArray(plan.includedFeatures)
+      ? plan.includedFeatures
       : [];
 
   return {
@@ -147,8 +159,12 @@ export function mapSubscriptionToRow(item, index = 0) {
       (typeof storeType === "object" && storeType
         ? storeType.name || storeType.storeTypeName
         : "") || item.storeTypeName || "",
-    stores: Number(storesCount) || 1,
-    devices: Number(devicesCount) || 1,
+    stores: Number(storesCount) ?? 1,
+    devices: Number(devicesCount) ?? 1,
+    employees: Number(employeesCount) ?? 0,
+    includedStores: storesCount,
+    includedTerminals: devicesCount,
+    includedEmployees: employeesCount,
     start: formatDate(rawStart),
     end: formatDate(rawEnd),
     rawStart: rawStart || "",

@@ -1,0 +1,30 @@
+.pch-filter-dropdown { display: inline-grid; position: relative; min-width: 0; max-width: 100%; vertical-align: middle; }
+.filter-select-wrapper > .pch-filter-dropdown { width: 100%; }
+.ea-inline-filter > .pch-filter-dropdown { width: 100%; }
+.pch-filter-dropdown > .pch-filter-sizing { grid-area: 1 / 1; visibility: hidden; pointer-events: none; max-width: 100%; }
+.pch-master-filter-sizing { visibility: hidden; pointer-events: none; }
+.pch-filter-anchor { position: relative; }
+.pch-filter-dropdown > .pch-filter-trigger { grid-area: 1 / 1; position: absolute; box-sizing: border-box; display: flex; align-items: center; justify-content: space-between; gap: 8px; cursor: pointer; margin: 0; }
+.pch-filter-trigger > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.pch-filter-trigger > i { position: absolute; right: 11px; top: 50%; transform: translateY(-50%); pointer-events: none; font-size: 11px; }
+.pch-filter-trigger > i:not(:last-child) { position: static; transform: none; }
+.dashboard-date-filter + .pch-filter-trigger { justify-content: flex-start; gap: 10px; text-align: left; }
+.dashboard-date-filter + .pch-filter-trigger > i:first-child { font-size: 16px; }
+.pch-filter-dropdown:has(+ i.bi-chevron-down) + i.bi-chevron-down { display: none; }
+.pch-filter-dropdown > .pch-filter-trigger > i.bi-chevron-down { display: block; }
+.pch-filter-dropdown > .pch-filter-trigger:hover:not(:disabled) { border-color: #d3d7e0 !important; }
+.pch-filter-dropdown > .pch-filter-trigger:focus-visible,
+.pch-filter-dropdown > .pch-filter-trigger[aria-expanded="true"] { border-color: #5143bc !important; outline: 2px solid #5143bc22; outline-offset: 1px; }
+.pch-filter-dropdown > .pch-filter-trigger:disabled { cursor: default; opacity: .55; }
+.pch-filter-menu { position: fixed; z-index: 10000; box-sizing: border-box; overflow-x: hidden; padding: 6px; background: #fff; border: 1px solid #e1e8f1; border-radius: 8px; box-shadow: 0 6px 20px #18335426; }
+.pch-filter-menu > .pch-filter-option { display: block; box-sizing: border-box; width: 100%; min-height: 34px; padding: 8px 10px; border: 0; border-radius: 4px; background: #fff; color: #294a76; font: 12px/18px Inter, "Segoe UI", sans-serif; text-align: left; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; cursor: pointer; }
+.pch-filter-menu > .pch-filter-option:hover,
+.pch-filter-menu > .pch-filter-option:focus-visible { background: #f4f1ff; color: #5143bc; outline: none; }
+.pch-filter-menu > .pch-filter-option[aria-selected="true"] { background: #5143bc; color: #fff; }
+.pch-filter-menu > .pch-filter-option:disabled { opacity: .5; cursor: default; }
+.pch-filter-tooltip { position: fixed; z-index: 10001; max-width: min(250px, calc(100vw - 16px)); padding: 6px 8px; border-radius: 4px; background: #183354; color: #fff; font: 12px/18px Inter, "Segoe UI", sans-serif; overflow-wrap: anywhere; pointer-events: none; }
+.filter-select-wrapper:has(> .pch-filter-dropdown) > .filter-select-arrow { display: none; }
+.pch-filter-footer { padding: 8px; border-top: 1px solid #e1e8f1; font-size: 11px; color: #294a76; }
+.pch-filter-footer .dashboard-date-inputs { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); }
+.pch-filter-footer .dashboard-date-inputs input { box-sizing: border-box; width: 100%; min-width: 0; }
+.pch-filter-footer .dashboard-custom-apply { width: 100%; }

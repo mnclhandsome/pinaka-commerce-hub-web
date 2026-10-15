@@ -81,7 +81,6 @@ export default function StoreTypeDetails() {
   <div className="store-type-details-heading">
     <div className="store-type-title-line">
       <h1>{form.name}</h1>
-
     </div>
 
     <p>{form.description}</p>
@@ -93,7 +92,7 @@ export default function StoreTypeDetails() {
 
 <nav className="store-type-tabs" aria-label="Store type sections">
   <button type="button" className="active">
-    Overview
+    Store Type Details
   </button>
 
         <button
@@ -104,7 +103,7 @@ export default function StoreTypeDetails() {
             })
           }
         >
-          Features
+          Assigned Features
         </button>
 
         <button
@@ -115,7 +114,7 @@ export default function StoreTypeDetails() {
             })
           }
         >
-          Role Templates
+          Assigned Role Templates
         </button>
       </nav>
 
@@ -126,8 +125,8 @@ export default function StoreTypeDetails() {
           </div>
 
           <div>
-            <h2>Basic Information</h2>
-            <p>View and update the core store type details.</p>
+            <h2>Store Type Details</h2>
+            <p>View store type details.</p>
           </div>
         </div>
 

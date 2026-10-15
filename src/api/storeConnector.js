@@ -40,11 +40,21 @@ export async function fetchWordpressConnector(storeId, merchantId) {
     }
   }
 
-  const siteUrl = remote?.wordpressUrl || remote?.siteUrl || local.siteUrl || "";
-  const connected = remote?.status === "CONNECTED" || Boolean(local.connected);
-  const lastTestMessage = remote?.lastTestMessage || local.lastTestMessage || "";
-  const lastTestedAt = remote?.lastTestedAt || local.lastTestedAt || null;
-  const jwtToken = local.jwtToken || "";
+  const remoteSaved = Boolean(remote?.wordpressUrl || remote?.wordpressJwt || remote?.updatedAt);
+  if (!remoteSaved) {
+    if (!local.siteUrl && !local.jwtToken) return null;
+    return {
+      ...local,
+      storeId,
+      merchantId: merchantId || local.merchantId || "",
+    };
+  }
+
+  const siteUrl = remote.wordpressUrl || remote.siteUrl || local.siteUrl || "";
+  const connected = remote.status === "CONNECTED";
+  const lastTestMessage = remote.lastTestMessage || local.lastTestMessage || "";
+  const lastTestedAt = remote.lastTestedAt || local.lastTestedAt || null;
+  const jwtToken = remote.wordpressJwt || local.jwtToken || "";
 
   const merged = {
     storeId,
@@ -81,65 +91,85 @@ export async function saveWordpressConnector(storeId, merchantId, values) {
     storeId,
     merchantId,
     wordpressUrl: siteUrl,
-    wordpressJwt: jwtToken,
+    ...(jwtToken ? { wordpressJwt: jwtToken } : {}),
   };
 
-  // Single dynamic PUT request to save & connect
-  try {
-    const result = await api.put(`/connector/api/v1/stores/${storeId}/connector`, body);
+  const applyResult = (result) => {
+    const status = result?.connector?.status;
     payload.syncedToApi = true;
-    payload.lastTestMessage = result?.message || payload.lastTestMessage;
-  } catch (err) {
-    try {
-      const fallbackResult = await api.put(endpoints.storeConnector(storeId), body);
-      payload.syncedToApi = true;
-      payload.lastTestMessage = fallbackResult?.message || payload.lastTestMessage;
-    } catch {
-      payload.syncedToApi = false;
+    payload.lastTestMessage = result?.connector?.lastTestMessage || result?.message || payload.lastTestMessage;
+    if (status === "CONNECTED" || status === "NOT_CONNECTED") {
+      payload.connected = status === "CONNECTED";
     }
-  }
+    payload.wordpressJwtConfigured = Boolean(
+      result?.connector?.wordpressJwtConfigured || jwtToken
+    );
+    return payload;
+  };
+
+  // Save through the merchant API. Do not report a browser-only save when the
+  // backend fails, because catalog sync uses the encrypted server-side token.
+  applyResult(await api.put(endpoints.storeConnector(storeId), body));
 
   localStorage.setItem(storageKey(storeId), JSON.stringify(payload));
   return payload;
 }
 
-export async function testWordpressConnection(siteUrl, jwtToken, storeId, merchantId) {
-  const base = String(siteUrl || "").replace(/\/+$/, "");
-  const token = String(jwtToken || "").trim();
-  if (!base || !token) {
-    throw new Error("WordPress site URL and JWT token are required.");
-  }
-  if (!storeId) {
-    throw new Error("Store ID is required.");
-  }
+export async function syncWordpressCatalog(storeId) {
+  if (!storeId) throw new Error("Store ID is required.");
+  return api.post(`/stores/${encodeURIComponent(storeId)}/catalog/sync`);
+}
 
-  const payload = {
-    storeId,
-    merchantId,
-    wordpressUrl: base,
-    wordpressJwt: token,
-  };
+export async function getStoreCatalogTaxonomies(storeId, { signal } = {}) {
+  if (!storeId) return { categories: [], tags: [], attributes: [] };
+  return api.get(
+    `/stores/${encodeURIComponent(storeId)}/catalog/taxonomies`,
+    { signal },
+  );
+}
 
+async function postStoreSync(storeId, step) {
+  if (!storeId) throw new Error("Store ID is required.");
+  const path = `/stores/${encodeURIComponent(storeId)}/catalog/sync/${step}`;
   try {
-    const result = await api.put(`/connector/api/v1/stores/${storeId}/connector`, payload);
-    return {
-      ok: true,
-      message: result?.message || `WordPress connected & catalog synchronized successfully! Synced ${result?.syncedProductsCount || 0} products into database.`,
-      data: result,
-    };
+    return await api.post(`/connector/api/v1${path}`);
   } catch (err) {
     try {
-      const fallbackResult = await api.put(endpoints.storeConnector(storeId), payload);
-      return {
-        ok: true,
-        message: fallbackResult?.message || `WordPress connected & catalog synchronized successfully!`,
-        data: fallbackResult,
-      };
+      return await api.post(path);
     } catch (fallbackErr) {
-      return {
-        ok: false,
-        message: err.message || fallbackErr.message || "Failed to connect to WordPress connector.",
-      };
+      throw new Error(err?.message || fallbackErr?.message || `Unable to sync ${step}.`);
     }
   }
 }
+
+export function syncWordpressProducts(storeId) {
+  return postStoreSync(storeId, "products");
+}
+
+export function syncWordpressCategories(storeId) {
+  return postStoreSync(storeId, "categories");
+}
+
+export function syncWordpressAttributes(storeId) {
+  return postStoreSync(storeId, "attributes");
+}
+
+export function syncWordpressTags(storeId) {
+  return postStoreSync(storeId, "tags");
+}
+
+// export async function syncWordpressCatalog(storeId, { siteUrl, jwtToken, merchantId } = {}) {
+//   const result = await testWordpressConnection(siteUrl, jwtToken, storeId, merchantId);
+//   if (!result?.ok) {
+//     throw new Error(result?.message || "Unable to sync WordPress categories and products.");
+//   }
+
+//   const data = result.data || {};
+//   return {
+//     ...result,
+//     catalog: {
+//       categoryCount: data.categoryCount ?? data.syncedCategoriesCount ?? data.catalog?.categoryCount ?? 0,
+//       productCount: data.productCount ?? data.syncedProductsCount ?? data.catalog?.productCount ?? 0,
+//     },
+//   };
+// }

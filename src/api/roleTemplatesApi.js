@@ -1,72 +1,67 @@
-import { api } from "./http";
+import { api, pendingStoreRead } from "./http";
+
+const readRoleTemplate = path => pendingStoreRead(`role-template-read:${path}`, () => api.get(path));
 
 const unwrap = (response) => response?.data ?? response;
 
 export const roleTemplatesApi = {
-  getAll: () => api.get("/role-templates"),
+  getAll: () => readRoleTemplate("/role-templates"),
 
   assignToStoreType: (storeTypeId, values) =>
     api.post(
       `/store-types/${encodeURIComponent(storeTypeId)}/role-templates`,
-      values
+      values,
     ),
 
   getForStoreType: (storeTypeId) =>
-    api.get(`/store-types/${encodeURIComponent(storeTypeId)}/role-templates`),
+    readRoleTemplate(`/store-types/${encodeURIComponent(storeTypeId)}/role-templates`),
 
   removeFromStoreType: (storeTypeId, roleTemplateId) =>
     api.delete(
-      `/store-types/${encodeURIComponent(storeTypeId)}/role-templates/${encodeURIComponent(roleTemplateId)}`
+      `/store-types/${encodeURIComponent(storeTypeId)}/role-templates/${encodeURIComponent(roleTemplateId)}`,
     ),
 
-  getById: (id) =>
-    api.get(`/role-templates/${encodeURIComponent(id)}`),
+  getById: (id) => readRoleTemplate(`/role-templates/${encodeURIComponent(id)}`),
 
   getAvailableStoreTypes: (id) =>
-    api.get(
-      `/role-templates/${encodeURIComponent(id)}/store-types/available`
-    ),
+    readRoleTemplate(`/role-templates/${encodeURIComponent(id)}/store-types/available`),
 
   getFeatures: (id, storeTypeIds = []) => {
     const ids = Array.isArray(storeTypeIds)
       ? storeTypeIds.filter(Boolean).join(",")
       : String(storeTypeIds ?? "");
 
-    const query = ids
-      ? `?storeTypeIds=${encodeURIComponent(ids)}`
-      : "?storeTypeIds=%2C";
+    const query = ids ? `?storeTypeIds=${encodeURIComponent(ids)}` : "";
 
-    return api.get(
-      `/role-templates/${encodeURIComponent(id)}/features${query}`
+    return readRoleTemplate(
+      `/role-templates/${encodeURIComponent(id)}/features${query}`,
     );
   },
 
   bulkUpdateStoreTypes: (id, storeTypeIds) =>
-    api.put(
-      `//role-templates/${encodeURIComponent(id)}/store-types/bulk`,
-      { storeTypeIds, replace: true }
-    ),
+    api.put(`/role-templates/${encodeURIComponent(id)}/store-types/bulk`, {
+      storeTypeIds,
+      replace: true,
+    }),
 
   updateFeatureAccess: (id, featureAccess) =>
-    api.put(`//role-templates/${encodeURIComponent(id)}/features`, featureAccess),
+    api.put(
+      `/role-templates/${encodeURIComponent(id)}/features`,
+      featureAccess,
+    ),
 
   removeFeaturePermissions: (id, featureIds) =>
-    api.put(
-      `//role-templates/${encodeURIComponent(id)}/permissions/bulk`,
-      { removeFeatureIds: featureIds.filter(Boolean) }
-    ),
+    api.put(`/role-templates/${encodeURIComponent(id)}/permissions/bulk`, {
+      removeFeatureIds: featureIds.filter(Boolean),
+    }),
 
   addFeaturePermissions: (id, featureIds, permissionIds) =>
-    api.put(
-      `//role-templates/${encodeURIComponent(id)}/permissions/bulk`,
-      {
-        featureIds: featureIds.filter(Boolean),
-        permissionIds: permissionIds.filter(Boolean),
-      }
-    ),
+    api.put(`/role-templates/${encodeURIComponent(id)}/permissions/bulk`, {
+      featureIds: featureIds.filter(Boolean),
+      permissionIds: permissionIds.filter(Boolean),
+    }),
 
-  create: (values) =>
-    api.post("/role-templates", values),
+  create: (values) => api.post("/role-templates", values),
 
   update: (id, values) =>
     api.put(`/role-templates/${encodeURIComponent(id)}`, values),
@@ -74,8 +69,7 @@ export const roleTemplatesApi = {
   patch: (id, values) =>
     api.patch(`/role-templates/${encodeURIComponent(id)}`, values),
 
-  remove: (id) =>
-    api.delete(`/role-templates/${encodeURIComponent(id)}`),
+  remove: (id) => api.delete(`/role-templates/${encodeURIComponent(id)}`),
 };
 
 export function readRoleTemplatesList(response) {
@@ -95,6 +89,6 @@ export function readRoleTemplatesList(response) {
   }
 
   throw new Error(
-    "Unexpected role templates response. Expected an array or roleTemplates array."
+    "Unexpected role templates response. Expected an array or roleTemplates array.",
   );
 }

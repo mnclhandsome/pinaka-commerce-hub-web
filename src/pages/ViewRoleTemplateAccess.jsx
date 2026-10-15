@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { roleTemplatesApi } from "../api/roleTemplatesApi";
+import { listFeaturePermissions } from "../api/featurePermissionsApi";
 
 const readFeatureList = (response) => {
   const candidates = [
@@ -16,6 +17,18 @@ const readFeatureList = (response) => {
   ];
 
   return candidates.find((value) => Array.isArray(value)) || [];
+};
+
+const getSelectedStoreTypeIds = (response) => {
+  const candidates = [response?.storeTypes, response?.data?.storeTypes, response?.data?.data, response?.data?.items, response?.data?.results, response?.data, response?.items, response?.results, response];
+  const entries = candidates.find((value) => Array.isArray(value)) || [];
+  return entries.filter((item) => {
+    const storeType = item?.storeType ?? item ?? {};
+    return Boolean(item?.checked ?? storeType.checked ?? item?.mapped ?? item?.isAssigned ?? item?.is_assigned ?? false);
+  }).map((item) => {
+    const storeType = item?.storeType ?? item ?? {};
+    return item?.storeTypeId ?? item?.store_type_id ?? storeType.id ?? item?.id;
+  }).filter(Boolean);
 };
 
 const readAccessFlag = (...values) => {
@@ -41,10 +54,11 @@ const normalizePermission = (permission, featureId, permissionIndex) => {
     permissionRecord.id ??
     permission?.id ??
     permissionRecord.uuid;
-  const permissionId = backendPermissionId ?? `${featureId}-permission-${permissionIndex}`;
+  const permissionId = backendPermissionId;
 
   return {
-    id: String(permissionId),
+    id: permissionId ? String(permissionId) : "",
+    key: permissionId ? String(permissionId) : `${featureId}-permission-row-${permissionIndex}`,
     backendId: backendPermissionId ? String(backendPermissionId) : "",
     name:
       permissionRecord.name ??
@@ -134,6 +148,7 @@ const normalizeFeature = (feature, featureIndex) => {
       featureRecord.description ??
       feature?.description ??
       "",
+    status: String(featureRecord.status ?? feature?.status ?? "ACTIVE").toUpperCase(),
     checked: readAccessFlag(
       featureAssignment?.assigned,
       featureAssignment?.isAssigned,
@@ -169,11 +184,15 @@ export default function ViewRoleTemplateAccess() {
   const roleTemplate = {
     ...(location.state?.roleTemplate ?? {}),
   };
-  const activeStoreTypeId = location.state?.storeType?.id ?? location.state?.storeTypeId;
+  const storeTypeIdsFromNavigation = Array.isArray(location.state?.selectedStoreTypes)
+    ? location.state.selectedStoreTypes.filter(Boolean)
+    : [location.state?.storeType?.id ?? location.state?.storeTypeId].filter(Boolean);
   const [featurePermissions, setFeaturePermissions] = useState([]);
   const [search, setSearch] = useState("");
   const [enabledFeatures, setEnabledFeatures] = useState([]);
   const [selectedPermissions, setSelectedPermissions] = useState([]);
+  const [pendingFeatureChecks, setPendingFeatureChecks] = useState({});
+  const [pendingPermissionChecks, setPendingPermissionChecks] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [savingFeatureId, setSavingFeatureId] = useState(null);
@@ -188,8 +207,46 @@ export default function ViewRoleTemplateAccess() {
       setError("");
 
       try {
-        const response = await roleTemplatesApi.getFeatures(roleId, activeStoreTypeId ? [activeStoreTypeId] : []);
-        const features = readFeatureList(response).map(normalizeFeature);
+        let selectedStoreTypeIds = storeTypeIdsFromNavigation;
+        if (selectedStoreTypeIds.length === 0) {
+          const storeTypesResponse = await roleTemplatesApi.getAvailableStoreTypes(roleId);
+          selectedStoreTypeIds = getSelectedStoreTypeIds(storeTypesResponse);
+        }
+
+        if (selectedStoreTypeIds.length === 0) {
+          if (!cancelled) {
+            setFeaturePermissions([]);
+            setEnabledFeatures([]);
+            setSelectedPermissions([]);
+          }
+          return;
+        }
+
+        const response = await roleTemplatesApi.getFeatures(roleId, selectedStoreTypeIds);
+        const selectedStoreTypeSet = new Set(selectedStoreTypeIds.map(String));
+        const scopedFeatures = readFeatureList(response).filter((rawFeature) => {
+          const applicableStoreTypeIds = rawFeature?.storeTypeIds ?? rawFeature?.store_type_ids ?? rawFeature?.feature?.storeTypeIds ?? rawFeature?.feature?.store_type_ids;
+          return !Array.isArray(applicableStoreTypeIds) || applicableStoreTypeIds.some((id) => selectedStoreTypeSet.has(String(id)));
+        });
+        const features = await Promise.all(scopedFeatures.map(async (rawFeature, index) => {
+          const normalized = normalizeFeature(rawFeature, index);
+          if (normalized.permissions.length > 0 || !normalized.backendId) return normalized;
+          try {
+            const permissions = await listFeaturePermissions(normalized.backendId, { status: "ACTIVE" });
+            return {
+              ...normalized,
+              permissions: permissions
+                .filter((permission) => {
+                  if (String(permission.status ?? "ACTIVE").toUpperCase() === "INACTIVE") return false;
+                  const applicableStoreTypeIds = permission?.storeTypeIds ?? permission?.store_type_ids;
+                  return !Array.isArray(applicableStoreTypeIds) || applicableStoreTypeIds.some((id) => selectedStoreTypeSet.has(String(id)));
+                })
+                .map((permission, permissionIndex) => normalizePermission(permission, normalized.id, permissionIndex)),
+            };
+          } catch {
+            return normalized;
+          }
+        }));
 
         if (!cancelled) {
           setFeaturePermissions(features);
@@ -218,7 +275,7 @@ export default function ViewRoleTemplateAccess() {
     return () => {
       cancelled = true;
     };
-  }, [roleId, activeStoreTypeId]);
+  }, [roleId, JSON.stringify(storeTypeIdsFromNavigation)]);
 
   const tabs = [
     ["overview", "Overview", `/role-templates/${roleId}`],
@@ -259,19 +316,22 @@ export default function ViewRoleTemplateAccess() {
   async function toggleFeature(featureId) {
     const isEnabled = enabledFeatures.includes(featureId);
     const feature = featurePermissions.find((item) => item.id === featureId);
+    if (feature?.status === "INACTIVE") return;
     setHasUnsavedChanges(true);
 
     if (!isEnabled) {
       const permissionIds = feature?.permissions
-        .map((permission) => permission.backendId || permission.id)
+        .map((permission) => permission.backendId)
         .filter(Boolean);
 
-      const featureBackendId = feature?.backendId || feature?.id;
+      const featureBackendId = feature?.backendId;
 
       if (!featureBackendId || !permissionIds.length) {
         setError("This feature must have valid permission IDs before it can be enabled.");
         return;
       }
+
+      setPendingFeatureChecks((current) => ({ ...current, [featureId]: true }));
 
       setSavingFeatureId(featureId);
       setError("");
@@ -281,7 +341,7 @@ export default function ViewRoleTemplateAccess() {
         const nextSelectedPermissions = [
           ...new Set([
             ...selectedPermissions,
-            ...feature.permissions.map((permission) => permission.id),
+            ...feature.permissions.filter((permission) => permission.backendId).map((permission) => permission.id),
           ]),
         ];
 
@@ -295,6 +355,11 @@ export default function ViewRoleTemplateAccess() {
       } catch (requestError) {
         setError(requestError?.message || "Unable to enable feature access.");
       } finally {
+        setPendingFeatureChecks((current) => {
+          const next = { ...current };
+          delete next[featureId];
+          return next;
+        });
         setSavingFeatureId(null);
       }
       return;
@@ -302,6 +367,7 @@ export default function ViewRoleTemplateAccess() {
 
     setSavingFeatureId(featureId);
     setError("");
+    setPendingFeatureChecks((current) => ({ ...current, [featureId]: false }));
 
     try {
       if (!feature?.backendId) {
@@ -321,23 +387,32 @@ export default function ViewRoleTemplateAccess() {
     } catch (requestError) {
       setError(requestError?.message || "Unable to remove feature access.");
     } finally {
+      setPendingFeatureChecks((current) => {
+        const next = { ...current };
+        delete next[featureId];
+        return next;
+      });
       setSavingFeatureId(null);
     }
   }
 
   async function togglePermission(featureId, permissionId) {
     const feature = featurePermissions.find((item) => item.id === featureId);
+    if (feature?.status === "INACTIVE") return;
     setHasUnsavedChanges(true);
 
     if (!selectedPermissions.includes(permissionId)) {
       const permission = feature?.permissions.find((item) => item.id === permissionId);
-      const featureBackendId = feature?.backendId || feature?.id;
-      const permissionBackendId = permission?.backendId || permission?.id;
+      const featureBackendId = feature?.backendId;
+      const permissionBackendId = permission?.backendId;
 
       if (!featureBackendId || !permissionBackendId) {
         setError("This permission has no valid backend ID and cannot be enabled.");
         return;
       }
+
+      setPendingPermissionChecks((current) => ({ ...current, [permissionId]: true }));
+      setPendingFeatureChecks((current) => ({ ...current, [featureId]: true }));
 
       setSavingFeatureId(featureId);
       setError("");
@@ -359,6 +434,16 @@ export default function ViewRoleTemplateAccess() {
       } catch (requestError) {
         setError(requestError?.message || "Unable to enable permission access.");
       } finally {
+        setPendingPermissionChecks((current) => {
+          const next = { ...current };
+          delete next[permissionId];
+          return next;
+        });
+        setPendingFeatureChecks((current) => {
+          const next = { ...current };
+          delete next[featureId];
+          return next;
+        });
         setSavingFeatureId(null);
       }
       return;
@@ -372,6 +457,7 @@ export default function ViewRoleTemplateAccess() {
     );
 
     if (featureHasSelectedPermissions) {
+      setPendingPermissionChecks((current) => ({ ...current, [permissionId]: false }));
       setSavingFeatureId(featureId);
       setError("");
 
@@ -385,6 +471,11 @@ export default function ViewRoleTemplateAccess() {
       } catch (requestError) {
         setError(requestError?.message || "Unable to remove permission access.");
       } finally {
+        setPendingPermissionChecks((current) => {
+          const next = { ...current };
+          delete next[permissionId];
+          return next;
+        });
         setSavingFeatureId(null);
       }
       return;
@@ -392,6 +483,8 @@ export default function ViewRoleTemplateAccess() {
 
     setSavingFeatureId(featureId);
     setError("");
+    setPendingPermissionChecks((current) => ({ ...current, [permissionId]: false }));
+    setPendingFeatureChecks((current) => ({ ...current, [featureId]: false }));
 
     try {
       if (!feature?.backendId) {
@@ -404,26 +497,38 @@ export default function ViewRoleTemplateAccess() {
     } catch (requestError) {
       setError(requestError?.message || "Unable to remove permission access.");
     } finally {
+      setPendingPermissionChecks((current) => {
+        const next = { ...current };
+        delete next[permissionId];
+        return next;
+      });
+      setPendingFeatureChecks((current) => {
+        const next = { ...current };
+        delete next[featureId];
+        return next;
+      });
       setSavingFeatureId(null);
     }
   }
 
- function selectAll() {
-  setEnabledFeatures(featurePermissions.map((feature) => feature.id));
-
-  setSelectedPermissions(
-    featurePermissions.flatMap((feature) =>
-      feature.permissions.map((permission) => permission.id)
-    )
-  );
-
-  setHasUnsavedChanges(true);
+ async function selectAll() {
+  const activeFeatures = featurePermissions.filter((feature) => feature.status !== "INACTIVE");
+  const hasInvalidAccessIds = activeFeatures.some((feature) => !feature.backendId || feature.permissions.length === 0 || feature.permissions.some((permission) => !permission.backendId));
+  if (hasInvalidAccessIds) { setError("Every active feature must have valid permission IDs before all features can be enabled."); return; }
+  const nextFeatureIds = activeFeatures.map((feature) => feature.id);
+  const nextPermissionIds = activeFeatures.flatMap((feature) => feature.permissions.map((permission) => permission.id));
+  setError("");
+  try {
+    await roleTemplatesApi.addFeaturePermissions(roleId, getBackendFeatureIds(nextFeatureIds), getBackendPermissionIds(nextPermissionIds));
+    setEnabledFeatures(nextFeatureIds); setSelectedPermissions(nextPermissionIds); setHasUnsavedChanges(true);
+  } catch (requestError) { setError(requestError?.message || "Unable to select all feature access."); }
 }
-
-function clearAll() {
-  setEnabledFeatures([]);
-  setSelectedPermissions([]);
-  setHasUnsavedChanges(true);
+async function clearAll() {
+  setError("");
+  try {
+    await roleTemplatesApi.removeFeaturePermissions(roleId, getBackendFeatureIds(featurePermissions.map((feature) => feature.id)));
+    setEnabledFeatures([]); setSelectedPermissions([]); setHasUnsavedChanges(true);
+  } catch (requestError) { setError(requestError?.message || "Unable to clear feature access."); }
 }
 
   function requestLeave() {
@@ -501,20 +606,20 @@ function saveAndLeave() {
             </span>
 
             <div>
-              <h2>Feature & Permission Access</h2>
+              <h2>Features & Permissions</h2>
               <p>
-                Select the features and common permissions available to this role.
+                Select the features and permissions included in this role template.
               </p>
             </div>
           </div>
 
           <div className="role-access-actions">
             <button type="button" onClick={selectAll}>Select All</button>
-            <button type="button" onClick={clearAll}>Clear All</button>
+            <button type="button" onClick={clearAll}>Deselect All</button>
           </div>
         </div>
 
-        <label className="role-access-search">
+        <label className="role-access-search pch-master-search pch-master-control">
           <i className="bi bi-search" />
 
           <input
@@ -552,7 +657,12 @@ function saveAndLeave() {
             ) : (
               <div className="role-feature-list">
                 {filteredFeatures.map((feature) => {
-                  const isEnabled = enabledFeatures.includes(feature.id);
+                  const isEnabled = Object.prototype.hasOwnProperty.call(
+                    pendingFeatureChecks,
+                    feature.id,
+                  )
+                    ? pendingFeatureChecks[feature.id]
+                    : enabledFeatures.includes(feature.id);
 
                   return (
                     <section className="role-feature-access-card" key={feature.id}>
@@ -560,7 +670,7 @@ function saveAndLeave() {
                         <input
                           type="checkbox"
                           checked={isEnabled}
-                          disabled={savingFeatureId === feature.id}
+                          disabled={savingFeatureId === feature.id || feature.status === "INACTIVE"}
                           onChange={() => toggleFeature(feature.id)}
                         />
 
@@ -582,7 +692,7 @@ function saveAndLeave() {
 
                       <div className="role-permissions-heading">
                         <strong>Permissions</strong>
-                        <span>Common permissions for this feature</span>
+                        <span>Available permissions for this feature</span>
                       </div>
 
                       <div className="role-permissions-grid">
@@ -593,17 +703,27 @@ function saveAndLeave() {
                         ) : (
                           feature.permissions.map((permission) => (
                             <label
-                              key={permission.id}
+                              key={permission.key}
                               className={
-                                selectedPermissions.includes(permission.id)
+                                Object.prototype.hasOwnProperty.call(
+                                  pendingPermissionChecks,
+                                  permission.id,
+                                )
+                                  ? pendingPermissionChecks[permission.id]
+                                  : selectedPermissions.includes(permission.id)
                                   ? "selected"
                                   : ""
                               }
                             >
                               <input
                                 type="checkbox"
-                                checked={selectedPermissions.includes(permission.id)}
-                                disabled={savingFeatureId === feature.id}
+                                checked={Object.prototype.hasOwnProperty.call(
+                                  pendingPermissionChecks,
+                                  permission.id,
+                                )
+                                  ? pendingPermissionChecks[permission.id]
+                                  : selectedPermissions.includes(permission.id)}
+                                disabled={savingFeatureId === feature.id || feature.status === "INACTIVE"}
                                 onChange={() => togglePermission(feature.id, permission.id)}
                               />
 

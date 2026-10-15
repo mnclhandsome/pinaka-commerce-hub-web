@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from "react";
+import DeviceNavigation from "../components/DeviceNavigation";
 import {
   ArrowLeft,
-  Pencil,
   Monitor,
-  Settings,
   Link2,
   FileText,
   AlertCircle,
@@ -81,7 +80,7 @@ export default function DeviceView() {
   }
   /* ========================================================= NORMALIZED VALUES ========================================================= */ const deviceName =
     device.name || "-";
-  const deviceIdValue = device.id || deviceId;
+  const deviceCode = device.code || "-";
   const deviceType = device.type || "-";
   const serialNumber = device.serial || "-";
   const merchant = device.merchant || "-";
@@ -94,6 +93,7 @@ export default function DeviceView() {
     status !== "-" ? status.toLowerCase().replace(/\s+/g, "-") : "unknown";
   return (
     <div className="device-view-page">
+      <DeviceNavigation title="View Device" onBack={() => navigate("/devices")} />
       {" "}
       {/* ===================================================== PAGE HEADER ===================================================== */}{" "}
       <div className="device-view-header">
@@ -101,30 +101,7 @@ export default function DeviceView() {
         <div>
           {" "}
           <h1>View Device</h1>{" "}
-          <div className="device-view-breadcrumb">
-            {" "}
-            <span>Home</span> <span>›</span> <span>Devices</span> <span>›</span>{" "}
-            <strong>{deviceName}</strong>{" "}
-          </div>{" "}
-        </div>{" "}
-        <div className="device-view-header-actions">
-          {" "}
-          <button
-            type="button"
-            className="device-view-back"
-            onClick={() => navigate("/devices")}
-          >
-            {" "}
-            <ArrowLeft size={15} /> Back to Devices{" "}
-          </button>{" "}
-          <button
-            type="button"
-            className="device-view-edit"
-            onClick={() => navigate(`/devices/${deviceIdValue}/edit`)}
-          >
-            {" "}
-            <Pencil size={15} /> Edit Device{" "}
-          </button>{" "}
+          <p>View device information, assignments, and settings.</p>{" "}
         </div>{" "}
       </div>{" "}
       {/* ===================================================== DEVICE DETAILS ===================================================== */}{" "}
@@ -138,7 +115,8 @@ export default function DeviceView() {
         <div className="device-view-grid">
           {" "}
           <Info label="Device Name" value={deviceName} />{" "}
-          <Info label="Device Code" value={deviceIdValue} />{" "}
+          <Info label="Device Code" value={deviceCode} />{" "}
+          <Info label="Device ID" value={device.deviceId || "—"} />{" "}
           <Info label="Device Type" value={deviceType} />{" "}
           <Info label="Serial Number" value={serialNumber} />{" "}
           <Info label="Merchant" value={merchant} />{" "}
@@ -153,13 +131,7 @@ export default function DeviceView() {
             usage{" "}
           </div>
         )}{" "}
-        {!enabled && (
-          <div className="device-view-disabled">
-            {" "}
-            <span className="device-view-check"> × </span> Device is not enabled
-            for usage{" "}
-          </div>
-        )}{" "}
+       
         {/* ================================================= ADDITIONAL INFORMATION ================================================= */}{" "}
         <div className="device-view-section">
           {" "}
@@ -185,17 +157,6 @@ export default function DeviceView() {
           <div>
             {" "}
             <span>Last Seen</span> <strong>{lastSeen}</strong>{" "}
-          </div>{" "}
-        </div>{" "}
-        <div className="device-view-meta-card">
-          {" "}
-          <div className="device-view-meta-icon">
-            {" "}
-            <Settings size={18} />{" "}
-          </div>{" "}
-          <div>
-            {" "}
-            <span>Device ID</span> <strong>{deviceIdValue}</strong>{" "}
           </div>{" "}
         </div>{" "}
       </div>{" "}
@@ -228,7 +189,9 @@ export default function DeviceView() {
       {" "}
       <label>{label}</label>{" "}
       {status ? (
-        <span className={`device-view-status ${status}`}> {value} </span>
+        <div className={`device-view-value device-view-status-field ${status}`}>
+          {value}
+        </div>
       ) : (
         <div className="device-view-value"> {value || "-"} </div>
       )}{" "}

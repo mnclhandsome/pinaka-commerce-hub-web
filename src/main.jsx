@@ -4,6 +4,11 @@ import { BrowserRouter } from "react-router-dom";
 
 import App from "./App";
 import { AuthProvider } from "./auth/AuthContext";
+import TableOverflowTooltip from "./components/TableOverflowTooltip";
+<>
+  <App />
+  <TableOverflowTooltip />
+</>
 
 import "./styles/global.css";
 import "./styles/merchants.css";
@@ -39,6 +44,8 @@ import "./styles/Merchant-subscriptions.css";
 import "./styles/ViewRoleTemplateDetails.css";
 import "./styles/PlanDetails.css";
 import './styles/cash-management.css';
+import "./styles/master-filter-toolbar.css";
+import "./styles/step-workspace-scroll.css";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
@@ -50,7 +57,10 @@ ReactDOM.createRoot(document.getElementById("root")).render(
     >
       <AuthProvider>
         <App />
+        <TableOverflowTooltip />
       </AuthProvider>
     </BrowserRouter>
   </React.StrictMode>
 );
+
+

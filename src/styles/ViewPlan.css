@@ -18,6 +18,8 @@
   font-size: 14px;
 }
 
+
+
 .view-plan-heading {
   margin: 8px 0 16px;
 }
@@ -338,6 +340,39 @@
   color: #6380ae;
   font-size: 13px;
 }
+
+
+.plan-view-features-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  width: 100%;
+  margin-top: 18px;
+  flex-wrap: wrap;
+}
+
+.plan-view-features-footer .plan-view-table-count {
+  margin: 0;
+  flex-shrink: 0;
+}
+
+.plan-view-features-footer .pagination-container {
+  flex: 1;
+  min-width: 0;
+}
+
+@media (max-width: 768px) {
+  .plan-view-features-footer {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .plan-view-features-footer .pagination-container {
+    width: 100%;
+  }
+}
+
 
 @media (max-width: 1150px) {
   .view-plan-summary {

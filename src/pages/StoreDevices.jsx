@@ -1,3 +1,4 @@
+import FilterDropdown from "../components/FilterDropdown";
 import { useEffect, useMemo, useState } from "react";
 import Pagination from "../components/Pagination";
 import { storeDevicesSeed } from "../data/data";
@@ -440,7 +441,7 @@ export default function StoreDevices({
 
           {/* DEVICE TYPE */}
 
-          <select
+          <FilterDropdown
             value={typeFilter}
             onChange={(e) => setTypeFilter(e.target.value)}
           >
@@ -451,11 +452,11 @@ export default function StoreDevices({
                 {type}
               </option>
             ))}
-          </select>
+          </FilterDropdown>
 
           {/* STATUS */}
 
-          <select
+          <FilterDropdown
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
           >
@@ -464,7 +465,7 @@ export default function StoreDevices({
             <option value="Active">Active</option>
 
             <option value="Inactive">Inactive</option>
-          </select>
+          </FilterDropdown>
 
           {/* CLEAR */}
 
@@ -497,12 +498,13 @@ export default function StoreDevices({
           <table className="store-devices-table">
             <thead>
               <tr>
-                <th>DEVICE</th>
-                <th>DEVICE ID</th>
-                <th>DEVICE TYPE</th>
-                <th>STATUS</th>
-                <th>LAST UPDATED</th>
-                <th>ACTIONS</th>
+                <th>Device ID</th>
+                <th>Device Code</th>
+                <th>Device Name</th>
+                <th>Device Type</th>
+                <th>Status</th>
+                <th>Last Updated</th>
+                <th>Actions</th>
               </tr>
             </thead>
 
@@ -895,7 +897,15 @@ function DeviceRow({ device, onView, onEdit }) {
 
   return (
     <tr>
-      {/* DEVICE */}
+      {/* DEVICE ID */}
+      <td>
+        <span className="store-device-id">{device.deviceId || device.device_id || "—"}</span>
+      </td>
+
+      {/* DEVICE CODE */}
+      <td>{device.code || device.deviceCode || "—"}</td>
+
+      {/* DEVICE NAME */}
 
       <td>
         <div className="store-device-info">
@@ -909,12 +919,6 @@ function DeviceRow({ device, onView, onEdit }) {
             {device.model && <small>{device.model}</small>}
           </div>
         </div>
-      </td>
-
-      {/* DEVICE ID */}
-
-      <td>
-        <span className="store-device-id">{device.deviceId || "—"}</span>
       </td>
 
       {/* DEVICE TYPE */}

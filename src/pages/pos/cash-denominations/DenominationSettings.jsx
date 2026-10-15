@@ -33,22 +33,6 @@ function denominationRows(items) {
 export function DenominationSettings() {
     const settings = usePosSettings();
     const savedId = useRef(null);
-    
-    
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
     /* ---------------------------------------------------------
        EMPTY LISTS
     --------------------------------------------------------- */

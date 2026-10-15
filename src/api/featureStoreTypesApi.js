@@ -14,17 +14,15 @@ const unwrap = (response, keys = []) => {
 };
 
 export const listMappedStoreTypes = (featureId) =>
-  api.get(`/features/${encodeURIComponent(featureId)}/store-types`).then((r) => unwrap(r, ['storeTypes', 'mappings', 'items']));
-
-export const listAvailableStoreTypes = (featureId) =>
-  api.get('/store-types').then((r) => unwrap(r, ['storeTypes', 'items']));
-
+  api.get(`/features/${encodeURIComponent(featureId)}/store-types`).then((r) => unwrap(r, ['store_types', 'storeTypes', 'mappings', 'items']));
 
 export const addStoreTypeToFeature = (featureId, payload) =>
-  api.post(`/features/${encodeURIComponent(featureId)}/store-types`, payload);
+  api.post(`/store-types/${encodeURIComponent(payload.storeTypeId)}/features`, {
+    featureId,
+  });
 
 export const bulkAddStoreTypes = (featureId, storeTypeIds) =>
   api.post(`/features/${encodeURIComponent(featureId)}/store-types/bulk`, { storeTypeIds });
 
 export const removeStoreTypeFromFeature = (featureId, storeTypeId) =>
-  api.delete(`/features/${encodeURIComponent(featureId)}/store-types/${encodeURIComponent(storeTypeId)}`);
+  api.delete(`/store-types/${encodeURIComponent(storeTypeId)}/features/${encodeURIComponent(featureId)}`);

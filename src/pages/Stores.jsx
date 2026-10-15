@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { deleteStore, listStores } from "../api/stores";
-import { listMerchants } from "../api/merchants";
-import { useReferenceData } from "../api/referenceData";
+import { activateStore, deactivateStore, listStores } from "../api/stores";
+import Pagination from "../components/Pagination";
+import ListActions from "../components/ListActions";
+import FiltersBar from "../components/FiltersBar";
+import DeleteConfirmationDialog from "../components/DeleteConfirmationDialog";
 
 const title = (value) =>
   String(value || "")
@@ -10,7 +12,16 @@ const title = (value) =>
     .replace(/_/g, " ")
     .replace(/\b\w/g, (c) => c.toUpperCase());
 const locationOf = (store) =>
-  [store.address?.city, store.address?.state].filter(Boolean).join(", ");
+  [store.city || store.address?.city, store.state || store.address?.state].filter(Boolean).join(", ") || (typeof store.address === "string" ? store.address : "");
+const dateTimeParts = (value) => {
+  if (!value) return null;
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return null;
+  return {
+    date: date.toLocaleDateString("en-US", { month: "short", day: "2-digit", year: "numeric" }),
+    time: date.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" }),
+  };
+};
 const initials = (name) =>
   String(name || "Store")
     .split(/\s+/)
@@ -38,14 +49,30 @@ function exportStores(rows, merchants) {
     alert("There are no stores to export.");
     return;
   }
-  const header = ["Store", "Store ID", "Merchant", "Location", "POS Devices", "Status"];
+  const header = ["Store", "Store ID", "Merchant", "Store Type", "Address Line 1", "Address Line 2", "City", "State", "ZIP / Postal Code", "Country", "Phone", "Email", "Store URL", "Currency", "Time Zone", "Default Language", "POS Devices", "Status", "Connection", "Sync", "Created At", "Updated At"];
   const data = rows.map((store) => [
     store.storeName,
     displayStoreId(store),
     merchantNameOf(store, merchants),
-    locationOf(store),
-    staticPosDeviceCounts[store.id] ?? 0,
+    store.storeTypeName || store.type,
+    store.addressLine1,
+    store.addressLine2,
+    store.city,
+    store.state,
+    store.zip,
+    store.country,
+    store.phone,
+    store.email,
+    store.url,
+    store.currency,
+    store.timezone,
+    store.defaultLanguage,
+    Array.isArray(store.devices) ? store.devices.length : store.deviceCount ?? store.device_count ?? "",
     store.status,
+    store.connectionStatus,
+    store.syncStatus,
+    store.createdAt,
+    store.updatedAt,
   ]);
   const csv = [header, ...data]
     .map((row) => row.map((value) => `"${String(value ?? "").replace(/"/g, '""')}"`).join(","))
@@ -63,7 +90,7 @@ function exportStores(rows, merchants) {
 
 const merchantNameOf = (store, merchants) => {
   const merchant = merchants.find(
-    (m) => String(m.id) === String(store.merchantId),
+    (m) => [m.id, m.merchantId, m.merchantCode].some((id) => String(id || "") === String(store.merchantId || "")),
   );
   return (
     store.merchantName ||
@@ -74,17 +101,10 @@ const merchantNameOf = (store, merchants) => {
   );
 };
 
-// Static POS device counts for UI display.
-// Update these values when the real POS-device API is connected.
-const staticPosDeviceCounts = {
-  "STR-50069": 3,
-  "STR-50021": 2,
-  "STR-50007": 4,
-  store1: 1,
-};
 export default function Stores() {
   const nav = useNavigate();
-  const { data: reference, error: referenceError } = useReferenceData();
+  const openView = (store) => nav(`/stores/${encodeURIComponent(store.id)}`);
+
   const [stores, setStores] = useState([]),
     [merchants, setMerchants] = useState([]);
   const [query, setQuery] = useState(""),
@@ -92,21 +112,28 @@ export default function Stores() {
     [status, setStatus] = useState(""),
     [location, setLocation] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const rowsPerPage = 10;
+const [pageSize, setPageSize] = useState(10);
+
+const handlePageSizeChange = (size) => {
+  setPageSize(size);
+  setCurrentPage(1);
+};
   const [loading, setLoading] = useState(true),
     [error, setError] = useState("");
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleteError, setDeleteError] = useState("");
   const [deleting, setDeleting] = useState(false);
+  const [activatingStoreId, setActivatingStoreId] = useState("");
+  const [statusActionError, setStatusActionError] = useState("");
   useEffect(() => {
     let active = true;
     setLoading(true);
     setError("");
-    Promise.all([listStores(), listMerchants()])
-      .then(([data, rows]) => {
+    listStores()
+      .then((data) => {
         if (active) {
-          setStores(data.stores || []);
-          setMerchants(rows);
+          setStores(Array.isArray(data.stores) ? data.stores : []);
+          setMerchants([...new Map((data.stores || []).filter(store => store.merchantId).map(store => [String(store.merchantId), { id: store.merchantId, name: store.merchantName || String(store.merchantId) }])).values()]);
         }
       })
       .catch((e) => {
@@ -130,17 +157,27 @@ export default function Stores() {
       (!location || locationOf(s) === location),
   );
 
-  const totalPages = Math.max(1, Math.ceil(rows.length / rowsPerPage));
-  const safeCurrentPage = Math.min(currentPage, totalPages);
-  const startIndex = (safeCurrentPage - 1) * rowsPerPage;
-  const paginatedRows = rows.slice(startIndex, startIndex + rowsPerPage);
-  const showingFrom = rows.length === 0 ? 0 : startIndex + 1;
-  const showingTo = Math.min(startIndex + rowsPerPage, rows.length);
+ const totalPages = Math.max(1, Math.ceil(rows.length / pageSize));
 
-  const goToPage = (page) => {
-    setCurrentPage(Math.max(1, Math.min(page, totalPages)));
-  };
-  const activeCount = stores.filter((s) => s.status === "ACTIVE").length;
+const safeCurrentPage = Math.min(currentPage, totalPages);
+
+const startIndex = (safeCurrentPage - 1) * pageSize;
+
+const paginatedRows = rows.slice(
+  startIndex,
+  startIndex + pageSize
+);
+
+useEffect(() => {
+  setCurrentPage(1);
+}, [query, merchant, status, location]);
+
+useEffect(() => {
+  setCurrentPage((previous) =>
+    Math.min(previous, totalPages)
+  );
+}, [totalPages]);
+  const activeCount = stores.filter((s) => String(s.status).toUpperCase() === "ACTIVE").length;
   const recent = stores.filter(
     (s) => new Date(s.createdAt).getTime() >= Date.now() - 7 * 86400000,
   ).length;
@@ -157,21 +194,21 @@ export default function Stores() {
   const stats = [
     [
       "purple",
-      "bi-shop",
+      "bi-building-fill",
       "Total Stores",
       stores.length,
       `${recent} added this week`,
     ],
     [
       "green",
-      "bi-check-circle",
+      "bi-check-circle-fill",
       "Active Stores",
       activeCount,
       `${stores.length ? ((activeCount / stores.length) * 100).toFixed(1) : "0.0"}% of total`,
     ],
     [
       "red",
-      "bi-wifi-off",
+      "bi-x-circle-fill",
       "Offline Stores",
       offline ?? "—",
       offline === null
@@ -182,7 +219,7 @@ export default function Stores() {
     ],
     [
       "orange",
-      "bi-arrow-repeat",
+      "bi-exclamation-triangle-fill",
       "Sync Issues",
       syncIssues ?? "—",
       syncIssues === null
@@ -192,7 +229,7 @@ export default function Stores() {
   ];
   const statuses = [
     ...new Set([
-      ...(reference.storeStatuses || []).map((s) => s.toUpperCase()),
+      ...["ACTIVE", "INACTIVE"],
       ...stores.map((s) => s.status),
     ]),
   ];
@@ -204,11 +241,11 @@ export default function Stores() {
           <p>Manage and monitor all stores connected to Pinaka Commerce Hub</p>
         </div>
         <div className="page-actions">
-          <button className="add-store-btn" onClick={() => nav("/stores/new")}>
+          <button className="add-store-btn btn-primary" onClick={() => nav("/stores/new")}>
             <i className="bi bi-plus-lg" /> Add Store
           </button>
           <button
-            className="btn btn-secondary export-store-btn"
+            className="add-store-btn btn-secondary"
             type="button"
             onClick={() => exportStores(rows, merchants)}
           >
@@ -235,96 +272,108 @@ export default function Stores() {
         ))}
       </div>
       <div className="stores-card">
-        <div className="store-toolbar">
-          <div className="store-search">
-            <i className="bi bi-search" />
-            <input
-              aria-label="Search stores"
-              placeholder="Search stores..."
-              value={query}
-              onChange={(e) => {
-                setQuery(e.target.value);
+        {statusActionError && <p className="stores-feedback" role="alert">{statusActionError}</p>}
+        <FiltersBar
+    searchValue={query}
+    onSearchChange={(value) => {
+        setQuery(value);
+        setCurrentPage(1);
+    }}
+    searchPlaceholder="Search stores..."
+    filters={[
+        {
+            key: "merchant",
+            label: "Merchant",
+            value: merchant,
+            options: [
+                {
+                    label: "All Merchants",
+                    value: "",
+                },
+                ...merchants.map((m) => ({
+                    label: m.name,
+                    value: m.id,
+                })),
+            ],
+            onChange: (value) => {
+                setMerchant(value);
                 setCurrentPage(1);
-              }}
-            />
-          </div>
-          <select
-            aria-label="Merchant"
-            className="filter-select"
-            value={merchant}
-            onChange={(e) => {
-              setMerchant(e.target.value);
-              setCurrentPage(1);
-            }}
-          >
-            <option value="">All Merchants</option>
-            {merchants.map((m) => (
-              <option key={m.id} value={m.id}>
-                {m.name}
-              </option>
-            ))}
-          </select>
-          <select
-            aria-label="Status"
-            className="filter-select"
-            value={status}
-            onChange={(e) => {
-              setStatus(e.target.value);
-              setCurrentPage(1);
-            }}
-          >
-            <option value="">All Status</option>
-            {statuses.filter(Boolean).map((s) => (
-              <option key={s} value={s}>
-                {title(s)}
-              </option>
-            ))}
-          </select>
-          <select
-            aria-label="Location"
-            className="filter-select"
-            value={location}
-            onChange={(e) => {
-              setLocation(e.target.value);
-              setCurrentPage(1);
-            }}
-          >
-            <option value="">All Locations</option>
-            {[...new Set(stores.map(locationOf).filter(Boolean))]
-              .sort()
-              .map((l) => (
-                <option key={l}>{l}</option>
-              ))}
-          </select>
-          <button
-            className="filter-button"
-            onClick={() => {
-              setQuery("");
-              setMerchant("");
-              setStatus("");
-              setLocation("");
-              setCurrentPage(1);
-            }}
-          >
-            <i className="bi bi-arrow-counterclockwise" /> Reset
-          </button>
-        </div>
-        {referenceError && (
-          <p className="stores-feedback" role="alert">
-            Could not load status options: {referenceError}
-          </p>
-        )}
+            },
+        },
+
+        {
+            key: "status",
+            label: "Status",
+            value: status,
+            options: [
+                {
+                    label: "All Status",
+                    value: "",
+                },
+                ...statuses
+                    .filter(Boolean)
+                    .map((s) => ({
+                        label: title(s),
+                        value: s,
+                    })),
+            ],
+            onChange: (value) => {
+                setStatus(value);
+                setCurrentPage(1);
+            },
+        },
+
+        {
+            key: "location",
+            label: "Location",
+            value: location,
+            options: [
+                {
+                    label: "All Locations",
+                    value: "",
+                },
+                ...[
+                    ...new Set(
+                        stores
+                            .map(locationOf)
+                            .filter(Boolean)
+                    ),
+                ]
+                    .sort()
+                    .map((l) => ({
+                        label: l,
+                        value: l,
+                    })),
+            ],
+            onChange: (value) => {
+                setLocation(value);
+                setCurrentPage(1);
+            },
+        },
+    ]}
+    onClear={() => {
+        setQuery("");
+        setMerchant("");
+        setStatus("");
+        setLocation("");
+        setCurrentPage(1);
+    }}
+/>
         <div className="table-responsive">
           <table className="table stores-table">
             <thead>
               <tr>
                 {[
-                  "STORE",
-                  "MERCHANT",
-                  "LOCATION",
-                  "POS DEVICES",
-                  "STATUS",
-                  "ACTION",
+                  "Store",
+                  "Merchant Name",
+                  "Store Type",
+                  "Location",
+                  "Contact Information",
+                  "Devices Count",
+                  "Status",
+                  "Created At",
+                  "Updated At",
+                  "Actions",
                 ].map((h) => (
                   <th key={h}>{h}</th>
                 ))}
@@ -333,37 +382,49 @@ export default function Stores() {
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={6} role="status">
+                  <td colSpan={10} role="status">
                     Loading stores…
                   </td>
                 </tr>
               ) : error ? (
                 <tr>
-                  <td colSpan={6} role="alert">
+                  <td colSpan={10} role="alert">
                     {error}
                   </td>
                 </tr>
               ) : paginatedRows.length ? (
                 paginatedRows.map((s) => (
-                  <tr key={s.id}>
+                  <tr
+                    key={s.id}
+                    tabIndex={0}
+                    aria-label={`View ${s.storeName}`}
+                    style={{ cursor: "pointer" }}
+                    onClick={(event) => {
+                      if (event.target.closest('button, a, input, select, textarea, label, [role="button"], [contenteditable="true"]')) {
+                        event.stopPropagation();
+                        return;
+                      }
+                      openView(s);
+                    }}
+                    onKeyDown={(event) => {
+                      if (event.target === event.currentTarget && (event.key === "Enter" || event.key === " ")) {
+                        event.preventDefault();
+                        openView(s);
+                      }
+                    }}
+                  >
                     <td>
                       <button
                         type="button"
                         className="store-cell stores-name-button"
                         aria-label={`View ${s.storeName}`}
                         title="View store"
-                        onClick={() =>
-                          nav(
-                            `/stores/${encodeURIComponent(s.id)}/configuration`,
-                          )
-                        }
+                        onClick={() => openView(s)}
                       >
-                        <div className="store-avatar purple-bg">
-                          {initials(s.storeName)}
-                        </div>
+                  
                         <div>
                           <strong>{s.storeName}</strong>
-                          <small>Store ID: {displayStoreId(s)}</small>
+                          <small>{displayStoreId(s)}</small>
                         </div>
                       </button>
                     </td>
@@ -374,13 +435,20 @@ export default function Stores() {
                         </div>
                       </div>
                     </td>
+                    <td>{s.storeTypeName || s.type || "—"}</td>
                     <td>
-                      <div className="location-cell">
-                        <i className="bi bi-geo-alt" />
-                        <span>{locationOf(s) || "—"}</span>
+                      <div className="store-table-details">
+                        <strong>{s.state || s.address?.state || "—"}</strong>
+                        <small>{s.country || s.address?.country || "—"}</small>
                       </div>
                     </td>
-                    <td>{staticPosDeviceCounts[s.id] ?? 0}</td>
+                    <td>
+                      <div className="store-table-details">
+                        <strong>{s.phone || "—"}</strong>
+                        <small>{s.email || "—"}</small>
+                      </div>
+                    </td>
+                    <td>{Array.isArray(s.devices) ? s.devices.length : s.deviceCount ?? s.device_count ?? "—"}</td>
                     <td>
                       <span
                         className={`store-status ${String(s.status).toLowerCase()}`}
@@ -388,162 +456,136 @@ export default function Stores() {
                         <i className="bi bi-circle-fill" /> {title(s.status)}
                       </span>
                     </td>
+                    {[s.createdAt, s.updatedAt].map((value, index) => {
+                      const parts = dateTimeParts(value);
+                      return (
+                        <td key={index}>
+                          {parts ? (
+                            <div className="store-table-details store-table-datetime">
+                              <strong>{parts.date}</strong>
+                              <small>{parts.time}</small>
+                            </div>
+                          ) : "—"}
+                        </td>
+                      );
+                    })}
                     <td>
-                      <div className="store-item-actions">
-                        <button
-                          type="button"
-                          className="action-btn view-btn"
-                          aria-label={`View ${s.storeName}`}
-                          title="View store"
-                          onClick={() =>
-                            nav(
-                              `/stores/${encodeURIComponent(s.id)}/configuration`,
-                            )
-                          }
-                        >
-                          <i className="bi bi-eye" />
-                        </button>
-
-                        <button
-                          type="button"
-                          className="action-btn edit-btn"
-                          aria-label={`Edit ${s.storeName}`}
-                          title="Edit store"
-                          onClick={() =>
-                            nav(`/stores/${encodeURIComponent(s.id)}/edit`)
-                          }
-                        >
-                          <i className="bi bi-pencil" />
-                        </button>
-
-                        <button type="button" className="action-btn text-danger"
-                          aria-label={`Delete ${s.storeName}`}
-                          title="Delete store"
-                          onClick={() => {
-                            setDeleteError("");
-                            setDeleteTarget(s);
-                          }}
-                        >
-                          <i className="bi bi-trash3" />
-                        </button>
-                      </div>
+                      <ListActions
+                         onView={() => openView(s)}
+                         onEdit={() =>
+                             nav(`/stores/${encodeURIComponent(s.id)}/edit`)}
+                         onActivate={String(s.status).toUpperCase() === "INACTIVE" ? async () => {
+                           const rowId = String(s.id);
+                           const key = s.storeCode || s.code || s.id;
+                           setActivatingStoreId(rowId);
+                           setStatusActionError("");
+                           try {
+                             await activateStore(key, s);
+                             const refreshed = await listStores();
+                             setStores(refreshed.stores);
+                             const updated = refreshed.stores.find((store) =>
+                               String(store.id) === rowId ||
+                               String(store.storeCode || store.code || "") === String(key),
+                             );
+                             if (String(updated?.status).toUpperCase() !== "ACTIVE") {
+                               throw new Error("The API did not confirm that the store is active. Please try again or check the store API.");
+                             }
+                           } catch (failure) {
+                             setStatusActionError(failure.message || "Unable to activate store.");
+                           } finally {
+                             setActivatingStoreId("");
+                           }
+                         } : undefined}
+                         activateDisabled={Boolean(activatingStoreId)}
+                         onDelete={String(s.status).toUpperCase() === "INACTIVE" ? undefined : () => {
+                             setDeleteError("");
+                             setDeleteTarget(s); }}
+                         viewLabel={`View ${s.storeName}`}
+                         editLabel={`Edit ${s.storeName}`}
+                         deleteLabel={`Deactivate ${s.storeName}`}
+                         activateLabel={activatingStoreId === String(s.id) ? "Activating…" : `Activate ${s.storeName}`}
+                           />
                     </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan={6}>No stores found.</td>
+                  <td
+                    colSpan="10"
+                    style={{
+                      textAlign: "center",
+                      padding: "40px",
+                    }}
+                  >No stores found.</td>
                 </tr>
               )}
             </tbody>
           </table>
         </div>
 
-        <div className="stores-pagination">
-          <div className="pagination-info">
-            Showing <strong>{showingFrom}</strong> to{" "}
-            <strong>{showingTo}</strong> of <strong>{rows.length}</strong>{" "}
-            stores
-          </div>
+    <Pagination
+  currentPage={safeCurrentPage}
+  totalPages={totalPages}
+  totalItems={rows.length}
+  pageSize={pageSize}
+  onPageChange={setCurrentPage}
+  onPageSizeChange={handlePageSizeChange}
+  itemLabel="stores"
+  showWhenEmpty={true}
+/>
 
-          <div className="pagination-controls">
-            <button
-              type="button"
-              className="pagination-arrow"
-              aria-label="Previous page"
-              disabled={safeCurrentPage === 1}
-              onClick={() => goToPage(safeCurrentPage - 1)}
-            >
-              <i className="bi bi-chevron-left" />
-            </button>
-
-            {Array.from({ length: totalPages }, (_, index) => index + 1).map(
-              (page) => (
-                <button
-                  type="button"
-                  key={page}
-                  className={`pagination-page ${
-                    page === safeCurrentPage ? "active" : ""
-                  }`}
-                  onClick={() => goToPage(page)}
-                >
-                  {page}
-                </button>
-              ),
-            )}
-
-            <button
-              type="button"
-              className="pagination-arrow"
-              aria-label="Next page"
-              disabled={safeCurrentPage === totalPages}
-              onClick={() => goToPage(safeCurrentPage + 1)}
-            >
-              <i className="bi bi-chevron-right" />
-            </button>
-          </div>
-        </div>
       </div>
 
-      {deleteTarget && (
-        <div
-          className="pch-delete-overlay"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="delete-store-title"
-          onClick={(event) => {
-            if (event.target === event.currentTarget) {
-              setDeleteTarget(null);
-            }
-          }}
-        >
-          <div className="pch-delete-modal">
-            <div className="pch-delete-icon" aria-hidden="true">
-              <i className="bi bi-trash3" />
-            </div>
+            <DeleteConfirmationDialog
+        isOpen={Boolean(deleteTarget)}
+        title="Deactivate Store?"
+        message={`Are you sure you want to deactivate ${
+          deleteTarget?.storeName ||
+          deleteTarget?.name ||
+          "this store"
+        }?`}
+        cancelLabel="Cancel"
+        confirmLabel="Deactivate"
+        busyLabel="Deactivating..."
+        busy={deleting}
+        error={deleteError}
+        iconClassName="bi bi-trash3"
+        onCancel={() => {
+          if (!deleting) {
+            setDeleteTarget(null);
+            setDeleteError("");
+          }
+        }}
+        onConfirm={async () => {
+          if (!deleteTarget || deleting) return;
 
-            <h2 id="delete-store-title">Delete Store?</h2>
+          setDeleting(true);
+          setDeleteError("");
 
-            <p className="pch-delete-message">
-              Are you sure you want to delete{" "}
-              <strong>
-                {deleteTarget.storeName || deleteTarget.name || "this store"}
-              </strong>
-              ?
-            </p>
+          try {
+            await deactivateStore(
+              deleteTarget.storeCode || deleteTarget.id,
+              deleteTarget
+            );
 
-            <p className="pch-delete-warning">This action cannot be undone.</p>
+            setStores((current) =>
+              current.map((store) =>
+                String(store.id) === String(deleteTarget.id)
+                  ? { ...store, status: "INACTIVE" }
+                  : store
+              )
+            );
 
-            <div className="pch-delete-actions">
-              <button
-                type="button"
-                className="pch-delete-cancel"
-                onClick={() => setDeleteTarget(null)}
-              >
-                Cancel
-              </button>
-
-              <button
-                type="button"
-                className="pch-delete-confirm"
-                onClick={() => {
-                  const deletedId = String(deleteTarget.id);
-
-                  setStores((currentStores) =>
-                    currentStores.filter(
-                      (store) => String(store.id) !== deletedId,
-                    ),
-                  );
-
-                  setDeleteTarget(null);
-                }}
-              >
-                Delete Store
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+            setDeleteTarget(null);
+          } catch (failure) {
+            setDeleteError(
+              failure.message || "Unable to deactivate store."
+            );
+          } finally {
+            setDeleting(false);
+          }
+        }}
+      />
     </div>
   );
 }

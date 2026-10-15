@@ -28,8 +28,7 @@
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-
-  margin-bottom: 18px;
+  margin-bottom: 12px;
 }
 
 .feature-permissions-page .fp-title-wrap {
@@ -38,7 +37,7 @@
 }
 
 .feature-permissions-page .fp-title-wrap h1 {
-  margin: 0 0 7px;
+  margin-bottom: 5px;
   color: #10264d;
   font-size: 20px;
   line-height: 1.2;
@@ -77,7 +76,7 @@
 
 .feature-permissions-page .fp-info-card {
   padding: 22px 28px 30px;
-  margin-bottom: 18px;
+  margin-bottom: 20px;
 }
 
 
@@ -106,8 +105,8 @@
   display: grid;
   place-items: center;
   border-radius: 50%;
-  background: #eef3ff;
-  color: #5b50e9;
+  background: #eaeaff;
+  color: #5143bc;
   font-size: 21px;
 }
 
@@ -418,9 +417,7 @@
 .feature-permissions-page .fp-field textarea:disabled,
 .feature-permissions-page .fp-select-wrap select:disabled {
   cursor: not-allowed;
-
   background: #f5f7fa;
-
   color: #8a98ad;
 }
 
@@ -546,7 +543,9 @@
    ========================================================= */
 
 .feature-permissions-page .fp-list-card {
+  width: 100%;
   padding: 24px 28px 20px;
+  box-sizing: border-box;
 }
 
 
@@ -556,14 +555,11 @@
 
 .feature-permissions-page .fp-list-toolbar {
   width: 100%;
-
   display: flex;
   align-items: center;
   justify-content: space-between;
-
   gap: 20px;
-
-  margin-bottom: 20px;
+  margin: 0 0 20px;
 }
 
 .feature-permissions-page .fp-list-toolbar h2 {
@@ -586,8 +582,8 @@
 .feature-permissions-page .fp-list-filters {
   display: flex;
   align-items: center;
-
   gap: 10px;
+  min-width: 0;
 }
 
 
@@ -596,9 +592,8 @@
    ========================================================= */
 
 .feature-permissions-page .fp-search {
-  position: relative;
-
-  width: 286dpx;
+  width: 286px;
+  min-width: 0;
   height: 38px;
 }
 
@@ -646,15 +641,9 @@
    ========================================================= */
 
 .feature-permissions-page .fp-status-filter {
-  position: relative;
-
-  width: 155px;
+ width: 155px;
+  min-width: 155px;
   height: 38px;
-
-  border: 1px solid #dce3ed;
-  border-radius: 7px;
-
-  background: #ffffff;
 }
 
 .feature-permissions-page .fp-status-filter select {
@@ -698,16 +687,6 @@
   width: 38px;
   min-width: 38px;
   height: 38px;
-  padding: 0;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid #dce3ed;
-  border-radius: 7px;
-  background: #ffffff;
-  color: #315a8c;
-  cursor: pointer;
-  transition: background 0.18s ease, border-color 0.18s ease;
 }
 
 .feature-permissions-page .fp-reset-btn:hover {
@@ -727,14 +706,13 @@
 
 .feature-permissions-page .fp-table-wrap {
   width: 100%;
-
+  min-width: 0;
+  margin: 0;
+  border: 1px solid #dfe5ef;
+  border-radius: 8px;
+  box-sizing: border-box;
   overflow-x: auto;
   overflow-y: visible;
-
-  border: 1px solid #e3e9f2;
-  border-radius: 9px;
-
-  background: #ffffff;
 }
 
 
@@ -744,13 +722,13 @@
 
 .feature-permissions-page .fp-table {
   width: 100%;
-  min-width: 1080px;
-
-  border-collapse: collapse;
+  min-width: 100%;
+  max-width: 100%;
   table-layout: fixed;
-
-  background: #ffffff;
+  border-collapse: collapse;
+  border-spacing: 0;
 }
+
 
 
 /* =========================================================
@@ -833,7 +811,7 @@
    ========================================================= */
 
 .feature-permissions-page .fp-table td {
-  height: 56px;
+  height: 52px;
   padding: 0 10px;
   border-bottom: 1px solid #edf1f6;
   color: #34435e;
@@ -843,6 +821,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  cursor: pointer;
 }
 
 .feature-permissions-page .fp-date-cell {
@@ -883,16 +862,11 @@
 
 .feature-permissions-page .fp-description-cell {
   color: #64748b !important;
-
   width: auto;
   max-width: none;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.feature-permissions-page .fp-table col.fp-col-description {
-  width: 16%;
 }
 
 
@@ -986,28 +960,18 @@
    ========================================================= */
 
 .feature-permissions-page .fp-row-actions button {
-  width: 34px;
-  height: 34px;
-
+  width: 35px;
+  height: 35px;
   padding: 0;
-
-  display: inline-flex;
+  display: grid;
   align-items: center;
   justify-content: center;
-
-  border-radius: 9px;
-
-  background: #f8faff;
-
+  border-radius: 7px;
+  background: #fcfdff;
+  border: 1px solid #dce9f5;
   font-size: 15px;
-
   cursor: pointer;
-
-  transition:
-    background 0.18s ease,
-    border-color 0.18s ease,
-    color 0.18s ease,
-    transform 0.18s ease;
+  color: #5367f0;
 }
 
 
@@ -1035,18 +999,12 @@
    ========================================================= */
 
 .feature-permissions-page .fp-row-actions .delete {
-  border: 1px solid #ffd0d5;
-
-  background: #fff6f7;
-  color: #ff2738;
+  color: #d9485f;
 }
 
 .feature-permissions-page .fp-row-actions .delete:hover {
-  border-color: #e9c2c5;
-
-  background: #fff0f2;
-
-  color: #e21f31;
+  border-color: #ffd8e1 !important;
+  background: #fff0f3 !important;
 }
 
 .feature-permissions-page .fp-row-actions button:active {
@@ -1059,15 +1017,14 @@
    ========================================================= */
 
 .feature-permissions-page .fp-list-footer {
-  width: 100%;
-
+ width: 100%;
   display: flex;
   align-items: center;
   justify-content: space-between;
-
   gap: 20px;
-
-  padding-top: 18px;
+  margin: 0;
+  padding: 18px 0 0;
+  box-sizing: border-box;
 }
 
 .feature-permissions-page .fp-list-footer > span {
@@ -1161,8 +1118,7 @@
 
   .feature-permissions-page .fp-info-card,
   .feature-permissions-page .fp-list-card {
-    padding-left: 22px;
-    padding-right: 22px;
+    padding: 22px;
   }
 
 
@@ -1193,6 +1149,7 @@
   .feature-permissions-page .fp-list-toolbar {
     align-items: flex-start;
     flex-direction: column;
+    gap: 16px;
   }
 
   .feature-permissions-page .fp-list-filters {
@@ -1342,24 +1299,27 @@
   /* Filters */
 
   .feature-permissions-page .fp-list-filters {
-    flex-direction: column;
-
+   flex-direction: column;
     align-items: stretch;
+    gap: 10px;
+  
   }
 
   .feature-permissions-page .fp-search,
   .feature-permissions-page .fp-status-filter,
   .feature-permissions-page .fp-reset-btn {
     width: 100%;
+    min-width: 0;
+    flex: 0 0 auto;
   }
 
 
   /* Footer */
 
   .feature-permissions-page .fp-list-footer {
-    flex-direction: column;
-
+   flex-direction: column;
     align-items: flex-start;
+    gap: 12px;
   }
 
 }
@@ -1378,8 +1338,7 @@
 
   .feature-permissions-page .fp-info-card,
   .feature-permissions-page .fp-list-card {
-    padding-left: 14px;
-    padding-right: 14px;
+    padding: 14px;
   }
 
   .feature-permissions-page .fp-title-wrap h1 {
@@ -1429,14 +1388,13 @@
 /* Description: max 2 lines, full preview on hover only when truncated */
 .feature-permissions-page .fp-description-cell {
   position: relative;
-  width: 240px;
   max-width: none;
   overflow: visible !important;
   text-overflow: clip;
   white-space: normal !important;
 }
 
-.feature-permissions-page .fp-description-tooltip-wrap {
+.feature-permissions-page .fp-description-content {
   position: relative;
   width: 240px;
 }
@@ -1453,40 +1411,6 @@
   overflow-wrap: anywhere;
 }
 
-.feature-permissions-page .fp-description-tooltip {
-  position: absolute;
-  z-index: 40;
-  top: calc(100% + 7px);
-  left: 0;
-  width: max-content;
-  min-width: 220px;
-  max-width: 220px;
-  padding: 10px 12px;
-  border: 1px solid #dce4ef;
-  border-radius: 8px;
-  background: #ffffff;
-  color: #34435e;
-  box-shadow: 0 8px 24px rgba(16, 38, 77, 0.14);
-  font-size: 12px;
-  line-height: 18px;
-  font-weight: 400;
-  white-space: normal;
-  overflow-wrap: anywhere;
-  visibility: hidden;
-  opacity: 0;
-  pointer-events: none;
-  transform: translateY(-2px);
-  transition: opacity 0.15s ease, transform 0.15s ease, visibility 0.15s ease;
-}
-
-.feature-permissions-page
-  .fp-description-tooltip-wrap:hover
-  .fp-description-tooltip {
-  visibility: visible;
-  opacity: 1;
-  transform: translateY(0);
-}
-
 /* Keep timestamp readable on one line */
 .feature-permissions-page .fp-date-cell {
   white-space: nowrap;
@@ -1494,6 +1418,7 @@
 
 /* Actions exactly follow the Features screen visual pattern */
 .feature-permissions-page .fp-row-actions.feature-row-actions {
+  width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1501,9 +1426,9 @@
 }
 
 .feature-permissions-page .fp-row-actions.feature-row-actions button {
-  width: 32px;
-  height: 32px;
-  min-width: 32px;
+  width: 35px;
+  height: 35px;
+  min-width: 35px;
   padding: 0;
   display: inline-flex;
   align-items: center;
@@ -1557,48 +1482,16 @@
   table-layout: fixed !important;
 }
 
-/* Compact, balanced desktop distribution — totals 100% */
-.feature-permissions-page .fp-table col.fp-col-key {
-  width: 11% !important;
-}
-
-.feature-permissions-page .fp-table col.fp-col-name {
-  width: 12% !important;
-}
-
-.feature-permissions-page .fp-table col.fp-col-feature {
-  width: 12% !important;
-}
-
-.feature-permissions-page .fp-table col.fp-col-description {
-  width: 12% !important;
-}
-
-.feature-permissions-page .fp-table col.fp-col-status {
-  width: 9% !important;
-}
-
-.feature-permissions-page .fp-table col.fp-col-created {
-  width: 14% !important;
-}
-
-.feature-permissions-page .fp-table col.fp-col-updated {
-  width: 14% !important;
-}
-
-.feature-permissions-page .fp-table col.fp-col-actions {
-  width: 12% !important;
-}
 
 .feature-permissions-page .fp-table th,
 .feature-permissions-page .fp-table td {
-  padding-left: 8px !important;
-  padding-right: 8px !important;
+  padding: 10px 14px;
+  box-sizing: border-box;
 }
 
 /* Description should use only its actual compact column */
 .feature-permissions-page .fp-description-cell {
-  width: auto !important;
+  width: 28% !important;
   max-width: none !important;
 }
 
@@ -1606,6 +1499,8 @@
 .feature-permissions-page .fp-table th:nth-child(5),
 .feature-permissions-page .fp-table td:nth-child(5) {
   padding-left: 6px !important;
+   width: 15%;
+
 }
 
 /* Give timestamps the room that was previously wasted in Description */
@@ -1643,58 +1538,21 @@
   border-collapse: collapse !important;
 }
 
-/* Fixed pixel widths avoid headers/cells colliding.
-   Total width = 1450px */
-.feature-permissions-page .fp-table col.fp-col-key {
-  width: 170px !important;
-}
 
-.feature-permissions-page .fp-table col.fp-col-name {
-  width: 190px !important;
-}
-
-.feature-permissions-page .fp-table col.fp-col-feature {
-  width: 170px !important;
-}
-
-.feature-permissions-page .fp-table col.fp-col-description {
-  width: 200px !important;
-}
-
-.feature-permissions-page .fp-table col.fp-col-status {
-  width: 130px !important;
-}
-
-.feature-permissions-page .fp-table col.fp-col-created {
-  width: 190px !important;
-}
-
-.feature-permissions-page .fp-table col.fp-col-updated {
-  width: 190px !important;
-}
-
-.feature-permissions-page .fp-table col.fp-col-actions {
-  width: 150px !important;
-}
-
-.feature-permissions-page .fp-table th,
-.feature-permissions-page .fp-table td {
-  padding-left: 14px !important;
-  padding-right: 14px !important;
-  box-sizing: border-box !important;
-}
 
 .feature-permissions-page .fp-table th {
-  height: 48px !important;
-  color: #394052 !important;
-  font-size: 13px !important;
+  height: 44px !important;
+  color: #102d59 !important;
+  font-size: 12px !important;
   line-height: 18px !important;
   font-weight: 600 !important;
-  white-space: nowrap !important;
+
 }
 
 .feature-permissions-page .fp-table td {
-  height: 58px !important;
+  height: 52px !important;
+  padding-top: 10px !important;
+  padding-bottom: 10px !important;
   font-size: 13px !important;
   line-height: 18px !important;
 }
@@ -1711,8 +1569,6 @@
 
 /* Description stays 2 lines and uses its dedicated 260px column */
 .feature-permissions-page .fp-description-cell {
-  width: 240px ;
-  max-width: none !important;
   white-space: normal !important;
   overflow: visible !important;
 }
@@ -1723,6 +1579,7 @@
   padding-left: 14px !important;
   padding-right: 14px !important;
   text-align: center !important;
+  
 }
 
 .feature-permissions-page .fp-row-actions.feature-row-actions {
@@ -2169,37 +2026,6 @@ body .feature-permissions-page .fp-delete-modal-actions .fp-delete-confirm-btn i
    Actions         = 120px
    ========================================================= */
 
-.feature-permissions-page .fp-table col.fp-col-key {
-  width: 170px !important;
-}
-
-.feature-permissions-page .fp-table col.fp-col-name {
-  width: 180px !important;
-}
-
-.feature-permissions-page .fp-table col.fp-col-feature {
-  width: 140px !important;
-}
-
-.feature-permissions-page .fp-table col.fp-col-description {
-  width: 200px !important;
-}
-
-.feature-permissions-page .fp-table col.fp-col-status {
-  width: 120px !important;
-}
-
-.feature-permissions-page .fp-table col.fp-col-created {
-  width: 110px !important;
-}
-
-.feature-permissions-page .fp-table col.fp-col-updated {
-  width: 110px !important;
-}
-
-.feature-permissions-page .fp-table col.fp-col-actions {
-  width: 120px !important;
-}
 
 
 /* =========================================================
@@ -2211,15 +2037,15 @@ body .feature-permissions-page .fp-delete-modal-actions .fp-delete-confirm-btn i
 }
 
 .feature-permissions-page .fp-table th {
-  height: 48px !important;
+  height: 44px !important;
   padding: 0 14px !important;
   border: 0 !important;
   border-bottom: 1px solid #dfe5ef !important;
   background: #f1f3fd !important;
-  color: #394052 !important;
+  color: #102d59 !important;
   text-align: left !important;
   vertical-align: middle !important;
-  font-size: 13px !important;
+  font-size: 12px !important;
   line-height: 18px !important;
   font-weight: 600 !important;
   white-space: nowrap !important;
@@ -2234,9 +2060,9 @@ body .feature-permissions-page .fp-delete-modal-actions .fp-delete-confirm-btn i
    ========================================================= */
 
 .feature-permissions-page .fp-table td {
-  height: 58px !important;
+  height: 52px !important;
 
-  padding: 0 14px !important;
+  padding: 10px 14px !important;
 
   border: 0 !important;
   border-bottom: 1px solid #e4e8ef !important;
@@ -2330,7 +2156,7 @@ body .feature-permissions-page .fp-delete-modal-actions .fp-delete-confirm-btn i
    10. DESCRIPTION WRAPPER
    ========================================================= */
 
-.feature-permissions-page .fp-description-tooltip-wrap {
+.feature-permissions-page .fp-description-content {
   position: relative !important;
 
   width: 100% !important;
@@ -2365,69 +2191,6 @@ body .feature-permissions-page .fp-delete-modal-actions .fp-delete-confirm-btn i
 
   overflow-wrap: anywhere;
   word-break: normal;
-}
-
-
-/* =========================================================
-   12. DESCRIPTION TOOLTIP
-
-   Existing hover preview preserved
-   ========================================================= */
-
-.feature-permissions-page .fp-description-tooltip {
-  position: absolute;
-
-  z-index: 100;
-
-  top: calc(100% + 7px);
-  left: 0;
-
-  width: max-content;
-  min-width: 220px;
-  max-width: 280px;
-
-  padding: 10px 12px;
-
-  border: 1px solid #dce4ef;
-  border-radius: 8px;
-
-  background: #ffffff;
-
-  color: #34435e;
-
-  box-shadow:
-    0 8px 24px rgba(16, 38, 77, 0.14);
-
-  font-size: 12px;
-  line-height: 18px;
-  font-weight: 400;
-
-  white-space: normal;
-
-  overflow-wrap: anywhere;
-
-  visibility: hidden;
-  opacity: 0;
-
-  pointer-events: none;
-
-  transform: translateY(-2px);
-
-  transition:
-    opacity 0.15s ease,
-    transform 0.15s ease,
-    visibility 0.15s ease;
-}
-
-
-.feature-permissions-page
-.fp-description-tooltip-wrap:hover
-.fp-description-tooltip {
-  visibility: visible;
-
-  opacity: 1;
-
-  transform: translateY(0);
 }
 
 
@@ -2526,7 +2289,7 @@ body .feature-permissions-page .fp-delete-modal-actions .fp-delete-confirm-btn i
   width: auto !important;
   min-width: 0 !important;
 
-  height: 58px !important;
+  height: 52px !important;
 
   color: #64748b !important;
 
@@ -2559,10 +2322,10 @@ body .feature-permissions-page .fp-delete-modal-actions .fp-delete-confirm-btn i
    ========================================================= */
 
 .feature-permissions-page .fp-date-value {
-  color: #657a9b !important;
+  color: #10264d !important;
   font-size: 13px !important;
   line-height: 18px !important;
-  font-weight: 600 !important;
+  font-weight: 500 !important;
   white-space: nowrap !important;
 }
 
@@ -2572,7 +2335,7 @@ body .feature-permissions-page .fp-delete-modal-actions .fp-delete-confirm-btn i
    ========================================================= */
 
 .feature-permissions-page .fp-time-value {
-  color: #8795aa !important;
+  color: #7290ba !important;
   font-size: 11px !important;
   line-height: 16px !important;
   font-weight: 400 !important;
@@ -2590,7 +2353,10 @@ body .feature-permissions-page .fp-delete-modal-actions .fp-delete-confirm-btn i
   padding-right: 14px !important;
   text-align: center !important;
   white-space: nowrap !important;
+  width: auto !important;
+  min-width: 0 !important;
 }
+
 
 
 /* =========================================================
@@ -2712,20 +2478,10 @@ button i {
    ========================================================= */
 
 .feature-permissions-page .fp-sort-filter {
-  position: relative;
-
   width: 140px;
   min-width: 140px;
   height: 38px;
-
   flex: 0 0 140px;
-
-  border: 1px solid #dce3ed;
-  border-radius: 7px;
-
-  background: #ffffff;
-
-  overflow: hidden;
 }
 
 .feature-permissions-page .fp-sort-filter select {
@@ -2734,12 +2490,12 @@ button i {
 
   padding: 0 36px 0 13px;
 
-  border: none !important;
-  outline: none !important;
+  border: none;
+  outline: none;
 
   border-radius: 7px;
 
-  background: transparent !important;
+  background: transparent;
 
   color: #34435e;
 
@@ -2749,11 +2505,11 @@ button i {
 
   cursor: pointer;
 
-  appearance: none !important;
-  -webkit-appearance: none !important;
-  -moz-appearance: none !important;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
 
-  box-shadow: none !important;
+  box-shadow: none;
 }
 
 
@@ -3060,4 +2816,417 @@ body .feature-permissions-page
 /* Keep the same neutral chevron treatment used by the Features form. */
 .feature-permissions-page .fp-form-grid .fp-select-wrap:has(select.fp-form-status-select) > i {
   color: #6c7f9d;
+}
+
+
+
+/* =========================================================
+   FEATURE PERMISSIONS — SINGLE-LINE DESCRIPTION
+   Compatible with the shared TableOverflowTooltip component
+========================================================= */
+
+.feature-permissions-page .fp-table td.fp-description-cell {
+  min-width: 0 !important;
+  overflow: hidden !important;
+  white-space: nowrap !important;
+  text-overflow: ellipsis !important;
+  vertical-align: middle;
+}
+
+.feature-permissions-page .fp-description-content {
+  display: block !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  height: 18px !important;
+  overflow: hidden !important;
+  white-space: nowrap !important;
+}
+
+.feature-permissions-page .fp-description-clamp {
+  display: block !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  height: 18px !important;
+  max-height: 18px !important;
+  overflow: hidden !important;
+  white-space: nowrap !important;
+  text-overflow: ellipsis !important;
+  overflow-wrap: normal !important;
+  word-break: normal !important;
+}
+
+
+/* =========================================
+   FEATURE PERMISSIONS OVERVIEW
+========================================= */
+
+.fpo-page {
+  flex: 1;
+  min-height: calc(100vh - 72px);
+  padding: 18px 20px 30px;
+  color: #10264d;
+  background: #f6f7fb;
+}
+
+/* Header with back arrow */
+
+.fpo-top {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.fpo-back-button {
+  display: grid;
+  width: 40px;
+  height: 40px;
+  place-items: center;
+  flex: 0 0 auto;
+  padding: 0;
+  border: 1px solid #dce8f5;
+  border-radius: 8px;
+  color: #684ee3;
+  background: #fff;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.fpo-back-button:hover {
+  border-color: #a9baff;
+  background: #f7f6ff;
+}
+
+.fpo-heading {
+  margin: 1px 0 0;
+  min-width: 0;
+}
+
+.fpo-title-line {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.fpo-title-line h1 {
+  margin: 0;
+  color: #10254a;
+  font-size: 25px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.fpo-heading > p {
+  margin: 5px 0 0;
+  color: #5676aa;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* Tabs */
+
+.fpo-tabs {
+  display: flex;
+  gap: 37px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid #d9e7f6;
+}
+
+.fpo-tabs button {
+  position: relative;
+  height: 32px;
+  padding: 0 0 9px;
+  border: 0;
+  color: #5878ab;
+  background: transparent;
+  cursor: default;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.fpo-tabs button.active {
+  color: #684ee3;
+  font-weight: 700;
+}
+
+.fpo-tabs button.active::after {
+  position: absolute;
+  right: 0;
+  bottom: -1px;
+  left: 0;
+  display: block;
+  height: 2px;
+  border-radius: 2px;
+  content: "";
+  background: #684ee3;
+}
+
+/* Details card */
+
+.fpo-details-card {
+  padding: 17px 16px;
+  margin-bottom: 18px;
+  border: 1px solid #e0eaf5;
+  border-radius: 9px;
+  background: #fff;
+  box-shadow: 0 3px 10px rgba(39, 85, 148, 0.03);
+}
+
+.fpo-card-heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.fpo-card-icon {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  flex: 0 0 36px;
+  border-radius: 50%;
+  color: #684ee3;
+  background: #eff0ff;
+  font-size: 18px;
+}
+
+.fpo-card-heading h2 {
+  margin: 0 0 3px;
+  color: #10254a;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.fpo-card-heading p {
+  margin: 0;
+  color: #5b79ad;
+  font-size: 12px;
+}
+
+/* Fields */
+
+.fpo-details-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+  margin-bottom: 18px;
+}
+
+.fpo-field {
+  display: grid;
+  min-width: 0;
+  gap: 6px;
+  color: #23426e;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+
+.fpo-label {
+  color: #23426e;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.fpo-field input,
+.fpo-field select,
+.fpo-field textarea {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  border: 1px solid #d8e6f4;
+  border-radius: 7px;
+  outline: 0;
+  color: #173861;
+  background: #fff;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 400;
+}
+
+.fpo-field input,
+.fpo-field select {
+  height: 40px;
+  padding: 0 10px;
+}
+
+.fpo-field textarea {
+  height: 40px;
+  min-height: 40px;
+  padding: 10px 12px;
+  line-height: 1.5;
+  resize: none;
+  text-align: left;
+  vertical-align: middle;
+}
+
+/* Read-only fields */
+
+.fpo-field input[readonly],
+.fpo-field textarea[readonly] {
+  color: #475569;
+  background: #f8fafc;
+  cursor: default;
+}
+
+.fpo-field input:focus,
+.fpo-field textarea:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+/* Audit card */
+
+.fpo-audit-card .fpo-details-grid {
+  margin-bottom: 0;
+}
+
+/* Loading and error states */
+
+.fpo-message {
+  margin: 16px 0;
+  color: #5676aa;
+  font-size: 13px;
+}
+
+.fpo-error {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 16px 0;
+  padding: 12px;
+  border: 1px solid #ffd5dc;
+  border-radius: 8px;
+  color: #ed304d;
+  background: #fff;
+  font-size: 12px;
+}
+
+.fpo-error span {
+  flex: 1;
+}
+
+.fpo-error button {
+  padding: 7px 12px;
+  border: 1px solid #dce8f4;
+  border-radius: 7px;
+  color: #25466f;
+  background: #fff;
+  font-family: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+/* Responsive */
+
+@media (max-width: 700px) {
+  .fpo-page {
+    padding: 18px 16px;
+  }
+
+  .fpo-top {
+    gap: 12px;
+  }
+
+  .fpo-title-line h1 {
+    font-size: 22px;
+  }
+
+  .fpo-details-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .fpo-field-full {
+    grid-column: auto;
+  }
+
+  .fpo-tabs {
+    gap: 20px;
+    overflow-x: auto;
+  }
+
+  .fpo-footer {
+    justify-content: stretch;
+  }
+
+  .fpo-back-action {
+    flex: 1;
+  }
+}
+
+
+/* =========================================================
+   FINAL RESPONSIVE TABLE WIDTH FIX
+   Keep the Actions column inside the full available table width,
+   including when browser zoom is reduced.
+   ========================================================= */
+.feature-permissions-page .fp-table-wrap {
+  width: 100% !important;
+  min-width: 0 !important;
+  box-sizing: border-box !important;
+  overflow-x: auto !important;
+}
+
+.feature-permissions-page .fp-table {
+  width: 100% !important;
+  min-width: 100% !important;
+  max-width: 100% !important;
+  table-layout: fixed !important;
+}
+
+.feature-permissions-page .fp-table col.fp-col-key {
+  width: 12% !important;
+}
+.feature-permissions-page .fp-table col.fp-col-name {
+  width: 13% !important;
+}
+.feature-permissions-page .fp-table col.fp-col-feature {
+  width: 11% !important;
+}
+.feature-permissions-page .fp-table col.fp-col-description {
+  width: 25% !important;
+}
+.feature-permissions-page .fp-table col.fp-col-status {
+  width: 9% !important;
+}
+.feature-permissions-page .fp-table col.fp-col-created {
+  width: 10% !important;
+}
+.feature-permissions-page .fp-table col.fp-col-updated {
+  width: 10% !important;
+}
+.feature-permissions-page .fp-table col.fp-col-actions {
+  width: 10% !important;
+}
+
+
+
+.feature-permissions-page .fp-row-actions.feature-row-actions {
+  width: 100% !important;
+  min-width: 0 !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  gap: 8px !important;
+  box-sizing: border-box !important;
+}
+
+
+.feature-permissions-page .fp-list-footer {
+  width: 100% !important;
+  min-width: 0 !important;
+  box-sizing: border-box !important;
+}
+
+@media (max-width: 1100px) {
+  .feature-permissions-page .fp-table {
+    min-width: 1050px !important;
+    max-width: none !important;
+  }
 }

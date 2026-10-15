@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import Pagination from "../components/Pagination";
 import "../styles/vendor-payments.css";
 
 const initialVendors = [
@@ -97,13 +98,16 @@ const initialPayments = [
   },
 ];
 
-export default function VendorPayments() {
-  const [view, setView] = useState("vendors");
+export default function VendorPayments({ viewMode } = {}) {
+  const [selectedView, setView] = useState("vendors");
+  const view = viewMode || selectedView;
 
   const [vendors, setVendors] = useState(initialVendors);
   const [payments, setPayments] = useState(initialPayments);
 
   const [search, setSearch] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   const [showVendorForm, setShowVendorForm] = useState(false);
   const [showPaymentForm, setShowPaymentForm] = useState(false);
@@ -136,6 +140,8 @@ export default function VendorPayments() {
         .includes(term)
     );
   }, [payments, search]);
+  const totalPaymentPages = Math.max(1, Math.ceil(filteredPayments.length / pageSize));
+  const paginatedPayments = filteredPayments.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
   // Add vendor
   const addVendor = (event) => {
@@ -172,6 +178,7 @@ export default function VendorPayments() {
       },
       ...current,
     ]);
+    setCurrentPage(1);
 
     setPayment({
       vendor: "",
@@ -190,31 +197,31 @@ export default function VendorPayments() {
       <div className="vendor-title-row">
 
         <h2>
-          {view === "vendors" ? "Vendors" : "Vendor Payments"}
+          {view === "vendors" ? "Vendors" : viewMode ? "Vendor History" : "Vendor Payments"}
         </h2>
 
         <div className="vendor-actions">
 
-          {view === "payments" && (
+          {!viewMode && view === "payments" && (
             <button onClick={() => setView("vendors")}>
               View Vendors
             </button>
           )}
 
-          {view === "vendors" && (
+          {!viewMode && view === "vendors" && (
             <button onClick={() => setView("payments")}>
               View Vendor Payments
             </button>
           )}
 
           {view === "vendors" && (
-            <button onClick={() => setShowVendorForm(true)}>
+            <button className="vendor-primary-action" onClick={() => setShowVendorForm(true)}>
               Add New Vendor
             </button>
           )}
 
           {view === "payments" && (
-            <button onClick={() => setShowPaymentForm(true)}>
+            <button className="vendor-primary-action" onClick={() => setShowPaymentForm(true)}>
               Add New Vendor Payment
             </button>
           )}
@@ -250,7 +257,7 @@ export default function VendorPayments() {
         <input
           type="text"
           value={search}
-          onChange={(event) => setSearch(event.target.value)}
+          onChange={(event) => { setSearch(event.target.value); setCurrentPage(1); }}
           placeholder={
             view === "vendors"
               ? "Search Vendors"
@@ -305,22 +312,19 @@ export default function VendorPayments() {
 
           <thead>
             <tr>
-              <th>□</th>
-              <th>Title ↕</th>
+              <th>Title</th>
               <th>Vendor Name</th>
               <th>Payment Purpose</th>
               <th>Payment Method</th>
               <th>Payment Amount</th>
-              <th>Date ↕</th>
+              <th>Date</th>
             </tr>
           </thead>
 
           <tbody>
 
-            {filteredPayments.map((payment) => (
+            {paginatedPayments.map((payment) => (
               <tr key={payment.id}>
-
-                <td>□</td>
 
                 <td>
                   <strong>{payment.title}</strong>
@@ -348,6 +352,19 @@ export default function VendorPayments() {
         </table>
       )}
 
+      {view === "payments" && filteredPayments.length > 0 && (
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPaymentPages}
+          totalItems={filteredPayments.length}
+          pageSize={pageSize}
+          onPageChange={setCurrentPage}
+          onPageSizeChange={(size) => { setPageSize(size); setCurrentPage(1); }}
+          itemLabel="payments"
+          pageSizeOptions={[10, 25, 50, 100]}
+        />
+      )}
+
       {/* Add Vendor Modal */}
       {showVendorForm && (
         <div className="vendor-modal">
@@ -373,13 +390,14 @@ export default function VendorPayments() {
             <div>
 
               <button
+                className="vendor-secondary-action"
                 type="button"
                 onClick={() => setShowVendorForm(false)}
               >
                 Cancel
               </button>
 
-              <button type="submit">
+              <button className="vendor-primary-action" type="submit">
                 Add Vendor
               </button>
 
@@ -484,13 +502,14 @@ export default function VendorPayments() {
             <div>
 
               <button
+                className="vendor-secondary-action"
                 type="button"
                 onClick={() => setShowPaymentForm(false)}
               >
                 Cancel
               </button>
 
-              <button type="submit">
+              <button className="vendor-primary-action" type="submit">
                 Save Payment
               </button>
 
