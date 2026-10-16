@@ -872,7 +872,7 @@ export default function StoreConfiguration() {
               ) : section === "shifts" ? (
 
                 <StoreShifts
-                  merchantId={merchantId}
+                  merchantId={merchantId || store?.merchantId || store?.merchant_id || merchant?.id}
                   storeId={storeId}
                   store={store}
                   embedded
