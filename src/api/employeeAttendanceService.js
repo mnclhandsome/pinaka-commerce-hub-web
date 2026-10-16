@@ -159,6 +159,41 @@ export async function getAttendanceRecords({
   ]).map(normalizeAttendance);
 }
 
+// Fetch one attendance record by ID, scoped to the selected merchant and store.
+export async function getAttendanceRecordById({ id, merchantId, storeId } = {}) {
+  if (!id || !merchantId || !storeId) {
+    throw new Error("Attendance, merchant, and store IDs are required.");
+  }
+
+  const params = new URLSearchParams({
+    merchantId: String(merchantId),
+    storeId: String(storeId),
+  });
+  try {
+    const response = await api.get(
+      `${endpoints.attendance}/${encodeURIComponent(String(id))}?${params.toString()}`
+    );
+    const body = asObject(response);
+    const record = body.attendance ?? body.data?.attendance ?? body.data ?? body.record ?? body;
+
+    if (!record || typeof record !== "object" || Array.isArray(record)) {
+      throw new Error("The attendance API returned no record.");
+    }
+
+    return normalizeAttendance(record);
+  } catch (error) {
+    // Older running HUB instances may not yet expose the ID route. Resolve the
+    // selected record from the store-scoped list until that service is restarted.
+    if (error?.status !== 404) throw error;
+
+    const records = await getAttendanceRecords({ merchantId, storeId, page: 1, limit: 100 });
+    const match = records.find((item) => String(item.id) === String(id));
+    if (match) return match;
+
+    throw new Error("This attendance record could not be found for the selected store.");
+  }
+}
+
 // Fetch the authenticated employee's current open attendance.
 export async function getMyOpenAttendance() {
   const response = await api.get(endpoints.attendanceMe);

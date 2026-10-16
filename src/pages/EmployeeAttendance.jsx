@@ -3,6 +3,7 @@ import ListActions from "../components/ListActions";
 import Pagination from "../components/Pagination";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
+  getAttendanceRecordById,
   getAttendanceRecords,
   getStoreEmployees,
 } from "../api/employeeAttendanceService";
@@ -167,14 +168,48 @@ function getErrorMessage(error) {
 ========================================================= */
 
 export function AttendanceDetails({ record, store, onBack }) {
-  const profile = record?.employeeProfile || {};
+  const [detailRecord, setDetailRecord] = useState(record);
+  const [detailError, setDetailError] = useState("");
+  const [detailLoading, setDetailLoading] = useState(true);
 
-  const date = parseDate(record?.date);
+  const merchantId =
+    store?.merchantId || store?.merchant_id || store?.merchant?.id || store?.merchant?.merchantId || "";
+  const storeId = store?.id || store?.storeId || store?.store_id || store?.store?.id || "";
+
+  useEffect(() => {
+    let active = true;
+    setDetailRecord(record);
+    setDetailLoading(true);
+    setDetailError("");
+
+    getAttendanceRecordById({ id: record?.id, merchantId, storeId })
+      .then((freshRecord) => {
+        if (active) setDetailRecord({ ...record, ...freshRecord });
+      })
+      .catch((error) => {
+        if (active) {
+          setDetailRecord(record);
+          setDetailError(getErrorMessage(error));
+        }
+      })
+      .finally(() => {
+        if (active) setDetailLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [record, merchantId, storeId]);
+
+  const selectedRecord = detailRecord || record;
+  const profile = selectedRecord?.employeeProfile || {};
+
+  const date = parseDate(selectedRecord?.date || selectedRecord?.clockIn);
   const weekday = date
     ? date.toLocaleDateString("en-GB", { weekday: "long" })
     : "—";
 
-  const name = record?.name || "Employee";
+  const name = selectedRecord?.name || selectedRecord?.employeeName || "Employee";
 
   const initials = name
     .split(/\s+/)
@@ -183,8 +218,6 @@ export function AttendanceDetails({ record, store, onBack }) {
     .slice(0, 2)
     .join("")
     .toUpperCase();
-
-  const remarks = Array.isArray(record?.remarks) ? record.remarks : [];
 
   return (
     <div className="ea-details-page">
@@ -209,7 +242,7 @@ export function AttendanceDetails({ record, store, onBack }) {
             <dl>
               <div>
                 <dt>Employee Code</dt>
-                <dd>{record?.code || "—"}</dd>
+                <dd>{selectedRecord?.code || selectedRecord?.employeeCode || "—"}</dd>
               </div>
 
               <div>
@@ -219,7 +252,7 @@ export function AttendanceDetails({ record, store, onBack }) {
 
               <div>
                 <dt>Role</dt>
-                <dd>{profile.role || record?.role || "—"}</dd>
+                <dd>{profile.role || selectedRecord?.role || "—"}</dd>
               </div>
             </dl>
           </div>
@@ -234,24 +267,6 @@ export function AttendanceDetails({ record, store, onBack }) {
               <dt>Email</dt>
               <dd>{profile.email || "—"}</dd>
             </div>
-
-            <div>
-              <dt>Employment Type</dt>
-              <dd>{profile.employmentType || "—"}</dd>
-            </div>
-          </dl>
-
-          <dl>
-            <div>
-              <dt>Joining Date</dt>
-              <dd>{displayDate(profile.joiningDate)}</dd>
-            </div>
-
-            <div>
-              <dt>Default Store</dt>
-              <dd>{store?.name || store?.storeName || "—"}</dd>
-            </div>
-
             <div>
               <dt>Status</dt>
               <dd>
@@ -267,8 +282,11 @@ export function AttendanceDetails({ record, store, onBack }) {
       <section className="ea-details-card">
         <h3>
           <i className="bi bi-calendar3" /> Attendance Record –{" "}
-          {displayDate(record?.date)} <span>({weekday})</span>
+          {displayDate(selectedRecord?.date || selectedRecord?.clockIn)} <span>({weekday})</span>
         </h3>
+
+        {detailLoading && <p>Loading this attendance record…</p>}
+        {detailError && <p role="alert">{detailError}</p>}
 
         <div className="ea-table-wrap">
           <table className="ea-detail-table">
@@ -284,57 +302,15 @@ export function AttendanceDetails({ record, store, onBack }) {
             <tbody>
               <tr>
                 <td>1</td>
-                <td>{displayTime(record?.clockIn)}</td>
-                <td>{displayTime(record?.clockOut)}</td>
-                <td>{record?.total || "—"}</td>
+                <td>{displayTime(selectedRecord?.clockIn)}</td>
+                <td>{displayTime(selectedRecord?.clockOut)}</td>
+                <td>{getDuration(selectedRecord?.clockIn, selectedRecord?.clockOut)}</td>
               </tr>
             </tbody>
           </table>
         </div>
       </section>
 
-      <section className="ea-details-card">
-        <h3>
-          Remarks – {displayDate(record?.date)} <span>({weekday})</span>
-        </h3>
-
-        <div className="ea-table-wrap">
-          <table className="ea-detail-table ea-remarks-table">
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>Remark</th>
-                <th>Added On</th>
-              </tr>
-            </thead>
-
-            <tbody>
-              {remarks.length ? (
-                remarks.map((remark, index) => (
-                  <tr key={remark.id || `${remark.text}-${index}`}>
-                    <td>{index + 1}</td>
-                    <td>{remark.text || remark.remark || "—"}</td>
-                    <td>
-                      {displayDate(
-                        remark.addedOn ||
-                          remark.added_on ||
-                          remark.createdAt ||
-                          remark.created_at,
-                      )}
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan={3} className="ea-no-remarks">
-                    No remarks available for this attendance record.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </section>
     </div>
   );
 }
@@ -424,12 +400,17 @@ export default function EmployeeAttendance({
 
         const employeesByCode = new Map(
           employeeList
-            .filter((item) => item.code)
-            .map((item) => [String(item.code), item]),
+            .filter((item) => item.employeeCode || item.employee_code || item.code)
+            .map((item) => [
+              String(item.employeeCode || item.employee_code || item.code),
+              item,
+            ]),
         );
 
         const normalizedRecords = attendanceList.map((item, index) => {
-          const code = String(item.code || "");
+          const code = String(
+            item.employeeCode || item.employee_code || item.code || "",
+          );
           const profile = employeesByCode.get(code) || null;
           const date = getRecordDate(item);
 
@@ -439,8 +420,13 @@ export default function EmployeeAttendance({
               item.id ||
               `${code}-${item.clockIn || date || "attendance"}-${index}`,
             code,
-            name: profile?.name || item.name || "Employee",
-            role: profile?.role || item.role || "",
+            name:
+              profile?.name ||
+              item.employeeName ||
+              item.employee_name ||
+              item.name ||
+              "Employee",
+            role: profile?.role || profile?.roleName || item.role || "",
             date,
             clockIn: item.clockIn || null,
             clockOut: item.clockOut || null,
