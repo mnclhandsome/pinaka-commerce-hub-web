@@ -24,6 +24,8 @@ export const endpoints = {
     `/stores/${encodeURIComponent(storeId)}/pos/cash-registers`,
   storeSafeDrop: (storeId) =>
     `/stores/${encodeURIComponent(storeId)}/pos/safe-drop`,
+  storeSafeDrops: (storeId) =>
+    `/connector/api/v1/stores/${encodeURIComponent(storeId)}/pos/safe-drops/get-all-safe-drops`,
   storeCardPayments: (storeId) =>
     `/stores/${encodeURIComponent(storeId)}/pos/card-payments`,
   storeTerminalMappings: (storeId) =>
