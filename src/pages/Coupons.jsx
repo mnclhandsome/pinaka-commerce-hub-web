@@ -4,6 +4,8 @@ import Pagination from "../components/Pagination";
 import ViewDetailsModal from "../components/ViewDetailsModal";
 import DeleteConfirmationDialog from "../components/DeleteConfirmationDialog";
 import { api, pendingStoreRead } from "../api/http";
+import { normalizeCatalog } from "../api/products";
+import { catalogProductId } from "./discountForm";
 import "../styles/coupons.css";
 
 const emptyCoupon = {
@@ -117,6 +119,17 @@ export default function Coupons({
     const [loadError, setLoadError] = useState("");
     const [attempt, setAttempt] = useState(0);
     const ownerId = merchantId || store?.merchantId || store?.merchant_id || store?.merchant?.id;
+    const [catalogProducts, setCatalogProducts] = useState([]);
+    const [catalogError, setCatalogError] = useState("");
+    useEffect(() => {
+        let active = true;
+        if (!storeId) return undefined;
+        setCatalogError("");
+        pendingStoreRead(`store-products:${storeId}`, () => api.get(`/stores/${encodeURIComponent(storeId)}/catalog`))
+            .then(result => { if (active) setCatalogProducts(normalizeCatalog(result).products || []); })
+            .catch(error => { if (active) setCatalogError(error.message || "Unable to load store products."); });
+        return () => { active = false; };
+    }, [storeId]);
     useEffect(() => {
         let active = true;
         setCoupons([]);
@@ -404,6 +417,8 @@ export default function Coupons({
                 setForm={setCouponForm}
                 error={formError}
                 busy={savingCoupon}
+                products={catalogProducts}
+                catalogError={catalogError}
                 onSubmit={handleSaveCoupon}
                 onClose={() => { if (!couponSaveLock.current) setEditorMode(""); }}
             />
@@ -933,7 +948,42 @@ export default function Coupons({
     );
 }
 
-function CouponEditor({ mode, form, setForm, error, busy, onSubmit, onClose }) {
+function CouponProductPicker({ label, products, value, onChange }) {
+    const [open, setOpen] = useState(false);
+    const [query, setQuery] = useState("");
+    const root = useRef(null);
+    const ids = String(value || "").split(",").map(item => item.trim()).filter(Boolean);
+    const productName = product => String(product?.name || "Unnamed product");
+    const selected = products.filter(product => ids.includes(catalogProductId(product)));
+    useEffect(() => {
+        const dismiss = event => { if (!root.current?.contains(event.target)) { setOpen(false); setQuery(""); } };
+        document.addEventListener("pointerdown", dismiss);
+        return () => document.removeEventListener("pointerdown", dismiss);
+    }, []);
+    return <div className="discount-product-picker" ref={root}>
+        <div className="discount-product-search">
+            <i className="bi bi-search" aria-hidden="true" />
+            <input aria-label={label} role="combobox" aria-expanded={open} autoComplete="off"
+                placeholder={selected.length ? selected.map(productName).join(", ") : "Search store products..."}
+                value={open ? query : selected.map(productName).join(", ")}
+                onFocus={() => { setOpen(true); setQuery(""); }}
+                onChange={event => { setQuery(event.target.value); setOpen(true); }}
+                onKeyDown={event => { if (event.key === "Escape") { setOpen(false); setQuery(""); } }} />
+        </div>
+        {open && <div className="discount-product-menu" role="listbox">
+            {products.filter(product => productName(product).toLowerCase().includes(query.toLowerCase()) && catalogProductId(product)).map(product => {
+                const id = catalogProductId(product);
+                const chosen = ids.includes(id);
+                return <button type="button" key={id} role="option" aria-selected={chosen} onClick={() => {
+                    onChange((chosen ? ids.filter(item => item !== id) : [...ids, id]).join(","));
+                }}><span>{productName(product)}</span>{chosen && <i className="bi bi-check2" aria-hidden="true" />}</button>;
+            })}
+            {!products.some(product => productName(product).toLowerCase().includes(query.toLowerCase()) && catalogProductId(product)) && <p>No store products found.</p>}
+        </div>}
+    </div>;
+}
+
+function CouponEditor({ mode, form, setForm, error, busy, products = [], catalogError = "", onSubmit, onClose }) {
     const [activeTab, setActiveTab] = useState("general");
     const editorTabs = [
         ["general", "General", "bi-ticket-perforated"],
@@ -1003,9 +1053,27 @@ function CouponEditor({ mode, form, setForm, error, busy, onSubmit, onClose }) {
                                 <div className="coupon-editor-grid">
                                     {field("Minimum spend", "minimum_amount", { type: "number", min: "0", step: "0.01" })}
                                     {field("Maximum spend", "maximum_amount", { type: "number", min: "0", step: "0.01" })}
-                                    {field("Product IDs", "product_ids", { help: "Comma-separated WooCommerce product IDs." })}
-                                    {field("Required product IDs", "required_product_ids", { help: "Comma-separated WooCommerce product IDs." })}
-                                    {field("Excluded product IDs", "excluded_product_ids", { help: "Comma-separated WooCommerce product IDs." })}
+                                    {products.length ? (
+                                        <label className="coupon-form-field" key="product_ids">
+                                            <span>Products</span>
+                                            <CouponProductPicker label="Products" products={products} value={form.product_ids} onChange={value => setForm(current => ({ ...current, product_ids: value }))} />
+                                            <small>{catalogError || "Choose products stored for this store."}</small>
+                                        </label>
+                                    ) : field("Product IDs", "product_ids", { help: catalogError || "Comma-separated product IDs from this store." })}
+                                    {products.length ? (
+                                        <label className="coupon-form-field" key="required_product_ids">
+                                            <span>Required products</span>
+                                            <CouponProductPicker label="Required products" products={products} value={form.required_product_ids} onChange={value => setForm(current => ({ ...current, required_product_ids: value }))} />
+                                            <small>Optional. The cart must include these store products.</small>
+                                        </label>
+                                    ) : field("Required product IDs", "required_product_ids", { help: "Comma-separated product IDs from this store." })}
+                                    {products.length ? (
+                                        <label className="coupon-form-field" key="excluded_product_ids">
+                                            <span>Excluded products</span>
+                                            <CouponProductPicker label="Excluded products" products={products} value={form.excluded_product_ids} onChange={value => setForm(current => ({ ...current, excluded_product_ids: value }))} />
+                                            <small>Optional. These store products cannot use the coupon.</small>
+                                        </label>
+                                    ) : field("Excluded product IDs", "excluded_product_ids", { help: "Comma-separated product IDs from this store." })}
                                     {field("Product category IDs", "product_categories", { help: "Comma-separated category IDs." })}
                                     {field("Excluded category IDs", "excluded_product_categories", { help: "Comma-separated category IDs." })}
                                     {field("Allowed emails", "email_restrictions", { help: "Comma-separated email addresses." })}
