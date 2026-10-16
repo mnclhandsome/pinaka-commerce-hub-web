@@ -1176,3 +1176,12 @@
     .coupons-table-wrapper { width: calc(100% - 20px); max-width: calc(100% - 20px); margin: 0 10px; }
     .coupons-table-wrapper + .pagination-container { width: calc(100% - 20px); margin: 0 10px; }
 }
+
+.coupons-page .discount-product-picker { position: relative; min-width: 0; }
+.coupons-page .discount-product-search { position: relative; }
+.coupons-page .discount-product-search > i { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); color: #98a2b3; pointer-events: none; }
+.coupons-page .discount-product-search input { width: 100%; padding-left: 38px; text-overflow: ellipsis; }
+.coupons-page .discount-product-menu { position: absolute; top: calc(100% + 5px); left: 0; right: 0; z-index: 20; max-height: 220px; overflow-y: auto; border: 1px solid #d9e2ef; border-radius: 8px; background: white; box-shadow: 0 8px 24px #18223018; padding: 5px; }
+.coupons-page .discount-product-menu button { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; border: 0; border-radius: 5px; background: transparent; padding: 10px; text-align: left; color: #344054; font-size: 13px; cursor: pointer; }
+.coupons-page .discount-product-menu button:hover, .coupons-page .discount-product-menu button[aria-selected="true"] { background: #f4f1ff; color: #6941c6; }
+.coupons-page .discount-product-menu p { padding: 10px; font-size: 13px; color: #667085; }

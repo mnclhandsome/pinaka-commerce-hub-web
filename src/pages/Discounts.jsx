@@ -5,6 +5,7 @@ import { normalizeCatalog } from "../api/products";
 import FilterDropdown from "../components/FilterDropdown";
 import Pagination from "../components/Pagination";
 import DeleteConfirmationDialog from "../components/DeleteConfirmationDialog";
+import { buildDiscountPayload, catalogProductId, storedProductId, validateDiscountForm } from "./discountForm";
 import "../styles/coupons.css";
 import "../styles/discounts.css";
 
@@ -76,7 +77,8 @@ function DiscountProductPicker({ products, value, onChange, multiple = false, di
   const [query, setQuery] = useState("");
   const root = useRef(null);
   const ids = String(value || "").split(",").filter(Boolean);
-  const productId = product => String(product.wordpressId || product.id);
+  const productId = product => catalogProductId(product);
+  const productName = product => String(product?.name || "Unnamed product");
   const selected = products.filter(product => ids.includes(productId(product)));
   useEffect(() => {
     const dismiss = event => { if (!root.current?.contains(event.target)) { setOpen(false); setQuery(""); } };
@@ -87,28 +89,30 @@ function DiscountProductPicker({ products, value, onChange, multiple = false, di
     <div className="discount-product-search">
       <i className="bi bi-search" aria-hidden="true" />
       <input aria-label={multiple ? "Search discounted products" : "Search products"} role="combobox" aria-expanded={open} autoComplete="off" disabled={disabled}
-        placeholder={selected.length ? selected.map(product => product.name).join(", ") : "Search products..."}
-        value={open ? query : selected.map(product => product.name).join(", ")}
+        placeholder={selected.length ? selected.map(productName).join(", ") : "Search products..."}
+        value={open ? query : selected.map(productName).join(", ")}
         onFocus={() => { setOpen(true); setQuery(""); }} onChange={event => { setQuery(event.target.value); setOpen(true); }}
         onKeyDown={event => { if (event.key === "Escape") { setOpen(false); setQuery(""); } }} />
     </div>
     {open && !disabled && <div className="discount-product-menu">
-      {products.filter(product => product.name.toLowerCase().includes(query.toLowerCase())).map(product => {
+      {products.filter(product => productName(product).toLowerCase().includes(query.toLowerCase()) && productId(product)).map(product => {
         const id = productId(product);
         return <button type="button" key={id} aria-pressed={ids.includes(id)} onClick={() => {
           onChange(multiple ? (ids.includes(id) ? ids.filter(item => item !== id) : [...ids, id]).join(",") : id);
           if (!multiple) { setOpen(false); setQuery(""); }
-        }}><span>{product.name}</span>{ids.includes(id) && <i className="bi bi-check2" aria-hidden="true" />}</button>;
+        }}><span>{productName(product)}</span>{ids.includes(id) && <i className="bi bi-check2" aria-hidden="true" />}</button>;
       })}
-      {!products.some(product => product.name.toLowerCase().includes(query.toLowerCase())) && <p>No products found.</p>}
+      {!products.some(product => productName(product).toLowerCase().includes(query.toLowerCase()) && productId(product)) && <p>No products found.</p>}
     </div>}
   </div>;
 }
-export default function Discounts({ embedded = false }) {
-  const { storeId } = useParams();
+export default function Discounts({ embedded = false, storeId: storeIdProp }) {
+  const { storeId: routeStoreId } = useParams();
+  const storeId = storeIdProp || routeStoreId;
   const [discounts, setDiscounts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
+  const [catalogError, setCatalogError] = useState("");
   const [retry, setRetry] = useState(0);
   const [pagination, setPagination] = useState({});
   const catalogCache = useRef({});
@@ -132,9 +136,14 @@ export default function Discounts({ embedded = false }) {
 
   useEffect(() => {
     let active = true;
+    if (!storeId) {
+      setLoading(false);
+      setLoadError("Select a store before managing discounts.");
+      return undefined;
+    }
     setLoading(true);
     setLoadError("");
-    setDiscounts([]);
+    setCatalogError("");
     const path = `/stores/${storeId}/discounts?page=${currentPage}&per_page=${pageSize}`;
     pendingStoreRead(`discounts:${path}`, () => api.get(path, { headers: { Accept: "application/json" } }))
       .then(async response => {
@@ -146,7 +155,12 @@ export default function Discounts({ embedded = false }) {
             .then(result => normalizeCatalog(result).products)
             .catch(error => { delete catalogCache.current[storeId]; throw error; });
         }
-        const catalog = await catalogCache.current[storeId];
+        let catalog = [];
+        try {
+          catalog = await catalogCache.current[storeId];
+        } catch (error) {
+          if (active) setCatalogError(error.message || "Unable to load store products.");
+        }
         if (!active) return;
         setCatalogProducts(catalog);
         const productNames = new Map();
@@ -166,7 +180,8 @@ export default function Discounts({ embedded = false }) {
           id: item.id ?? item.discount_id,
           type: item.type || "auto",
           code: item.code || item.name || "—",
-          amount: item.coupon_amount ?? "0",
+          amount: item.coupon_amount ?? item.amount ?? "",
+          product_id: item.product_id ?? item.main_product_id,
           product: item.type === "mix_match" ? names(item.product_label || item.product_id) : names(item.product_label ?? item.product ?? item.product_name ?? item.products ?? item.product_ids ?? item.product_id),
           discounted_products: names(item.discounted_products ?? item.discount_products ?? item.discount_product_ids),
           date_starts: inputDate(item.date_starts ?? item.start_date),
@@ -218,7 +233,13 @@ export default function Discounts({ embedded = false }) {
   };
 
   const openEdit = (discount) => {
-    setForm({ ...emptyForm(discount.type), ...discount, product: String(discount.product_id ?? ""), discounted_products: (discount.discount_product_ids || []).map(String).join(","), auto_apply: [true, 1, "1", "yes", "true"].includes(discount.pinaka_discount_auto_apply) });
+    setForm({
+      ...emptyForm(discount.type),
+      ...discount,
+      product: storedProductId(discount),
+      discounted_products: (discount.discount_product_ids || []).map(String).join(","),
+      auto_apply: [true, 1, "1", "yes", "true"].includes(discount.pinaka_discount_auto_apply),
+    });
     setFormTab("details");
     setFormError("");
     setMode("edit");
@@ -234,60 +255,14 @@ export default function Discounts({ embedded = false }) {
     event.preventDefault();
     if (saveLock.current) return;
     setFormError("");
-    const amount = Number(form.amount);
-    if (!form.code.trim() || !form.discount_type || form.amount === "") {
-      setFormError("Discount name, discount type, and amount are required.");
-      setFormTab("details");
+    const validation = validateDiscountForm(form);
+    if (!validation.ok) {
+      setFormError(validation.message);
+      setFormTab(validation.tab);
       return;
     }
-    if (!Number.isFinite(amount) || amount <= 0 || (form.discount_type === "percent" && amount > 100)) {
-      setFormError(form.discount_type === "percent" ? "Enter an amount greater than 0 and no more than 100%." : "Enter a valid discount amount greater than 0.");
-      setFormTab("details");
-      return;
-    }
-    if (!form.product.trim()) {
-      setFormError(form.type === "mix_match" ? "Choose a main trigger product." : "Enter a product name.");
-      setFormTab("rules");
-      return;
-    }
-    if (form.type === "mix_match" && !form.discounted_products.trim()) {
-      setFormError("Enter at least one discounted product.");
-      setFormTab("rules");
-      return;
-    }
-    if (form.type === "multipack" && (!Number(form.qty) || Number(form.qty) < 1)) {
-      setFormError("Pack quantity must be at least 1.");
-      setFormTab("rules");
-      return;
-    }
-
     {
-      const productId = Number(form.product);
-      const discountedIds = form.discounted_products.split(",").map(value => Number(value.trim())).filter(Boolean);
-      if (!Number.isInteger(productId) || productId <= 0 || (form.type === "mix_match" && !discountedIds.length)) {
-        setFormError("Select valid store products.");
-        setFormTab("rules");
-        return;
-      }
-      if (form.date_starts && form.date_expires && form.date_starts > form.date_expires) {
-        setFormError("Expiry date must be on or after the start date.");
-        setFormTab("limits");
-        return;
-      }
-      const payload = {
-        type: form.type,
-        code: form.code.trim(),
-        discount_type: form.discount_type,
-        amount,
-        product_id: productId,
-        pinaka_discount_auto_apply: Boolean(form.auto_apply),
-        ...(form.type === "mix_match" ? { discount_product_ids: discountedIds } : {}),
-      };
-      for (const key of ["qty", "usage_limit", "minimum_amount", "maximum_amount", "min_qty", "max_qty"]) {
-        if (form[key] !== "") payload[key] = Number(form[key]);
-      }
-      if (form.date_starts) payload.date_starts = form.date_starts;
-      if (form.date_expires) payload.date_expires = form.date_expires;
+      const payload = buildDiscountPayload(form);
       saveLock.current = true;
       setSaving(true);
       try {
@@ -388,8 +363,8 @@ export default function Discounts({ embedded = false }) {
                 <h2>Products & rules</h2>
                 <div className="coupon-editor-grid">
                   <div className="coupon-form-field"><span className="discount-field-label">{form.type === "mix_match" ? "Main product (trigger)" : "Product"} <span className="discount-required">*</span></span>
-                    <DiscountProductPicker products={catalogProducts} value={form.product} onChange={value => updateForm("product", value)} disabled={saving} />
-                    <small>Select a product from the store catalog.</small>
+                    <DiscountProductPicker products={catalogProducts} value={form.product} onChange={value => updateForm("product", value)} disabled={saving || !catalogProducts.length} />
+                    <small>{catalogError || (catalogProducts.length ? "Select a product from the store catalog." : "No store products are available. Sync products before creating a discount.")}</small>
                   </div>
                   {form.type === "mix_match" && <div className="coupon-form-field discount-full-width"><span className="discount-field-label">Discounted products <span className="discount-required">*</span></span>
                     <DiscountProductPicker products={catalogProducts} value={form.discounted_products} onChange={value => updateForm("discounted_products", value)} multiple disabled={saving} />
@@ -454,6 +429,7 @@ export default function Discounts({ embedded = false }) {
       </div>
 
       {notice && <div className="discount-notice" role="status"><i className="bi bi-info-circle" />{notice}<button type="button" onClick={() => setNotice("")} aria-label="Dismiss"><i className="bi bi-x" /></button></div>}
+      {catalogError && <div className="discount-notice" role="alert"><i className="bi bi-exclamation-circle" />{catalogError}</div>}
 
       <div className="coupons-summary discounts-summary">
         {[
@@ -498,13 +474,17 @@ export default function Discounts({ embedded = false }) {
               </tr>
             </thead>
             <tbody>
-              {visibleDiscounts.length ? visibleDiscounts.map((discount) => (
-                <tr key={discount.id}>
+              {loading ? (
+                <tr><td className="discount-table-empty" colSpan="9">Loading discounts…</td></tr>
+              ) : loadError ? (
+                <tr><td className="discount-table-empty" colSpan="9"><div className="products-table-empty-state"><strong>Unable to load discounts</strong><span>{loadError}</span></div></td></tr>
+              ) : visibleDiscounts.length ? visibleDiscounts.map((discount) => (
+                <tr key={`${discount.type}-${discount.id}`}>
                   <td><div className="discount-name-cell"><strong>{discount.code}</strong><small>{typeLabel(discount.type)}</small></div></td>
                   <td><span className="discount-type-pill">{discount.type || "—"}</span></td>
                   <td><strong className="discount-amount">{amountLabel(discount)}</strong></td>
-                  <td><span className="discount-product-cell">{`${discount.product}${discount.type === "multipack" ? ` · ${discount.qty} items` : ""}`}</span></td>
-                  <td>{discount.usage_limit || "∞"}</td>
+                  <td><span className="discount-product-cell">{`${discount.product}${discount.type === "mix_match" && discount.discounted_products ? ` → ${discount.discounted_products}` : ""}${discount.type === "multipack" ? ` · ${discount.qty} items` : ""}`}</span></td>
+                  <td>{discount.usage_limit === 0 || discount.usage_limit ? discount.usage_limit : "∞"}</td>
                   <td>{formatSystemDate(discount.date_starts)}</td>
                   <td>{formatSystemDate(discount.date_expires)}</td>
                   <td><span className={`discount-status-pill ${discountStatus(discount).toLowerCase()}`}>{discountStatus(discount)}</span></td>
