@@ -73,7 +73,8 @@
 .sm-table tbody tr:hover { background:#f9fbff; }
 .sm-link { padding:0; border:0; background:none; color:#2262d5; font:600 12px Inter, Arial, sans-serif; text-decoration:underline; cursor:pointer; }
 .sm-status { display:inline-flex; min-width:62px; justify-content:center; padding:6px 10px; border-radius:6px; background:#e0f8e9; color:#17813b; font-size:13px; font-weight:650; }
-.sm-status.open { background:#e3edff; color:#2462d4; }
+.sm-status.open { background:#e0f8e9; color:#17813b; }
+.sm-status.closed { background:#fee2e2; color:#b91c1c; }
 .sm-view-button { min-height:34px; padding:0 14px; }
 .sm-empty { height:80px!important; color:#77849a!important; text-align:center!important; }
 .sm-pagination { display:flex; min-height:72px; align-items:center; justify-content:flex-end; gap:12px; color:#52617d; font-size:12px; }
@@ -87,7 +88,8 @@
 .sm-detail-heading .sm-button-outline { min-height:40px; padding:0 15px; font-size:14px; }
 .sm-detail-overview { position:relative; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); padding:20px 10px; margin-bottom:14px; }
 .sm-detail-status { position:absolute; top:15px; right:16px; z-index:1; display:inline-flex; align-items:center; gap:6px; padding:7px 11px; border-radius:6px; background:#e0f8e9; color:#17813b; font-size:11px; font-weight:700; }
-.sm-detail-status.open { background:#e3edff; color:#2462d4; }
+.sm-detail-status.open { background:#e0f8e9; color:#17813b; }
+.sm-detail-status.closed { background:#fee2e2; color:#b91c1c; }
 .sm-info-block { min-width:0; padding:0 20px; border-right:1px solid #e0e7f1; }
 .sm-info-block:last-child { border-right:0; }
 .sm-info-block h2 { display:flex; align-items:center; gap:10px; margin:0 0 16px; color:#14264a; font-size:14px; }
