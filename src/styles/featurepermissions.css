@@ -42,7 +42,6 @@
   font-size: 20px;
   line-height: 1.2;
   font-weight: 600;
-  letter-spacing: -0.5px;
 }
 
 .feature-permissions-page .fp-title-wrap p {
@@ -2325,7 +2324,7 @@ body .feature-permissions-page .fp-delete-modal-actions .fp-delete-confirm-btn i
   color: #10264d !important;
   font-size: 13px !important;
   line-height: 18px !important;
-  font-weight: 500 !important;
+  font-weight: 600 !important;
   white-space: nowrap !important;
 }
 

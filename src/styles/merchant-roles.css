@@ -2,7 +2,7 @@
 .merchant-roles *{box-sizing:border-box}
 .merchant-roles .mr-card{background:#fff;border:1px solid #e1e4eb;border-radius:10px;padding:18px 20px;margin-bottom:16px}
 .merchant-roles .mr-header{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:14px}
-.merchant-roles h2{margin:0 0 4px;font-size:17px;color:#17233e}
+.merchant-roles h2{margin:0 0 4px;font-size:18px;font-weight:600;color:#17233e;}
 .merchant-roles p{margin:0;color:#81899a;font-size:13px}
 .merchant-roles .mr-actions{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end}
 .merchant-roles button{padding:8px 12px;border:1px solid #dfe3eb;border-radius:5px;background:#fff;color:#5143bc;font:inherit;cursor:pointer}

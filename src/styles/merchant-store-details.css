@@ -414,13 +414,13 @@ body {
     align-items: center;
     padding: 5px 10px;
     border-radius: 5px;
-    font-size: 10px;
+    font-size: 12px;
     font-weight: 500;
 }
 
 .store-status.active {
-    background: #e1f5e8;
-    color: #269553;
+    background: #e5f6ea;
+    color: #319a5b;
 }
 
 .store-status.inactive {

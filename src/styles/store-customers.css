@@ -25,18 +25,6 @@
     gap: 14px;
 }
 
-.store-customers-title-icon {
-    width: 48px;
-    height: 48px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 12px;
-    background: #f0edff;
-    color: #6953d8;
-    font-size: 21px;
-}
-
 .store-customers-title-area h1 {
     margin: 0;
     color: #20283d;

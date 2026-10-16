@@ -2,7 +2,7 @@
 .merchant-tenders *{box-sizing:border-box}
 .merchant-tenders .mt-card{background:#fff;border:1px solid #e1e4eb;border-radius:8px;padding:18px;margin-bottom:16px}
 .merchant-tenders .mt-header{  display: flex; align-items: center; justify-content: space-between;  gap: 16px;}
-.merchant-tenders h2,.merchant-tenders h3{margin:0 0 4px;padding:0;border:0;font-size:18px;color:#17233e}
+.merchant-tenders h2,.merchant-tenders h3{margin:0 0 4px;padding:0;border:0;font-size:18px;font-weight:600;color:#17233e;}
 .merchant-tenders p{margin:4px 0 12px;color:#81899a;font-size:13px}
 .merchant-tenders button{padding:8px 12px;border:1px solid #5143bc;border-radius:5px;background:#fff;color:#5143bc;font:inherit;cursor:pointer}
 .merchant-tenders button:disabled{opacity:.5;cursor:not-allowed}

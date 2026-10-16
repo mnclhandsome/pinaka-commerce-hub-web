@@ -557,10 +557,7 @@ async function confirmDeleteTender() {
           <div>
             <h2>Tenders</h2>
 
-            <p>
-              {filteredTenders.length} payment method
-              {filteredTenders.length === 1 ? "" : "s"} found
-            </p>
+          
           </div>
 
           <div className="tenders-filters pch-master-toolbar pch-master-control">
