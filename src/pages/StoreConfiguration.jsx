@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { NavLink, useLocation, useNavigate, useParams } from "react-router-dom";
 
 import { getMerchant } from "../api/merchants";
+import { getStoreCoupons } from "../api/storeCoupons";
 import AddStore from "./AddStore";
 import { getActiveSubscriptions, extractActiveSubscription } from "../api/subscriptions_stores";
 
@@ -191,6 +192,36 @@ function StoreSubscriptionSummary({ merchantId }) {
     ["Renewal / End Date", subscription.renewalDate || subscription.endDate || subscription.expiresAt],
     ["Store Limit", subscription.storeLimit ?? subscription.locationLimit ?? plan.includedStores ?? plan.included_stores],
   ]} />;
+}
+
+function StoreCouponOverview({ merchantId, storeId }) {
+  const [coupons, setCoupons] = useState([]);
+  const [error, setError] = useState("");
+  useEffect(() => {
+    let active = true;
+    getStoreCoupons(merchantId, storeId)
+      .then((rows) => { if (active) setCoupons(rows); })
+      .catch((failure) => { if (active) setError(failure.message || "Unable to load coupons."); });
+    return () => { active = false; };
+  }, [merchantId, storeId]);
+  const activeCoupons = coupons.filter((coupon) => {
+    const expiry = coupon.date_expires || coupon.expiryDate || coupon.expiry_date;
+    const used = Number(coupon.usage_count ?? coupon.usedCount ?? coupon.used_count ?? 0);
+    const limit = Number(coupon.usage_limit ?? coupon.usageLimit ?? 0);
+    return (!expiry || new Date(expiry) >= new Date()) && !(limit > 0 && used >= limit) &&
+      ["active", "enabled", ""].includes(String(coupon.status || "active").toLowerCase());
+  });
+  return <section className="store-overview-card">
+    <h2>Coupons</h2>
+    {error ? <p className="store-overview-empty" role="alert">{error}</p> : activeCoupons.length ? (
+      <div className="store-overview-table"><table>
+        <thead><tr><th>Coupon</th></tr></thead>
+        <tbody>{activeCoupons.map((coupon, index) => <tr key={coupon.id || coupon.coupon_id || coupon.code || index}>
+          <td>{coupon.code || coupon.coupon_code || "—"}</td>
+        </tr>)}</tbody>
+      </table></div>
+    ) : <p className="store-overview-empty">No active coupons.</p>}
+  </section>;
 }
 
 export default function StoreConfiguration() {
@@ -680,9 +711,10 @@ export default function StoreConfiguration() {
                 <StoreSubscriptionSummary merchantId={merchantId || store.merchantId || merchant?.id} />
               ) : ["features", "roles", "users"].includes(section) ? (
                 <div>
-                  <AddStore existingStore={storeResponse} key={section + ":" + revision + ":" + editingSection} embeddedStep={{features:2,roles:3,users:4}[section]} readOnly={!editingSection} onEdit={() => setEditingSection(true)} onDone={() => {setEditingSection(false);setRevision(v => v + 1);}} />
+                  <AddStore existingStore={storeResponse} merchantContext={merchant} key={section + ":" + revision + ":" + editingSection} embeddedStep={{features:2,roles:3,users:4}[section]} readOnly={!editingSection} onEdit={() => setEditingSection(true)} onDone={() => {setEditingSection(false);setRevision(v => v + 1);}} />
                 </div>
               ) : section === "overview" ? (
+                <>
                 <div className="store-panel">
                   <div className="store-panel-heading">
                     <div><h2>Website Connection</h2><p>{editingSection ? "Update the website URL and JWT token for this store." : "View the saved JWT connection status."}</p></div>
@@ -728,6 +760,8 @@ export default function StoreConfiguration() {
                   </div>}
                   {message && <div className="store-message info" role="status">{message}</div>}
                 </div>
+                <StoreCouponOverview merchantId={merchant?.id || merchant?.merchantId || merchant?.merchant_id || store?.merchantId || store?.merchant_id || store?.merchant?.id || merchantId} storeId={store?.uuid || storeId} />
+                </>
 
               ) : section === "pos" ? (
 

@@ -578,7 +578,7 @@ const Detail = ({ label, children }) => (
   </div>
 );
 
-export default function AddStore({ embeddedStep = null, readOnly = false, onEdit, onDone, existingStore = null } = {}) {
+export default function AddStore({ embeddedStep = null, readOnly = false, onEdit, onDone, existingStore = null, merchantContext = null } = {}) {
   const navigate = useNavigate();
   const location = useLocation();
   const { merchantId: routeMerchantId, storeId } = useParams();
@@ -1287,7 +1287,9 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
     async function loadMerchantContext() {
       try {
         const [result, employeeResult, storesResult] = await Promise.all([
-          pendingStoreRead(`merchant:${merchantId}`, () => getMerchant(merchantId)),
+          embeddedAccess && merchantContext
+            ? Promise.resolve({ merchant: merchantContext, subscription: existingStore?.subscription })
+            : pendingStoreRead(`merchant:${merchantId}`, () => getMerchant(merchantId)),
           Promise.resolve([]),
           editing || embeddedAccess ? Promise.resolve(null) : api.get(endpoints.merchantStores(merchantId)).catch(() => null),
         ]);
@@ -1366,7 +1368,7 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
     return () => {
       cancelled = true;
     };
-  }, [merchantId, editing, reload]);
+  }, [merchantId, editing, reload, embeddedAccess, merchantContext, existingStore]);
   useEffect(() => {
     if (!needsRoles || !merchantId) return;
     let active = true;
