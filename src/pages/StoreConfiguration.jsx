@@ -16,6 +16,7 @@ import StoreCustomers from "./StoreCustomers";
 import FastKeys from "./FastKeys";
 import StoreCategories from "./StoreCategories";
 import StoreShifts from "./StoreShifts";
+import SafeDrops from "./SafeDrops";
 import StorePaymentRecords from "./StorePaymentRecords";
 import VendorPayments from "./VendorPayments";
 import MerchantVendors from "./MerchantVendors";
@@ -113,6 +114,7 @@ const navGroups = [
     label: "Store Operations",
     items: [
       ["shifts", "bi-clock-history", "Shift Management"],
+      ["safedrops", "bi-safe", "Safe Drops"],
     ],
   },
 ];
@@ -875,6 +877,10 @@ export default function StoreConfiguration() {
                   store={store}
                   embedded
                 />
+
+              ) : section === "safedrops" ? (
+
+                <SafeDrops store={store} />
 
               ) : section === "attendance" ? (
 
