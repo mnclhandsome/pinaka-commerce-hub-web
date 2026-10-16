@@ -3970,10 +3970,10 @@
   text-align: center;
 }
 .store-workspace-page .store-workspace-card .orders-page .pagination-info {
-  display: none;
+  display: block;
 }
 .store-workspace-page .store-workspace-card .orders-page .pagination-container {
-  justify-content: flex-end;
+  justify-content: space-between;
 }
 .store-workspace-page .store-workspace-card :is(.coupons-page, .discounts-page) .pagination-container {
   justify-content: space-between;
