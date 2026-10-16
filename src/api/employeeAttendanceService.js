@@ -127,11 +127,19 @@ export async function getStoreEmployees(merchantId, storeId) {
 
 // Fetch attendance history.
 export async function getAttendanceRecords({
+  merchantId,
+  storeId,
   employeeCode,
   page = 1,
   limit = 100,
 } = {}) {
+  if (!merchantId || !storeId) {
+    throw new Error("Merchant and store IDs are required to load attendance.");
+  }
+
   const params = new URLSearchParams({
+    merchantId: String(merchantId),
+    storeId: String(storeId),
     page: String(page),
     limit: String(limit),
   });
