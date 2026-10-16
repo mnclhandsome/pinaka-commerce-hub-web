@@ -43,6 +43,32 @@
   margin-bottom: 18px;
 }
 
+.add-employee-header:has(.add-employee-back-button) {
+  align-items: center;
+}
+
+.add-employee-back-button {
+  box-sizing: border-box;
+  min-height: 35px;
+  padding: 0 15px;
+  border: 1px solid #5838f3;
+  border-radius: 6px;
+  background: #fff;
+  color: #4c35e8;
+  font: 600 14px Inter, Arial, sans-serif;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.add-employee-back-button:hover:not(:disabled) {
+  background: #f5f3ff;
+}
+
+.add-employee-back-button:focus-visible {
+  outline: 3px solid #b9adff;
+  outline-offset: 2px;
+}
+
 .add-employee-page > .add-employee-header + form {
   margin-top: 0;
 }

@@ -19,11 +19,10 @@
   margin-bottom: 13px;
 }
 .employees-page-header h1 {
-  margin: 0;
-  color: #142a4b;
+  margin: 0 0 6px;
+  color: #17233e;
   font-size: 20px;
-  line-height: 1.2;
-  font-weight: 700;
+  font-weight: 600;
 }
 .employees-subtitle {
   margin: 4px 0 0;
@@ -706,7 +705,10 @@
     margin-bottom: 9px;
   }
   .employees-page-header h1 {
-    font-size: 24px;
+    margin: 0 0 6px;
+    color: #17233e;
+    font-size: 20px;
+    font-weight: 600;
   }
   .employees-stats {
     gap: 5px;

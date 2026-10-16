@@ -27,7 +27,7 @@
 .page-header h1 {
     margin: 0 0 6px;
     font-size: 20px;
-    font-weight: 700;
+    font-weight: 600;
     color: #17233e;
 }
 
@@ -331,7 +331,7 @@
 }
 
 .store-status i {
-    font-size: 7px;
+    font-size: 8px;
 }
 
 .store-status.active { color: #319a5b; background: #e5f6ea; }

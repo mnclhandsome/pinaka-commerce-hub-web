@@ -1509,10 +1509,9 @@
 }
 
 .rs-page-header h1 {
-  font-size: 28px;
-  font-weight: 700;
+  font-size: 20px;
+  font-weight: 600;
   line-height: 36px;
-  letter-spacing: -0.02em;
 }
 
 .rs-page-header p {
@@ -1785,10 +1784,8 @@
 .rs-page .rs-page-header h1 {
   margin: 0;
   color: #102144;
-  font-size: 28px;
-  font-weight: 700;
-  line-height: 36px;
-  letter-spacing: -0.02em;
+  font-size: 20px;
+  font-weight: 600;
 }
 
 #pch-new main > h1 + p,
@@ -2558,7 +2555,7 @@
 }
 
 .rs-page-header h1 {
-  font-size: 28px !important;
+  font-size: 20px !important;
   line-height: 36px !important;
 }
 
@@ -2707,10 +2704,8 @@
 .rs-page .rs-page-header h1 {
   margin: 0;
   color: #102144;
-  font-size: 28px;
-  font-weight: 700;
-  line-height: 36px;
-  letter-spacing: -0.02em;
+  font-size: 20px;
+  font-weight: 600;
 
 }
 
@@ -2906,10 +2901,9 @@
 #pch-new.pch-merchant-one-page .pch-review-step .rs-page-header h1 {
   margin: 0;
   color: #102144;
-  font-size: 28px;
-  font-weight: 700;
+  font-size: 20px;
+  font-weight: 600;
   line-height: 36px;
-  letter-spacing: -0.02em;
 }
 
 #pch-new.pch-merchant-one-page .pch-review-step .rs-page-header p:not(.pch-eyebrow) {
@@ -3112,5 +3106,97 @@
 
   #pch-new.pch-merchant-one-page .pch-review-list > div {
     grid-template-columns: minmax(95px, 0.8fr) minmax(0, 1.2fr);
+  }
+}
+
+/* Keep the onboarding rail stationary while the merchant form scrolls. */
+.main-content:has(> #pch-new.pch-step-scroll) {
+  height: 100dvh;
+  min-height: 0;
+}
+
+.main-content:has(> #pch-new.pch-step-scroll) > .topbar {
+  flex-shrink: 0;
+}
+
+#pch-new.pch-step-scroll {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+#pch-new.pch-step-scroll > .pch-layout {
+  flex: 1;
+  grid-template-rows: minmax(0, 1fr);
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+#pch-new.pch-step-scroll > .pch-layout > aside,
+#pch-new.pch-step-scroll > .pch-layout > main {
+  min-width: 0;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+@media (max-width: 991px) {
+  #pch-new.pch-step-scroll > .pch-layout {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: fit-content(40%) minmax(0, 1fr);
+  }
+
+  #pch-new.pch-step-scroll > .pch-layout > aside {
+    max-height: 40%;
+  }
+}
+
+#pch-new.pch-step-scroll .pch-layout > aside {
+  overflow: hidden;
+}
+
+#pch-new.pch-step-scroll .pch-rail {
+  overflow: visible;
+  flex-shrink: 0;
+}
+
+#pch-new.pch-merchant-one-page.pch-editing {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+#pch-new.pch-merchant-one-page.pch-editing > header {
+  flex-shrink: 0;
+}
+
+#pch-new.pch-merchant-one-page.pch-editing > .pch-layout {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  grid-template-rows: minmax(0, 1fr);
+}
+
+#pch-new.pch-merchant-one-page.pch-editing > .pch-layout > aside {
+  min-height: 0;
+  overflow: hidden;
+}
+
+#pch-new.pch-merchant-one-page.pch-editing > .pch-layout > main {
+  min-height: 0;
+  overflow-y: auto;
+}
+
+@media (max-width: 991px) {
+  #pch-new.pch-merchant-one-page.pch-editing > .pch-layout {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: fit-content(40%) minmax(0, 1fr);
+  }
+
+  #pch-new.pch-merchant-one-page.pch-editing > .pch-layout > aside {
+    max-height: 40%;
   }
 }

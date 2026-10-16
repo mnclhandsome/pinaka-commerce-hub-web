@@ -16,11 +16,9 @@ import {
   MapPin,
   Settings,
   Upload,
-  CalendarDays,
   ChevronDown,
   Eye,
   EyeOff,
-  ArrowLeft,
 } from "lucide-react";
 
 import "../styles/add-merchant-employee.css";
@@ -400,19 +398,17 @@ export function MerchantEmployeeForm({
       <div className="add-employee-header">
         <div>
           <h1>Add Employee</h1>
-
-          <div className="add-employee-breadcrumb">
-            <span>Home</span>
-
-            <span className="breadcrumb-arrow">›</span>
-
-            <span>Employees</span>
-
-            <span className="breadcrumb-arrow">›</span>
-
-            <strong>Add Employee</strong>
-          </div>
         </div>
+        {!embedded && (
+          <button
+            type="button"
+            className="add-employee-back-button"
+            disabled={saving}
+            onClick={handleBack}
+          >
+            ← Back to Employees
+          </button>
+        )}
       </div>
 
       {/* =====================================================
@@ -531,7 +527,6 @@ export function MerchantEmployeeForm({
                         className={errors.dob ? "field-invalid" : ""}
                       />
 
-                      <CalendarDays size={17} />
                     </div>
                     {errors.dob && (
                       <span className="field-error">{errors.dob}</span>

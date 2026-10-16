@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import Pagination from "../components/Pagination";
 import DeleteConfirmationDialog from "../components/DeleteConfirmationDialog";
+import ListActions from "../components/ListActions";
 import {
   readRoleTemplatesList,
   roleTemplatesApi,
@@ -366,15 +367,11 @@ async function confirmDeleteRole() {
         <div>{role.scope}</div>
 
         <div>
-          <button
-            type="button"
-            className="role-template-delete-button"
-            title={`Remove ${role.name} assignment`}
-            aria-label={`Remove ${role.name} assignment`}
-            onClick={() => {setDeleteError(""); setDeleteTarget(role);}}
-          >
-            <i className="bi bi-trash3" aria-hidden="true" />
-          </button>
+          <ListActions
+            onDelete={() => { setDeleteError(""); setDeleteTarget(role); }}
+            deleteLabel={`Remove ${role.name} assignment`}
+            deleteButtonClassName="role-template-delete-button"
+          />
         </div>
       </div>
     ))

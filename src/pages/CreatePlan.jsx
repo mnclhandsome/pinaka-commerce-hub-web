@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Pagination from "../components/Pagination";
 import DeleteConfirmationDialog from "../components/DeleteConfirmationDialog";
+import ListActions from "../components/ListActions";
 import { storeTypesApi } from "../api/storeTypes";
 import { createPlan, deletePlan, listPlans, updatePlan } from "../api/plans";
 
@@ -1443,30 +1444,15 @@ async function confirmDelete() {
                     );
                   })()}
 
-                  <div className="plan-table-actions">
-                    <button
-                      type="button"
-                      className="plan-edit-icon"
-                      title="Edit plan"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        editPlan(plan);
-                      }}
-                    >
-                      <i className="bi bi-pencil" />
-                    </button>
-
-                  <button
-                     type="button"
-                      className="plan-delete-icon"
-                      title="Deactivate plan"
-                       onClick={(e) => {
-                        e.stopPropagation();
-                        openDeleteConfirmation(plan);
-                           }}
-                              >
-                             <i className="bi bi-trash3" />
-                           </button>
+                  <div>
+                    <ListActions
+                      onEdit={(event) => { event.stopPropagation(); editPlan(plan); }}
+                      onDelete={(event) => { event.stopPropagation(); openDeleteConfirmation(plan); }}
+                      editLabel={`Edit ${plan.name}`}
+                      deleteLabel={`Deactivate ${plan.name}`}
+                      editButtonClassName="plan-edit-icon"
+                      deleteButtonClassName="plan-delete-icon"
+                    />
                   </div>
                 </div>
               );

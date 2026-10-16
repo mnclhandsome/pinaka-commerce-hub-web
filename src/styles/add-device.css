@@ -11,6 +11,58 @@
   color: #183354;
 }
 
+/* Merchant embedded form shares the existing-vendor create screen spacing. */
+.merchant-device-create-page .mv-create-content {
+  padding: 32px 24px;
+}
+
+.merchant-device-create-page .add-device-page {
+  width: 100%;
+  min-height: 0;
+  padding: 0;
+  background: transparent;
+}
+
+.merchant-device-create-page .device-card {
+  padding: 24px;
+  border-radius: 8px;
+}
+
+.merchant-device-create-page .device-card-header {
+  margin-bottom: 22px;
+}
+
+.merchant-device-create-page .device-card-header h2 {
+  font-size: 18px;
+}
+
+.merchant-device-create-page .device-card-header p {
+  font-size: 13px;
+}
+
+.merchant-device-create-page .device-form-grid {
+  gap: 22px 24px;
+}
+
+.merchant-device-create-page .device-field label {
+  font-size: 13px;
+}
+
+.merchant-device-create-page .device-field input,
+.merchant-device-create-page .device-field textarea,
+.merchant-device-create-page .device-select-wrapper select {
+  font-size: 14px;
+}
+
+.merchant-device-create-page .device-field input,
+.merchant-device-create-page .device-select-wrapper select {
+  height: 46px;
+}
+
+.merchant-device-create-page .add-device-actions {
+  padding-top: 18px;
+}
+
 /* =========================================================
    HEADER
 ========================================================= */
@@ -270,9 +322,7 @@
 ========================================================= */
 
 .device-additional-information {
-  margin-top: 17px;
-  padding-top: 15px;
-  border-top: 1px solid #edf1f6;
+  padding-top: 10px;
 }
 
 .notes-counter {
@@ -314,9 +364,9 @@
 
 .device-save-btn {
   border: none;
-  background: linear-gradient(90deg, #5d3ddd, #6740e5);
-  color: #fff;
-  box-shadow: 0 4px 10px rgba(93, 61, 221, 0.18);
+  background: #5143bc !important;
+  color: #fff !important;
+ 
 }
 
 /* =========================================================

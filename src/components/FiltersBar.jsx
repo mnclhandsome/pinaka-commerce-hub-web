@@ -8,9 +8,14 @@ export default function FiltersBar({
     filters = [],
     onClear,
     showClear = true,
+    clearLabel = "Reset",
+    searchDisabled = false,
+    searchAutoFocus = false,
+    searchAriaLabel = "Search",
+    className = "",
 }) {
     return (
-        <div className="filters-bar">
+        <div className={`filters-bar ${className}`.trim()}>
 
     {onSearchChange && (
         <div className="filter-search">
@@ -18,6 +23,9 @@ export default function FiltersBar({
 
             <input
                 type="text"
+                aria-label={searchAriaLabel}
+                disabled={searchDisabled}
+                autoFocus={searchAutoFocus}
                 placeholder={searchPlaceholder}
                 value={searchValue}
                 onChange={(e) =>
@@ -72,7 +80,7 @@ export default function FiltersBar({
                 onClick={onClear}
             >
                 <i className="bi bi-arrow-counterclockwise" />
-                Reset
+                {clearLabel}
             </button>
         )}
     </div>

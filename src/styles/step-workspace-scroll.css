@@ -1,5 +1,5 @@
 /* Only creation step layouts and the Choose Subscription Plan flow. */
-.main-content:has(> .pch-step-scroll, > .choose-plan-redesign) {
+.main-content:has(> .choose-plan-redesign) {
   height: 100dvh;
   min-height: 0;
   overflow: hidden;
@@ -47,8 +47,7 @@
   overflow-y: auto;
 }
 
-#pch-new.pch-step-scroll,
-.main-content > :is(.pch-step-scroll, .choose-plan-redesign) {
+.main-content > .choose-plan-redesign {
   display: flex;
   flex-direction: column;
   flex: 1;
@@ -57,12 +56,10 @@
   overflow: hidden;
 }
 
-#pch-new.pch-step-scroll > header,
 .pch-step-scroll > :is(.sf-topbar, .rs-breadcrumb-bar) {
   flex-shrink: 0;
 }
 
-#pch-new.pch-step-scroll > .pch-layout,
 .sf-root.pch-step-scroll > .sf-shell,
 .rs-page.pch-step-scroll > .rs-workspace,
 .choose-plan-redesign > .choose-plan-layout {
@@ -73,7 +70,6 @@
   overflow: hidden;
 }
 
-#pch-new.pch-step-scroll .pch-layout > main,
 .sf-root.pch-step-scroll .sf-shell > .sf-main,
 .rs-page.pch-step-scroll .rs-workspace > .rs-content-column,
 .choose-plan-redesign .choose-plan-layout > .choose-plan-main {
@@ -82,7 +78,6 @@
   overflow-y: auto;
 }
 
-#pch-new.pch-step-scroll .pch-layout > aside,
 .sf-root.pch-step-scroll .sf-shell > .sf-sidebar,
 .rs-page.pch-step-scroll .rs-workspace > .rs-step-panel,
 .choose-plan-redesign .choose-plan-layout > .choose-plan-stepper {
@@ -91,7 +86,6 @@
   overflow-y: auto;
 }
 
-#pch-new.pch-step-scroll .pch-rail,
 .sf-root.pch-step-scroll .sf-sidebar > nav {
   min-height: 0;
   overflow-y: auto;
@@ -100,13 +94,6 @@
 
 .choose-plan-redesign .choose-plan-stepper > .subscription-step {
   flex-shrink: 0;
-}
-
-@media (max-width: 991px) {
-  #pch-new.pch-step-scroll > .pch-layout {
-    display: grid;
-    grid-template-rows: fit-content(40%) minmax(0, 1fr);
-  }
 }
 
 @media (max-width: 850px) {

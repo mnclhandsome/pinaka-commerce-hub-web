@@ -136,7 +136,7 @@ export default function StorePaymentRecords({ store, storeId: storeIdProp, merch
       <div className="store-payment-records-header">
         <div className="store-payment-records-title-area">
           <div className="store-payment-records-title-icon">
-            <i className="bi bi-credit-card" />
+           
           </div>
  
           <div>

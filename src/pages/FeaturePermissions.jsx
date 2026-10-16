@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Pagination from "../components/Pagination";
 import DeleteConfirmationDialog from "../components/DeleteConfirmationDialog";
+import ListActions from "../components/ListActions";
 import { listFeatures } from "../api/features";
 import {
   listFeaturePermissions,
@@ -1663,36 +1664,15 @@ const paginatedPermissions = filteredPermissions.slice(
 
                     <td>
                       <div className="fp-row-actions">
-                        {/* EDIT */}
-
-                        <button
-                          type="button"
-                          className="edit edit-button"
-                          aria-label={`Edit ${permission.name}`}
-                          title="Edit permission"
-                         onClick={(event) => {
-                            event.stopPropagation();
-                                editPermission(permission);
-                               }}
-                        >
-                          <i className="bi bi-pencil" />
-                        </button>
-
-                        {/* DELETE */}
-
-                        <button
-                          type="button"
-                          className="delete delete-button"
-                          aria-label={`Deactivate ${permission.name}`}
-                          disabled={permission.status === "Inactive"}
-                          title={permission.status === "Inactive" ? "Already inactive" : "Deactivate permission"}
-                          onClick={(event) => {
-                              event.stopPropagation();
-                              openDeleteConfirmation(permission);
-                               }}
-                        >
-                          <i className="bi bi-trash3" />
-                        </button>
+                        <ListActions
+                          onEdit={(event) => { event.stopPropagation(); editPermission(permission); }}
+                          onDelete={(event) => { event.stopPropagation(); openDeleteConfirmation(permission); }}
+                          editLabel={`Edit ${permission.name}`}
+                          deleteLabel={`Deactivate ${permission.name}`}
+                          deleteDisabled={permission.status === "Inactive"}
+                          deleteButtonClassName="delete delete-button"
+                          editButtonClassName="edit edit-button"
+                        />
                       </div>
                     </td>
                   </tr>

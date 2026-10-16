@@ -38,7 +38,6 @@
   font-size: 20px;
   line-height: 1.2;
   font-weight: 600;
-  letter-spacing: -0.5px;
 }
 
 .features-page-heading p {
@@ -530,9 +529,9 @@
 .features-table .col-category { width: 12%; }
 .features-table .col-description { width: 18%; }
 .features-table .col-status { width: 10%; }
-.features-table .col-created { width: 12%; }
-.features-table .col-updated { width: 12%; }
-.features-table .col-actions { width: 8%; }
+.features-table .col-created { width: 11%; }
+.features-table .col-updated { width: 11%; }
+.features-table .col-actions { width: 10%; }
 
 .features-table thead {
   background: #f1f3fd;

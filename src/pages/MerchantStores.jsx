@@ -8,6 +8,7 @@ import { endpoints } from "../api/endpoints";
 import DeleteConfirmationDialog from "../components/DeleteConfirmationDialog";
 import Pagination from "../components/Pagination";
 import FiltersBar from "../components/FiltersBar";
+import ListActions from "../components/ListActions";
 
 const isUuid = (value) =>
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(value || ""));
@@ -409,11 +410,6 @@ export default function MerchantStores({
 
                           <td>
                             <button type="button" className="store-name-cell store-name-link" title={`View ${storeName}`} onClick={() => handleStoreOverview(store)}>
-
-                              <div className="store-icon">
-                                <i className="bi bi-shop" />
-                              </div>
-
                               <div className="store-name-info">
 
                                 <strong>
@@ -460,18 +456,10 @@ export default function MerchantStores({
                           {/* ACTIONS */}
 
                           <td>
-                            <div className="store-actions">
-                              <button
-                                type="button"
-                                className="store-edit-btn"
-                                title={`Edit ${storeName}`}
-                                aria-label={`Edit ${storeName}`}
-                                onClick={() => handleEdit(store)}
-                              >
-                                <i className="bi bi-pencil" />
-                              </button>
-                              {String(status).toUpperCase() === "INACTIVE" ? (
-                                <button type="button" className="store-icon-btn store-activate-btn" title={`Activate ${storeName}`} aria-label={`Activate ${storeName}`} disabled={Boolean(activatingStoreId)} onClick={async () => {
+                            <ListActions
+                              onEdit={() => handleEdit(store)}
+                              editLabel={`Edit ${storeName}`}
+                              onActivate={String(status).toUpperCase() === "INACTIVE" ? async () => {
                                   const storeUuid = getStoreId(store);
                                   setActivatingStoreId(storeUuid);
                                   setError("");
@@ -483,11 +471,12 @@ export default function MerchantStores({
                                   } finally {
                                     setActivatingStoreId("");
                                   }
-                                }}><i className="bi bi-arrow-counterclockwise" /></button>
-                              ) : (
-                                <button type="button" className="store-icon-btn store-delete-btn" title={`Deactivate ${storeName}`} aria-label={`Deactivate ${storeName}`} onClick={() => { setDeleteError(""); setDeleteTarget(store); }}><i className="bi bi-trash" /></button>
-                              )}
-                            </div>
+                                } : undefined}
+                              activateLabel={`Activate ${storeName}`}
+                              activateDisabled={Boolean(activatingStoreId)}
+                              onDelete={String(status).toUpperCase() === "INACTIVE" ? undefined : () => { setDeleteError(""); setDeleteTarget(store); }}
+                              deleteLabel={`Deactivate ${storeName}`}
+                            />
                           </td>
 
                         </tr>

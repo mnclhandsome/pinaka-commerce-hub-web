@@ -28,7 +28,7 @@
   margin: 0 0 6px;
   color: #10264d;
   font-size: 20px;
-  font-weight: 700;
+  font-weight: 600;
   line-height: 1.1;
 }
 
@@ -703,23 +703,16 @@
   align-items: center;
   justify-content: center;
   gap: 5px;
-  width: 86px;
-  min-width: 86px;
-  box-sizing: border-box;
-  height: 26px;
-  padding: 0 10px;
-  border-radius: 12px;
-  font-size: 11px;
+  padding: 5px 10px !important;
+  font-size: 12px;
+  border-radius: 6px;
   font-weight: 600;
 }
 
-.vendors-status i {
-  font-size: 7px;
-}
 
 .vendors-status.active {
-  background: #dff9eb;
-  color: #08a961;
+  background: #e5f6ea;
+  color: #319a5b;
 }
 
 .vendors-status.inactive {
@@ -1414,8 +1407,10 @@
 }
 
 .vendors-page > .vendors-header {
-  align-items: flex-start;
-  margin-bottom: 22px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
 }
 
 .vendors-header h1 {
@@ -1638,11 +1633,11 @@
 }
 
 .vendors-create-page .vendors-header h1 {
-  margin: 0;
+  margin: 0 0 6px;
   color: #132d50;
-  font-size: 27px;
+  font-size: 20px;
   line-height: 32px;
-  font-weight: 750;
+  font-weight: 600;
 }
 
 .vendors-create-page .vendors-header p {
@@ -1752,7 +1747,7 @@
 .vendors-stat-card {
   min-width: 0;
   height: 95px;
-  min-height: 95px;
+  min-height: 112px;
   padding: 10px;
   box-sizing: border-box;
   display: flex;
@@ -2060,15 +2055,15 @@
 }
 
 .vendors-audit-date {
-  color: #29466f;
+  color: #10264d;
   font-size: 12px;
-  font-weight: 500;
+  font-weight: 600;
   line-height: 1.15;
   white-space: nowrap;
 }
 
 .vendors-audit-time {
-  color: #7890b2;
+  color: #7890ba;
   font-size: 9px;
   font-weight: 500;
   line-height: 1.1;
@@ -2440,9 +2435,10 @@
 }
 
 .vendors-page:not(.vendors-create-page) > .vendors-header h1 {
-  font-size: 27px;
-  line-height: 32px;
-  font-weight: 750;
+  margin: 0 0 6px;
+  font-size: 20px;
+  font-weight: 600;
+  color: #17233e;
 }
 
 .vendors-export-button {
@@ -2590,6 +2586,27 @@
 
 .vendors-table td.vendors-actions {
   white-space: nowrap;
+}
+
+/* Keep shared vendor row action icons on the Store Type list color palette. */
+.vendors-table td.vendors-actions .list-actions .list-action-btn i.list-action-edit-icon,
+.vendors-table td.vendors-actions .list-actions .list-action-btn i.list-action-view-icon {
+  color: #5367f0 !important;
+}
+
+.vendors-table td.vendors-actions .list-actions .list-action-btn:hover:not(:disabled) i.list-action-edit-icon,
+.vendors-table td.vendors-actions .list-actions .list-action-btn:hover:not(:disabled) i.list-action-view-icon {
+  color: #5367f0 !important;
+}
+
+.vendors-table td.vendors-actions .list-actions .list-action-btn.vendors-delete-action,
+.vendors-table td.vendors-actions .list-actions .list-action-btn i.list-action-delete-icon {
+  color: #d9485f !important;
+}
+
+.vendors-table td.vendors-actions .list-actions .list-action-btn.vendors-delete-action:hover:not(:disabled),
+.vendors-table td.vendors-actions .list-actions .list-action-btn.vendors-delete-action:hover:not(:disabled) i.list-action-delete-icon {
+  color: #c5304b !important;
 }
 
 .vendors-table td:nth-child(9) .vendors-status {

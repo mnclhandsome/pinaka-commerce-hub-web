@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { storeTypesApi } from "../api/storeTypes";
 import Pagination from "../components/Pagination";
 import DeleteConfirmationDialog from "../components/DeleteConfirmationDialog";
+import ListActions from "../components/ListActions";
 import { tendorsApi } from "../api/tendors";
 import { useNavigate } from "react-router-dom";
 
@@ -556,10 +557,7 @@ async function confirmDeleteTender() {
           <div>
             <h2>Tenders</h2>
 
-            <p>
-              {filteredTenders.length} payment method
-              {filteredTenders.length === 1 ? "" : "s"} found
-            </p>
+          
           </div>
 
           <div className="tenders-filters pch-master-toolbar pch-master-control">
@@ -687,33 +685,16 @@ async function confirmDeleteTender() {
                       </span>
                     </td>
 
-                    <td className="tenders-actions">
-                      <button
-                        type="button"
-                        onClick={(event) => {
-                         event.stopPropagation();
-                          editTender(tender);
-                        }}
-                      >
-                        <i className="bi bi-pencil" />
-                      </button>
-
-                      <button
-                        type="button"
-                        className="tenders-delete-action"
-                        onClick={(event) => {
-                        event.stopPropagation();
-                        requestDeleteTender(tender);
-                            }}
-                      >
-                        <i
-                          className={
-                            deleting && deletingId === tender.id
-                              ? "bi bi-hourglass-split"
-                              : "bi bi-trash"
-                          }
-                        />
-                      </button>
+                    <td>
+                      <ListActions
+                        onEdit={(event) => { event.stopPropagation(); editTender(tender); }}
+                        onDelete={(event) => { event.stopPropagation(); requestDeleteTender(tender); }}
+                        editLabel={`Edit ${tender.name}`}
+                        deleteLabel={`Delete ${tender.name}`}
+                        deleteButtonClassName="tenders-delete-action"
+                        deleteIconClassName={deleting && deletingId === tender.id ? "bi bi-hourglass-split" : "bi bi-trash3"}
+                        deleteDisabled={deleting && deletingId === tender.id}
+                      />
                     </td>
                   </tr>
                 ))

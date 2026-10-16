@@ -551,7 +551,7 @@ a {
 .page-header h1 {
     font-size: 20px;
     margin: 0 0 6px;
-    font-weight: 700;
+    font-weight: 600;
     color: #17233e;
 }
 
@@ -1101,8 +1101,8 @@ a {
 }
 
 .status i {
-    width: 5px;
-    height: 5px;
+    width: 8px;
+    height: 8px;
     border-radius: 50%;
     display: inline-block;
 }
@@ -1671,7 +1671,7 @@ dialog.merchant-delete-dialog::backdrop {
 .mdl *{box-sizing:border-box}
 .mdl .mdl-card{background:#fff;border:1px solid #e1e4eb;border-radius:8px;padding:18px;margin-bottom:16px}
 .mdl .mdl-header{display:flex;align-items:center;justify-content:space-between;gap:16px;}
-.mdl h2,.mdl h3{margin:0 0 4px;padding:0;border:0;font-size:18px;color:#17233e}
+.mdl h2,.mdl h3{margin:0 0 4px;padding:0;border:0;font-size:18px;font-weight:600;color:#17233e;}
 .mdl p{margin:4px 0 12px;color:#81899a;font-size:13px}
 .mdl button{padding:8px 12px;border:1px solid #dfe3eb;border-radius:5px;background:#fff;color:#5143bc;font:inherit;cursor:pointer}
 .mdl button:disabled{opacity:.5;cursor:not-allowed}
@@ -1705,7 +1705,7 @@ dialog.merchant-delete-dialog::backdrop {
 /* Match the Devices tab header, search row and combined list card. */
 .mel .mel-card{padding:18px;}
 .mel .mel-heading{margin-bottom:16px;}
-.mel h2,.mel h3{margin:0;padding:0;border:0;font-size:18px;}
+.mel h2,.mel h3{margin:0;padding:0;border:0;font-size:18px; font-weight:600;color:#17233e;}
 .mel .mel-heading p{margin:4px 0 0;font-size:13px;color:#81899a;}
 .mel .mel-search {
     width: 100%;
@@ -2004,5 +2004,5 @@ dialog.merchant-delete-dialog::backdrop {
 }
 
 .merchant-timestamp { display: inline-flex; flex-direction: column; gap: 3px; line-height: 1.5; white-space: nowrap; }
-.merchant-timestamp > span { font-size: 12px; font-weight: 600; color: #536078; }
-.merchant-timestamp small { font-size: 10px; font-weight: 400; color: #9aa1ae; }
+.merchant-timestamp > span { font-size: 12px; font-weight: 600; color: #10264d; }
+.merchant-timestamp small { font-size: 10px; font-weight: 400; color:#7290ba; }

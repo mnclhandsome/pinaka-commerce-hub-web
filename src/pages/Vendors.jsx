@@ -3,6 +3,7 @@ import Pagination from "../components/Pagination";
 import FiltersBar from "../components/FiltersBar";
 import { Download } from "lucide-react";
 import DeleteConfirmationDialog from "../components/DeleteConfirmationDialog";
+import ListActions from "../components/ListActions";
 import { useLocationOptions } from "../data/useLocationOptions";
 import { getVendor, getVendors, createVendor, updateVendor, deleteVendor as deleteVendorApi, } from "../api/vendors";
 
@@ -1672,67 +1673,19 @@ export default function Vendors({
 
                       {/* ACTIONS */}
 
-                      <td className="vendors-actions">
-
-                        {/* VIEW */}
-
-                        <button
-                          type="button"
-                          className="vendors-view-action"
-                          onClick={() =>
-                            viewVendor(
-                              vendor
-                            )
-                          }
-                          aria-label={`View ${vendor.name}`}
-                          title="View"
-                          disabled={
-                            saving ||
-                            deleting
-                          }
-                        >
-                          <i className="bi bi-eye" />
-                        </button>
-
-                        {/* EDIT */}
-
-                        <button
-                          type="button"
-                          onClick={() =>
-                            editVendor(
-                              vendor
-                            )
-                          }
-                          aria-label={`Edit ${vendor.name}`}
-                          title="Edit Vendor"
-                          disabled={
-                            saving ||
-                            deleting
-                          }
-                        >
-                          <i className="bi bi-pencil" />
-                        </button>
-
-                        {/* DELETE */}
-
-                        <button
-                          type="button"
-                          className="vendors-delete-action"
-                          onClick={() =>
-                            confirmDelete(
-                              vendor
-                            )
-                          }
-                          aria-label={`Delete ${vendor.name}`}
-                          title="Delete Vendor"
-                          disabled={
-                            saving ||
-                            deleting
-                          }
-                        >
-                          <i className="bi bi-trash" />
-                        </button>
-
+                      <td>
+                        <ListActions
+                          onView={() => viewVendor(vendor)}
+                          onEdit={() => editVendor(vendor)}
+                          onDelete={() => confirmDelete(vendor)}
+                          deleteButtonClassName="vendors-delete-action"
+                          viewLabel={`View ${vendor.name}`}
+                          editLabel={`Edit ${vendor.name}`}
+                          deleteLabel={`Delete ${vendor.name}`}
+                          viewDisabled={saving || deleting}
+                          editDisabled={saving || deleting}
+                          deleteDisabled={saving || deleting}
+                        />
                       </td>
 
                     </tr>

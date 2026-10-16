@@ -1,8 +1,8 @@
 import { pendingStoreRead } from "../api/http";
 import { useEffect, useRef, useState } from "react";
-import { Eye, Trash2 } from "lucide-react";
 import DeleteConfirmationDialog from "../components/DeleteConfirmationDialog";
 import FiltersBar from "../components/FiltersBar";
+import ListActions from "../components/ListActions";
 import Pagination from "../components/Pagination";
 import "../styles/merchant-vendors.css";
 import Vendors from "./Vendors";
@@ -760,20 +760,20 @@ useEffect(() => {
                 {masterLoading && <p role="status">Loading master vendors…</p>}
                 {masterError && <p role="alert" className="mv-error">{masterError}</p>}
 
-                <div className="mv-existing-toolbar">
-                    <input
-                        className="mv-search"
-                        autoFocus
-                        aria-label="Search master vendors"
-                        placeholder="Search vendors by name, code, contact or product…"
-                        value={search}
-                        disabled={busy || masterLoading}
-                        onChange={e => { setSearch(e.target.value); setPickerPage(1); }}
-                    />
-                    <select aria-label="Filter by country" value={countryFilter} onChange={e => { setCountryFilter(e.target.value); setStateFilter(""); setPickerPage(1); }}><option value="">All countries</option>{countries.map(country => <option key={locationKey(country)} value={locationKey(country)}>{country}</option>)}</select>
-                    <select aria-label="Filter by state" value={stateFilter} onChange={e => { setStateFilter(e.target.value); setPickerPage(1); }}><option value="">All states</option>{states.map(state => <option key={locationKey(state)} value={locationKey(state)}>{state}</option>)}</select>
-                    <button type="button" onClick={() => { setSearch(""); setCountryFilter(""); setStateFilter(""); setPickerPage(1); }}>Clear filters</button>
-                </div>
+                <FiltersBar
+                    className="mv-existing-toolbar"
+                    searchValue={search}
+                    onSearchChange={value => { setSearch(value); setPickerPage(1); }}
+                    searchPlaceholder="Search vendors by name, code, contact or product"
+                    searchAriaLabel="Search master vendors"
+                    searchDisabled={busy || masterLoading}
+                    searchAutoFocus
+                    filters={[
+                        { key: "country", label: "Filter by country", value: countryFilter, disabled: busy || masterLoading, options: [{ value: "", label: "All countries" }, ...countries.map(country => ({ value: locationKey(country), label: country }))], onChange: value => { setCountryFilter(value); setStateFilter(""); setPickerPage(1); } },
+                        { key: "state", label: "Filter by state", value: stateFilter, disabled: busy || masterLoading, options: [{ value: "", label: "All states" }, ...states.map(state => ({ value: locationKey(state), label: state }))], onChange: value => { setStateFilter(value); setPickerPage(1); } },
+                    ]}
+                    onClear={() => { setSearch(""); setCountryFilter(""); setStateFilter(""); setPickerPage(1); }}
+                />
 
                 <div className="mv-picker-summary">
                     <span></span>
@@ -974,41 +974,15 @@ useEffect(() => {
                                                 ================================================= */}
 
                                                 <td>
-                                                    <div className="mv-actions">
-
-                                                        <button
-                                                            type="button"
-                                                            className="mv-view mv-icon-button"
-                                                            aria-label={`View ${vendor.name}`}
-                                                            title={`View ${vendor.name}`}
-                                                            onClick={() =>
-                                                                setModal({
-                                                                    type: "view",
-                                                                    vendor,
-                                                                })
-                                                            }
-                                                        >
-                                                            <Eye size={18} aria-hidden="true" />
-                                                        </button>
-
-                                                        <button
-                                                            type="button"
-                                                            className="mv-remove mv-icon-button"
-                                                            aria-label={`Remove ${vendor.name} assignment`}
-                                                            title={`Remove ${vendor.name} assignment`}
-                                                            onClick={() => {
-                                                                setSaveError("");
-
-                                                                setModal({
-                                                                    type: "remove",
-                                                                    vendor,
-                                                                });
-                                                            }}
-                                                        >
-                                                            <Trash2 size={18} aria-hidden="true" />
-                                                        </button>
-
-                                                    </div>
+                                                    <ListActions
+                                                        onView={() => setModal({ type: "view", vendor })}
+                                                        viewLabel={`View ${vendor.name}`}
+                                                        onDelete={() => {
+                                                            setSaveError("");
+                                                            setModal({ type: "remove", vendor });
+                                                        }}
+                                                        deleteLabel={`Remove ${vendor.name} assignment`}
+                                                    />
                                                 </td>
 
                                             </tr>

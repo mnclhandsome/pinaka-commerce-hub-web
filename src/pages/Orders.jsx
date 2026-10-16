@@ -287,18 +287,9 @@ export default function Orders({
         {error && <div className="orders-banner error">{error}</div>}
         {loading && <div className="orders-banner">Loading orders...</div>}
 
-        {!selectedStore && !loading && (
-          <div className="orders-empty">
-            <h3>Select a store</h3>
-            <p>Choose a merchant and store to load that store&apos;s orders.</p>
-          </div>
-        )}
-
-        {selectedStore && !loading && filteredOrders.length > 0 && (
+        {!loading && (
           <>
-            <div className="orders-table-heading">
-              <div>Orders<span>{filteredOrders.length}</span></div>
-            </div>
+            
 
             <div className="orders-table-wrapper">
               <table className="orders-table">
@@ -357,9 +348,6 @@ export default function Orders({
                     <tr>
                       <td className="orders-table-empty" colSpan="6">
                         <div className="products-table-empty-state">
-                          <div className="products-empty-icon">
-                            <i className="bi bi-receipt" />
-                          </div>
                           <strong>
                             {!selectedStore
                               ? "Select a store to view orders"
@@ -385,15 +373,6 @@ export default function Orders({
               </table>
             </div>
           </>
-        )}
-
-        {selectedStore && !loading && filteredOrders.length === 0 && (
-          <div className="orders-empty">
-            
-            <h3>No orders found</h3>
-            <p>{error ? "The order list could not be loaded." : "Try changing your search or filters."}</p>
-            
-          </div>
         )}
 
         {!loading && (

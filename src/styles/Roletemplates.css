@@ -435,7 +435,7 @@
 /* Actions */
 .role-table th:nth-child(7),
 .role-table td:nth-child(7) {
-  width: 10%;
+  width: 12%;
   text-align: center;
 }
 
@@ -504,39 +504,6 @@
   font-size: 13px;
 }
 
-.role-actions {
-  white-space: nowrap;
-}
-
-.role-actions button {
-  display: inline-grid;
-  width: 36px;
-  height: 34px;
-  margin-right: 6px;
-  place-items: center;
-  border: 1px solid #dce8f4;
-  border-radius: 7px;
-  background: #fff;
-  cursor: pointer;
-}
-
-.role-actions button:last-child {
-  margin-right: 0;
-  color: #ef4763;
-}
-
-.role-actions button:first-child {
-  color: #355a91;
-}
-
-.role-actions button:hover {
-  border-color: #a9baff;
-  background: #f7f6ff;
-}
-
-.role-actions button i {
-  font-size: 14px;
-}
 
 .role-empty-state {
   height: 100px;
@@ -865,12 +832,7 @@
   color: #2b354d;
 }
 
-.role-table .role-actions-col,
-.role-table td.role-actions {
-  width: 125px;
-  min-width: 125px;
-  max-width: 125px;
-}
+
 
 /* Keep descriptions to one constant line. */
 .role-description-cell {
@@ -880,35 +842,6 @@
   text-overflow: ellipsis;
 }
 
-/* Action colours */
-.role-actions .role-edit-action {
-  color: #1677ff;
-  border-color: #d9e8ff;
-  background: #f3f8ff;
-}
-
-.role-actions .role-edit-action:hover {
-  color: #0b5ed7;
-  border-color: #a9caff;
-  background: #eaf3ff;
-}
-
-.role-actions .role-delete-action {
-  color: #e34d5b;
-  border-color: #ffd9dd;
-  background: #fff5f6;
-}
-
-.role-actions .role-delete-action:hover {
-  color: #c92f3e;
-  border-color: #ffb9c0;
-  background: #ffebee;
-}
-
-.role-actions .role-edit-action i,
-.role-actions .role-delete-action i {
-  font-size: 13px;
-}
 
 @media (max-width: 768px) {
   .role-table {
@@ -996,13 +929,6 @@
   max-width: 150px;
 }
 
-.role-table .role-actions-col,
-.role-table td.role-actions {
-  width: 120px;
-  min-width: 120px;
-  max-width: 120px;
-}
-
 /* Keep cell content inside its own column */
 .role-table th,
 .role-table td {
@@ -1074,80 +1000,6 @@
   color: #2b354d;
 }
 
-/* Actions */
-.role-table th.role-actions-col,
-.role-table td.role-actions {
-  position: sticky;
-  right: 0;
-  z-index: 3;
-  text-align: center;
-  white-space: nowrap;
-  background: #fbfcfe;
-}
-
-.role-table td.role-actions {
-  z-index: 2;
-  background: #ffffff;
-  box-shadow: -6px 0 10px rgba(28, 43, 78, 0.06);
-}
-
-.role-actions {
-  display: table-cell;
-}
-
-.role-actions button {
-  display: inline-grid;
-  width: 32px;
-  height: 30px;
-  margin: 0 3px;
-  padding: 0;
-  place-items: center;
-  border: 1px solid #e7ebf2;
-  border-radius: 7px;
-  background: #ffffff;
-  cursor: pointer;
-  transition:
-    color 0.18s ease,
-    background 0.18s ease,
-    border-color 0.18s ease,
-    transform 0.18s ease;
-}
-
-.role-actions button:hover {
-  transform: translateY(-1px);
-}
-
-.role-actions button:disabled {
-  opacity: 0.55;
-  cursor: not-allowed;
-  transform: none;
-}
-
-/* Edit = blue */
-.role-actions .role-edit-action {
-  color: #1677e8;
-  background: #f2f7ff;
-  border-color: #d8e8ff;
-}
-
-.role-actions .role-edit-action:hover {
-  color: #0b63c7;
-  background: #e8f2ff;
-  border-color: #bcd9ff;
-}
-
-/* Delete = red */
-.role-actions .role-delete-action {
-  color: #e34d5b;
-  background: #fff4f4;
-  border-color: #f8d9dc;
-}
-
-.role-actions .role-delete-action:hover {
-  color: #c93443;
-  background: #ffe9eb;
-  border-color: #f2bfc5;
-}
 
 /* Responsive: keep the desktop table readable and scroll horizontally */
 @media (max-width: 1200px) {
@@ -1192,25 +1044,7 @@
   border-collapse: collapse;
 }
 
-/* Equal-width table columns */
-.role-table .role-code-col,
-.role-table td.role-code-cell,
-.role-table .role-name-col,
-.role-table td.role-name-cell,
-.role-table .role-description-col,
-.role-table td.role-description-cell,
-.role-table .role-status-col,
-.role-table td.role-status-cell,
-.role-table .role-created-col,
-.role-table td.role-created-cell,
-.role-table .role-updated-col,
-.role-table td.role-updated-cell,
-.role-table .role-actions-col,
-.role-table td.role-actions {
-  width: 14.2857%;
-  min-width: 0;
-  max-width: none;
-}
+
 
 /* Keep every cell inside its own column */
 .role-table th,
@@ -1277,29 +1111,7 @@
   white-space: nowrap;
 }
 
-/* =========================================================
-   ACTIONS COLUMN
-   Sticky only matters when horizontal scrolling exists.
-   It does NOT create horizontal scrolling by itself.
-   ========================================================= */
 
-.role-table th.role-actions-col,
-.role-table td.role-actions {
-  position: sticky;
-  right: 0;
-  z-index: 4;
-  text-align: center;
-  white-space: nowrap;
-}
-
-.role-table th.role-actions-col {
-  background: #fbfcfe;
-}
-
-.role-table td.role-actions {
-  background: #ffffff;
-  box-shadow: -6px 0 10px rgba(28, 43, 78, 0.06);
-}
 
 /* =========================================================
    SMALLER SCREENS
@@ -2249,12 +2061,7 @@
   white-space: nowrap;
 }
 
-.role-table .role-actions-col,
-.role-table td.role-actions {
-  width: 9%;
-  min-width: 0;
-  max-width: none;
-}
+
 
 /* Dates should not be visually shortened on normal desktop screens. */
 .role-table td.role-created-cell,
@@ -2308,18 +2115,7 @@
 }
 
 
-/* =========================================================
-   FINAL EQUAL TABLE COLUMN RULE
-   JSX uses .role-equal-col on every table column/header/cell.
-   All 7 columns use exactly the same width.
-   ========================================================= */
 
-.role-table .role-equal-col {
-  width: 14.2857% !important;
-  min-width: 0 !important;
-  max-width: none !important;
-  box-sizing: border-box;
-}
 
 /* Keep the table itself predictable at smaller widths.
    The seven columns remain equal; the table may scroll horizontally. */
@@ -2471,29 +2267,9 @@
   background: #fff;
 }
 
-.role-delete-actions .role-delete-confirm-btn {
-  border-color: #e34d5b;
-  background: #e34d5b;
-  box-shadow: 0 4px 10px rgba(227, 77, 91, 0.14);
-}
 
-.role-delete-actions .role-delete-confirm-btn:hover {
-  border-color: #c93443;
-  background: #c93443;
-}
 
-/* Keep the edit action clearly blue */
-.role-table .role-actions .role-edit-action {
-  color: #1677e8 !important;
-  background: #f2f7ff !important;
-  border-color: #d8e8ff !important;
-}
 
-.role-table .role-actions .role-edit-action:hover {
-  color: #0b63c7 !important;
-  background: #e8f2ff !important;
-  border-color: #bcd9ff !important;
-}
 
 /* Mobile filter stack */
 @media (max-width: 1100px) {
@@ -2719,10 +2495,7 @@
     box-shadow 0.16s ease;
 }
 
-.role-table tbody tr.role-template-clickable-row > td {
-  cursor: pointer;
-  transition: background-color 0.16s ease;
-}
+
 
 /* Complete row hover */
 .role-table tbody tr.role-template-clickable-row:hover > td {
@@ -2764,11 +2537,7 @@
   background: #f1f5ff;
 }
 
-/* The action controls remain independent clickable controls */
-.role-table tbody tr.role-template-clickable-row .role-actions,
-.role-table tbody tr.role-template-clickable-row .role-actions button {
-  cursor: pointer;
-}
+
 
 
 /* =========================================================
@@ -2947,69 +2716,6 @@
   box-sizing: border-box;
 }
 
-/* Edit/Delete — exact Features reference dimensions and visual treatment */
-.role-table .role-actions {
-  white-space: nowrap;
-  text-align: center;
-}
-
-.role-table .role-actions .role-edit-action,
-.role-table .role-actions .role-delete-action {
-  width: 35px;
-  min-width: 35px;
-  height: 35px;
-  margin: 0 ;
-  padding: 0 ;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid #edf0f5;
-  border-radius: 7px;
-  background: #f8faff;
-  box-shadow: none !important;
-  cursor: pointer;
-}
-
-.role-table .role-actions .role-edit-action:hover {
-  color: #0b63c7 !important;
-  background: #e8f2ff !important;
-  border-color: #bcd9ff !important;
-}
-
-.role-table .role-actions .role-delete-action {
-  margin-left: 8px !important;
-  color: #d9485f !important;
-  
-}
-
-
-.role-table .role-actions .role-delete-action:hover {
- 
-  border-color: #ffd8e1 !important;
-  background: #fff0f3 !important;
-}
-
-.role-table .role-actions .role-edit-action i,
-.role-table .role-actions .role-delete-action i {
-  font-size: 14px !important;
-  line-height: 1;
-}
-
-@media (max-width: 1100px) {
-  .role-list-header {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-
-  .role-filters {
-    width: 100%;
-    justify-content: flex-start;
-    flex-wrap: wrap;
-  }
-}
-
-@media (max-width: 700px) {
-}
 
 
 /* =========================================================

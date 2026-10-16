@@ -1,6 +1,7 @@
 import { pendingStoreRead } from "../api/http";
 import { useEffect, useRef, useState } from "react";
 import DeleteConfirmationDialog from "../components/DeleteConfirmationDialog";
+import ListActions from "../components/ListActions";
 import "../styles/merchant-tenders.css";
 import Pagination from "../components/Pagination";
 import FiltersBar from "../components/FiltersBar";
@@ -101,6 +102,8 @@ export default function MerchantTenders({
   assignedTenderIds = [],
   loading = false,
   error = "",
+  onNavigationChange,
+  navigationBackRef,
 }) {
   const [ids, setIds] = useState(() => assignedTenderIds.map(idOf));
 
@@ -113,6 +116,8 @@ export default function MerchantTenders({
   const [query, setQuery] = useState("");
 const [page, setPage] = useState(1);
 const [pageSize, setPageSize] = useState(10);
+const [pickerPage, setPickerPage] = useState(1);
+const [pickerPageSize, setPickerPageSize] = useState(25);
 
   const [sort, setSort] = useState({
     key: "name",
@@ -212,7 +217,7 @@ const [pageSize, setPageSize] = useState(10);
 
  
 useEffect(() => {
-  if (modal && modal.type !== "remove") {
+  if (modal?.type === "view") {
     if (!dialog.current?.open) {
       dialog.current?.showModal();
     }
@@ -221,6 +226,15 @@ useEffect(() => {
     addButton.current?.focus();
   }
 }, [modal]);
+
+  useEffect(() => {
+    if (modal?.type === "select") {
+      onNavigationChange?.("select");
+      if (navigationBackRef) navigationBackRef.current = close;
+    } else {
+      onNavigationChange?.(null);
+    }
+  }, [modal?.type, onNavigationChange, navigationBackRef]);
 
 
   const tenders = Array.from(
@@ -271,6 +285,9 @@ useEffect(() => {
   );
 
   const selectable = available.filter(active);
+  const pickerPages = Math.max(1, Math.ceil(available.length / pickerPageSize));
+  const currentPickerPage = Math.min(pickerPage, pickerPages);
+  const pickerRows = available.slice((currentPickerPage - 1) * pickerPageSize, currentPickerPage * pickerPageSize);
 
   const close = () => {
     if (!lock.current) {
@@ -287,6 +304,7 @@ useEffect(() => {
     setMasterError("");
     setSelection([]);
     setSearch("");
+      setPickerPage(1);
     setSaveError("");
 
     try {
@@ -435,7 +453,42 @@ useEffect(() => {
   }
   return (
     <div className="merchant-tenders">
-  <section className="mt-card">
+      {modal?.type === "select" ? (
+        <section className="mt-card mt-existing-page">
+          <header className="mt-existing-heading">
+            <div><h2>Add Tender</h2><p>Choose one or more tenders to add to this merchant.</p></div>
+            <button type="button" disabled={busy} onClick={close}><i className="bi bi-arrow-left" /> Back to Tenders</button>
+          </header>
+          {masterLoading && <p role="status">Loading master tenders…</p>}
+          {masterError && <p role="alert" className="mt-error">{masterError}</p>}
+          <FiltersBar
+            className="mt-picker-toolbar"
+            searchValue={search}
+            onSearchChange={(value) => { setSearch(value); setPickerPage(1); }}
+            searchPlaceholder="Search tenders by name or code"
+            searchAriaLabel="Search master tenders"
+            searchDisabled={busy || masterLoading}
+            searchAutoFocus
+            onClear={() => { setSearch(""); setPickerPage(1); }}
+            clearLabel="Reset"
+          />
+          <div className="mt-scroll mt-options">
+            <table>
+              <thead><tr><th>Select</th><th>Tender Code</th><th>Tender Name</th><th>Status</th></tr></thead>
+              <tbody>
+                {pickerRows.map((tender) => <tr key={tender.id}>
+                  <td><input type="checkbox" aria-label={`Select ${tender.name}`} disabled={busy || !active(tender)} checked={selection.includes(tender.id)} onChange={(event) => setSelection((old) => event.target.checked ? [...old, tender.id] : old.filter((id) => id !== tender.id))} /></td>
+                  <td>{tender.code}</td><td><strong>{tender.name}</strong></td><td>{badge(tender)}</td>
+                </tr>)}
+                {!available.length && !masterLoading && <tr><td colSpan={4}>No unassigned tenders found in master data.</td></tr>}
+              </tbody>
+            </table>
+          </div>
+          <Pagination currentPage={currentPickerPage} totalPages={pickerPages} totalItems={available.length} pageSize={pickerPageSize} onPageChange={setPickerPage} onPageSizeChange={(size) => { setPickerPageSize(size); setPickerPage(1); }} itemLabel="tenders" showWhenEmpty={true} />
+          {saveError && <p role="alert" className="mt-error">{saveError}</p>}
+          <footer className="mt-existing-footer"><button type="button" disabled={busy} onClick={close}>Cancel</button><button type="button" className="mt-primary" disabled={busy || !selection.length || masterLoading} onClick={() => save([...new Set([...ids, ...selection.filter((id) => tenders.some((value) => value.id === id && active(value)))])])}>{busy ? "Saving…" : "Add Selected"}</button></footer>
+        </section>
+      ) : <section className="mt-card">
    <div className="mt-header">
   <div>
     <h3>Tender List</h3>
@@ -487,32 +540,15 @@ useEffect(() => {
                         <td>{badge(tender)}</td>
 
                         <td>
-                          <div className="mt-actions">
-                            <button
-                              aria-label={`View ${tender.name}`}
-                              onClick={() =>
-                                setModal({
-                                  type: "view",
-                                  tender,
-                                })
-                              }
-                            >
-                              View
-                            </button>
-
-                            <button
-                              aria-label={`Remove ${tender.name} assignment`}
-                              onClick={() => {
-                                setSaveError("");
-                                setModal({
-                                  type: "remove",
-                                  tender,
-                                });
-                              }}
-                            >
-                              Remove
-                            </button>
-                          </div>
+                          <ListActions
+                            onView={() => setModal({ type: "view", tender })}
+                            viewLabel={`View ${tender.name}`}
+                            onDelete={() => {
+                              setSaveError("");
+                              setModal({ type: "remove", tender });
+                            }}
+                            deleteLabel={`Remove ${tender.name} assignment`}
+                          />
                         </td>
                       </tr>
                     ))}
@@ -544,7 +580,7 @@ useEffect(() => {
 />
           </>
         )}
-      </section>
+      </section>}
 
       <dialog
         className="mt-dialog"
@@ -590,17 +626,17 @@ useEffect(() => {
                 </p>
               )}
 
-              <div className="mt-picker-toolbar">
-                <input
-                className="mt-search"
-                autoFocus
-                aria-label="Search master tenders"
-                placeholder="Search tenders by name or code…"
-                value={search}
-                disabled={busy || masterLoading}
-                onChange={(event) => setSearch(event.target.value)}
-                />
-              </div>
+              <FiltersBar
+            className="mt-picker-toolbar"
+            searchValue={search}
+            onSearchChange={(value) => { setSearch(value); setPickerPage(1); }}
+            searchPlaceholder="Search tenders by name or code"
+            searchAriaLabel="Search master tenders"
+            searchDisabled={busy || masterLoading}
+            searchAutoFocus
+            onClear={() => { setSearch(""); setPickerPage(1); }}
+            clearLabel="Clear filters"
+          />
 
               <div className="mt-scroll mt-options">
                 <table>

@@ -88,6 +88,8 @@ function MerchantReadOnly({ merchantId, merchant, onBack, onSaveEmployee, onSave
   const [devicesError, setDevicesError] = useState('');
   const [vendorFlow, setVendorFlow] = useState(null);
   const vendorBackRef = useRef(null);
+  const [tenderFlow, setTenderFlow] = useState(null);
+  const tenderBackRef = useRef(null);
   async function saveDeviceAndRefresh(values) {
     const result=typeof onSaveDevice==='function' ? await onSaveDevice(values) : await devicesApi.create(values);
     if(result?.success===false)throw new Error(result.message || 'Device creation failed.');
@@ -529,7 +531,7 @@ async function openEmployeeEdit(employee) {
       .merchant-readonly .merchant-detail-actions .btn{display:flex;align-items:center;justify-content:flex-start;gap:8px;margin:0;width:100%;}
       @media(max-width:650px){.merchant-readonly .page-header{flex-wrap:wrap;gap:16px;}.merchant-readonly .merchant-detail-actions{width:100%;}}
       .merchant-readonly .merchant-view-section{background:#fff;border:1px solid #e1e4eb;border-radius:10px;margin-bottom:16px;overflow:hidden;}
-      .merchant-readonly .merchant-view-section h2{font-size:17px;padding:16px 20px;margin:0;border-bottom:1px solid #edf0f4;color:#17233e;}
+      .merchant-readonly .merchant-view-section h2{font-size:18px;padding:16px 20px;margin:0;border-bottom:1px solid #edf0f4;color:#17233e;}
       .merchant-readonly .merchant-view-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px 28px;padding:20px;margin:0;}
       .merchant-readonly .merchant-view-fields dt{font-weight:500;color:#7c8495;font-size:13px;margin-bottom:5px;}
       .merchant-readonly .merchant-view-fields dd{margin:0;color:#17233e;font-size:15px;overflow-wrap:anywhere;}
@@ -542,7 +544,7 @@ async function openEmployeeEdit(employee) {
       @media(max-width:650px){.merchant-readonly .merchant-view-fields{grid-template-columns:1fr;}}
     `}</style>
     <header className="merchant-view-topbar">
-      {vendorFlow ? <><button type="button" className="merchant-view-back" onClick={() => vendorBackRef.current?.()}><i className="bi bi-arrow-left" /> Vendors</button><span>/</span><strong>{vendorFlow === "create" ? "Add New Vendor" : "Add Existing Vendor"}</strong></> : addingEmployee ? <><button type="button" className="merchant-view-back" onClick={() => setAddingEmployee(false)}><i className="bi bi-arrow-left" /> Employees</button><span>/</span><strong>Add Employee</strong></> : addingDevice ? <><button type="button" className="merchant-view-back" onClick={() => setAddingDevice(false)}><i className="bi bi-arrow-left" /> Devices</button><span>/</span><strong>Add Device</strong></> : <button type="button" className="merchant-view-back" onClick={onBack}><i className="bi bi-arrow-left" /> Merchants</button>}
+      {vendorFlow ? <><button type="button" className="merchant-view-back" onClick={() => vendorBackRef.current?.()}><i className="bi bi-arrow-left" /> Vendors</button><span>/</span><strong>{vendorFlow === "create" ? "Add New Vendor" : "Add Existing Vendor"}</strong></> : tenderFlow ? <><button type="button" className="merchant-view-back" onClick={() => tenderBackRef.current?.()}><i className="bi bi-arrow-left" /> Tenders</button><span>/</span><strong>Add Existing Tender</strong></> : addingEmployee ? <><button type="button" className="merchant-view-back" onClick={() => setAddingEmployee(false)}><i className="bi bi-arrow-left" /> Employees</button><span>/</span><strong>Add Employee</strong></> : addingDevice ? <><button type="button" className="merchant-view-back" onClick={() => setAddingDevice(false)}><i className="bi bi-arrow-left" /> Devices</button><span>/</span><strong>Add Device</strong></> : <button type="button" className="merchant-view-back" onClick={onBack}><i className="bi bi-arrow-left" /> Merchants</button>}
     </header>
     <div className="merchant-view-layout">
       {!loading && !error && <div className="merchant-view-tabs" role="tablist" aria-orientation="vertical" aria-label="Merchant details">
@@ -591,7 +593,7 @@ async function openEmployeeEdit(employee) {
         {activeTab === 'vendors' && <MerchantVendors merchantId={merchantId} masterVendors={masterVendors} assignedVendorIds={vendorAssignments?.[merchantId] ?? saved?.vendorIds ?? raw.vendorIds ?? raw.vendors ?? []} onSaveAssignments={onSaveVendorAssignments} onNavigationChange={setVendorFlow} navigationBackRef={vendorBackRef} loading={vendorsLoading} error={vendorsError}/>}
       </div>
       <div role="tabpanel" id="merchant-panel-tenders" aria-labelledby="merchant-tab-tenders" hidden={activeTab !== 'tenders'} tabIndex={0}>
-        {activeTab === 'tenders' && <MerchantTenders merchantId={merchantId} masterTenders={masterTenders} assignedTenderIds={tenderAssignments?.[merchantId] ?? saved?.tenderIds ?? raw.tenderIds ?? raw.tenders ?? []} onSaveAssignments={onSaveTenderAssignments} loading={tendersLoading} error={tendersError}/>}
+        {activeTab === 'tenders' && <MerchantTenders merchantId={merchantId} masterTenders={masterTenders} assignedTenderIds={tenderAssignments?.[merchantId] ?? saved?.tenderIds ?? raw.tenderIds ?? raw.tenders ?? []} onSaveAssignments={onSaveTenderAssignments} onNavigationChange={setTenderFlow} navigationBackRef={tenderBackRef} loading={tendersLoading} error={tendersError}/>}
       </div>
       
 <div
@@ -612,8 +614,17 @@ async function openEmployeeEdit(employee) {
   )}
 
   {addingEmployee ? (
-    <>
-      <ViewSection title="Add Employee">
+    <section className="merchant-vendors mv-create-page merchant-employee-create-page">
+      <header className="mv-card mv-header">
+        <div>
+          <h2>Add Employee</h2>
+          <p>Enter the basic details of the employee.</p>
+        </div>
+        <button type="button" className="store-config-back-button" onClick={() => setAddingEmployee(false)}>
+          <i className="bi bi-arrow-left" /> Back to Employees
+        </button>
+      </header>
+      <div className="mv-create-content">
       <MerchantEmployeeForm
         embedded
         key={apiMerchantId}
@@ -622,8 +633,8 @@ async function openEmployeeEdit(employee) {
         onSave={saveEmployeeAndRefresh}
         onBack={() => setAddingEmployee(false)}
       />
-      </ViewSection>
-    </>
+      </div>
+    </section>
   ) : editingEmployee ? (
     <EditEmployee
       key={editingEmployee.id || editingEmployee.employeeId}
@@ -660,15 +671,29 @@ async function openEmployeeEdit(employee) {
   )}
 </div>
       <div role="tabpanel" id="merchant-panel-devices" aria-labelledby="merchant-tab-devices" hidden={activeTab !== 'devices'} tabIndex={0}>
-        {addingDevice || editingDevice ? <>
-          {editingDevice ? (
-            <AddMerchantDevice key={`${apiMerchantId}-${editingDevice.id || "edit"}`} merchantId={apiMerchantId} merchant={merchant} initialDevice={editingDevice} onSave={updateMerchantDevice} onBack={()=>{setAddingDevice(false);setEditingDevice(null);}}/>
-          ) : (
-            <ViewSection title="Add Device">
-              <AddMerchantDevice key={`${apiMerchantId}-new`} merchantId={apiMerchantId} merchant={merchant} onSave={saveDeviceAndRefresh} onBack={()=>{setAddingDevice(false);setEditingDevice(null);}}/>
-            </ViewSection>
-          )}
-        </> : <MerchantDeviceList devices={devices} storeName={storeName} onAdd={()=>setAddingDevice(true)} onEdit={setEditingDevice} onDelete={(device)=>{setDeviceDeleteError("");setDeviceToDelete(device);}} loading={devicesLoading} error={devicesError}/>}
+        {addingDevice || editingDevice ? (
+          <section className="merchant-vendors mv-create-page merchant-device-create-page">
+            <header className="mv-card mv-header">
+              <div>
+                <h2>{editingDevice ? "Edit Device" : "Add New Device"}</h2>
+                <p>{editingDevice ? "Update the device information and settings." : "Enter device information, assignment details and settings."}</p>
+              </div>
+              <button type="button" className="store-config-back-button" onClick={() => { setAddingDevice(false); setEditingDevice(null); }}>
+                <i className="bi bi-arrow-left" /> Back to Devices
+              </button>
+            </header>
+            <div className="mv-create-content">
+              <AddMerchantDevice
+                key={`${apiMerchantId}-${editingDevice?.id || "new"}`}
+                merchantId={apiMerchantId}
+                merchant={merchant}
+                initialDevice={editingDevice || null}
+                onSave={editingDevice ? updateMerchantDevice : saveDeviceAndRefresh}
+                onBack={() => { setAddingDevice(false); setEditingDevice(null); }}
+              />
+            </div>
+          </section>
+        ) : <MerchantDeviceList devices={devices} storeName={storeName} onAdd={()=>setAddingDevice(true)} onEdit={setEditingDevice} onDelete={(device)=>{setDeviceDeleteError("");setDeviceToDelete(device);}} loading={devicesLoading} error={devicesError}/>}
         <DeleteConfirmationDialog
           isOpen={Boolean(deviceToDelete)}
           title="Delete Device"

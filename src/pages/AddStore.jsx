@@ -25,6 +25,7 @@ import {
   readStoreRoleTemplates,
 } from "../api/storeRoleTemplatesApi";
 import FilterDropdown from "../components/FilterDropdown";
+import FiltersBar from "../components/FiltersBar";
 import { api, ApiError, pendingStoreRead } from "../api/http";
 import { endpoints } from "../api/endpoints";
 import {
@@ -112,6 +113,22 @@ function validatePhoneForCountry(value, country) {
   if (digits.length < rule.minDigits || digits.length > rule.maxDigits)
     return `Enter a valid ${country} phone number.`;
   return "";
+}
+const POSTAL_CODE_RULES = {
+  India: /^\d{6}$/,
+  "United States": /^\d{5}(?:-\d{4})?$/,
+  Canada: /^[A-Z]\d[A-Z][ -]?\d[A-Z]\d$/i,
+  Australia: /^\d{4}$/,
+  "United Kingdom": /^[A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2}$/i,
+};
+function validatePostalCode(value, country) {
+  const postalCode = String(value || "").trim();
+  if (!postalCode) return "";
+  const countryRule = POSTAL_CODE_RULES[country];
+  const valid = countryRule
+    ? countryRule.test(postalCode)
+    : /^[A-Z0-9](?:[A-Z0-9 -]{0,10}[A-Z0-9])$/i.test(postalCode);
+  return valid ? "" : `Enter a valid postal code for ${country || "this country"}.`;
 }
 const STEPS = [
   "Store Details",
@@ -2031,6 +2048,8 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
             addError(field, "Enter the store " + label + ".");
         }
       }
+      const postalCodeError = validatePostalCode(store.zip, store.country);
+      if (postalCodeError) addError("Zip / Postal Code", postalCodeError);
       const phoneError = validatePhoneForCountry(store.phone, store.country);
       if (phoneError) addError("Store Phone", phoneError);
       if (store.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(store.email.trim()))
@@ -2796,6 +2815,7 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
                 value={store.zip}
                 onChange={(value) => updateStore("zip", value)}
                 placeholder="Postal code"
+                autoComplete="postal-code"
               />
             </div>
           </Panel>
@@ -2974,8 +2994,11 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
               invalid={invalidStoreFields.has("Store Phone")}
               error={getFieldValidationMessage(error, "Store Phone")}
               value={store.phone}
-              onChange={(value) => updateStore("phone", value)}
+              onChange={(value) => updateStore("phone", value.replace(/\D/g, ""))}
               type="tel"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              maxLength={15}
               placeholder="Enter phone number"
             />
             <Field
@@ -3037,42 +3060,52 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
           title="Features"
           subtitle={readOnly ? "Features available to this store and their saved selection status." : "Select the features you want to enable for this store."}
           className="sf-feature-list-panel"
-          action={<label className="sf-select-all-label sf-panel-select-all"><input type="checkbox" disabled={readOnly || mastersLoading || !selectableFeatureNames.length} checked={allVisibleFeaturesSelected} onChange={(event) => setEnabledFeatures((current) => event.target.checked ? [...new Set([...current, ...selectableFeatureNames])] : current.filter((name) => !selectableFeatureNames.includes(name)))} />Select all eligible</label>}
+          action={(
+            <div className="sf-feature-header-actions">
+              <label className="sf-select-all-label sf-panel-select-all">
+                <input
+                  type="checkbox"
+                  disabled={readOnly || mastersLoading || !selectableFeatureNames.length}
+                  checked={allVisibleFeaturesSelected}
+                  onChange={(event) => setEnabledFeatures((current) => event.target.checked ? [...new Set([...current, ...selectableFeatureNames])] : current.filter((name) => !selectableFeatureNames.includes(name)))}
+                />
+                Select all eligible
+              </label>
+            </div>
+          )}
         >
           <div className="sf-feature-tools">
-            <div className="sf-tabs">
-              {categories.map((category) => {
-                const count =
-                  category === "All Features"
-                    ? featureRows.length
-                    : featureRows.filter((row) => row.category === category)
-                        .length;
-                return (
-                  <button
-                    key={category}
-                    type="button"
-                    className={featureCategory === category ? "active" : ""}
-                    onClick={() => {
-                      setFeatureCategory(category);
-                      setFeaturePage(1);
-                    }}
-                  >
-                    {category} ({count})
-                  </button>
-                );
-              })}
-            </div>
-            <label className="sf-search">
-              <i className="bi bi-search" />
-              <input
-                placeholder="Search features..."
-                value={featureSearch}
-                onChange={(event) => {
-                  setFeatureSearch(event.target.value);
-                  setFeaturePage(1);
-                }}
-              />
-            </label>
+            <FiltersBar
+              className="sf-feature-filters"
+              searchValue={featureSearch}
+              onSearchChange={(value) => {
+                setFeatureSearch(value);
+                setFeaturePage(1);
+              }}
+              searchPlaceholder="Search features..."
+              searchAriaLabel="Search features"
+              filters={[
+                {
+                  key: "feature-category",
+                  label: "Feature category",
+                  value: featureCategory,
+                  options: categories.map((category) => ({
+                    value: category,
+                    label: `${category} (${category === "All Features" ? featureRows.length : featureRows.filter((row) => row.category === category).length})`,
+                  })),
+                  onChange: (value) => {
+                    setFeatureCategory(value);
+                    setFeaturePage(1);
+                  },
+                },
+              ]}
+              onClear={() => {
+                setFeatureSearch("");
+                setFeatureCategory("All Features");
+                setFeaturePage(1);
+              }}
+              clearLabel="Reset"
+            />
           </div>
           <div className="sf-table-wrap sf-feature-table-wrap">
             <table className="sf-table sf-feature-table">
