@@ -1509,10 +1509,9 @@
 }
 
 .rs-page-header h1 {
-  font-size: 28px;
-  font-weight: 700;
+  font-size: 20px;
+  font-weight: 600;
   line-height: 36px;
-  letter-spacing: -0.02em;
 }
 
 .rs-page-header p {
@@ -1785,10 +1784,8 @@
 .rs-page .rs-page-header h1 {
   margin: 0;
   color: #102144;
-  font-size: 28px;
-  font-weight: 700;
-  line-height: 36px;
-  letter-spacing: -0.02em;
+  font-size: 20px;
+  font-weight: 600;
 }
 
 #pch-new main > h1 + p,
@@ -2558,7 +2555,7 @@
 }
 
 .rs-page-header h1 {
-  font-size: 28px !important;
+  font-size: 20px !important;
   line-height: 36px !important;
 }
 
@@ -2707,10 +2704,8 @@
 .rs-page .rs-page-header h1 {
   margin: 0;
   color: #102144;
-  font-size: 28px;
-  font-weight: 700;
-  line-height: 36px;
-  letter-spacing: -0.02em;
+  font-size: 20px;
+  font-weight: 600;
 
 }
 
@@ -2906,10 +2901,9 @@
 #pch-new.pch-merchant-one-page .pch-review-step .rs-page-header h1 {
   margin: 0;
   color: #102144;
-  font-size: 28px;
-  font-weight: 700;
+  font-size: 20px;
+  font-weight: 600;
   line-height: 36px;
-  letter-spacing: -0.02em;
 }
 
 #pch-new.pch-merchant-one-page .pch-review-step .rs-page-header p:not(.pch-eyebrow) {

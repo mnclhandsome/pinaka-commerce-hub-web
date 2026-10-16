@@ -278,9 +278,8 @@
 .sf-heading-row h1 {
   margin: 0;
   color: var(--sf-navy);
-  font-size: 26px;
-  line-height: 1.2;
-  letter-spacing: -0.035em;
+  font-size: 20px;
+  font-weight: 600;
 }
 
 .sf-heading-row p {
@@ -1915,7 +1914,7 @@
 .sf-root form { margin: 0; }
 .sf-heading-row { display: flex; justify-content: space-between; align-items: flex-end; gap: 22px; margin-bottom: 8px; }
 .sf-eyebrow { margin-bottom: 5px; color:#5143bc; }
-.sf-heading-row h1 { margin: 0; color: var(--sf-navy); font-size: 26px; line-height: 1.2; letter-spacing: -.035em; }
+.sf-heading-row h1 { margin: 0; color: var(--sf-navy); font-size: 20px; font-weight: 600; }
 .sf-heading-row p { margin: 3px 0 0; color: var(--sf-muted); font-size: 13px; }
 .sf-subscription-heading { align-items: flex-start; margin-bottom: 20px; }
 .sf-subscription-heading p { margin-top: 3px; line-height: 1.45; }

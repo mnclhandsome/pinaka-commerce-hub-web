@@ -568,16 +568,16 @@
 
   display: inline-flex;
   align-items: center;
-  gap: 7px;
-  padding: 6px 10px;
-  border-radius: 6px;
-  font-size: 12px;
-  font-weight: 700;
+  gap: 5px;
+  padding: 5px 10px !important;
+  border-radius: 6px !important;
+  font-size: 12px  !important;
+  font-weight: 500;
 
 }:is(.merchant-subscriptions-page, .subscription-flow-page, .subscription-page) .status-badge i {
 
-  width: 7px;
-  height: 7px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
   background: currentColor;
 
@@ -2508,7 +2508,7 @@
 
     margin: 0 0 6px;
     font-size: 20px;
-    font-weight: 700;
+    font-weight: 600;
     color: #17233e;
 
 }.merchant-subscriptions-page .subscriptions-heading-row p {
@@ -4984,8 +4984,8 @@
 .page-header h1 {
   margin: 0 0 5px;
   color: #0b1d3b;
-  font-size: 26px;
-  font-weight: 700;
+  font-size: 20px;
+  font-weight: 600;
   line-height: 1.2;
 }
 

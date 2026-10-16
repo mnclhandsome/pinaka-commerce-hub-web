@@ -191,7 +191,7 @@ export default function StoreCustomers({
         <div className="store-customers-title-area">
 
           <div className="store-customers-title-icon">
-            <i className="bi bi-people" />
+      
           </div>
 
           <div>

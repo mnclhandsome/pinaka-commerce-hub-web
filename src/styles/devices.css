@@ -24,11 +24,10 @@
 }
 
 .devices-page-header h1 {
-  margin: 0;
-  color: #142b4c;
+  margin: 0 0 6px;
+  color: #17233e;
   font-size: 20px;
-  line-height: 1.2;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .devices-subtitle {
@@ -1186,7 +1185,10 @@
   }
 
   .devices-page-header h1 {
+    margin: 0 0 6px;
+    color: #17233e;
     font-size: 20px;
+    font-weight: 600;
   }
 
   .devices-stats {

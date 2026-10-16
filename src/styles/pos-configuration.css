@@ -20,8 +20,8 @@
 .pos-page-content .page-header h1 {
     margin: 0;
     color: #17233e;
-    font-size: 20px;
-    font-weight: 700;
+    font-size: 18px;
+    font-weight: 600;
     line-height: 1.25;
 }
 
@@ -4558,7 +4558,7 @@
 .pos-screen-lock { margin: 0; padding: 0; border: 0; min-width: 0; }
 .pos-page-content .pc-heading { margin-bottom: 24px; }
 .pos-page-content .pc-heading-title { gap: 17px; }
-.pos-page-content .pc-heading h2 { margin: 0; color: var(--pos-heading); font: inherit; font-size: var(--pos-heading-size); font-weight: 600; line-height: 1.35; }
+.pos-page-content .pc-heading h2 { margin: 0; color: var(--pos-heading); font: inherit; font-size: 18px; font-weight: 600; line-height: 1.4; }
 .pos-page-content .pc-heading p { margin: 5px 0 0; color: var(--pos-muted); font-size: var(--pos-text-size); line-height: 1.5; }
 .pos-page-content .pc-heading .pc-icon { width: 58px; height: 58px; flex-basis: 58px; border-radius: 10px; color: var(--pos-primary); background: #f0eaff; font-size: 27px; }
 .pos-page-content :is(button, input, select, textarea) { font-family: inherit; }
@@ -4618,7 +4618,7 @@
     padding: 4px 2px 18px;
     border-bottom: 1px solid #e1e6f0;
 }
-.pos-page-content .page-header h1 { font-size: 23px; letter-spacing: -.025em; }
+.pos-page-content .page-header h1 { font-size: 18px; font-weight: 600; line-height: 1.4; }
 .pos-page-content .page-header p { margin-top: 8px; font-size: 13px; }
 .pos-config-cards-container {
     padding: 22px;
