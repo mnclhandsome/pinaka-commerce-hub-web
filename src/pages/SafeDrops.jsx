@@ -1,22 +1,60 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import FiltersBar from "../components/FiltersBar";
 import Pagination from "../components/Pagination";
+import { listStoreSafeDrops } from "../api/storeSafeDrops";
+import { listStoreEmployees } from "../api/employees";
+import { isUuid } from "../api/storeDetails";
 import "../styles/safe-drops.css";
 
-const RECORDS = [
-  { id: "SD-017393", shift: "17393", employee: "Manager 1", denominations: [{ count: 1, amount: 100 }], total: 100, created: "2026-10-15T03:07:00" },
-  { id: "SD-017203", shift: "17203", employee: "Aa’s Corner", denominations: [{ count: 1, amount: 100 }, { count: 2, amount: 50 }, { count: 1, amount: 20 }], total: 220, created: "2026-09-23T22:09:00" },
-  { id: "SD-017204", shift: "17203", employee: "Aa’s Corner", denominations: [{ count: 1, amount: 100 }], total: 100, created: "2026-09-23T22:09:00" },
-  { id: "SD-017067", shift: "17067", employee: "Sandhya", denominations: [{ count: 2, amount: 100 }], total: 200, created: "2026-09-23T04:46:00" },
-];
-
-const currency = (value) => `$${Number(value).toFixed(2)}`;
+const currency = (value) => `$${Number(value || 0).toFixed(2)}`;
 const dateParts = (value) => {
   const date = new Date(value);
+  if (!value || Number.isNaN(date.getTime())) return { date: "-", time: "" };
   return { date: date.toLocaleDateString("en-US", { month: "short", day: "2-digit", year: "numeric" }), time: date.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" }) };
 };
+const dayKey = (value) => {
+  const date = new Date(value);
+  if (!value || Number.isNaN(date.getTime())) return "";
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+};
+// "SHIFT-e2326bba-d5f3-..." -> "E2326BBA"
+const shortShift = (shiftId) => String(shiftId || "").replace(/^SHIFT-/i, "").split("-")[0].toUpperCase() || "-";
 
-export default function SafeDrops({ store }) {
+// Title is "Safe Drop - Shift <shift_id> - <employee name or user id>"
+const nameFromTitle = (title) => {
+  const name = String(title || "").split(" - ").pop().trim();
+  return name && !isUuid(name) && !/^Safe Drop/i.test(name) ? name : "";
+};
+
+function mapSafeDrop(record, employeeNames) {
+  const safeData = record.safe_data || {};
+  const shiftId = record.shift_id || safeData.shift_id || "";
+  const denominations = (Array.isArray(safeData.safe_drop_denom) ? safeData.safe_drop_denom : []).map((item) => ({
+    count: Number(item.denom_count) || 0,
+    amount: Number(item.denom) || 0,
+    total: Number(item.total ?? (Number(item.denom_count) || 0) * (Number(item.denom) || 0)) || 0,
+  })).filter((item) => item.count > 0);
+  return {
+    id: record.safe_drop_id || "",
+    shiftId,
+    shift: shortShift(shiftId),
+    employee: employeeNames[String(record.created_by || "").toLowerCase()] || nameFromTitle(record.title) || "Unknown employee",
+    createdBy: record.created_by || "",
+    denominations,
+    totalNotes: Number(safeData.total_notes) || denominations.reduce((sum, item) => sum + item.count, 0),
+    total: Number(safeData.total_cash ?? denominations.reduce((sum, item) => sum + item.total, 0)) || 0,
+    created: record.created_at,
+    updated: record.updated_at || record.created_at,
+    createdDay: dayKey(record.created_at),
+  };
+}
+
+export default function SafeDrops({ store, storeId: storeIdProp, merchantId }) {
+  const storeId = [store?.uuid, store?.storeUUID, store?.storeUuid, store?.store_uuid, store?.id, storeIdProp, store?.storeId, store?.storeID].find(isUuid);
+  const [records, setRecords] = useState([]);
+  const [employeeNames, setEmployeeNames] = useState({});
+  const [loading, setLoading] = useState(Boolean(storeId));
+  const [error, setError] = useState("");
   const [search, setSearch] = useState("");
   const [employee, setEmployee] = useState("");
   const [datePreset, setDatePreset] = useState("");
@@ -29,21 +67,60 @@ export default function SafeDrops({ store }) {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [selected, setSelected] = useState(null);
-  const employees = useMemo(() => [...new Set(RECORDS.map((row) => row.employee))], []);
+  useEffect(() => {
+    let cancelled = false;
+    if (!merchantId || !storeId) { setEmployeeNames({}); return undefined; }
+    listStoreEmployees(merchantId, storeId)
+      .then((response) => {
+        if (cancelled) return;
+        const list = Array.isArray(response) ? response : response?.employees ?? response?.data?.employees ?? response?.data ?? [];
+        const names = {};
+        for (const item of Array.isArray(list) ? list : []) {
+          const name = item.name || item.fullName || [item.firstName ?? item.first_name, item.lastName ?? item.last_name].filter(Boolean).join(" ");
+          if (!name) continue;
+          for (const id of [item.id, item.employeeId, item.employeeCode, item.userId, item.user_id]) {
+            if (id !== undefined && id !== null && id !== "") names[String(id).toLowerCase()] = name;
+          }
+        }
+        setEmployeeNames(names);
+      })
+      .catch(() => { if (!cancelled) setEmployeeNames({}); });
+    return () => { cancelled = true; };
+  }, [merchantId, storeId]);
+
+  useEffect(() => {
+    if (!storeId) {
+      setRecords([]); setLoading(false);
+      setError("This store's database ID is unavailable, so safe drops cannot be loaded.");
+      return undefined;
+    }
+    const controller = new AbortController();
+    setLoading(true); setError("");
+    listStoreSafeDrops(storeId, { signal: controller.signal })
+      .then(setRecords)
+      .catch((requestError) => {
+        if (requestError?.name !== "AbortError") { setError(requestError?.message || "Could not load safe drops."); setRecords([]); }
+      })
+      .finally(() => { if (!controller.signal.aborted) setLoading(false); });
+    return () => controller.abort();
+  }, [storeId]);
+
+  const safeDrops = useMemo(() => records.map((record) => mapSafeDrop(record, employeeNames)).sort((a, b) => (new Date(b.created).getTime() || 0) - (new Date(a.created).getTime() || 0)), [records, employeeNames]);
+  const employees = useMemo(() => [...new Set(safeDrops.map((row) => row.employee).filter((name) => name && name !== "Unknown employee"))], [safeDrops]);
   const today = new Date();
   const todayIso = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
   const weekStart = new Date(today);
   weekStart.setDate(today.getDate() - ((today.getDay() + 6) % 7));
   const weekStartIso = `${weekStart.getFullYear()}-${String(weekStart.getMonth() + 1).padStart(2, "0")}-${String(weekStart.getDate()).padStart(2, "0")}`;
   const monthStartIso = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-01`;
-  const rows = useMemo(() => RECORDS.filter((row) =>
+  const rows = useMemo(() => safeDrops.filter((row) =>
     (!employee || row.employee === employee)
-    && (datePreset !== "today" || row.created.slice(0, 10) === todayIso)
-    && (datePreset !== "week" || (row.created.slice(0, 10) >= weekStartIso && row.created.slice(0, 10) <= todayIso))
-    && (datePreset !== "month" || (row.created.slice(0, 10) >= monthStartIso && row.created.slice(0, 10) <= todayIso))
-    && (datePreset !== "custom" || ((!dateFrom || row.created.slice(0, 10) >= dateFrom) && (!dateTo || row.created.slice(0, 10) <= dateTo)))
-    && (!search || `${row.id} ${row.shift} ${row.employee}`.toLowerCase().includes(search.trim().toLowerCase())),
-  ), [employee, datePreset, dateFrom, dateTo, search, todayIso, weekStartIso, monthStartIso]);
+    && (datePreset !== "today" || row.createdDay === todayIso)
+    && (datePreset !== "week" || (row.createdDay >= weekStartIso && row.createdDay <= todayIso))
+    && (datePreset !== "month" || (row.createdDay >= monthStartIso && row.createdDay <= todayIso))
+    && (datePreset !== "custom" || ((!dateFrom || row.createdDay >= dateFrom) && (!dateTo || row.createdDay <= dateTo)))
+    && (!search || `${row.id} ${row.shiftId} ${row.employee}`.toLowerCase().includes(search.trim().toLowerCase())),
+  ), [safeDrops, employee, datePreset, dateFrom, dateTo, search, todayIso, weekStartIso, monthStartIso]);
   const visibleRows = rows.slice((page - 1) * pageSize, page * pageSize);
 
   const reset = () => { setSearch(""); setEmployee(""); setDatePreset(""); setDateFrom(""); setDateTo(""); setDraftFrom(""); setDraftTo(""); setShowCustomDate(false); setDateError(""); setPage(1); };
@@ -68,16 +145,19 @@ export default function SafeDrops({ store }) {
       ]} onClear={reset} />
       {showCustomDate && <div className="sd-custom-date"><label>From<input type="date" value={draftFrom} max={draftTo || undefined} onChange={(event) => { setDraftFrom(event.target.value); setDateError(""); }} /></label><label>To<input type="date" value={draftTo} min={draftFrom || undefined} onChange={(event) => { setDraftTo(event.target.value); setDateError(""); }} /></label><button type="button" onClick={applyCustomDate}>Apply date range</button><button className="sd-cancel-date" type="button" onClick={() => { setShowCustomDate(false); setDateError(""); }}>Cancel</button>{dateError && <p role="alert">{dateError}</p>}</div>}
       <div className="sd-table-wrap"><table className="sd-table"><thead><tr><th>Safe Drop / Shift</th><th>Employee</th><th>Denominations</th><th>Total Amount</th><th>Created At</th><th>Updated At</th><th>Actions</th></tr></thead>
-        <tbody>{visibleRows.map((row) => { const stamp = dateParts(row.created); return <tr key={row.id}>
-          <td><strong className="sd-record-name">Safe Drop – Shift {row.shift}</strong></td>
-          <td>{row.employee}</td>
-          <td>{row.denominations.map((item) => <span className="sd-denomination" key={`${item.count}-${item.amount}`}>{item.count} × {currency(item.amount)} = {currency(item.count * item.amount)}</span>)}</td>
-          <td className="sd-total">{currency(row.total)}</td><td>{stamp.date}<small>{stamp.time}</small></td><td>{stamp.date}<small>{stamp.time}</small></td>
+        <tbody>{!loading && !error && visibleRows.map((row, index) => { const created = dateParts(row.created); const updated = dateParts(row.updated); return <tr key={row.id || index}>
+          <td><strong className="sd-record-name" title={row.shiftId}>Safe Drop – Shift {row.shift}</strong></td>
+          <td title={row.employee === "Unknown employee" ? row.createdBy : undefined}>{row.employee}</td>
+          <td>{row.denominations.length ? row.denominations.map((item, itemIndex) => <span className="sd-denomination" key={`${item.count}-${item.amount}-${itemIndex}`}>{item.count} × {currency(item.amount)} = {currency(item.total)}</span>) : "-"}</td>
+          <td className="sd-total">{currency(row.total)}</td><td>{created.date}<small>{created.time}</small></td><td>{updated.date}<small>{updated.time}</small></td>
           <td><button className="sd-view" type="button" aria-label={`View safe drop ${row.id}`} onClick={() => setSelected(row)}><i className="bi bi-eye" aria-hidden="true" /></button></td>
-        </tr>; })}{!rows.length && <tr><td className="sd-empty" colSpan="7">No safe drop records match your filters.</td></tr>}</tbody>
+        </tr>; })}
+          {loading && <tr><td className="sd-empty" colSpan="7">Loading safe drops...</td></tr>}
+          {!loading && error && <tr><td className="sd-empty" colSpan="7" role="alert">{error}</td></tr>}
+          {!loading && !error && !rows.length && <tr><td className="sd-empty" colSpan="7">{safeDrops.length ? "No safe drop records match your filters." : "No safe drops recorded for this store yet."}</td></tr>}</tbody>
       </table></div>
       <Pagination currentPage={page} totalPages={Math.max(1, Math.ceil(rows.length / pageSize))} totalItems={rows.length} pageSize={pageSize} onPageChange={setPage} onPageSizeChange={(size) => { setPageSize(size); setPage(1); }} itemLabel="items" showWhenEmpty pageSizeOptions={[10, 25, 50]} />
     </section>
-    {selected && <div className="sd-modal-backdrop" role="presentation" onClick={() => setSelected(null)}><section className="sd-modal" role="dialog" aria-modal="true" aria-labelledby="sd-modal-title" onClick={(event) => event.stopPropagation()}><button className="sd-modal-close" type="button" aria-label="Close" onClick={() => setSelected(null)}>×</button><h2 id="sd-modal-title">Safe Drop – Shift {selected.shift}</h2><p>{selected.id} · {selected.employee}</p><h3>Denominations</h3>{selected.denominations.map((item) => <div className="sd-modal-line" key={`${item.count}-${item.amount}`}><span>{item.count} × {currency(item.amount)}</span><strong>{currency(item.count * item.amount)}</strong></div>)}<div className="sd-modal-line sd-modal-total"><span>Total Amount</span><strong>{currency(selected.total)}</strong></div></section></div>}
+    {selected && <div className="sd-modal-backdrop" role="presentation" onClick={() => setSelected(null)}><section className="sd-modal" role="dialog" aria-modal="true" aria-labelledby="sd-modal-title" onClick={(event) => event.stopPropagation()}><button className="sd-modal-close" type="button" aria-label="Close" onClick={() => setSelected(null)}>×</button><h2 id="sd-modal-title">Safe Drop – Shift {selected.shift}</h2><p>{selected.shiftId} · {selected.employee} · {dateParts(selected.created).date} {dateParts(selected.created).time}</p><h3>Denominations</h3>{selected.denominations.map((item, itemIndex) => <div className="sd-modal-line" key={`${item.count}-${item.amount}-${itemIndex}`}><span>{item.count} × {currency(item.amount)}</span><strong>{currency(item.total)}</strong></div>)}{!selected.denominations.length && <div className="sd-modal-line"><span>No denominations recorded</span></div>}<div className="sd-modal-line"><span>Total Notes</span><strong>{selected.totalNotes}</strong></div><div className="sd-modal-line sd-modal-total"><span>Total Amount</span><strong>{currency(selected.total)}</strong></div></section></div>}
   </main>;
 }

@@ -880,7 +880,11 @@ export default function StoreConfiguration() {
 
               ) : section === "safedrops" ? (
 
-                <SafeDrops store={store} />
+                <SafeDrops
+                  merchantId={merchantId}
+                  storeId={storeId}
+                  store={store}
+                />
 
               ) : section === "attendance" ? (
 
