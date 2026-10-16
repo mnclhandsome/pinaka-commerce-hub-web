@@ -11,6 +11,11 @@ export default function ListActions({
 
     deleteDisabled = false,
     activateDisabled = false,
+    viewDisabled = false,
+    editDisabled = false,
+    editButtonClassName = "",
+    deleteButtonClassName = "",
+    deleteIconClassName = "bi bi-trash3",
 }) {
     return (
         <div className="list-actions">
@@ -18,24 +23,26 @@ export default function ListActions({
                 <button
                     type="button"
                     className="list-action-btn"
+                    disabled={viewDisabled}
                     onClick={(event) => onView(event)}
                     title={viewLabel}
                     aria-label={viewLabel}
                 >
-                    <i className="bi bi-eye View-btn" />
+                    <i className="bi bi-eye View-btn list-action-view-icon" aria-hidden="true" />
                 </button>
             )}
 
             {onEdit && (
                 <button
                     type="button"
-                    className="list-action-btn"
+                    className={`list-action-btn ${editButtonClassName}`.trim()}
+                    disabled={editDisabled}
                     onClick={(event) => onEdit(event)}
                     title={editLabel}
                     aria-label={editLabel}
                 >
                     
-                    <i className="bi bi-pencil text-primary" />
+                    <i className="bi bi-pencil list-action-edit-icon" aria-hidden="true" />
                   
                 </button>
             )}
@@ -49,20 +56,20 @@ export default function ListActions({
                     title={activateLabel}
                     aria-label={activateLabel}
                 >
-                    <i className="bi bi-arrow-counterclockwise" />
+                    <i className="bi bi-arrow-counterclockwise" aria-hidden="true" />
                 </button>
             )}
 
             {onDelete && (
                 <button
                     type="button"
-                    className="list-action-btn text-danger"
+                    className={`list-action-btn text-danger ${deleteButtonClassName}`.trim()}
                     disabled={deleteDisabled}
                     onClick={(event) => onDelete(event)}
                     title={deleteLabel}
                     aria-label={deleteLabel}
                 >
-                    <i className="bi bi-trash" />
+                    <i className={`${deleteIconClassName} list-action-delete-icon`} aria-hidden="true" />
                 </button>
             )}
         </div>

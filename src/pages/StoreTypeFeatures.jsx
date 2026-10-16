@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import Pagination from "../components/Pagination";
 import DeleteConfirmationDialog from "../components/DeleteConfirmationDialog";
+import ListActions from "../components/ListActions";
 import { listFeatures } from "../api/features";
 import { storeTypesApi } from "../api/storeTypes";
 
@@ -490,15 +491,11 @@ async function confirmDeleteFeature() {
         <div className="store-features-name">{feature.name}</div>
         <div>{feature.category}</div>
         <div>
-          <button
-            type="button"
-            className="feature-delete-button"
-            title={`Remove ${feature.name} assignment`}
-            aria-label={`Remove ${feature.name} assignment`}
-            onClick={() => {setDeleteError(""); setDeleteTarget(feature);}}
-          >
-            <i className="bi bi-trash3" aria-hidden="true" />
-          </button>
+          <ListActions
+            onDelete={() => { setDeleteError(""); setDeleteTarget(feature); }}
+            deleteLabel={`Remove ${feature.name} assignment`}
+            deleteButtonClassName="feature-delete-button"
+          />
         </div>
       </div>
     ))

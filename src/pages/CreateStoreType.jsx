@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Pagination from "../components/Pagination";
 import DeleteConfirmationDialog from "../components/DeleteConfirmationDialog";
+import ListActions from "../components/ListActions";
 import { storeTypesApi } from "../api/storeTypes";
 
 function getStoreTypesForScreen() {
@@ -952,38 +953,14 @@ const paginatedStoreTypes = filteredStoreTypes.slice(
                   <span>{item.updatedTime}</span>
                 </div>
 
-                <div className="store-type-table-actions">
-                  <button
-
-                    type="button"
-                    
-                    class="store-type-edit-icon"
-
-                    onClick={(e) => {
-
-                      e.stopPropagation();
-
-                      editStoreType(item);
-
-                    }}
-                  >
-                    <i className="bi bi-pencil" />
-                  </button>
-
-                  <button
-
-                    type="button"
-
-                    className="store-type-delete-icon"
-
-                    onClick={(e) => {
-                         e.stopPropagation();
-                          setDeleteError("");
-                           setDeleteTarget(item);
-                             }}
-                        >
-                    <i className="bi bi-trash3" />
-                  </button>
+                <div>
+                  <ListActions
+                    onEdit={(event) => { event.stopPropagation(); editStoreType(item); }}
+                    onDelete={(event) => { event.stopPropagation(); setDeleteError(""); setDeleteTarget(item); }}
+                    editLabel={`Edit ${item.name}`}
+                    deleteLabel={`Delete ${item.name}`}
+                    deleteButtonClassName="store-type-delete-icon"
+                  />
                 </div>
               </div>
 

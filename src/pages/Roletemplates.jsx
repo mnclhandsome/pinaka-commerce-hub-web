@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Pagination from "../components/Pagination";
 import DeleteConfirmationDialog from "../components/DeleteConfirmationDialog";
+import ListActions from "../components/ListActions";
 
 import {
   roleTemplatesApi,
@@ -15,7 +16,7 @@ const initialForm = {
   description: "",
   status: "",
 };
- 
+
 function displayDate(value) {
   if (!value) return null;
  
@@ -737,33 +738,16 @@ async function confirmDeleteTemplate() {
                     </td>
  
                     <td className="role-actions role-equal-col">
-                      <button
-                        type="button"
-                        className="role-edit-action"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          editTemplate(template);
-                        }}
-                        disabled={saving}
-                        aria-label={`Edit ${template.name || template.roleCode}`}
-                        title="Edit role template"
-                      >
-                        <i className="bi bi-pencil" />
-                      </button>
-
-                      <button
-                        type="button"
-                        className="role-delete-action"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          openDeletePopup(template);
-                        }}
-                        disabled={saving}
-                        aria-label={`Delete ${template.name || template.roleCode}`}
-                        title="Delete role template"
-                      >
-                        <i className="bi bi-trash" />
-                      </button>
+                      <ListActions
+                        onEdit={(event) => { event.stopPropagation(); editTemplate(template); }}
+                        onDelete={(event) => { event.stopPropagation(); openDeletePopup(template); }}
+                        editLabel={`Edit ${template.name || template.roleCode}`}
+                        deleteLabel={`Delete ${template.name || template.roleCode}`}
+                        editDisabled={saving}
+                        deleteDisabled={saving}
+                        editButtonClassName="role-edit-action"
+                        deleteButtonClassName="role-delete-action"
+                      />
                     </td>
                   </tr>
                 ))}
@@ -827,5 +811,3 @@ async function confirmDeleteTemplate() {
 </>
 );
 }
-
- 

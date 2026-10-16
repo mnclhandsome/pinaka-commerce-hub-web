@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Pagination from "../components/Pagination";
 import DeleteConfirmationDialog from "../components/DeleteConfirmationDialog";
+import ListActions from "../components/ListActions";
 import "../styles/features.css";
 import { listFeatures, createFeature as createFeatureApi, updateFeature as updateFeatureApi, deleteFeature as deleteFeatureApi } from "../api/features";
 
@@ -602,28 +603,13 @@ const confirmDeleteFeature = async () => {
                     })()}
                   </td>
                   <td className="actions-col">
-                    <div className="feature-row-actions">
-                      <button
-                        type="button"
-                        className="edit-button"
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          editFeature(item);
-                        }}
-                        aria-label={`Edit ${item.name}`}
-                      >
-                        <i className="bi bi-pencil" />
-                      </button>
-                      <button
-                        type="button"
-                        className="delete-button"
-                       onClick={(event) => {event.stopPropagation(); setDeleteError(""); setDeleteTarget(item);}}
-                        aria-label={`Delete ${item.name}`}
-                        title={`Delete ${item.name}`}
-                      >
-                        <i className="bi bi-trash" />
-                      </button>
-                    </div>
+                      <ListActions
+                        onEdit={(event) => { event.stopPropagation(); editFeature(item); }}
+                        onDelete={(event) => { event.stopPropagation(); setDeleteError(""); setDeleteTarget(item); }}
+                        editLabel={`Edit ${item.name}`}
+                        deleteLabel={`Delete ${item.name}`}
+                        deleteButtonClassName="delete-button"
+                      />
                   </td>
                 </tr>
               ))}

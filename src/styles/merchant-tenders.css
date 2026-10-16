@@ -33,3 +33,23 @@
 .merchant-tenders input[type=checkbox]{accent-color:#5143bc}
 .merchant-tenders input::placeholder{color:#9aa2b3}
 .merchant-tenders .mt-primary:hover:not(:disabled){background:#4538a6;border-color:#4538a6}
+.merchant-tenders .mt-existing-page{padding:0;overflow:hidden}
+.merchant-tenders .mt-existing-heading{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:24px 24px 0px}
+.merchant-tenders .mt-existing-heading h2{font-size:22px;margin:0 0 4px}
+.merchant-tenders .mt-existing-heading p{font-size:15px;margin:0}
+.merchant-tenders .mt-existing-heading button{white-space:nowrap}
+.merchant-tenders .mt-existing-page>.mt-picker-toolbar.filters-bar{display:flex;align-items:center;gap:12px;margin:0;padding:8px 24px 2px !important;flex-wrap:nowrap}
+.merchant-tenders .mt-existing-page>.mt-picker-toolbar .filter-search{flex:1 1 0;width:auto;min-width:0;max-width:none;padding:0 12px;border:1px solid #dfe4ee;border-radius:7px}
+.merchant-tenders .mt-existing-page>.mt-picker-toolbar .filter-search input{font:inherit;font-size:14px}
+.merchant-tenders .mt-existing-page>.mt-picker-toolbar .filter-options{display:contents}
+.merchant-tenders .mt-existing-page>.mt-picker-toolbar .filter-reset-btn{white-space:nowrap}
+.merchant-tenders .mt-existing-page>.mt-scroll{margin:0 24px;border-radius:7px}
+.merchant-tenders .mt-existing-page>.mt-scroll table{white-space:normal}
+.merchant-tenders .mt-existing-page>.pagination-container{padding:12px 24px 12px !important; }
+.merchant-tenders .mt-existing-page>.pagination-container .pagination-info{white-space:nowrap}
+.merchant-tenders .mt-existing-page>.pagination-container .pagination-controls{gap:8px}
+.merchant-tenders .mt-existing-page>.mt-error{margin:8px 30px}
+.merchant-tenders .mt-existing-footer{display:flex;justify-content:flex-end;gap:12px;padding:18px 30px;}
+@media(max-width:900px){.merchant-tenders .mt-existing-page>.pagination-container{height:auto;min-height:60px;flex-wrap:nowrap;justify-content:space-between;gap:10px;padding:10px 20px}.merchant-tenders .mt-existing-page>.pagination-container .pagination-info{width:auto;text-align:left}.merchant-tenders .mt-existing-page>.pagination-container .pagination-controls{width:auto;justify-content:flex-end}}
+@media(max-width:700px){.merchant-tenders .mt-existing-heading{align-items:flex-start;flex-direction:column;padding:18px 16px 10px}.merchant-tenders .mt-existing-page>.mt-picker-toolbar .filter-search{flex-basis:100%}.merchant-tenders .mt-existing-page>.mt-scroll{margin:0 16px;overflow-x:auto}.merchant-tenders .mt-existing-page>.pagination-container{padding:8px 16px 14px}.merchant-tenders .mt-existing-page>.mt-existing-footer{padding:16px;flex-wrap:wrap}.merchant-tenders .mt-existing-heading button{align-self:flex-end}}
+@media(max-width:560px){.merchant-tenders .mt-existing-page>.pagination-container{flex-wrap:wrap;justify-content:center}.merchant-tenders .mt-existing-page>.pagination-container .pagination-info{width:100%;text-align:center}.merchant-tenders .mt-existing-page>.pagination-container .pagination-controls{width:100%;justify-content:center}}

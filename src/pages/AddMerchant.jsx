@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useMemo, useState } from "react";
+﻿import React, { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowLeft, Pencil } from "lucide-react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import {
@@ -202,9 +202,26 @@ function MerchantEditor({ merchantId, localMerchants, onSave }) {
   const [submitting, setSubmitting] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState("card");
   const [saved, setSaved] = useState(null);
+  const initialDraftRef = useRef(null);
   const editing = Boolean(merchantId);
-  const cancel = () => navigate("/merchants");
+  const currentDraftSnapshot = JSON.stringify({ merchant, planId, cycle, start, paymentMethod });
+  const cancel = () => {
+    if (submitting) return;
+    if (
+      !saved &&
+      initialDraftRef.current !== null &&
+      initialDraftRef.current !== currentDraftSnapshot &&
+      !window.confirm("You have unsaved changes. Are you sure you want to leave this page?")
+    ) return;
+    navigate("/merchants");
+  };
   const goToStep = (index) => setStep(index);
+
+  useEffect(() => {
+    if (!loading && initialDraftRef.current === null) {
+      initialDraftRef.current = currentDraftSnapshot;
+    }
+  }, [loading, currentDraftSnapshot]);
 
   useEffect(() => {
     let active = true;
@@ -417,7 +434,7 @@ function MerchantEditor({ merchantId, localMerchants, onSave }) {
               <Select label="Country *" value={merchant.country} options={locationOptions.countries.map((value) => ({ value, label: value }))} required error={fieldErrors.country} onChange={(v) => { updateField("country", v); updateField("state", ""); }} />
             </div></Panel>
             {error && <div className="pch-error" role="alert">{error}</div>}
-            <div className="pch-footerbar"><span /><button className="pch-primary" type="button" disabled={submitting} onClick={continueStep}>Continue</button></div>
+            <div className="pch-footerbar"><button type="button" disabled={submitting} onClick={cancel}>Back</button><button className="pch-primary" type="button" disabled={submitting} onClick={continueStep}>Continue</button></div>
           </section>
           <section hidden={step !== 1} className="pch-plan-step">
             <div className="pch-eyebrow">Step 2 - Plan Selection</div>
@@ -434,7 +451,7 @@ function MerchantEditor({ merchantId, localMerchants, onSave }) {
                       <div className="pch-plan-group-heading"><span>{group.storeType}</span><span>{group.items.length} {group.items.length === 1 ? "plan" : "plans"}</span></div>
                       {group.items.map((item) => <label key={item.id} className={`pch-plan-option ${String(item.id) === String(planId) ? "pch-selected" : ""}`}>
                         <input type="radio" name="merchant-plan-selection" value={item.id} checked={String(item.id) === String(planId)} onChange={() => setPlanId(String(item.id))} aria-label={`Select ${item.name}`} />
-                        <span className="pch-plan-option-copy"><strong>{item.name}</strong><span className="pch-plan-option-price">{formatPrice(item.price ?? item.basePrice, item.currency || "USD")}</span><small>per merchant / {item.billingCycle || "month"}</small><span className="pch-plan-option-limits">{item.includedStores ?? "Custom"} stores Â· {item.includedTerminals ?? "Custom"} devices Â· {item.includedUsers ?? "Custom"} employees</span></span>
+                        <span className="pch-plan-option-copy"><strong>{item.name}</strong><span className="pch-plan-option-price">{formatPrice(item.price ?? item.basePrice, item.currency || "USD")}</span><small>per merchant / {item.billingCycle || "month"}</small><span className="pch-plan-option-limits">{item.includedStores ?? "Custom"} stores · {item.includedTerminals ?? "Custom"} devices · {item.includedUsers ?? "Custom"} employees</span></span>
                       </label>)}
                     </div>)}
                   </div>

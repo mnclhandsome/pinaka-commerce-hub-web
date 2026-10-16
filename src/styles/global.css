@@ -412,8 +412,8 @@ table thead th {
     width: 35px;
     height: 35px;
     padding: 0;
-    border: 1.5px solid #dce9f5;
-    border-radius: 7px;
+    border: 1.5px solid #dce9f5 !important;
+    border-radius: 7px !important;
     background: #fcfdff;
 
     display: inline-flex;
@@ -439,7 +439,7 @@ table thead th {
 ========================= */
 
 .list-action-btn:has(.View-btn) {
-    color: #2563eb !important;
+    color: #416499 !important;
 }
 
 .list-action-btn:has(.View-btn):hover {
@@ -453,14 +453,14 @@ table thead th {
    EDIT
 ========================= */
 
-.list-action-btn:has(.text-primary) {
-    color: #5143bc;
+.list-action-btn:has(.list-action-edit-icon) {
+    color: #5367f0 !important;
 }
 
-.list-action-btn:has(.text-primary):hover {
-    color: #4338a3;
-    border-color: #d8d2ff;
-    background: #f1efff;
+.list-action-btn:has(.list-action-edit-icon):hover {
+    color: #5367f0 !important;
+    border-color: #bcd9ff !important;
+    background: #e8f2ff !important;
 }
 
 
@@ -484,6 +484,10 @@ table thead th {
 ========================= */
 
 .list-action-btn.text-danger {
+    color: #d9485f !important;
+}
+
+.list-action-btn:has(.list-action-delete-icon) {
     color: #d9485f !important;
 }
 
@@ -688,11 +692,11 @@ select:not(.pch-filter-sizing):not(.pch-master-filter-sizing) {
      height: 35px;
     padding: 0 12px;
 
-    border: 1px solid #e1e4eb;
+    border: 1px solid #e1e4eb !important;
     border-radius: 6px;
 
     background: #fff;
-    color: #59647a;
+    color: #59647a !important;
 
     display: inline-flex;
     align-items: center;

@@ -254,7 +254,7 @@
 ========================================================= */
 
 .merchant-stores-embedded .store-table-wrapper {
-    overflow: auto;
+    overflow: hidden;
 
     border: 1px solid #e5ebf4;
     border-radius: 6px;
@@ -272,9 +272,7 @@
 
     width: 100%;
 
-    white-space: nowrap;
-
-    table-layout: auto;
+    table-layout: fixed;
 }
 
 
@@ -307,6 +305,7 @@
     font-size: 13px;
     line-height: 18px;
     color: #64748b;
+    overflow-wrap: anywhere;
 }
 
 .merchant-stores-embedded .store-table tbody tr:last-child td {
@@ -328,7 +327,7 @@
 }
 
 .merchant-stores-embedded .store-table th:nth-child(2) {
-    width: 12%;
+    width: 18%;
 }
 
 .merchant-stores-embedded .store-table th:nth-child(3) {
@@ -336,11 +335,11 @@
 }
 
 .merchant-stores-embedded .store-table th:nth-child(4) {
-    width: 10%;
+    width: 15%;
 }
 
 .merchant-stores-embedded .store-table th:nth-child(5) {
-    width: 23%;
+    width: 12%;
 }
 
 
@@ -410,6 +409,11 @@
     font-weight: 600;
 
     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.merchant-stores-embedded .store-name-info span {
     overflow: hidden;
     text-overflow: ellipsis;
 }
@@ -706,11 +710,24 @@
 @media (max-width: 900px) {
 
     .merchant-stores-embedded .store-table-wrapper {
-        overflow-x: auto;
+        overflow-x: hidden;
     }
 
     .merchant-stores-embedded .store-table {
-        min-width: 1000px;
+        min-width: 0;
+    }
+
+    .merchant-stores-embedded .store-table th,
+    .merchant-stores-embedded .store-table td {
+        padding: 8px 6px;
+    }
+
+    .merchant-stores-embedded .store-actions {
+        gap: 4px;
+    }
+
+    .merchant-stores-embedded .store-edit-btn {
+        padding: 8px;
     }
 }
 

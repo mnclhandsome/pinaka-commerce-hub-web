@@ -2592,6 +2592,27 @@
   white-space: nowrap;
 }
 
+/* Keep shared vendor row action icons on the Store Type list color palette. */
+.vendors-table td.vendors-actions .list-actions .list-action-btn i.list-action-edit-icon,
+.vendors-table td.vendors-actions .list-actions .list-action-btn i.list-action-view-icon {
+  color: #5367f0 !important;
+}
+
+.vendors-table td.vendors-actions .list-actions .list-action-btn:hover:not(:disabled) i.list-action-edit-icon,
+.vendors-table td.vendors-actions .list-actions .list-action-btn:hover:not(:disabled) i.list-action-view-icon {
+  color: #5367f0 !important;
+}
+
+.vendors-table td.vendors-actions .list-actions .list-action-btn.vendors-delete-action,
+.vendors-table td.vendors-actions .list-actions .list-action-btn i.list-action-delete-icon {
+  color: #d9485f !important;
+}
+
+.vendors-table td.vendors-actions .list-actions .list-action-btn.vendors-delete-action:hover:not(:disabled),
+.vendors-table td.vendors-actions .list-actions .list-action-btn.vendors-delete-action:hover:not(:disabled) i.list-action-delete-icon {
+  color: #c5304b !important;
+}
+
 .vendors-table td:nth-child(9) .vendors-status {
   white-space: nowrap;
 }
