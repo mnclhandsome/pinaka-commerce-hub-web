@@ -54,6 +54,9 @@ function unwrapDevice(response) {
 export function normalizeDevice(device) {
   if (!device) return null;
 
+  const rawCode = device.device_code || device.deviceCode || device.code || "";
+  const code = String(rawCode).replace(/^DVC-/i, "DVC_");
+
   const rawStatus = String(device.status || device.connection_status || "").toUpperCase();
   const status = rawStatus === "ACTIVE"
     ? "Active"
@@ -65,7 +68,7 @@ export function normalizeDevice(device) {
     ...device,
 
     id: device.id || device.uuid || device.deviceUuid || device.device_id || device.deviceId || device.device_code || device.deviceCode || "",
-    code: device.device_code || device.deviceCode || device.code || "",
+    code,
     deviceId: device.device_id || device.deviceId || "",
     name: device.device_name || device.deviceName || device.name || "",
     type: device.device_type || device.deviceType || device.type || "",

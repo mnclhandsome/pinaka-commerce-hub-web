@@ -52,6 +52,8 @@ export function DeviceMapping() {
   const [pageSize, setPageSize] = useState(10);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
+  const [savingSelection, setSavingSelection] = useState(false);
+  const [deletingMappingId, setDeletingMappingId] = useState("");
 
   useEffect(() => {
     let active = true;
@@ -94,10 +96,70 @@ export function DeviceMapping() {
   const changePageSize = (size) => { setPageSize(size); setPage(1); setMappedPage(1); };
   const toggleSelection = (id) => setSelection((current) => current.includes(String(id)) ? current.filter((item) => item !== String(id)) : [...current, String(id)]);
   const openPicker = () => { setSelection([]); setSearch(""); setDeviceTypeFilter("all"); setDeviceStatusFilter("all"); setPage(1); setError(""); setView("picker"); };
-  const addSelected = () => {
+  const removeMapping = async (mapping) => {
+    setError("");
+    setDeletingMappingId(String(mapping.deviceId));
+    try {
+      await deleteStoreDeviceMapping(mapping.mappingId);
+      const nextMappings = mappingsRef.current.filter((item) => String(item.deviceId) !== String(mapping.deviceId));
+      const device = { ...mapping, id: mapping.deviceId, deviceId: mapping.deviceIdentifier || "" };
+      setDevices((current) => current.some((item) => String(item.id) === String(device.id))
+        ? current
+        : [...current, device]);
+      setMappings(nextMappings);
+      setServerMappings((current) => current.filter((item) => String(item.deviceId) !== String(mapping.deviceId)));
+      settings.session.baseline.deviceMappings = nextMappings;
+      settings.session.draft.deviceMappings = nextMappings;
+    } catch (cause) {
+      setError(cause?.message || "Unable to remove the device mapping.");
+    } finally {
+      setDeletingMappingId("");
+    }
+  };
+  const addSelected = async () => {
     const selected = devices.filter((device) => selection.includes(String(device.id)) && !mappedIds.has(String(device.id)));
     if (!selected.length) return;
-    setMappings((current) => [...current, ...selected.map((device) => ({ deviceId: device.id, deviceIdentifier: device.deviceId || device.device_id || "", name: device.name, code: device.code || device.deviceCode || device.device_code, type: device.type, serial: device.serial, status: device.status || "Active" }))]);
+    setSavingSelection(true);
+    setError("");
+    const added = [];
+    try {
+      for (const device of selected) {
+        const created = await createStoreDeviceMapping({ storeId: settings.storeId, deviceId: device.id });
+        const record = created?.mapping || created?.data?.mapping || created?.data || created || {};
+        added.push({
+          deviceId: device.id,
+          deviceIdentifier: device.deviceId || device.device_id || "",
+          name: device.name,
+          code: device.code || device.deviceCode || device.device_code || "",
+          type: device.type,
+          serial: device.serial,
+          status: device.status || "Active",
+          mappingId: record.id || record.mapping_id || record.mappingId || "",
+        });
+      }
+    } catch (cause) {
+      // Preserve successful mappings if a later device in a multi-select batch fails.
+      const addedIds = new Set(added.map((mapping) => String(mapping.deviceId)));
+      setSelection((current) => current.filter((id) => !addedIds.has(id)));
+      if (added.length) {
+        const nextMappings = [...mappingsRef.current, ...added];
+        setMappings(nextMappings);
+        setServerMappings((current) => [...current, ...added]);
+        settings.session.baseline.deviceMappings = nextMappings;
+        settings.session.draft.deviceMappings = nextMappings;
+        setMappedPage(1);
+        setView("mapped");
+      }
+      setError(cause?.message || "Unable to save the selected device mappings.");
+      return;
+    } finally {
+      setSavingSelection(false);
+    }
+    const nextMappings = [...mappingsRef.current, ...added];
+    setMappings(nextMappings);
+    setServerMappings((current) => [...current, ...added]);
+    settings.session.baseline.deviceMappings = nextMappings;
+    settings.session.draft.deviceMappings = nextMappings;
     setSelection([]);
     setMappedPage(1);
     setView("mapped");
@@ -193,7 +255,7 @@ export function DeviceMapping() {
         pageSize={pageSize} onPageChange={setPage} onPageSizeChange={changePageSize}
         itemLabel="devices" showWhenEmpty pageSizeOptions={[10, 25, 50, 100]} />
     </div>
-    <footer className="mv-existing-footer"><span>{selection.length} devices selected</span><div className="mv-popup-actions"><button type="button" onClick={backToMapped}>Cancel</button><button type="button" disabled={!selection.length} className="mv-primary" onClick={addSelected}>Add Selected</button></div></footer>
+    <footer className="mv-existing-footer"><span>{selection.length} devices selected</span><div className="mv-popup-actions"><button type="button" disabled={savingSelection} onClick={backToMapped}>Cancel</button><button type="button" disabled={!selection.length || savingSelection} className="mv-primary" onClick={addSelected}>{savingSelection ? "Saving…" : "Add Selected"}</button></div></footer>
   </section>;
 
   return <section className="merchant-vendors mv-device-mapped-page">
@@ -212,7 +274,7 @@ export function DeviceMapping() {
         onClear={() => { setMappedSearch(""); setMappedTypeFilter("all"); setMappedStatusFilter("all"); setMappedPage(1); }}
       />
       <div className="mv-scroll"><table><thead><tr><th>Device Code</th><th>Device ID</th><th>Device Name</th><th>Serial Number</th><th>Device Type</th><th>Actions</th></tr></thead><tbody>
-        {mappedRows.map((device) => <tr key={device.deviceId}><td>{device.code || "—"}</td><td>{device.deviceIdentifier || "—"}</td><td><strong>{device.name || "—"}</strong></td><td>{device.serial || "—"}</td><td>{device.type || "—"}</td><td><button type="button" className="mv-device-remove pc-icon-action pc-danger" aria-label={`Remove ${device.name || "device"}`} title="Delete" onClick={() => setMappings((current) => current.filter((item) => String(item.deviceId) !== String(device.deviceId)))}><i className="bi bi-trash3" aria-hidden="true" /></button></td></tr>)}
+        {mappedRows.map((device) => <tr key={device.deviceId}><td>{device.code || "—"}</td><td>{device.deviceIdentifier || "—"}</td><td><strong>{device.name || "—"}</strong></td><td>{device.serial || "—"}</td><td>{device.type || "—"}</td><td><button type="button" className="mv-device-remove pc-icon-action pc-danger" aria-label={`Remove ${device.name || "device"}`} title="Delete" disabled={deletingMappingId === String(device.deviceId)} onClick={() => removeMapping(device)}><i className="bi bi-trash3" aria-hidden="true" /></button></td></tr>)}
         {!mappedRows.length && <tr><td colSpan="7">No mapped devices match. Use Add Existing Device to select from merchant devices.</td></tr>}
       </tbody></table></div>
       <Pagination currentPage={mappedPage} totalPages={mappedPageCount} totalItems={filteredMappings.length}

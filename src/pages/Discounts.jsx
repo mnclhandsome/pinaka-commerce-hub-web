@@ -469,15 +469,14 @@ export default function Discounts({ embedded = false, storeId: storeIdProp }) {
                 <th>Usage / limit</th>
                 <th>Start date</th>
                 <th>Expiry date</th>
-                <th>Status</th>
                 <th>Actions</th>
               </tr>
             </thead>
             <tbody>
               {loading ? (
-                <tr><td className="discount-table-empty" colSpan="9">Loading discounts…</td></tr>
+                <tr><td className="discount-table-empty" colSpan="8">Loading discounts…</td></tr>
               ) : loadError ? (
-                <tr><td className="discount-table-empty" colSpan="9"><div className="products-table-empty-state"><strong>Unable to load discounts</strong><span>{loadError}</span></div></td></tr>
+                <tr><td className="discount-table-empty" colSpan="8"><div className="products-table-empty-state"><strong>Unable to load discounts</strong><span>{loadError}</span></div></td></tr>
               ) : visibleDiscounts.length ? visibleDiscounts.map((discount) => (
                 <tr key={`${discount.type}-${discount.id}`}>
                   <td><div className="discount-name-cell"><strong>{discount.code}</strong><small>{typeLabel(discount.type)}</small></div></td>
@@ -487,7 +486,6 @@ export default function Discounts({ embedded = false, storeId: storeIdProp }) {
                   <td>{discount.usage_limit === 0 || discount.usage_limit ? discount.usage_limit : "∞"}</td>
                   <td>{formatSystemDate(discount.date_starts)}</td>
                   <td>{formatSystemDate(discount.date_expires)}</td>
-                  <td><span className={`discount-status-pill ${discountStatus(discount).toLowerCase()}`}>{discountStatus(discount)}</span></td>
                   <td className="coupon-row-actions">
                     <button type="button" aria-label={`Edit ${discount.code}`} onClick={() => openEdit(discount)}><i className="bi bi-pencil" /></button>
                     <button type="button" aria-label={`Delete ${discount.code}`} onClick={() => { setDeleteError(""); setDeleteTarget(discount); }}><i className="bi bi-trash3" /></button>
@@ -495,7 +493,7 @@ export default function Discounts({ embedded = false, storeId: storeIdProp }) {
                 </tr>
               )) : (
                 <tr>
-                  <td className="discount-table-empty" colSpan="9">
+                  <td className="discount-table-empty" colSpan="8">
                     <div className="products-table-empty-state">
                       <strong>{search || typeFilter || statusFilter ? "No discounts found" : "No discounts yet"}</strong>
                       <span>{search || typeFilter || statusFilter ? "Try changing your search or filters." : "Create a discount to see it listed here."}</span>

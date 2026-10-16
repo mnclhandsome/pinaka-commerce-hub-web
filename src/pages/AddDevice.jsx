@@ -12,7 +12,7 @@ const deviceTypes = ["POS Terminal", "Kitchen Display", "Barcode Scanner", "Rece
   .map((label) => ({ value: label, label }));
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-export default function AddDevice({ merchantId: scopedMerchantId = "", merchant: scopedMerchant = null, embedded = false, onSave, onCancel } = {}) {
+export default function AddDevice({ merchantId: scopedMerchantId = "", merchant: scopedMerchant = null, embedded = false, onSave, onCancel, initialDevice = null } = {}) {
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
@@ -31,6 +31,22 @@ export default function AddDevice({ merchantId: scopedMerchantId = "", merchant:
   const [validationErrors, setValidationErrors] = useState({});
   const [merchants, setMerchants] = useState([]);
   const [loadingOptions, setLoadingOptions] = useState(true);
+  const editing = Boolean(initialDevice);
+
+  useEffect(() => {
+    if (!initialDevice) return;
+    setFormData((current) => ({
+      ...current,
+      deviceName: initialDevice.name || initialDevice.deviceName || initialDevice.device_name || "",
+      deviceId: initialDevice.deviceId || initialDevice.device_id || "",
+      deviceType: initialDevice.type || initialDevice.deviceType || initialDevice.device_type || "",
+      serialNumber: initialDevice.serialNumber || initialDevice.serial_number || initialDevice.serial || "",
+      merchantId: scopedMerchantId || initialDevice.merchantId || initialDevice.merchant_id || "",
+      merchantName: scopedMerchant?.businessDisplayName || scopedMerchant?.name || initialDevice.merchantName || initialDevice.merchant_name || "",
+      status: initialDevice.status || initialDevice.connectionStatus || "Active",
+      notes: initialDevice.notes || "",
+    }));
+  }, [initialDevice, scopedMerchantId, scopedMerchant]);
 
   useEffect(() => {
     if (scopedMerchantId && UUID_PATTERN.test(String(scopedMerchantId))) {
@@ -225,16 +241,25 @@ export default function AddDevice({ merchantId: scopedMerchantId = "", merchant:
 
             {/* MERCHANT */}
             <FormField label="Merchant" required invalid={validationErrors.merchantId} error={validationErrors.merchantId && "Merchant is required."}>
-              <SelectField
-                name="merchantId"
-                value={formData.merchantId}
-                onChange={handleMerchantChange}
-                placeholder="Select merchant"
-                options={merchants}
-                disabled={loadingOptions || !merchants.length}
-                required
-                invalid={validationErrors.merchantId}
-              />
+              {scopedMerchantId && merchants.length === 1 ? (
+                <input
+                  className="device-merchant-readonly"
+                  value={merchants[0].label}
+                  readOnly
+                  aria-readonly="true"
+                />
+              ) : (
+                <SelectField
+                  name="merchantId"
+                  value={formData.merchantId}
+                  onChange={handleMerchantChange}
+                  placeholder="Select merchant"
+                  options={merchants}
+                  disabled={loadingOptions || !merchants.length}
+                  required
+                  invalid={validationErrors.merchantId}
+                />
+              )}
             </FormField>
 
             {/* STATUS */}
@@ -283,7 +308,7 @@ export default function AddDevice({ merchantId: scopedMerchantId = "", merchant:
           className="device-save-btn"
           disabled={saving}
         >
-          {saving ? "Saving..." : "Save Device"}
+          {saving ? "Saving..." : editing ? "Save Changes" : "Save Device"}
         </button>
       </div>
     </div>

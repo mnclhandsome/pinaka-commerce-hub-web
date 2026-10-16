@@ -76,6 +76,10 @@ function MerchantReadOnly({ merchantId, merchant, onBack, onSaveEmployee, onSave
   const [deleteBusy, setDeleteBusy] = useState(false);
   const [deleteError, setDeleteError] = useState("");
   const [addingDevice, setAddingDevice] = useState(false);
+  const [editingDevice, setEditingDevice] = useState(null);
+  const [deviceToDelete, setDeviceToDelete] = useState(null);
+  const [deviceDeleteBusy, setDeviceDeleteBusy] = useState(false);
+  const [deviceDeleteError, setDeviceDeleteError] = useState("");
   const [createdDevices,setCreatedDevices]=useState([]);
   const [apiDevices, setApiDevices] = useState([]);
   const [apiStores, setApiStores] = useState([]);
@@ -91,6 +95,45 @@ function MerchantReadOnly({ merchantId, merchant, onBack, onSaveEmployee, onSave
     const record=returned && typeof returned==='object' && !Array.isArray(returned)?returned:{};
     const device={...record,id:record.id || record.uuid || record.deviceUuid || crypto.randomUUID(),deviceId:record.deviceId || record.device_id || values.deviceId || values.device_id || '',code:record.code || record.deviceCode || record.device_code || '',merchantId:record.merchantId || record.merchant_id || merchantId,name:record.name || record.deviceName || record.device_name || values.deviceName,type:record.type || record.deviceType || record.device_type || values.deviceType,serialNumber:record.serialNumber || record.serial_number || record.serial || values.serialNumber,storeId:record.storeId || record.store_id || values.storeId || values.store_id,storeName:record.storeName || record.store_name,status:record.connectionStatus || record.connection_status || record.status || values.status || 'Unknown'};
     setCreatedDevices(old=>[device,...old.filter(item=>String(item.id)!==String(device.id))]);return result;
+  }
+  async function updateMerchantDevice(values) {
+    const deviceId = editingDevice?.id || editingDevice?.uuid || editingDevice?.deviceUuid || editingDevice?.device_id || editingDevice?.deviceId;
+    const result = await devicesApi.update(deviceId, values);
+    if (result?.success === false) throw new Error(result.message || "Device update failed.");
+    const returned = result?.device || result?.data?.device || result?.data || result;
+    const record = returned && typeof returned === "object" && !Array.isArray(returned) ? returned : {};
+    const updated = {
+      ...editingDevice,
+      ...record,
+      id: record.id || record.uuid || record.deviceUuid || deviceId,
+      deviceId: record.deviceId || record.device_id || values.deviceId || "",
+      code: record.code || record.deviceCode || record.device_code || editingDevice.code || "",
+      name: record.name || record.deviceName || record.device_name || values.deviceName,
+      type: record.type || record.deviceType || record.device_type || values.deviceType,
+      serialNumber: record.serialNumber || record.serial_number || record.serial || values.serialNumber,
+      status: record.status || values.status || editingDevice.status || "Active",
+      notes: record.notes ?? values.notes,
+    };
+    setCreatedDevices((current) => [updated, ...current.filter((item) => String(item.id || item.deviceId) !== String(deviceId))]);
+    setApiDevices((current) => current.map((item) => String(item.id || item.deviceId) === String(deviceId) ? updated : item));
+    setEditingDevice(null);
+    return result;
+  }
+  async function confirmDeleteMerchantDevice() {
+    if (!deviceToDelete || deviceDeleteBusy) return;
+    const deviceId = deviceToDelete.id || deviceToDelete.uuid || deviceToDelete.deviceUuid || deviceToDelete.device_id || deviceToDelete.deviceId;
+    setDeviceDeleteBusy(true);
+    setDeviceDeleteError("");
+    try {
+      await devicesApi.delete(deviceId);
+      setCreatedDevices((current) => current.filter((item) => String(item.id || item.deviceId) !== String(deviceId)));
+      setApiDevices((current) => current.filter((item) => String(item.id || item.deviceId) !== String(deviceId)));
+      setDeviceToDelete(null);
+    } catch (error) {
+      setDeviceDeleteError(error?.message || "Unable to delete device.");
+    } finally {
+      setDeviceDeleteBusy(false);
+    }
   }
   const navigate = useNavigate();
   const openMerchantCreation = path => navigate(path + '?merchantId=' + encodeURIComponent(merchantId), {
@@ -617,11 +660,24 @@ async function openEmployeeEdit(employee) {
   )}
 </div>
       <div role="tabpanel" id="merchant-panel-devices" aria-labelledby="merchant-tab-devices" hidden={activeTab !== 'devices'} tabIndex={0}>
-        {addingDevice ? <>
-              <ViewSection title="Add Device">
-          <AddMerchantDevice key={apiMerchantId} merchantId={apiMerchantId} merchant={merchant} onSave={saveDeviceAndRefresh} onBack={()=>setAddingDevice(false)}/>
-          </ViewSection>
-        </> : <MerchantDeviceList devices={devices} storeName={storeName} onAdd={()=>setAddingDevice(true)} loading={devicesLoading} error={devicesError}/>}
+        {addingDevice || editingDevice ? <>
+          {editingDevice ? (
+            <AddMerchantDevice key={`${apiMerchantId}-${editingDevice.id || "edit"}`} merchantId={apiMerchantId} merchant={merchant} initialDevice={editingDevice} onSave={updateMerchantDevice} onBack={()=>{setAddingDevice(false);setEditingDevice(null);}}/>
+          ) : (
+            <ViewSection title="Add Device">
+              <AddMerchantDevice key={`${apiMerchantId}-new`} merchantId={apiMerchantId} merchant={merchant} onSave={saveDeviceAndRefresh} onBack={()=>{setAddingDevice(false);setEditingDevice(null);}}/>
+            </ViewSection>
+          )}
+        </> : <MerchantDeviceList devices={devices} storeName={storeName} onAdd={()=>setAddingDevice(true)} onEdit={setEditingDevice} onDelete={(device)=>{setDeviceDeleteError("");setDeviceToDelete(device);}} loading={devicesLoading} error={devicesError}/>}
+        <DeleteConfirmationDialog
+          isOpen={Boolean(deviceToDelete)}
+          title="Delete Device"
+          message={`Are you sure you want to delete ${deviceToDelete?.name || deviceToDelete?.deviceName || "this device"}? This action cannot be undone.`}
+          busy={deviceDeleteBusy}
+          error={deviceDeleteError}
+          onCancel={()=>{if(!deviceDeleteBusy)setDeviceToDelete(null);}}
+          onConfirm={confirmDeleteMerchantDevice}
+        />
 
       </div>
       <div role="tabpanel" id="merchant-panel-roles" aria-labelledby="merchant-tab-roles" hidden={activeTab !== 'roles'} tabIndex={0}>
@@ -1445,7 +1501,7 @@ function MerchantEmployeeList({employees,merchantName,onAdd,onRefresh,onEdit}) {
   </div>;
 }
 
-function MerchantDeviceList({devices,storeName,onAdd,loading=false,error=''}) {
+function MerchantDeviceList({devices,storeName,onAdd,onEdit,onDelete,loading=false,error=''}) {
   const [query, setQuery] = useState("");
 const [statusFilter, setStatusFilter] = useState("");
 const [page, setPage] = useState(1);
@@ -1632,6 +1688,10 @@ return (
                           lastFocus.current = e.currentTarget;
                           setView(d);
                         }}
+                        onEdit={() => onEdit?.(d)}
+                        editLabel={'Edit ' + d.name}
+                        onDelete={() => onDelete?.(d)}
+                        deleteLabel={'Delete ' + d.name}
                       />
                     </td>
                   </tr>

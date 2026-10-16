@@ -6,6 +6,7 @@ import DeleteConfirmationDialog from "../components/DeleteConfirmationDialog";
 import { api, pendingStoreRead } from "../api/http";
 import { normalizeCatalog } from "../api/products";
 import { catalogProductId } from "./discountForm";
+import { getStoreCoupons, invalidateStoreCoupons } from "../api/storeCoupons";
 import "../styles/coupons.css";
 
 const emptyCoupon = {
@@ -41,6 +42,8 @@ function normalizeCoupon(raw = {}) {
     const expiryDate = raw.date_expires || raw.expiryDate || raw.expiry_date || "";
     const expired = expiryDate && new Date(expiryDate) < new Date();
     const usedUp = Number(usageLimit) > 0 && usageCount >= Number(usageLimit);
+    const rawStatus = String(raw.status || "Active").toLowerCase();
+    const status = expired ? "Expired" : usedUp ? "Used" : (rawStatus === "active" || rawStatus === "enabled" ? "Active" : rawStatus.charAt(0).toUpperCase() + rawStatus.slice(1));
     const typeMap = {
         percent: "Percentage discount",
         fixed_cart: "Fixed cart discount",
@@ -48,12 +51,16 @@ function normalizeCoupon(raw = {}) {
     };
     const discountType = raw.discount_type || raw.discountType || "fixed_cart";
     const amountValue = raw.amount ?? raw.discount_amount ?? raw.discountAmount ?? "";
+    const numericAmount = amountValue === "" ? NaN : Number(amountValue);
+    const displayAmount = Number.isFinite(numericAmount)
+        ? numericAmount.toFixed(2)
+        : amountValue;
     return {
         ...raw,
         id: raw.id ?? raw.couponId ?? raw.coupon_id ?? raw.woocommerceId ?? raw.woocommerce_id ?? raw.code,
         code: raw.code || raw.coupon_code || "",
         type: typeMap[discountType] || raw.type || discountType,
-        amount: amountValue === "" ? "—" : `${amountValue}${discountType === "percent" ? "%" : ""}`,
+        amount: amountValue === "" ? "—" : `${displayAmount}${discountType === "percent" ? "%" : ""}`,
         description: raw.description || "",
         productIds: listValues(raw.product_ids || raw.productIds).map(String),
         issuedOrderIds: listValues(raw.issuedOrderIds || raw.issued_order_ids),
@@ -61,7 +68,7 @@ function normalizeCoupon(raw = {}) {
         usedCount: usageCount,
         usageLimit: usageLimit || "∞",
         expiryDate: expiryDate ? String(expiryDate).slice(0, 10) : "",
-        status: expired ? "Expired" : usedUp ? "Used" : raw.status || "Active",
+        status,
     };
 }
 
@@ -121,41 +128,27 @@ export default function Coupons({
     const ownerId = merchantId || store?.merchantId || store?.merchant_id || store?.merchant?.id;
     const [catalogProducts, setCatalogProducts] = useState([]);
     const [catalogError, setCatalogError] = useState("");
+    const [editorMode, setEditorMode] = useState("");
     useEffect(() => {
         let active = true;
-        if (!storeId) return undefined;
+        if (!storeId || !editorMode) return undefined;
         setCatalogError("");
         pendingStoreRead(`store-products:${storeId}`, () => api.get(`/stores/${encodeURIComponent(storeId)}/catalog`))
             .then(result => { if (active) setCatalogProducts(normalizeCatalog(result).products || []); })
             .catch(error => { if (active) setCatalogError(error.message || "Unable to load store products."); });
         return () => { active = false; };
-    }, [storeId]);
+    }, [storeId, editorMode]);
     useEffect(() => {
         let active = true;
         setCoupons([]);
         if (!storeId || !ownerId) return;
         setLoading(true);
         setLoadError("");
-        pendingStoreRead(`store-coupons:${ownerId}:${storeId}`, async () => {
-            const rows = [];
-            let page = 1;
-            while (true) {
-                const query = new URLSearchParams({ merchantId: String(ownerId), storeId: String(storeId), page: String(page), perPage: "25" });
-                const response = await api.get(`/coupons?${query}`);
-                const data = response?.data || response;
-                if (data?.success === false) throw new Error(data.message || "Unable to load coupons.");
-                if (!Array.isArray(data?.coupons)) throw new Error("Coupons API did not return a coupons array.");
-                rows.push(...data.coupons);
-                if (!data.coupons.length || rows.length >= Number(data.total ?? rows.length)) break;
-                page += 1;
-            }
-            return rows.map(normalizeCoupon);
-        }).then(rows => { if (active) setCoupons(rows); })
+        getStoreCoupons(ownerId, storeId, { refresh: true }).then(rows => { if (active) setCoupons(rows.map(normalizeCoupon)); })
           .catch(error => { if (active) setLoadError(error.message || "Unable to load coupons."); })
           .finally(() => { if (active) setLoading(false); });
         return () => { active = false; };
     }, [ownerId, storeId, attempt]);
-    const [editorMode, setEditorMode] = useState("");
     const [couponForm, setCouponForm] = useState(emptyCoupon);
     const [formError, setFormError] = useState("");
     const [savingCoupon, setSavingCoupon] = useState(false);
@@ -386,6 +379,7 @@ export default function Coupons({
                 ? await api.put(`/coupons/${encodeURIComponent(couponForm.id)}`, payload)
                 : await api.post("/coupons", payload);
             if (response?.success === false) throw new Error(response.message || "Unable to create coupon.");
+            invalidateStoreCoupons(ownerId, storeId);
             setEditorMode("");
             setSyncMessage(editorMode === "edit" ? "Coupon updated successfully." : "Coupon created successfully.");
             setAttempt(value => value + 1);
@@ -401,6 +395,7 @@ export default function Coupons({
         try {
             const response = await api.delete(`/coupons/${encodeURIComponent(deleteTarget.id)}`);
             if (response?.success === false) throw new Error(response.message || "Unable to delete coupon.");
+            invalidateStoreCoupons(ownerId, storeId);
             setDeleteTarget(null);
             setSelectedCoupon(null);
             setSyncMessage("Coupon deleted successfully.");
@@ -833,28 +828,6 @@ export default function Coupons({
                         key: "amount",
                     },
                     {
-                        label: "Status",
-                        key: "status",
-                        render: (value) => {
-                            const status = value || "—";
-
-                            const statusClass =
-                                status === "Active"
-                                    ? "active"
-                                    : status === "Expired"
-                                        ? "inactive"
-                                        : "pending";
-
-                            return (
-                                <span
-                                    className={`detail-status ${statusClass}`}
-                                >
-                                    {status}
-                                </span>
-                            );
-                        },
-                    },
-                    {
                         label: "Usage",
                         value: (coupon) =>
                             `${coupon?.usedCount || 0} / ${
@@ -1120,14 +1093,6 @@ function CouponEditor({ mode, form, setForm, error, busy, products = [], catalog
 // =========================================================
 
 function CouponRow({ coupon, onView, onEdit, onDelete }) {
-
-    const statusClass =
-        coupon.status === "Active"
-            ? "active"
-            : coupon.status === "Expired"
-                ? "expired"
-                : "used";
-
     return (
         <tr
             className="coupon-row-clickable"
@@ -1158,13 +1123,6 @@ function CouponRow({ coupon, onView, onEdit, onDelete }) {
                         <strong>
                             {coupon.code}
                         </strong>
-
-                        <span
-                            className={`coupon-status ${statusClass}`}
-                        >
-                            <i className="bi bi-circle-fill" />
-                            {coupon.status}
-                        </span>
 
                     </div>
 

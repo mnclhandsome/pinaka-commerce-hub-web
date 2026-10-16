@@ -1,7 +1,7 @@
 import AddDevice from "./AddDevice";
 
 /** Merchant-scoped version of the standard device registration form. */
-export default function AddMerchantDevice({ merchantId, merchant, onBack, onSave }) {
+export default function AddMerchantDevice({ merchantId, merchant, onBack, onSave, initialDevice = null }) {
   return (
     <AddDevice
       merchantId={merchantId}
@@ -9,6 +9,7 @@ export default function AddMerchantDevice({ merchantId, merchant, onBack, onSave
       embedded
       onSave={onSave}
       onCancel={onBack}
+      initialDevice={initialDevice}
     />
   );
 }
