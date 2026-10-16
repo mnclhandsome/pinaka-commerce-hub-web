@@ -328,7 +328,6 @@ export default function EmployeeAttendance({
   const [employeeDirectory, setEmployeeDirectory] = useState([]);
 
   const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
   const [apiError, setApiError] = useState("");
 
   const [employee, setEmployee] = useState("");
@@ -362,7 +361,7 @@ export default function EmployeeAttendance({
   --------------------------------------------------------- */
 
   const loadAttendance = useCallback(
-    async ({ silent = false } = {}) => {
+    async () => {
       if (!merchantId || !storeId) {
         setRecords([]);
         setEmployeeDirectory([]);
@@ -370,15 +369,10 @@ export default function EmployeeAttendance({
           "Merchant or Store ID is missing. Select a store to load attendance.",
         );
         setLoading(false);
-        setRefreshing(false);
         return;
       }
 
-      if (silent) {
-        setRefreshing(true);
-      } else {
-        setLoading(true);
-      }
+      setLoading(true);
 
       setApiError("");
 
@@ -453,7 +447,6 @@ export default function EmployeeAttendance({
         setApiError(getErrorMessage(error));
       } finally {
         setLoading(false);
-        setRefreshing(false);
       }
     },
     [merchantId, storeId],
@@ -593,15 +586,6 @@ export default function EmployeeAttendance({
             <i className="bi bi-download" aria-hidden="true" /> Export
           </button>
 
-          <button
-            className="ea-export"
-            type="button"
-            onClick={() => loadAttendance({ silent: true })}
-            disabled={loading || refreshing}
-          >
-            <i className="bi bi-arrow-clockwise" aria-hidden="true" />{" "}
-            {refreshing ? "Refreshing..." : "Refresh"}
-          </button>
         </div>
       </header>
 

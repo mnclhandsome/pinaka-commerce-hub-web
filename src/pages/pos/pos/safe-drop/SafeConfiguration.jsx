@@ -11,6 +11,36 @@ import {
     updatePosSafeDrop,
 } from "./api";
 
+function compressDenominationImage(file) {
+    return createImageBitmap(file).then((bitmap) => {
+        const maxDimension = 1200;
+        const scale = Math.min(1, maxDimension / Math.max(bitmap.width, bitmap.height));
+        const canvas = document.createElement("canvas");
+        canvas.width = Math.max(1, Math.round(bitmap.width * scale));
+        canvas.height = Math.max(1, Math.round(bitmap.height * scale));
+        const context = canvas.getContext("2d");
+        if (!context) {
+            bitmap.close?.();
+            throw new Error("The image could not be prepared. Please try another file.");
+        }
+        context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+        bitmap.close?.();
+
+        return new Promise((resolve, reject) => {
+            canvas.toBlob((blob) => {
+                if (!blob) {
+                    reject(new Error("The image could not be compressed. Please try another file."));
+                    return;
+                }
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = () => reject(new Error("The image could not be read. Please try again."));
+                reader.readAsDataURL(blob);
+            }, "image/webp", 0.82);
+        });
+    });
+}
+
 export function SafeConfiguration({ value, onSave, onBack }) {
     const settings = usePosSettings();
     const savedId = useRef(null);
@@ -30,11 +60,10 @@ export function SafeConfiguration({ value, onSave, onBack }) {
             setError("Select a PNG, JPG or WEBP image smaller than 2 MB."); return;
         }
         setUploads((count) => count + 1); setError("");
-        const reader = new FileReader();
-        reader.onload = () => updateRow("drops", id, { image: reader.result, imageName: file.name });
-        reader.onerror = () => setError("The image could not be read. Please try again.");
-        reader.onloadend = () => setUploads((count) => count - 1);
-        reader.readAsDataURL(file);
+        compressDenominationImage(file)
+            .then((image) => updateRow("drops", id, { image, imageName: file.name }))
+            .catch((error) => setError(error?.message || "The image could not be prepared. Please try again."))
+            .finally(() => setUploads((count) => Math.max(0, count - 1)));
     };
     const moneyOrNull = (amount) => validMoney(amount) ? Number(amount) : null;
     const safeDropPayload = (source) => ({
@@ -117,9 +146,14 @@ export function SafeConfiguration({ value, onSave, onBack }) {
         if ([draft.tubes, draft.drops].some((list) => new Set(list.map((row) => Number(row.amount))).size !== list.length)) { setError("Denomination amounts must be unique within each list."); return; }
         if (uploads > 0) { setError("Please wait for the image upload to finish."); return false; }
         const next = { ...draft, primarySafe: draft.primarySafe.trim(), dropEnabled: draft.enabled && draft.dropEnabled };
+        const payload = safeDropPayload(next);
+        if (new Blob([JSON.stringify(payload)]).size > 18 * 1024 * 1024) {
+            setError("The combined denomination images are too large. Please use smaller images or fewer denominations.");
+            return false;
+        }
         const record = savedId.current
-            ? await updatePosSafeDrop(settings.storeId, safeDropPayload(next))
-            : await createPosSafeDrop(settings.storeId, safeDropPayload(next));
+            ? await updatePosSafeDrop(settings.storeId, payload)
+            : await createPosSafeDrop(settings.storeId, payload);
         applySafeDrop(record);
         setError("");
         setMessage("Changes are saved.");
