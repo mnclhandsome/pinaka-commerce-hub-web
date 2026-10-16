@@ -409,7 +409,7 @@ export default function EmployeeAttendance({
       try {
         const [employeeResult, attendanceResult] = await Promise.all([
           getStoreEmployees(merchantId, storeId),
-          getAttendanceRecords({ page: 1, limit: 100 }),
+          getAttendanceRecords({ merchantId, storeId, page: 1, limit: 100 }),
         ]);
 
         const employeeList = Array.isArray(employeeResult)
