@@ -2106,11 +2106,12 @@ function Field({
     readOnly = false,
     onChange,
 }) {
+    const fieldId = `user-field-${String(label).toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
 
     return (
         <div className="field">
 
-            <label>
+            <label htmlFor={fieldId}>
 
                 {label}
 
@@ -2123,6 +2124,7 @@ function Field({
             </label>
 
             <input
+                id={fieldId}
                 type={type}
                 value={
                     value || ""

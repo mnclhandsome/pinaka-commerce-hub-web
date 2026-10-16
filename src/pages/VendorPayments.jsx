@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import FilterDropdown from "../components/FilterDropdown";
 import Pagination from "../components/Pagination";
 import "../styles/vendor-payments.css";
 
@@ -106,11 +107,13 @@ export default function VendorPayments({ viewMode } = {}) {
   const [payments, setPayments] = useState(initialPayments);
 
   const [search, setSearch] = useState("");
+  const [methodFilter, setMethodFilter] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
   const [showVendorForm, setShowVendorForm] = useState(false);
   const [showPaymentForm, setShowPaymentForm] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState({});
 
   const [vendorName, setVendorName] = useState("");
 
@@ -134,20 +137,24 @@ export default function VendorPayments({ viewMode } = {}) {
   const filteredPayments = useMemo(() => {
     const term = search.toLowerCase().trim();
 
-    return payments.filter((payment) =>
-      `${payment.title} ${payment.vendor} ${payment.purpose}`
+    return payments.filter((payment) => {
+      const matchesSearch = `${payment.title} ${payment.vendor} ${payment.purpose} ${payment.method} ${payment.amount} ${payment.date}`
         .toLowerCase()
-        .includes(term)
-    );
-  }, [payments, search]);
+        .includes(term);
+      const matchesMethod = !methodFilter || payment.method === methodFilter;
+      return matchesSearch && matchesMethod;
+    });
+  }, [payments, search, methodFilter]);
   const totalPaymentPages = Math.max(1, Math.ceil(filteredPayments.length / pageSize));
   const paginatedPayments = filteredPayments.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
   // Add vendor
   const addVendor = (event) => {
     event.preventDefault();
-
-    if (!vendorName.trim()) return;
+    if (!vendorName.trim()) {
+      setFieldErrors({ vendorName: "Vendor Name is required." });
+      return;
+    }
 
     setVendors((current) => [
       ...current,
@@ -160,14 +167,18 @@ export default function VendorPayments({ viewMode } = {}) {
     ]);
 
     setVendorName("");
+    setFieldErrors({});
     setShowVendorForm(false);
   };
 
   // Add payment
   const addPayment = (event) => {
     event.preventDefault();
-
-    if (!payment.vendor || !payment.amount) return;
+    const errors = {};
+    if (!payment.vendor) errors.vendor = "Select a vendor.";
+    if (!payment.amount || !Number.isFinite(Number(payment.amount)) || Number(payment.amount) <= 0) errors.amount = "Enter an amount greater than 0.";
+    setFieldErrors(errors);
+    if (Object.keys(errors).length) return;
 
     setPayments((current) => [
       {
@@ -191,7 +202,7 @@ export default function VendorPayments({ viewMode } = {}) {
   };
 
   return (
-    <div className="vendor-screen">
+    <div className={`vendor-screen ${viewMode ? "vendor-history-screen" : ""}`}>
 
       {/* Header */}
       <div className="vendor-title-row">
@@ -215,13 +226,14 @@ export default function VendorPayments({ viewMode } = {}) {
           )}
 
           {view === "vendors" && (
-            <button className="vendor-primary-action" onClick={() => setShowVendorForm(true)}>
+            <button className="vendor-primary-action" onClick={() => { setFieldErrors({}); setShowVendorForm(true); }}>
               Add New Vendor
             </button>
           )}
 
           {view === "payments" && (
-            <button className="vendor-primary-action" onClick={() => setShowPaymentForm(true)}>
+            <button className="vendor-primary-action" onClick={() => { setFieldErrors({}); setShowPaymentForm(true); }}>
+              <i className="bi bi-plus-lg" aria-hidden="true" />
               Add New Vendor Payment
             </button>
           )}
@@ -232,7 +244,7 @@ export default function VendorPayments({ viewMode } = {}) {
       {/* Toolbar */}
       <div className="vendor-toolbar">
 
-        <div className="vendor-tabs">
+        {!viewMode && <div className="vendor-tabs">
 
           <button className="active">
             All (
@@ -250,10 +262,11 @@ export default function VendorPayments({ viewMode } = {}) {
             )
           </button>
 
-        </div>
+        </div>}
 
         {/* Single Search Box */}
        <div className="vendor-search">
+        <i className="bi bi-search" aria-hidden="true" />
         <input
           type="text"
           value={search}
@@ -265,7 +278,17 @@ export default function VendorPayments({ viewMode } = {}) {
           }
         />
       </div>
-
+        {view === "payments" && <FilterDropdown
+          aria-label="Filter vendor payments by method"
+          value={methodFilter}
+          onChange={(event) => { setMethodFilter(event.target.value); setCurrentPage(1); }}
+        >
+          <option value="">All payment methods</option>
+          {[...new Set(payments.map((item) => item.method).filter(Boolean))].map((method) => (
+            <option key={method} value={method}>{method}</option>
+          ))}
+        </FilterDropdown>}
+        {view === "payments" && (viewMode || search || methodFilter) && <button type="button" className="vendor-filter-reset" onClick={() => { setSearch(""); setMethodFilter(""); setCurrentPage(1); }}><i className="bi bi-arrow-counterclockwise" aria-hidden="true" />Reset</button>}
 
       </div>
 
@@ -308,6 +331,7 @@ export default function VendorPayments({ viewMode } = {}) {
 
       {/* Vendor Payments Table */}
       {view === "payments" && (
+        <div className={viewMode ? "vendor-history-table-scroll" : undefined}>
         <table className="vendor-table">
 
           <thead>
@@ -323,11 +347,11 @@ export default function VendorPayments({ viewMode } = {}) {
 
           <tbody>
 
-            {paginatedPayments.map((payment) => (
+            {paginatedPayments.length ? paginatedPayments.map((payment) => (
               <tr key={payment.id}>
 
                 <td>
-                  <strong>{payment.title}</strong>
+                  <strong title={payment.title}>{payment.title}</strong>
                 </td>
 
                 <td>{payment.vendor}</td>
@@ -345,14 +369,15 @@ export default function VendorPayments({ viewMode } = {}) {
                 </td>
 
               </tr>
-            ))}
+            )) : <tr><td colSpan={6} className="vendor-empty-row">No vendor payments match these filters.</td></tr>}
 
           </tbody>
 
         </table>
+        </div>
       )}
 
-      {view === "payments" && filteredPayments.length > 0 && (
+      {view === "payments" && (
         <Pagination
           currentPage={currentPage}
           totalPages={totalPaymentPages}
@@ -361,6 +386,7 @@ export default function VendorPayments({ viewMode } = {}) {
           onPageChange={setCurrentPage}
           onPageSizeChange={(size) => { setPageSize(size); setCurrentPage(1); }}
           itemLabel="payments"
+          showWhenEmpty
           pageSizeOptions={[10, 25, 50, 100]}
         />
       )}
@@ -369,21 +395,23 @@ export default function VendorPayments({ viewMode } = {}) {
       {showVendorForm && (
         <div className="vendor-modal">
 
-          <form onSubmit={addVendor}>
+          <form onSubmit={addVendor} noValidate>
 
             <h3>Add New Vendor</h3>
 
-            <label>
+            <label className={fieldErrors.vendorName ? "has-error" : ""}>
               Vendor Name
 
               <input
                 type="text"
                 value={vendorName}
                 onChange={(event) =>
-                  setVendorName(event.target.value)
+                  { setVendorName(event.target.value); setFieldErrors((current) => ({ ...current, vendorName: "" })); }
                 }
                 autoFocus
+                aria-invalid={Boolean(fieldErrors.vendorName)}
               />
+              {fieldErrors.vendorName && <small className="vendor-field-error" role="alert">{fieldErrors.vendorName}</small>}
 
             </label>
 
@@ -412,21 +440,19 @@ export default function VendorPayments({ viewMode } = {}) {
       {showPaymentForm && (
         <div className="vendor-modal">
 
-          <form onSubmit={addPayment}>
+          <form onSubmit={addPayment} noValidate>
 
             <h3>Add New Vendor Payment</h3>
 
-            <label>
+            <label className={fieldErrors.vendor ? "has-error" : ""}>
               Vendor
 
               <select
                 value={payment.vendor}
                 onChange={(event) =>
-                  setPayment({
-                    ...payment,
-                    vendor: event.target.value,
-                  })
+                  { setPayment((current) => ({ ...current, vendor: event.target.value })); setFieldErrors((current) => ({ ...current, vendor: "" })); }
                 }
+                aria-invalid={Boolean(fieldErrors.vendor)}
               >
                 <option value="">Select vendor</option>
 
@@ -440,6 +466,7 @@ export default function VendorPayments({ viewMode } = {}) {
                 ))}
 
               </select>
+              {fieldErrors.vendor && <small className="vendor-field-error" role="alert">{fieldErrors.vendor}</small>}
 
             </label>
 
@@ -481,7 +508,7 @@ export default function VendorPayments({ viewMode } = {}) {
 
             </label>
 
-            <label>
+            <label className={fieldErrors.amount ? "has-error" : ""}>
               Payment Amount
 
               <input
@@ -490,12 +517,11 @@ export default function VendorPayments({ viewMode } = {}) {
                 step="0.01"
                 value={payment.amount}
                 onChange={(event) =>
-                  setPayment({
-                    ...payment,
-                    amount: event.target.value,
-                  })
+                  { setPayment((current) => ({ ...current, amount: event.target.value })); setFieldErrors((current) => ({ ...current, amount: "" })); }
                 }
+                aria-invalid={Boolean(fieldErrors.amount)}
               />
+              {fieldErrors.amount && <small className="vendor-field-error" role="alert">{fieldErrors.amount}</small>}
 
             </label>
 

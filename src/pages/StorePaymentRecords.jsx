@@ -148,37 +148,18 @@ export default function StorePaymentRecords({ store, storeId: storeIdProp, merch
       </div>
  
       <div className="store-payment-records-card">
-        <div className="store-payment-records-top">
-          <div className="store-payment-records-tabs">
-            <button type="button" className="active">
-              All ({payments.length})
-            </button>
-            <span>|</span>
-            <button type="button">Published ({payments.length})</button>
-          </div>
- 
-          <div className="store-payment-records-search">
+        <div className="store-payment-records-toolbar">
+          <label className="store-payment-records-search">
+            <i className="bi bi-search" aria-hidden="true" />
             <input
               type="text"
               value={search}
               placeholder="Search payments..."
               onChange={(event) => setSearch(event.target.value)}
             />
-            <button type="button" className="store-payment-search-submit">
-              Search Payments
-            </button>
-          </div>
-        </div>
- 
-        <div className="store-payment-records-toolbar">
-          <FilterDropdown defaultValue="" className="store-payment-records-bulk-select">
-            <option value="">Bulk actions</option>
-            <option value="export">Export</option>
-          </FilterDropdown>
- 
-          <button type="button">Apply</button>
- 
+          </label>
           <FilterDropdown
+            aria-label="Filter payments by date"
             value={dateFilter}
             onChange={(event) => setDateFilter(event.target.value)}
           >
@@ -193,25 +174,14 @@ export default function StorePaymentRecords({ store, storeId: storeIdProp, merch
             ))}
           </FilterDropdown>
  
-          <button type="button" onClick={clearFilters}>
-            Filter
+          <button type="button" className="store-payment-reset-btn" onClick={clearFilters}>
+            <i className="bi bi-arrow-counterclockwise" aria-hidden="true" />
+            Reset
           </button>
- 
-          <button type="button">Export CSV</button>
-          <button type="button">Print</button>
  
           <span className="store-payment-records-count">
             {filteredPayments.length} items
           </span>
- 
-          <div className="store-payment-records-pagination">
-            <button type="button" disabled>«</button>
-            <button type="button" disabled>‹</button>
-            <button type="button" className="active">{currentPage}</button>
-            <span>of {pageCount}</span>
-            <button type="button" disabled>›</button>
-            <button type="button" disabled>»</button>
-          </div>
         </div>
  
         <div className="store-payment-records-table-wrapper">
@@ -255,7 +225,7 @@ export default function StorePaymentRecords({ store, storeId: storeIdProp, merch
           </table>
         </div>
  
-        <Pagination
+        {!loading && !error && <Pagination
           currentPage={currentPage}
           totalPages={pageCount}
           totalItems={filteredPayments.length}
@@ -265,7 +235,7 @@ export default function StorePaymentRecords({ store, storeId: storeIdProp, merch
           itemLabel="payments"
           showWhenEmpty
           pageSizeOptions={[10, 25, 50, 100]}
-        />
+        />}
       </div>
  
       <ViewDetailsModal

@@ -82,6 +82,8 @@ function MerchantReadOnly({ merchantId, merchant, onBack, onSaveEmployee, onSave
   const [apiStoreMappings, setApiStoreMappings] = useState([]);
   const [devicesLoading, setDevicesLoading] = useState(false);
   const [devicesError, setDevicesError] = useState('');
+  const [vendorFlow, setVendorFlow] = useState(null);
+  const vendorBackRef = useRef(null);
   async function saveDeviceAndRefresh(values) {
     const result=typeof onSaveDevice==='function' ? await onSaveDevice(values) : await devicesApi.create(values);
     if(result?.success===false)throw new Error(result.message || 'Device creation failed.');
@@ -106,6 +108,7 @@ function MerchantReadOnly({ merchantId, merchant, onBack, onSaveEmployee, onSave
 
   function changeTab(id) {
     setActiveTab(id);
+    setVendorFlow(null);
     setSearchParams(previous => {
       const next = new URLSearchParams(previous);
       next.set('tab', id);
@@ -129,6 +132,8 @@ function MerchantReadOnly({ merchantId, merchant, onBack, onSaveEmployee, onSave
   const [error, setError] = useState('');
   const [attempt, setAttempt] = useState(0);
   const [apiEmployees, setApiEmployees] = useState(null);
+  const [registeredDeviceCount, setRegisteredDeviceCount] = useState(null);
+  const [registeredEmployeeCount, setRegisteredEmployeeCount] = useState(null);
   const [employeesLoading, setEmployeesLoading] = useState(false);
   const [employeesError, setEmployeesError] = useState('');
   const [allSubscriptions, setAllSubscriptions] = useState([]);
@@ -248,6 +253,19 @@ async function openEmployeeEdit(employee) {
     });
     return () => { active = false; };
   }, [activeTab, loading, result, needsSubscriptionFallback, needsPlanFallback]);
+  useEffect(() => {
+    if (activeTab !== 'subscription' || loading || !apiMerchantId) return;
+    let active = true;
+    Promise.all([
+      pendingStoreRead(`devices:${apiMerchantId}`, () => devicesApi.listAllByMerchantId(apiMerchantId)).catch(() => null),
+      pendingStoreRead(`employees:${apiMerchantId}`, () => listMerchantEmployees(apiMerchantId)).catch(() => null),
+    ]).then(([deviceRows, employeeRows]) => {
+      if (!active) return;
+      if (Array.isArray(deviceRows)) setRegisteredDeviceCount(deviceRows.length);
+      if (Array.isArray(employeeRows)) setRegisteredEmployeeCount(employeeRows.length);
+    });
+    return () => { active = false; };
+  }, [activeTab, loading, apiMerchantId]);
   const subStoreType = subscription.storeType || subscription.store_type || subPlan.storeType || subPlan.store_type || raw.storeType || {};
 
   const subMatch = useMemo(() => {
@@ -473,7 +491,7 @@ async function openEmployeeEdit(employee) {
       .merchant-readonly .merchant-view-fields dt{font-weight:500;color:#7c8495;font-size:13px;margin-bottom:5px;}
       .merchant-readonly .merchant-view-fields dd{margin:0;color:#17233e;font-size:15px;overflow-wrap:anywhere;}
       .merchant-readonly .merchant-view-empty{padding:16px 20px;color:#7c8495;margin:0;}
-      .merchant-readonly .merchant-view-back{display:inline-flex;align-items:center;border:0;background:none;color:#5143bc;padding:0;font:inherit;font-weight:600;cursor:pointer;}
+      .merchant-readonly .merchant-view-back{display:inline-flex;align-items:center;gap:7px;border:0;background:none;color:#5143bc;padding:0;font:inherit;font-weight:600;cursor:pointer;}
       .merchant-readonly .merchant-view-back:focus-visible{outline:3px solid #b9adff;outline-offset:2px;}
       .merchant-readonly .merchant-view-section details{padding:14px 20px;border-top:1px solid #edf0f4;}
       .merchant-readonly .merchant-view-section summary{cursor:pointer;color:#5143bc;}
@@ -481,7 +499,7 @@ async function openEmployeeEdit(employee) {
       @media(max-width:650px){.merchant-readonly .merchant-view-fields{grid-template-columns:1fr;}}
     `}</style>
     <header className="merchant-view-topbar">
-      <button type="button" className="merchant-view-back" onClick={onBack}>← Merchants</button>
+      {vendorFlow ? <><button type="button" className="merchant-view-back" onClick={() => vendorBackRef.current?.()}><i className="bi bi-arrow-left" /> Vendors</button><span>/</span><strong>{vendorFlow === "create" ? "Add New Vendor" : "Add Existing Vendor"}</strong></> : addingEmployee ? <><button type="button" className="merchant-view-back" onClick={() => setAddingEmployee(false)}><i className="bi bi-arrow-left" /> Employees</button><span>/</span><strong>Add Employee</strong></> : addingDevice ? <><button type="button" className="merchant-view-back" onClick={() => setAddingDevice(false)}><i className="bi bi-arrow-left" /> Devices</button><span>/</span><strong>Add Device</strong></> : <button type="button" className="merchant-view-back" onClick={onBack}><i className="bi bi-arrow-left" /> Merchants</button>}
     </header>
     <div className="merchant-view-layout">
       {!loading && !error && <div className="merchant-view-tabs" role="tablist" aria-orientation="vertical" aria-label="Merchant details">
@@ -517,9 +535,9 @@ async function openEmployeeEdit(employee) {
           ['Renewal Date', displayRenewalDate],
           ['Registered Stores', stores.length > 0 ? stores.length : (subMatch?.stores ?? summary.stores ?? raw.storeCount ?? (Array.isArray(raw.stores) ? raw.stores.length : 0))],
           ['Store Allowance', displayStoreAllowance],
-          ['Registered Devices', devices.length > 0 ? devices.length : (subMatch?.devices ?? raw.deviceCount ?? (Array.isArray(raw.devices) ? raw.devices.length : 0))],
+          ['Registered Devices', devices.length > 0 ? devices.length : (registeredDeviceCount ?? subMatch?.devices ?? raw.deviceCount ?? (Array.isArray(raw.devices) ? raw.devices.length : 0))],
           ['Device Allowance', displayDeviceAllowance],
-          ['Registered Employees', employees.length > 0 ? employees.length : (subMatch?.employees ?? (Array.isArray(employeeRecords) ? employees.length : saved?.employeeCount ?? raw.employeeCount ?? summary.employeeCount ?? 0))],
+          ['Registered Employees', employees.length > 0 ? employees.length : (registeredEmployeeCount ?? subMatch?.employees ?? (Array.isArray(employeeRecords) ? employees.length : saved?.employeeCount ?? raw.employeeCount ?? summary.employeeCount ?? 0))],
           ['Employee Allowance', displayEmployeeAllowance],
         ]} /></ViewSection>
       </div>
@@ -527,7 +545,7 @@ async function openEmployeeEdit(employee) {
         {activeTab === 'stores' && <MerchantStores merchantId={apiMerchantId || merchantId} merchantDetails={result?.merchant || merchant || raw} embedded />}
       </div>
       <div role="tabpanel" id="merchant-panel-vendors" aria-labelledby="merchant-tab-vendors" hidden={activeTab !== 'vendors'} tabIndex={0}>
-        {activeTab === 'vendors' && <MerchantVendors merchantId={merchantId} masterVendors={masterVendors} assignedVendorIds={vendorAssignments?.[merchantId] ?? saved?.vendorIds ?? raw.vendorIds ?? raw.vendors ?? []} onSaveAssignments={onSaveVendorAssignments} loading={vendorsLoading} error={vendorsError}/>}
+        {activeTab === 'vendors' && <MerchantVendors merchantId={merchantId} masterVendors={masterVendors} assignedVendorIds={vendorAssignments?.[merchantId] ?? saved?.vendorIds ?? raw.vendorIds ?? raw.vendors ?? []} onSaveAssignments={onSaveVendorAssignments} onNavigationChange={setVendorFlow} navigationBackRef={vendorBackRef} loading={vendorsLoading} error={vendorsError}/>}
       </div>
       <div role="tabpanel" id="merchant-panel-tenders" aria-labelledby="merchant-tab-tenders" hidden={activeTab !== 'tenders'} tabIndex={0}>
         {activeTab === 'tenders' && <MerchantTenders merchantId={merchantId} masterTenders={masterTenders} assignedTenderIds={tenderAssignments?.[merchantId] ?? saved?.tenderIds ?? raw.tenderIds ?? raw.tenders ?? []} onSaveAssignments={onSaveTenderAssignments} loading={tendersLoading} error={tendersError}/>}
@@ -551,18 +569,8 @@ async function openEmployeeEdit(employee) {
   )}
 
   {addingEmployee ? (
-    <ViewSection
-      title="Add Employee"
-      actions={
-        <button
-          type="button"
-          className="merchant-back-employees"
-          onClick={() => setAddingEmployee(false)}
-        >
-          ← Back to Employees
-        </button>
-      }
-    >
+    <>
+      <ViewSection title="Add Employee">
       <MerchantEmployeeForm
         embedded
         key={apiMerchantId}
@@ -571,7 +579,8 @@ async function openEmployeeEdit(employee) {
         onSave={saveEmployeeAndRefresh}
         onBack={() => setAddingEmployee(false)}
       />
-    </ViewSection>
+      </ViewSection>
+    </>
   ) : editingEmployee ? (
     <EditEmployee
       key={editingEmployee.id || editingEmployee.employeeId}
@@ -608,9 +617,11 @@ async function openEmployeeEdit(employee) {
   )}
 </div>
       <div role="tabpanel" id="merchant-panel-devices" aria-labelledby="merchant-tab-devices" hidden={activeTab !== 'devices'} tabIndex={0}>
-        {addingDevice ? <ViewSection title="Add Device" actions={<button type="button" className="merchant-back-employees" onClick={()=>setAddingDevice(false)}>← Back to Devices</button>}>
+        {addingDevice ? <>
+              <ViewSection title="Add Device">
           <AddMerchantDevice key={apiMerchantId} merchantId={apiMerchantId} merchant={merchant} onSave={saveDeviceAndRefresh} onBack={()=>setAddingDevice(false)}/>
-        </ViewSection> : <MerchantDeviceList devices={devices} storeName={storeName} onAdd={()=>setAddingDevice(true)} loading={devicesLoading} error={devicesError}/>}
+          </ViewSection>
+        </> : <MerchantDeviceList devices={devices} storeName={storeName} onAdd={()=>setAddingDevice(true)} loading={devicesLoading} error={devicesError}/>}
 
       </div>
       <div role="tabpanel" id="merchant-panel-roles" aria-labelledby="merchant-tab-roles" hidden={activeTab !== 'roles'} tabIndex={0}>

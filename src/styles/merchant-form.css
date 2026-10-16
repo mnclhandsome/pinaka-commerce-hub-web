@@ -2999,6 +2999,25 @@
   margin: 0;
 }
 
+#pch-new.pch-merchant-one-page .pch-review-edit {
+  display: inline-flex;
+  width: auto;
+  min-width: 0;
+  min-height: 32px;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #5143bc;
+}
+
+#pch-new.pch-merchant-one-page .pch-review-edit:hover:not(:disabled) {
+  background: #eeebff;
+}
+
 #pch-new.pch-merchant-one-page .pch-review-list {
   display: grid;
   gap: 12px;

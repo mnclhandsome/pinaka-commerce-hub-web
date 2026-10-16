@@ -6,6 +6,7 @@ import FiltersBar from "../components/FiltersBar";
 import Pagination from "../components/Pagination";
 import "../styles/merchant-vendors.css";
 import Vendors from "./Vendors";
+import { listMerchantStores } from "../api/stores";
 
 import {
     getMappedMerchantVendors,
@@ -14,6 +15,7 @@ import {
     createVendor,
     unmapMerchantVendor,
     getMappedStoreVendors,
+    getVendors,
     addStoreVendors,
     unmapStoreVendor,
 } from "../api/vendors";
@@ -134,6 +136,8 @@ export default function MerchantVendors({
     masterVendors: initialMasterVendors = [],
     assignedVendorIds = [],
     onSaveAssignments,
+    onNavigationChange,
+    navigationBackRef,
     loading = false,
     error = "",
 }) {
@@ -149,7 +153,7 @@ export default function MerchantVendors({
     const [page, setPage] = useState(1);
     const [pageSize, setPageSize] = useState(10);
     const [pickerPage, setPickerPage] = useState(1);
-    const pickerPageSize = 25;
+    const [pickerPageSize, setPickerPageSize] = useState(25);
 
     const [sort, setSort] = useState({
         key: "name",
@@ -207,15 +211,41 @@ export default function MerchantVendors({
             const mapped = storeScope
                 ? await pendingStoreRead(`store-vendors:${mappingId}:${searchValue}`, () => getMappedStoreVendors(mappingId, { search: searchValue }))
                 : await pendingStoreRead(`merchant-vendors:${mappingId}:${searchValue}`, () => getMappedMerchantVendors(mappingId, { search: searchValue }));
+            // Store mapping responses can contain only vendor IDs. Load the
+            // vendor records as well so the assigned rows show their details
+            // on the first visit to a store's Vendors section.
+            const storeVendorDetails = storeScope
+                ? await getVendors().catch(() => [])
+                : [];
+            let assignedStoreCounts = new Map();
+            if (storeScope && merchantId) {
+                const merchantStores = await listMerchantStores(merchantId).catch(() => []);
+                const storeIds = [...new Set([
+                    mappingId,
+                    ...merchantStores.map(store => store.value),
+                ].filter(Boolean).map(String))];
+                const storeAssignments = await Promise.all(storeIds.map(async storeId => {
+                    try {
+                        const vendorsForStore = await pendingStoreRead(
+                            `store-vendors:${storeId}:`,
+                            () => getMappedStoreVendors(storeId),
+                        );
+                        return vendorsForStore.map(idOf);
+                    } catch {
+                        return [];
+                    }
+                }));
+                assignedStoreCounts = new Map();
+                storeAssignments.forEach(vendorIds => vendorIds.forEach(vendorId => {
+                    if (vendorId) assignedStoreCounts.set(vendorId, (assignedStoreCounts.get(vendorId) || 0) + 1);
+                }));
+            }
 
             const mappedIds = mapped.map(idOf);
 
             setMasterVendors((current) => {
                 const byId = new Map(
-                    current.map((vendor) => [
-                        idOf(vendor),
-                        vendor,
-                    ])
+                    [...current, ...storeVendorDetails].map((vendor) => [idOf(vendor), vendor])
                 );
 
                 mapped.forEach((vendor) => {
@@ -230,6 +260,7 @@ export default function MerchantVendors({
                         id,
                         vendorId: id,
                         mappingId: vendor.mappingId || details.mappingId || "",
+                        ...(storeScope ? { assignedStoreCount: assignedStoreCounts.get(id) ?? details.assignedStoreCount ?? vendor.assignedStoreCount ?? 0 } : {}),
                     });
                 });
 
@@ -276,7 +307,7 @@ export default function MerchantVendors({
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [mappingId, storeScope]);
 
-    
+
 useEffect(() => {
     if (
         modal &&
@@ -458,6 +489,11 @@ useEffect(() => {
             setMasterError("");
         }
     };
+
+    if (navigationBackRef) navigationBackRef.current = close;
+    useEffect(() => {
+        onNavigationChange?.(modal?.type === "create" || modal?.type === "select" ? modal.type : null);
+    }, [modal, onNavigationChange]);
 
     /* =========================================================
        SAVE
@@ -704,7 +740,7 @@ useEffect(() => {
         <section className="merchant-vendors mv-create-page">
             <header className="mv-card mv-header">
                 <h2>Add New Vendor</h2>
-                <button type="button" disabled={busy} onClick={close}>← Back to Vendors</button>
+                <button type="button" className="store-config-back-button" disabled={busy} onClick={close}>← Back to Vendors</button>
             </header>
             <div className="mv-create-content"><Vendors formOnly onCreate={createAndAssignVendor} onCancel={close} /></div>
         </section>
@@ -717,7 +753,7 @@ useEffect(() => {
                     <h2>Add Existing Vendor</h2>
                     <p>Choose one or more vendors to add to this {entityName}.</p>
                 </div>
-                <button type="button" disabled={busy} onClick={close}>← Back to Vendors</button>
+                <button type="button" className="store-config-back-button" disabled={busy} onClick={close}>← Back to Vendors</button>
             </header>
 
             <div className="mv-existing-content">
@@ -740,7 +776,7 @@ useEffect(() => {
                 </div>
 
                 <div className="mv-picker-summary">
-                    <span>{available.length} matching vendors · {selection.length} selected</span>
+                    <span></span>
                 </div>
 
                 <div className="mv-existing-table-wrap">
@@ -774,19 +810,24 @@ useEffect(() => {
                     </table>
                 </div>
 
-                <nav className="mv-picker-pagination" aria-label="Existing vendor pages">
-                    <span>Showing {available.length ? (currentPickerPage - 1) * pickerPageSize + 1 : 0}–{Math.min(currentPickerPage * pickerPageSize, available.length)} of {available.length}</span>
-                    <div className="mv-popup-actions">
-                        <button type="button" disabled={currentPickerPage === 1} onClick={() => setPickerPage(currentPickerPage - 1)}>Previous</button>
-                        <span>Page {currentPickerPage} of {pickerPages}</span>
-                        <button type="button" disabled={currentPickerPage === pickerPages} onClick={() => setPickerPage(currentPickerPage + 1)}>Next</button>
-                    </div>
-                </nav>
+                <Pagination
+                    currentPage={currentPickerPage}
+                    totalPages={pickerPages}
+                    totalItems={available.length}
+                    pageSize={pickerPageSize}
+                    onPageChange={setPickerPage}
+                    onPageSizeChange={(size) => {
+                        setPickerPageSize(size);
+                        setPickerPage(1);
+                    }}
+                    itemLabel="vendors"
+                    showWhenEmpty={true}
+                />
                 {saveError && <p role="alert" className="mv-error">{saveError}</p>}
             </div>
 
             <footer className="mv-existing-footer">
-                <span>{selection.length} vendors selected</span>
+                <span></span>
                 <div className="mv-popup-actions">
                     <button type="button" disabled={busy} onClick={close}>Cancel</button>
                     <button type="button" className="mv-primary" disabled={busy || !selection.length} onClick={() => save([...new Set([...ids, ...selection.filter(id => vendors.some(vendor => vendor.id === id && active(vendor)))])])}>
@@ -1120,8 +1161,7 @@ useEffect(() => {
                                 onChange={(e) => { setSearch(e.target.value); setPickerPage(1); }}
                             />
 
-                            <div className="mv-location-filters"><select aria-label="Filter by country" value={countryFilter} onChange={e => { setCountryFilter(e.target.value); setStateFilter(""); setPickerPage(1); }}><option value="">All countries</option>{countries.map(country => <option key={locationKey(country)} value={locationKey(country)}>{country}</option>)}</select><select aria-label="Filter by state" value={stateFilter} onChange={e => { setStateFilter(e.target.value); setPickerPage(1); }}><option value="">All states</option>{states.map(state => <option key={locationKey(state)} value={locationKey(state)}>{state}</option>)}</select><button type="button" onClick={() => { setSearch(""); setCountryFilter(""); setStateFilter(""); setPickerPage(1); }}>Clear filters</button></div>
-                            <div className="mv-picker-summary"><span>{available.length} matching vendors · {selection.length} selected</span></div>
+                            <div className="mv-location-filters"><select aria-label="Filter by country" value={countryFilter} onChange={e => { setCountryFilter(e.target.value); setStateFilter(""); setPickerPage(1); }}><option value="">All countries</option>{countries.map(country => <option key={locationKey(country)} value={locationKey(country)}>{country}</option>)}</select><select aria-label="Filter by state" value={stateFilter} onChange={e => { setStateFilter(e.target.value); setPickerPage(1); }}><option value="">All states</option>{states.map(state => <option key={locationKey(state)} value={locationKey(state)}>{state}</option>)}</select><button type="button" onClick={() => { setSearch(""); setCountryFilter(""); setStateFilter(""); setPickerPage(1); }}><i className="bi bi-arrow-counterclockwise" aria-hidden="true" /> Clear</button></div>
                             <div className="mv-scroll mv-options">
 
                                 <table>
@@ -1222,7 +1262,7 @@ useEffect(() => {
                                 </table>
 
                             </div>
-                            <nav className="mv-picker-pagination" aria-label="Existing vendor pages"><span>Showing {available.length ? (currentPickerPage - 1) * pickerPageSize + 1 : 0}–{Math.min(currentPickerPage * pickerPageSize, available.length)} of {available.length}</span><div className="mv-popup-actions"><button type="button" disabled={currentPickerPage === 1} onClick={() => setPickerPage(currentPickerPage - 1)}>Previous</button><span>Page {currentPickerPage} of {pickerPages}</span><button type="button" disabled={currentPickerPage === pickerPages} onClick={() => setPickerPage(currentPickerPage + 1)}>Next</button></div></nav>
+                            <Pagination currentPage={currentPickerPage} totalPages={pickerPages} totalItems={available.length} pageSize={pickerPageSize} onPageChange={setPickerPage} onPageSizeChange={(size) => { setPickerPageSize(size); setPickerPage(1); }} itemLabel="vendors" showWhenEmpty />
 
                         </div>
                     ) : (
@@ -1349,7 +1389,7 @@ useEffect(() => {
 
             </dialog>
 
-            
+
 <DeleteConfirmationDialog
     isOpen={modal?.type === "remove"}
     title="Remove Vendor Assignment?"

@@ -33,6 +33,7 @@ export default function EditDevice() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [apiError, setApiError] = useState("");
+  const [validationErrors, setValidationErrors] = useState({});
 
   /* =========================================================
      LOAD DEVICE
@@ -89,6 +90,16 @@ export default function EditDevice() {
       ...prev,
       [name]: type === "checkbox" ? checked : value,
     }));
+    setValidationErrors((prev) => ({ ...prev, [name]: "" }));
+  };
+
+  const validateForm = () => {
+    const errors = {};
+    if (!form.deviceName.trim()) errors.deviceName = "Device Name is required.";
+    if (!form.deviceType) errors.deviceType = "Device Type is required.";
+    if (!form.serialNumber.trim()) errors.serialNumber = "Serial Number is required.";
+    setValidationErrors(errors);
+    return Object.keys(errors).length === 0;
   };
 
   /* =========================================================
@@ -97,6 +108,8 @@ export default function EditDevice() {
 
   const save = async (e) => {
     e.preventDefault();
+
+    if (!validateForm()) return;
 
     if (!deviceId) {
       setApiError("Device ID is missing.");
@@ -132,8 +145,8 @@ export default function EditDevice() {
   ========================================================= */
 
   const select = (name, value, options, placeholder) => (
-    <div className="device-edit-select">
-      <select name={name} value={value} onChange={update} required>
+    <div className={`device-edit-select${validationErrors[name] ? " field-invalid" : ""}`}>
+      <select name={name} value={value} onChange={update} required aria-invalid={Boolean(validationErrors[name])}>
         <option value="">{placeholder}</option>
 
         {options.map((option) => (
@@ -144,6 +157,7 @@ export default function EditDevice() {
       </select>
 
       <ChevronDown size={15} />
+      {validationErrors[name] && <small className="device-field-error" role="alert">{validationErrors[name]}</small>}
     </div>
   );
 
@@ -222,7 +236,7 @@ export default function EditDevice() {
           FORM
       ===================================================== */}
 
-      <form id="edit-device-form" onSubmit={save} className="device-view-card">
+      <form id="edit-device-form" onSubmit={save} className="device-view-card" noValidate>
         {/* CARD HEADER */}
 
         <div className="device-card-header">
@@ -246,13 +260,14 @@ export default function EditDevice() {
         <div className="device-view-grid">
           {/* DEVICE NAME */}
 
-          <EditField label="Device Name" required>
+          <EditField label="Device Name" required error={validationErrors.deviceName}>
             <input
               name="deviceName"
               value={form.deviceName}
               onChange={update}
               placeholder="Enter device name"
               required
+              aria-invalid={Boolean(validationErrors.deviceName)}
             />
           </EditField>
 
@@ -278,7 +293,7 @@ export default function EditDevice() {
 
           {/* DEVICE TYPE */}
 
-          <EditField label="Device Type" required>
+          <EditField label="Device Type" required error={validationErrors.deviceType}>
             {select(
               "deviceType",
               form.deviceType,
@@ -295,13 +310,14 @@ export default function EditDevice() {
 
           {/* SERIAL NUMBER */}
 
-          <EditField label="Serial Number" required>
+          <EditField label="Serial Number" required error={validationErrors.serialNumber}>
             <input
               name="serialNumber"
               value={form.serialNumber}
               readOnly
               placeholder="Enter serial number"
               required
+              aria-invalid={Boolean(validationErrors.serialNumber)}
             />
           </EditField>
 
@@ -376,9 +392,9 @@ export default function EditDevice() {
    EDIT FIELD
 ========================================================= */
 
-function EditField({ label, required, children }) {
+function EditField({ label, required, error, children }) {
   return (
-    <div className="device-view-field edit-field">
+    <div className={`device-view-field edit-field${error ? " field-invalid" : ""}`}>
       <label>
         {label}
 
@@ -386,6 +402,7 @@ function EditField({ label, required, children }) {
       </label>
 
       {children}
+      {error && <small className="device-field-error" role="alert">{error}</small>}
     </div>
   );
 }

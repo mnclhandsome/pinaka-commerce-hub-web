@@ -63,6 +63,7 @@ const FeaturePermissions = () => {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState("");
+  const [nameError, setNameError] = useState("");
 
   const [form, setForm] = useState({
     key: "",
@@ -175,6 +176,7 @@ const confirmDeletePermission = async () => {
     });
 
     setFormError("");
+    setNameError("");
     setIsCreateOpen(true);
   };
 
@@ -184,12 +186,13 @@ const confirmDeletePermission = async () => {
     const name = form.name.trim();
 
     if (!name) {
-      setFormError("Permission Name is required.");
+      setNameError("Permission Name is required.");
       return;
     }
 
     setSaving(true);
     setFormError("");
+    setNameError("");
 
     try {
       await createFeaturePermission(featureId, {
@@ -483,18 +486,21 @@ const confirmDeletePermission = async () => {
                   />
                 </label>
 
-                <label>
+                <label className={nameError ? "fp-field-invalid" : ""}>
                   Permission Name <span>*</span>
                   <input
                     value={form.name}
-                    onChange={(e) =>
+                    aria-invalid={Boolean(nameError)}
+                    onChange={(e) => {
+                      setNameError("");
                       setForm({
                         ...form,
                         name: e.target.value,
-                      })
-                    }
+                      });
+                    }}
                     placeholder="e.g. View Refunds"
                   />
+                  {nameError && <small className="fp-field-error" role="alert">{nameError}</small>}
                 </label>
 
                 <label className="fp-create-description">

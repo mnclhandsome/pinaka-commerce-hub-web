@@ -190,6 +190,39 @@ export default function Orders({
       onSearchChange={setSearch}
       searchPlaceholder="Search order ID, client order ID, customer..."
       filters={[
+        ...(!embedded ? [
+          {
+            key: "merchant",
+            label: "Merchant",
+            value: selectedMerchant,
+            options: [
+              { label: "All Merchants", value: "" },
+              ...merchants.map((merchant) => ({
+                label: merchant.name || merchant.merchantId,
+                value: merchant.id,
+              })),
+            ],
+            onChange: (value) => {
+              setSelectedMerchant(value);
+              setSelectedStore("");
+              setOrders([]);
+              rememberFilters(value, "");
+            },
+          },
+          {
+            key: "store",
+            label: "Store",
+            value: selectedStore,
+            options: [
+              { label: "All Stores", value: "" },
+              ...stores.map((item) => ({ label: item.label, value: item.value })),
+            ],
+            onChange: (value) => {
+              setSelectedStore(value);
+              rememberFilters(selectedMerchant, value);
+            },
+          },
+        ] : []),
         {
           key: "date",
           label: "Date",
@@ -248,56 +281,14 @@ export default function Orders({
         <SummaryCard icon="bi-cash-stack" tone="blue" label="Total Value" value={`$${totalAmount.toFixed(2)}`} meta="Across loaded orders" metaTone="info" />
       </div>
 
-      {embedded && ordersToolbar}
-
       <div className="orders-card">
-        {!embedded && (
-          <FiltersBar
-            filters={[
-              {
-                key: "merchant",
-                label: "Merchant",
-                value: selectedMerchant,
-                options: [
-                  { label: "All Merchants", value: "" },
-                  ...merchants.map((merchant) => ({
-                    label: merchant.name || merchant.merchantId,
-                    value: merchant.id,
-                  })),
-                ],
-                onChange: (value) => {
-                  setSelectedMerchant(value);
-                  setSelectedStore("");
-                  setOrders([]);
-                  rememberFilters(value, "");
-                },
-              },
-              {
-                key: "store",
-                label: "Store",
-                value: selectedStore,
-                options: [
-                  { label: "All Stores", value: "" },
-                  ...stores.map((item) => ({ label: item.label, value: item.value })),
-                ],
-                onChange: (value) => {
-                  setSelectedStore(value);
-                  rememberFilters(selectedMerchant, value);
-                },
-              },
-            ]}
-            showClear={false}
-          />
-        )}
-
-        {!embedded && ordersToolbar}
+        {ordersToolbar}
 
         {error && <div className="orders-banner error">{error}</div>}
         {loading && <div className="orders-banner">Loading orders...</div>}
 
         {!selectedStore && !loading && (
           <div className="orders-empty">
-            <div className="orders-empty-icon"><i className="bi bi-receipt" /></div>
             <h3>Select a store</h3>
             <p>Choose a merchant and store to load that store&apos;s orders.</p>
           </div>
@@ -305,81 +296,107 @@ export default function Orders({
 
         {selectedStore && !loading && filteredOrders.length > 0 && (
           <>
-          <div className="orders-table-heading">
-            <div>Orders<span>{filteredOrders.length}</span></div>
-          </div>
-          <div className="orders-table-wrapper">
-            <table className="orders-table">
-              <thead>
-                <tr>
-                  <th>Order ID</th>
-                  <th>Client Order ID</th>
-                  <th>Date</th>
-                  <th>Status</th>
-                  <th>Customer</th>
-                  <th>Total</th>
-                </tr>
-              </thead>
-              <tbody>
-                {paginatedOrders.map((order) => (
-                  <tr key={order.id}>
-                    <td>
-                      <div className="order-id-cell">
-                        <div>
-                          <Link
-                            className="order-id-link"
-                            to={`/orders/${encodeURIComponent(order.id)}?${new URLSearchParams({
-                              ...(selectedMerchant ? { merchant: selectedMerchant } : {}),
-                              ...(selectedStore ? { store: selectedStore } : {}),
-                              number: order.wooOrderId,
-                            }).toString()}`}
-                            state={{ from: `${location.pathname}${location.search}` }}
-                          >
-                            <strong>{order.wooOrderId}</strong>
-                          </Link>
-                          <small>{order.paymentMethod || "POS"}</small>
-                        </div>
-                      </div>
-                    </td>
-                    <td><span className="offline-order-id">{order.offlineOrderId || "—"}</span></td>
-                    <td>
-                      <div className="order-date">
-                        <strong>{order.date}</strong>
-                        {order.time && <small>{order.time}</small>}
-                      </div>
-                    </td>
-                    <td>
-                      <span className={`order-status ${statusClass(order.status)}`}>
-                        <i className="bi bi-circle-fill" />
-                        {order.status}
-                      </span>
-                    </td>
-                    <td>
-                      <div className="order-author">
-                        <span>{order.author}</span>
-                      </div>
-                    </td>
-                    <td><strong className="order-total">{order.total}</strong></td>
+            <div className="orders-table-heading">
+              <div>Orders<span>{filteredOrders.length}</span></div>
+            </div>
+
+            <div className="orders-table-wrapper">
+              <table className="orders-table">
+                <thead>
+                  <tr>
+                    <th>Order ID</th>
+                    <th>Client Order ID</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                    <th>Customer</th>
+                    <th>Total</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {paginatedOrders.length ? paginatedOrders.map((order) => (
+                    <tr key={order.id}>
+                      <td>
+                        <div className="order-id-cell">
+                          <div>
+                            <Link
+                              className="order-id-link"
+                              to={`/orders/${encodeURIComponent(order.id)}?${new URLSearchParams({
+                                ...(selectedMerchant ? { merchant: selectedMerchant } : {}),
+                                ...(selectedStore ? { store: selectedStore } : {}),
+                                number: order.wooOrderId,
+                              }).toString()}`}
+                              state={{ from: `${location.pathname}${location.search}` }}
+                            >
+                              <strong>{order.wooOrderId}</strong>
+                            </Link>
+                            <small>{order.paymentMethod || "POS"}</small>
+                          </div>
+                        </div>
+                      </td>
+                      <td><span className="offline-order-id">{order.offlineOrderId || "—"}</span></td>
+                      <td>
+                        <div className="order-date">
+                          <strong>{order.date}</strong>
+                          {order.time && <small>{order.time}</small>}
+                        </div>
+                      </td>
+                      <td>
+                        <span className={`order-status ${statusClass(order.status)}`}>
+                          <i className="bi bi-circle-fill" />
+                          {order.status}
+                        </span>
+                      </td>
+                      <td>
+                        <div className="order-author">
+                          <span>{order.author}</span>
+                        </div>
+                      </td>
+                      <td><strong className="order-total">{order.total}</strong></td>
+                    </tr>
+                  )) : (
+                    <tr>
+                      <td className="orders-table-empty" colSpan="6">
+                        <div className="products-table-empty-state">
+                          <div className="products-empty-icon">
+                            <i className="bi bi-receipt" />
+                          </div>
+                          <strong>
+                            {!selectedStore
+                              ? "Select a store to view orders"
+                              : error
+                                ? "Orders could not be loaded"
+                                : "No orders found"}
+                          </strong>
+                          <span>
+                            {!selectedStore
+                              ? "Choose a merchant and store to load that store's orders."
+                              : error
+                                ? error
+                                : "Try changing your search or filters."}
+                          </span>
+                          {selectedStore && !error && (
+                            <button type="button" onClick={clearFilters}>Clear Filters</button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
           </>
         )}
 
         {selectedStore && !loading && filteredOrders.length === 0 && (
           <div className="orders-empty">
-            <div className="orders-empty-icon"><i className="bi bi-receipt" /></div>
+            
             <h3>No orders found</h3>
             <p>{error ? "The order list could not be loaded." : "Try changing your search or filters."}</p>
-            {!error && (
-              <button type="button" onClick={clearFilters}>Clear Filters</button>
-            )}
+            
           </div>
         )}
 
-        {filteredOrders.length > 0 && (
+        {!loading && (
           <Pagination
             currentPage={currentPage}
             totalPages={totalPages}
@@ -391,11 +408,11 @@ export default function Orders({
               setCurrentPage(1);
             }}
             itemLabel="orders"
-            showWhenEmpty
+            showWhenEmpty={true}
           />
         )}
 
-        {filteredOrders.length > 0 && (
+        {selectedStore && !loading && filteredOrders.length > 0 && (
           <div className="orders-footer">
             <span className="orders-source">
               <i className="bi bi-arrow-repeat" />

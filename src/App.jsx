@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import ProtectedRoute from "./auth/ProtectedRoute";
 import GuestRoute from "./auth/GuestRoute";
@@ -76,6 +76,75 @@ const placeholders = [
 
 export default function App() {
   const [localMerchants, setLocalMerchants] = useState([]);
+
+  useEffect(() => {
+    const messageFor = (input) => {
+      const validity = input.validity;
+      const labelNode = input.labels?.[0]?.cloneNode(true);
+      labelNode?.querySelectorAll(".inline-validation-error").forEach((node) => node.remove());
+      const label = labelNode?.textContent
+        ?.replace(/\s+/g, " ")
+        .replace(/\*|required/gi, "")
+        .trim();
+      const field = label || String(input.name || input.id || "This field")
+        .replace(/([a-z])([A-Z])/g, "$1 $2")
+        .replace(/[_-]+/g, " ")
+        .replace(/^./, (character) => character.toUpperCase());
+      if (validity.valueMissing) return `${field} is required.`;
+      if (validity.typeMismatch && input.type === "email") return "Enter a valid email address.";
+      if (validity.typeMismatch && input.type === "url") return "Enter a valid URL.";
+      if (validity.rangeUnderflow) return `Enter a value of at least ${input.min}.`;
+      if (validity.rangeOverflow) return `Enter a value no greater than ${input.max}.`;
+      if (validity.stepMismatch) return "Enter a valid value.";
+      if (validity.tooShort) return `Enter at least ${input.minLength} characters.`;
+      if (validity.tooLong) return `Enter no more than ${input.maxLength} characters.`;
+      return input.validationMessage || "Check this field.";
+    };
+    const onInvalid = (event) => {
+      const input = event.target;
+      if (!(input instanceof HTMLElement) || input.dataset.noInlineValidation === "true") return;
+      event.preventDefault();
+      const field = input.closest("label") || input.closest(".form-group, .field, .form-field, .coupon-form-field") || input.parentElement;
+      if (!field) return;
+      field.classList.add("has-inline-validation-error");
+      input.setAttribute("aria-invalid", "true");
+      let message = field.querySelector(":scope > .inline-validation-error");
+      if (!message) {
+        message = document.createElement("small");
+        message.className = "inline-validation-error";
+        message.setAttribute("role", "alert");
+        field.append(message);
+      }
+      message.textContent = messageFor(input);
+      if (!input.id) input.id = `inline-validation-${Math.random().toString(36).slice(2)}`;
+      const describedBy = new Set((input.getAttribute("aria-describedby") || "").split(/\s+/).filter(Boolean));
+      describedBy.add(message.id || (message.id = `${input.id}-error`));
+      input.setAttribute("aria-describedby", [...describedBy].join(" "));
+    };
+    const onInput = (event) => {
+      const input = event.target;
+      if (!(input instanceof HTMLElement) || !input.checkValidity()) return;
+      const field = input.closest("label") || input.closest(".form-group, .field, .form-field, .coupon-form-field") || input.parentElement;
+      field?.classList.remove("has-inline-validation-error");
+      const message = field?.querySelector(":scope > .inline-validation-error");
+      if (message?.id) {
+        const describedBy = new Set((input.getAttribute("aria-describedby") || "").split(/\s+/).filter(Boolean));
+        describedBy.delete(message.id);
+        if (describedBy.size) input.setAttribute("aria-describedby", [...describedBy].join(" "));
+        else input.removeAttribute("aria-describedby");
+      }
+      message?.remove();
+      input.removeAttribute("aria-invalid");
+    };
+    document.addEventListener("invalid", onInvalid, true);
+    document.addEventListener("input", onInput, true);
+    document.addEventListener("change", onInput, true);
+    return () => {
+      document.removeEventListener("invalid", onInvalid, true);
+      document.removeEventListener("input", onInput, true);
+      document.removeEventListener("change", onInput, true);
+    };
+  }, []);
 
   function saveLocalMerchant(merchant) {
     if (!merchant?.id) {

@@ -25,6 +25,7 @@
   background: #fff;
   border-bottom: 1px solid #cdccd7;
   font: 14px/1.45 Inter, "Segoe UI", sans-serif;
+  gap: 8px;
 }
 
 .merchant-readonly .merchant-view-layout {
