@@ -254,19 +254,6 @@ export default function PosConfiguration({ merchantId, storeId, store, embedded 
         <PosSettingsContext.Provider value={settings}>
         <div className="page-content pos-page-content">
 
-            <div className="pos-config-detail-header">
-
-                <button
-                    type="button"
-                    className="pos-back-button"
-                    onClick={() => requestLeave(null)}
-                >
-                    <i className="bi bi-arrow-left" />
-                    <span>Back to POS Configuration</span>
-                </button>
-
-            </div>
-
             <div className="pos-config-detail-card">
                 <fieldset className="pos-screen-lock" disabled={busy} aria-busy={busy}>{renderSelectedContent()}</fieldset>
             </div>

@@ -13,6 +13,7 @@ export default function FiltersBar({
     searchAutoFocus = false,
     searchAriaLabel = "Search",
     className = "",
+    trailingAction = null,
 }) {
     return (
         <div className={`filters-bar ${className}`.trim()}>
@@ -83,6 +84,7 @@ export default function FiltersBar({
                 {clearLabel}
             </button>
         )}
+        {trailingAction}
     </div>
 </div>
     );

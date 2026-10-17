@@ -587,11 +587,8 @@ export default function Devices() {
         onCancel={() => (deleting ? null : setDeleteDevice(null))}
         onConfirm={handleDeactivateDevice}
       />
- 
     </div>
- 
   );
- 
 }
  
 /* ========================================================= STAT CARD ========================================================= */ function StatCard({

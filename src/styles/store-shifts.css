@@ -52,10 +52,11 @@
 .sm-records-card h2 { display:flex; align-items:center; gap:10px; margin:0 0 24px; color:#152448; font-size:19px; }
 .sm-records-card h2 > i { color:#5140ec; font-size:19px; }
 .sm-records-card h2 span { font-weight:600; }
-.sm-table-wrap { width:100%; overflow-x:auto; overscroll-behavior-x:contain; scrollbar-width:thin; scrollbar-color:#b8c5dc #f1f4f9; }
+.sm-table-wrap { width:100%; overflow-x:auto; overscroll-behavior-x:contain; scrollbar-width:thin; scrollbar-color:#3c465a #f1f4f9; }
 .sm-table-wrap::-webkit-scrollbar { height:10px; }
 .sm-table-wrap::-webkit-scrollbar-track { border-radius:8px; background:#f1f4f9; }
-.sm-table-wrap::-webkit-scrollbar-thumb { border:2px solid #f1f4f9; border-radius:8px; background:#b8c5dc; }
+.sm-table-wrap::-webkit-scrollbar-thumb { border:2px solid #f1f4f9; border-radius:8px; background:#3c465a; }
+.sm-table-wrap::-webkit-scrollbar-thumb:hover { background:#3c465a; }
 .sm-table { width:100%; min-width:1650px; border-collapse:separate; border-spacing:0; }
 .sm-table th, .sm-table td { padding:13px 12px; border-right:1px solid #e2eaf4; border-bottom:1px solid #e2eaf4; text-align:left; vertical-align:middle; white-space:nowrap; }
 .sm-table th:nth-child(4), .sm-table td:nth-child(4),

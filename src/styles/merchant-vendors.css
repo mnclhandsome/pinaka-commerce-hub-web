@@ -134,6 +134,10 @@
     height:40px;
 }
 
+.merchant-vendors .mv-popup-actions .mv-primary > i {
+    margin-right: 6px;
+}
+
 .merchant-vendors .mv-primary:hover:not(:disabled) {
     background: #4538a6;
     border-color: #4538a6;
@@ -1043,6 +1047,8 @@
 
 .mv-create-page { background: #f6f8fc; border: 1px solid #dfe4ee; border-radius: 10px; overflow: hidden; }
 .mv-create-page > .mv-header { border: 0; border-radius: 0; margin: 0; padding: 20px 24px 10px; }
+.mv-existing-page .mv-existing-title { display: flex; align-items: center; gap: 8px; }
+.mv-existing-page .mv-existing-title > i { color: #5143bc; font-size: 17px; }
 .mv-create-content { padding: 32px 24px; }
 .mv-create-content .vendors-page { padding: 0; background: transparent; }
 .mv-create-content .vendors-form { margin: 0; padding: 24px; box-shadow: none; }

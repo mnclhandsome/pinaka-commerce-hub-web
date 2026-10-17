@@ -362,9 +362,6 @@ export default function Orders({
                                 ? error
                                 : "Try changing your search or filters."}
                           </span>
-                          {selectedStore && !error && (
-                            <button type="button" onClick={clearFilters}>Clear Filters</button>
-                          )}
                         </div>
                       </td>
                     </tr>

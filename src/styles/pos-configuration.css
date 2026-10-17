@@ -254,6 +254,33 @@
     font-size: 14px;
 }
 
+.pos-page-content .pc-heading-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    flex: 0 0 auto;
+}
+
+.pos-page-content .pc-heading .pos-config-heading-back {
+    display: inline-flex;
+    width: auto;
+    min-height: 35px;
+    align-items: center;
+    gap: 7px;
+    padding: 0 14px;
+    border: 1px solid #5838f3;
+    border-radius: 6px;
+    background: #fff;
+    color: #4c35e8;
+    font: 600 13px Inter, Arial, sans-serif;
+    white-space: nowrap;
+}
+
+.pos-page-content .pc-heading .pos-config-heading-back:hover {
+    background: #f5f3ff;
+}
+
 .pos-config-detail-card {
     width: 100%;
     background: #ffffff;
@@ -4535,6 +4562,8 @@
     .pc-screen { padding: 16px; }
     .pc-safe-grid, .pc-form-grid, .pc-denomination { grid-template-columns: minmax(0, 1fr); }
     .pc-heading > .pc-button, .pc-section-heading > .pc-button { width: 100%; }
+    .pos-page-content .pc-heading-actions { width: 100%; flex-wrap: wrap; justify-content: flex-start; }
+    .pos-page-content .pc-heading .pos-config-heading-back { width: auto; }
     .pc-card, .pc-editor { padding: 16px; }
     .pc-footer { flex-wrap: wrap; }
     .pc-footer p { flex-basis: 100%; }

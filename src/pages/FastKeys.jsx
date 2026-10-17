@@ -335,21 +335,6 @@ export default function FastKeys() {
       <button type="button" className="store-config-btn" onClick={() => openForm()}><i className="bi bi-plus-lg" aria-hidden="true" /> Add New Fast Key</button>
       </div>
 
-
-      {/* ================= TABS ================= */}
-
-      <div className="fast-key-tabs">
-        <button
-          type="button"
-          className={tab === "all" ? "active" : ""}
-          onClick={() => setTab("all")}
-        >
-          All ({items.length})
-        </button>
-
-
-      </div>
-
       {/* ================= TOOLBAR ================= */}
 
       <div className="fast-key-toolbar">

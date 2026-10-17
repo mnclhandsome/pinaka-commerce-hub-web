@@ -3038,41 +3038,24 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
             <div>
               <small>Selected Plan</small>
               <strong>{planName}</strong>
-              <small>{billing} billing</small>
+
             </div>
           </div>
           <div>
-            <small>Total Features</small>
-            <strong>{featureRows.length}</strong>
+            <span className="sf-feature-summary-icon green"><i className="bi bi-grid" aria-hidden="true" /></span>
+            <div><small>Total Features</small><strong>{featureRows.length}</strong></div>
           </div>
           <div>
-            <small>Included</small>
-            <strong className="sf-green">{includedCount}</strong>
+            <span className="sf-feature-summary-icon purple"><i className="bi bi-check-circle" aria-hidden="true" /></span>
+            <div><small>Included</small><strong className="sf-green">{includedCount}</strong></div>
           </div>
           <div>
-            <small>Not Included</small>
-            <strong className="sf-amber">
-              {Math.max(0, featureRows.length - includedCount)}
-            </strong>
+            <span className="sf-feature-summary-icon orange"><i className="bi bi-exclamation-circle" aria-hidden="true" /></span>
+            <div><small>Not Included</small><strong className="sf-amber">{Math.max(0, featureRows.length - includedCount)}</strong></div>
           </div>
         </Panel>
         <Panel
-          title="Features"
-          subtitle={readOnly ? "Features available to this store and their saved selection status." : "Select the features you want to enable for this store."}
           className="sf-feature-list-panel"
-          action={(
-            <div className="sf-feature-header-actions">
-              <label className="sf-select-all-label sf-panel-select-all">
-                <input
-                  type="checkbox"
-                  disabled={readOnly || mastersLoading || !selectableFeatureNames.length}
-                  checked={allVisibleFeaturesSelected}
-                  onChange={(event) => setEnabledFeatures((current) => event.target.checked ? [...new Set([...current, ...selectableFeatureNames])] : current.filter((name) => !selectableFeatureNames.includes(name)))}
-                />
-                Select all eligible
-              </label>
-            </div>
-          )}
         >
           <div className="sf-feature-tools">
             <FiltersBar
@@ -3105,6 +3088,17 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
                 setFeaturePage(1);
               }}
               clearLabel="Reset"
+              trailingAction={(
+                <label className="sf-select-all-label sf-feature-select-all">
+                  <input
+                    type="checkbox"
+                    disabled={readOnly || mastersLoading || !selectableFeatureNames.length}
+                    checked={allVisibleFeaturesSelected}
+                    onChange={(event) => setEnabledFeatures((current) => event.target.checked ? [...new Set([...current, ...selectableFeatureNames])] : current.filter((name) => !selectableFeatureNames.includes(name)))}
+                  />
+                  Select all eligible
+                </label>
+              )}
             />
           </div>
           <div className="sf-table-wrap sf-feature-table-wrap">
@@ -3441,32 +3435,23 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
       <>
         <Panel className="sf-employee-summary">
           <div>
-            <small>Selected Merchant</small>
-            <strong>
-              <span className="sf-avatar">{initials(merchantName)}</span>
-              {merchantName}
-            </strong>
-            <small>
-              {merchantCode || "Merchant code unavailable"} &nbsp;|&nbsp; {typeName || "Merchant"}
-            </small>
+            <span className="sf-employee-summary-icon"><i className="bi bi-person-plus" aria-hidden="true" /></span>
+            <small>Available to Assign</small>
+            <strong>{Math.max(0, activeEmployees.length - assigned)}</strong>
           </div>
           <div>
+            <span className="sf-employee-summary-icon"><i className="bi bi-people" aria-hidden="true" /></span>
             <small>Total Employees</small>
             <strong>{employees.length}</strong>
           </div>
           <div>
+            <span className="sf-employee-summary-icon"><i className="bi bi-person-check" aria-hidden="true" /></span>
             <small>Already Assigned</small>
             <strong>{assigned}</strong>
           </div>
-          <div>
-            <small>Available to Assign</small>
-            <strong className="sf-green">
-              {Math.max(0, activeEmployees.length - assigned)}
-            </strong>
-          </div>
         </Panel>
         <Panel
-          title="Assign employees to this store"
+          className="sf-employee-assignment-panel"
         >
           <div className="sf-employee-tools">
             <label className="sf-select-all-employees">
@@ -3478,7 +3463,7 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
                   setAllEmployeesSelected(event.target.checked)
                 }
               />
-              <span>Select all active employees</span>
+              <span>Select all</span>
             </label>
             <label className="sf-search">
               <i className="bi bi-search" />
