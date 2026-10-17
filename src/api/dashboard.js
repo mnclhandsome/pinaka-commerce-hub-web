@@ -1,8 +1,12 @@
 import { api } from "./http";
 
-const dashboardBase =
+const configuredDashboardBase =
   import.meta.env.VITE_ADMIN_DASHBOARD_API_BASE_URL ||
-  "/api/v1/admin/dashboard";
+  "/admin-api/api/v1/admin/dashboard";
+const dashboardBase = configuredDashboardBase.replace(
+  /^\/api\/v1(?=\/admin\/dashboard(?:\/|$))/,
+  "/admin-api/api/v1",
+);
 
 export const getDashboardPlatformHealth = () => api.get(`${dashboardBase}/platform-health`);
 export const getDashboardFeatures = () => api.get(`${dashboardBase}/features`);
