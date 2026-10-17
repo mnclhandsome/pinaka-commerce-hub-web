@@ -565,37 +565,78 @@
    STATUS
 
 \======================================== */:is(.merchant-subscriptions-page, .subscription-flow-page, .subscription-page) .status-badge {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  width: 96px !important;
+  min-width: 96px !important;
+  max-width: 96px !important;
+  height: 32px !important;
+  min-height: 32px !important;
+  max-height: 32px !important;
+  padding: 0 12px !important;
+  border-radius: 9999px !important;
+  box-sizing: border-box !important;
+  font-family: inherit !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  line-height: 1 !important;
+  letter-spacing: 0.01em !important;
+  white-space: nowrap !important;
+  border: none !important;
+  box-shadow: none !important;
+  text-transform: capitalize !important;
+  vertical-align: middle !important;
+}
 
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 5px 10px !important;
-  border-radius: 6px !important;
-  font-size: 12px  !important;
-  font-weight: 500;
+:is(.merchant-subscriptions-page, .subscription-flow-page, .subscription-page) .status-badge i {
+  display: inline-block !important;
+  width: 8px !important;
+  height: 8px !important;
+  min-width: 8px !important;
+  min-height: 8px !important;
+  max-width: 8px !important;
+  max-height: 8px !important;
+  border-radius: 50% !important;
+  background-color: currentColor !important;
+  flex: 0 0 8px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  font-size: 0 !important;
+  line-height: 0 !important;
+  border: none !important;
+  box-shadow: none !important;
+  vertical-align: middle !important;
+}
 
-}:is(.merchant-subscriptions-page, .subscription-flow-page, .subscription-page) .status-badge i {
+:is(.merchant-subscriptions-page, .subscription-flow-page, .subscription-page) .status-badge i::before {
+  display: none !important;
+}
 
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: currentColor;
+:is(.merchant-subscriptions-page, .subscription-flow-page, .subscription-page) .status-badge.active {
+  color: #047857 !important;
+  background-color: #ecfdf5 !important;
+}
 
-}:is(.merchant-subscriptions-page, .subscription-flow-page, .subscription-page) .status-badge.active {
+:is(.merchant-subscriptions-page, .subscription-flow-page, .subscription-page) .status-badge.active i {
+  background-color: #047857 !important;
+  color: #047857 !important;
+}
 
-  color: #00a875;
-  background: #ddf7eb;
+:is(.merchant-subscriptions-page, .subscription-flow-page, .subscription-page) .status-badge.inactive {
+  color: #b91c1c !important;
+  background-color: #fee2e2 !important;
+}
 
-}:is(.merchant-subscriptions-page, .subscription-flow-page, .subscription-page) .status-badge.inactive {
+:is(.merchant-subscriptions-page, .subscription-flow-page, .subscription-page) .status-badge.inactive i {
+  background-color: #b91c1c !important;
+  color: #b91c1c !important;
+}
 
-  color: #ef4444;
-  background: #ffe3e3;
-
-}:is(.merchant-subscriptions-page, .subscription-flow-page, .subscription-page) .status-badge.expiring-soon {
-
+:is(.merchant-subscriptions-page, .subscription-flow-page, .subscription-page) .status-badge.expiring-soon {
   color: #e99500;
   background: #fff0d3;
-
 }
 
 :is(.merchant-subscriptions-page, .subscription-flow-page, .subscription-page) .empty-row {
@@ -5561,7 +5602,7 @@
    width: calc(100% - 24px);
     max-width: calc(100% - 24px);
     margin: 0 12px;
-    padding: 16px 8px;
+    padding: 16px 0;
     box-sizing: border-box;
     border-top: 0;
 }

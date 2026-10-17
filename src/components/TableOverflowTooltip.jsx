@@ -8,10 +8,18 @@ const TABLE_CELL_SELECTOR = [
   "[data-pch-table-cell]",
   ".plans-row",
   ".store-types-row",
+  ".store-features-row",
+  ".role-template-row",
+  "[class*='-cell']",
 ].join(", ");
 
 function getOverflowingText(target) {
   if (!(target instanceof Element)) return null;
+
+  // Ignore action buttons or controls inside cells
+  if (target.closest("button, a, input, select, textarea, .list-actions, [class*='actions']")) {
+    return null;
+  }
 
   const cell = target.closest(TABLE_CELL_SELECTOR);
   if (!cell) return null;

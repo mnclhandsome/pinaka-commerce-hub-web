@@ -134,6 +134,10 @@
     height:40px;
 }
 
+.merchant-vendors .mv-popup-actions .mv-primary > i {
+    margin-right: 6px;
+}
+
 .merchant-vendors .mv-primary:hover:not(:disabled) {
     background: #4538a6;
     border-color: #4538a6;
@@ -1043,6 +1047,8 @@
 
 .mv-create-page { background: #f6f8fc; border: 1px solid #dfe4ee; border-radius: 10px; overflow: hidden; }
 .mv-create-page > .mv-header { border: 0; border-radius: 0; margin: 0; padding: 20px 24px 10px; }
+.mv-existing-page .mv-existing-title { display: flex; align-items: center; gap: 8px; }
+.mv-existing-page .mv-existing-title > i { color: #5143bc; font-size: 17px; }
 .mv-create-content { padding: 32px 24px; }
 .mv-create-content .vendors-page { padding: 0; background: transparent; }
 .mv-create-content .vendors-form { margin: 0; padding: 24px; box-shadow: none; }
@@ -1062,16 +1068,17 @@
 .mv-existing-content > .pagination-container { height: 60px; padding: 12px 0; }
 .mv-existing-content .mv-picker-summary { margin-top: 14px; }
 .mv-existing-table-wrap { width: 100%; margin-top: 4px; overflow-x: auto; border: 1px solid #dfe4ee; border-radius: 8px; }
-.mv-existing-page .mv-existing-table-wrap { overflow-x: hidden; }
-.mv-existing-page .mv-existing-table-wrap table { width: 100%; min-width: 0; border-collapse: collapse; table-layout: fixed; white-space: normal; }
-.mv-existing-page .mv-existing-table-wrap th, .mv-existing-page .mv-existing-table-wrap td { padding: 13px 10px; border-bottom: 1px solid #e8ecf3; text-align: left; vertical-align: middle; overflow-wrap: anywhere; }
-.mv-existing-table-wrap th { position: sticky; top: 0; z-index: 1; background: #f5f7fb; color: #17233e; }
-.mv-existing-table-wrap th:nth-child(1), .mv-existing-table-wrap td:nth-child(1) { width: 8%; text-align: center; }
-.mv-existing-table-wrap th:nth-child(2), .mv-existing-table-wrap td:nth-child(2) { width: 16%; }
-.mv-existing-table-wrap th:nth-child(3), .mv-existing-table-wrap td:nth-child(3) { width: 22%; }
-.mv-existing-table-wrap th:nth-child(4), .mv-existing-table-wrap td:nth-child(4) { width: 17%; }
-.mv-existing-table-wrap th:nth-child(5), .mv-existing-table-wrap td:nth-child(5) { width: 21%; }
-.mv-existing-table-wrap th:nth-child(6), .mv-existing-table-wrap td:nth-child(6) { width: 16%; }
+.mv-existing-page .mv-existing-table-wrap { overflow-x: auto; }
+.mv-existing-page .mv-existing-table-wrap table { width: 100%; min-width: 860px; border-collapse: collapse; table-layout: auto; }
+.mv-existing-page .mv-existing-table-wrap th, .mv-existing-page .mv-existing-table-wrap td { padding: 10px 14px; border-bottom: 1px solid #e8ecf3; text-align: left; vertical-align: middle; }
+.mv-existing-page .mv-existing-table-wrap th { white-space: nowrap; }
+.mv-existing-table-wrap th { position: sticky; top: 0; z-index: 1; background: #f5f7fb; color: #17233e; white-space: nowrap; }
+.mv-existing-table-wrap th:nth-child(1), .mv-existing-table-wrap td:nth-child(1) { width: 48px; min-width: 48px; text-align: center; }
+.mv-existing-table-wrap th:nth-child(2), .mv-existing-table-wrap td:nth-child(2) { width: 140px; min-width: 130px; }
+.mv-existing-table-wrap th:nth-child(3), .mv-existing-table-wrap td:nth-child(3) { width: 180px; min-width: 160px; }
+.mv-existing-table-wrap th:nth-child(4), .mv-existing-table-wrap td:nth-child(4) { width: 150px; min-width: 140px; }
+.mv-existing-table-wrap th:nth-child(5), .mv-existing-table-wrap td:nth-child(5) { width: 180px; min-width: 160px; }
+.mv-existing-table-wrap th:nth-child(6), .mv-existing-table-wrap td:nth-child(6) { width: 140px; min-width: 135px; white-space: nowrap; }
 .mv-existing-table-wrap tbody tr { cursor: pointer; transition: background-color 0.12s ease; }
 .mv-existing-table-wrap tbody tr:hover { background: #f8f7ff; }
 .mv-existing-table-wrap tbody tr.mv-row-selected { background: #f0edff; }
@@ -1131,7 +1138,13 @@
 .mv-device-mapped-page .mv-device-list-card > .mv-toolbar { padding: 16px 0; }
 .mv-device-mapped-page .mv-device-list-card .mv-scroll { width: 100%; margin: 0; }
 .mv-device-mapped-page .pagination-container,
-.mv-device-picker .pagination-container { margin-top: 16px; }
+.mv-device-picker .pagination-container {
+    width: 100%;
+    margin-top: 16px;
+    padding: 16px 0;
+    background: transparent;
+    box-sizing: border-box;
+}
 .mv-device-mapped-page .pagination-container :is(.pagination-arrow, .pagination-page),
 .mv-device-picker .pagination-container :is(.pagination-arrow, .pagination-page) {
     width: 36px;

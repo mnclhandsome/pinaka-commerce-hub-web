@@ -142,10 +142,12 @@ function storeTypeDisplayName(value, storeTypes) {
 const planRowStyle = {
   display: "grid",
   gridTemplateColumns:
-    "100px 100px minmax(100px, 1fr) 130px 120px 100px 90px 110px 110px 80px",
+    "120px 140px minmax(160px, 1.4fr) 140px 130px 100px 135px 140px 140px 120px",
   gap: "10px",
   alignItems: "center",
-  minWidth: "1150px",
+  minWidth: "1350px",
+  width: "100%",
+  boxSizing: "border-box",
 };
 
 export default function CreatePlan() {
@@ -1349,7 +1351,7 @@ async function confirmDelete() {
           className="plans-table-wrap"
           style={{ overflowX: "auto", width: "100%" }}
         >
-          <div className="plans-table" style={{ minWidth: "1150px" }}>
+          <div className="plans-table" style={{ minWidth: "1350px", width: "100%" }}>
             {/* HEADER ROW */}
             <div className="plans-row plans-row-head" style={planRowStyle}>
               <div>Plan Code</div>
@@ -1361,7 +1363,7 @@ async function confirmDelete() {
               <div>Status</div>
               <div>Created At</div>
               <div>Updated At</div>
-              <div>Actions</div>
+              <div className="plan-actions-header">Actions</div>
             </div>
 
             {/* DATA ROWS */}
@@ -1444,7 +1446,7 @@ async function confirmDelete() {
                     );
                   })()}
 
-                  <div>
+                  <div className="plan-actions-cell">
                     <ListActions
                       onEdit={(event) => { event.stopPropagation(); editPlan(plan); }}
                       onDelete={(event) => { event.stopPropagation(); openDeleteConfirmation(plan); }}

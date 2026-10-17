@@ -148,17 +148,7 @@ export default function DeviceView() {
       {/* ===================================================== META INFORMATION ===================================================== */}{" "}
       <div className="device-view-meta-grid">
         {" "}
-        <div className="device-view-meta-card">
-          {" "}
-          <div className="device-view-meta-icon">
-            {" "}
-            <Link2 size={18} />{" "}
-          </div>{" "}
-          <div>
-            {" "}
-            <span>Last Seen</span> <strong>{lastSeen}</strong>{" "}
-          </div>{" "}
-        </div>{" "}
+        
       </div>{" "}
     </div>
   );

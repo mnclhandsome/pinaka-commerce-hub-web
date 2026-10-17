@@ -648,13 +648,17 @@
 ========================================================= */
 
 .fp-table-footer {
-  min-height: 51px;
-
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-
+  width: 100%;
+  display: block;
+  box-sizing: border-box;
   padding-top: 13px;
+}
+
+.fp-table-footer .pagination-container {
+  width: 100%;
+  padding: 16px 0;
+  background: transparent;
+  box-sizing: border-box;
 }
 
 

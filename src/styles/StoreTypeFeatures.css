@@ -214,7 +214,7 @@
 
 .store-features-row {
   display: grid;
-  grid-template-columns: minmax(220px, 2fr) 1.3fr 65px;
+  grid-template-columns: minmax(220px, 2fr) 1.3fr 80px;
   min-height: 45px;
   align-items: center;
   padding: 0 24px;
@@ -235,10 +235,17 @@
   font-weight: 600;
 }
 
+.store-features-row-head > div {
+  padding: 0 !important;
+  display: inline-flex;
+  align-items: center;
+  box-sizing: border-box;
+}
+
 .store-features-name {
-  color: #323a44;
-  font-size: 14px;
-  font-weight: 500;
+  color: #102d59;
+  font-size: 13px;
+  font-weight: 600;
 }
 
 .feature-delete-button {
@@ -255,19 +262,15 @@
 }
 
 .store-features-footer {
-   display: flex;
-  justify-content: flex-end;
-  align-items: center;
   width: 100%;
-  min-height: 60px;
+  display: block;
   box-sizing: border-box;
 }
- 
 
 .store-features-footer .pagination-container {
   width: 100%;
-  flex-wrap: wrap;
-  gap: 12px;
+  padding: 16px 0;
+  background: transparent;
   box-sizing: border-box;
 }
 

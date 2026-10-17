@@ -457,8 +457,10 @@
   border-bottom: none;
 }
 .st-table .st-code {
-  color: #172441;
-  font-weight: 700;
+  color: #1e293b !important;
+  font-weight: 600 !important;
+  font-size: 14px !important;
+  white-space: nowrap !important;
 }
 .st-table .st-name {
   color: #4b6e9f;
@@ -515,6 +517,12 @@
 /* =========================================================
    PAGINATION
 ========================================================= */
+.st-main-card > .pagination-container {
+  width: 100%;
+  padding: 16px 0;
+  background: transparent;
+}
+
 .st-pagination {
   display: flex;
   align-items: center;

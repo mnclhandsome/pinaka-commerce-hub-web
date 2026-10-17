@@ -750,7 +750,7 @@ useEffect(() => {
         <section className="merchant-vendors mv-create-page mv-existing-page">
             <header className="mv-card mv-header">
                 <div>
-                    <h2>Add Existing Vendor</h2>
+                    <h2 className="mv-existing-title"> Add Existing Vendor</h2>
                     <p>Choose one or more vendors to add to this {entityName}.</p>
                 </div>
                 <button type="button" className="store-config-back-button" disabled={busy} onClick={close}>← Back to Vendors</button>
@@ -767,7 +767,6 @@ useEffect(() => {
                     searchPlaceholder="Search vendors by name, code, contact or product"
                     searchAriaLabel="Search master vendors"
                     searchDisabled={busy || masterLoading}
-                    searchAutoFocus
                     filters={[
                         { key: "country", label: "Filter by country", value: countryFilter, disabled: busy || masterLoading, options: [{ value: "", label: "All countries" }, ...countries.map(country => ({ value: locationKey(country), label: country }))], onChange: value => { setCountryFilter(value); setStateFilter(""); setPickerPage(1); } },
                         { key: "state", label: "Filter by state", value: stateFilter, disabled: busy || masterLoading, options: [{ value: "", label: "All states" }, ...states.map(state => ({ value: locationKey(state), label: state }))], onChange: value => { setStateFilter(value); setPickerPage(1); } },
@@ -850,6 +849,7 @@ useEffect(() => {
                         <button ref={addButton} type="button" className="mv-primary"
                             disabled={loading || !!error || masterLoading || !mappingId}
                             onClick={openAddVendorModal}>
+                            <i className="bi bi-plus-lg" aria-hidden="true" />
                             Add Existing Vendor
                         </button>
                     </div>

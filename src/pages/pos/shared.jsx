@@ -285,7 +285,12 @@ export function ConfigHeader({ icon, title, description, children }) {
     return <header className="pc-heading"><div className="pc-heading-title">
         <span className="pc-icon">{icon === "cash-register" ? <CashRegisterIcon /> : icon === "gear" ? <SettingsGearIcon /> : <i className={`bi bi-${icon}`} aria-hidden="true" />}</span>
         <div><h2>{title}</h2><p>{description}</p></div>
-    </div>{children}</header>;
+    </div><div className="pc-heading-actions">
+        <button type="button" className="pc-button pos-config-heading-back" onClick={() => settings.requestLeave(null)}>
+            <i className="bi bi-arrow-left" aria-hidden="true" /> Back to POS Configuration
+        </button>
+        {children}
+    </div></header>;
 }
 export function ConfigFooter({ onBack, onSave, disabled, message }) {
     return <footer className="pc-footer pos-form-actions"><p role="status">{message || "Changes are saved for this session. API integration is required for permanent storage."}</p>
