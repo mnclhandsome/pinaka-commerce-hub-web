@@ -1,6 +1,11 @@
 import FilterDropdown from "../components/FilterDropdown";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import {
+  getDashboardFeatures,
+  getDashboardPlatformHealth,
+  getDashboardSharedMetrics,
+} from "../api/dashboard";
 
 /* =========================================================
    KPI DATA
@@ -67,12 +72,73 @@ const kpis = [
    PLATFORM HEALTH
 ========================================================= */
 
-const healthRows = [
-  ["Devices online", "974 / 982", "99%", "good"],
-  ["Stores synchronized", "337 / 342", "98%", "warn"],
-  ["POS configuration complete", "336 / 342", "98%", "warn"],
-  ["Integrations connected", "144 / 148", "97%", "warn"],
-];
+const defaultHealth = {
+  score: null,
+  rows: [
+    ["Devices active", "—", "—", "good", "0%"],
+    ["Stores synchronized", "—", "—", "warn", "0%"],
+    ["POS configuration complete", "—", "—", "warn", "0%"],
+  ],
+};
+
+const defaultFeatures = { total: null, active: null, inactive: null, included: null, excluded: null };
+
+const unwrapDashboardData = (response) => response?.data?.data ?? response?.data ?? response ?? {};
+const firstValue = (source, keys, fallback) => {
+  for (const key of keys) if (source?.[key] != null) return source[key];
+  return fallback;
+};
+const asPercent = (value) => `${String(value).replace(/%$/, "")}%`;
+
+function normalizeHealth(response) {
+  const data = unwrapDashboardData(response);
+  const health = data.platformHealth ?? data.platform_health ?? data.health ?? data;
+  const metricRow = (label, metric, valueKey, totalKey, percentKey, tone) => {
+    const value = metric?.[valueKey];
+    const total = metric?.[totalKey];
+    const numericPercent = metric?.[percentKey] ?? (Number(total) > 0 ? Math.round((Number(value) / Number(total)) * 100) : null);
+    return [
+      label,
+      value != null && total != null ? `${value} / ${total}` : "—",
+      numericPercent == null ? "—" : asPercent(numericPercent),
+      tone,
+      `${numericPercent ?? 0}%`,
+    ];
+  };
+  const score = Object.prototype.hasOwnProperty.call(health, "platform_health_score_pct")
+    ? health.platform_health_score_pct
+    : firstValue(health, ["healthScore", "health_score", "score", "overallHealth"], null);
+  return {
+    score: score == null ? null : Number(String(score).replace(/%$/, "")),
+    rows: [
+      metricRow("Devices active", health.devices, "active_count", "total_count", "active_pct", "good"),
+      metricRow("Stores synchronized", health.stores_synchronized, "synchronized_count", "eligible_count", "synchronized_pct", "warn"),
+      metricRow("POS configuration complete", health.pos_configuration, "completed_count", "eligible_count", "completed_pct", "warn"),
+    ],
+  };
+}
+
+function normalizeFeatures(response) {
+  const data = unwrapDashboardData(response);
+  const features = data.featureSummary ?? data.feature_summary ?? data.summary ?? data;
+  const totalValue = firstValue(features, ["totalFeatures", "total_features", "total_features_count", "total"], null);
+  const activeValue = firstValue(features, ["activeFeatures", "active_features", "active_features_count", "active"], null);
+  const total = totalValue == null ? null : Number(totalValue);
+  const active = activeValue == null ? null : Number(activeValue);
+  const inactiveValue = firstValue(features, ["inactiveFeatures", "inactive_features", "inactive_features_count", "inactive"], null);
+  const inactive = inactiveValue == null
+    ? (total != null && active != null ? total - active : null)
+    : Number(inactiveValue);
+  return {
+    total, active, inactive,
+    included: firstValue(features, ["includedInPlans", "included_in_plans", "included_in_plans_count", "includedFeatures", "included_features"], null) == null
+      ? null
+      : Number(firstValue(features, ["includedInPlans", "included_in_plans", "included_in_plans_count", "includedFeatures", "included_features"], null)),
+    excluded: firstValue(features, ["notIncludedInAnyPlan", "not_included_in_any_plan", "not_included_in_any_plan_count", "notIncludedFeatures", "not_included_features"], null) == null
+      ? null
+      : Number(firstValue(features, ["notIncludedInAnyPlan", "not_included_in_any_plan", "not_included_in_any_plan_count", "notIncludedFeatures", "not_included_features"], null)),
+  };
+}
 
 /* =========================================================
    ADMINISTRATION MODULES
@@ -125,40 +191,18 @@ const adminModules = [
    PLANS & ENTITLEMENTS
 ========================================================= */
 
-const planEntitlements = [
-  ["Basic · 1 store", "48"],
-  ["Pro · 3 stores", "46"],
-  ["Executive · 5 stores", "18"],
-];
-
-/* =========================================================
-   ROLE & PERMISSION METRICS
-   KEEP AS-IS
-========================================================= */
-
-const roleMetrics = [
-  ["System Roles", "8", "bi-shield-check", "blue"],
-  ["Custom Roles", "6", "bi-person-badge", "purple"],
-  ["Active role templates", "126", "bi-key", "purple"],
-  ["Total permissions", "24", "bi-exclamation-circle", "orange"],
-  ["Employees Assigned", "2,456", "bi-person-check", "blue"],
-  
-];
-
 /* =========================================================
    DONUT
 ========================================================= */
 
-function Donut({ value, className = "" }) {
+function Donut({ value, className = "", percent = 91, style = {}, status = "Healthy" }) {
   return (
-    <div className={`dashboard-donut ${className}`}>
+    <div className={`dashboard-donut ${className}`} style={{ "--donut-percent": `${percent}%`, ...style }}>
       <div className="dashboard-donut-hole">
         <strong>{value}</strong>
 
         <span>
-          {className.includes("coverage")
-            ? "Active features"
-            : "Healthy"}
+          {className.includes("coverage") ? "Active features" : status}
         </span>
       </div>
     </div>
@@ -205,6 +249,29 @@ function SectionHeader({
 
 export default function Dashboard() {
   const nav = useNavigate();
+
+  const [health, setHealth] = useState(defaultHealth);
+  const [features, setFeatures] = useState(defaultFeatures);
+  const [sharedMetrics, setSharedMetrics] = useState({ plans: null, entitlements: null, roles: null });
+  const [healthLoadError, setHealthLoadError] = useState("");
+  const [featuresLoadError, setFeaturesLoadError] = useState("");
+
+  useEffect(() => {
+    let active = true;
+    Promise.allSettled([
+      getDashboardPlatformHealth(),
+      getDashboardFeatures(),
+      getDashboardSharedMetrics(),
+    ]).then(([healthResult, featuresResult, sharedMetricsResult]) => {
+      if (!active) return;
+      if (healthResult.status === "fulfilled") setHealth(normalizeHealth(healthResult.value));
+      else setHealthLoadError(healthResult.reason?.message || "Could not load Platform Health.");
+      if (featuresResult.status === "fulfilled") setFeatures(normalizeFeatures(featuresResult.value));
+      else setFeaturesLoadError(featuresResult.reason?.message || "Could not load Features.");
+      if (sharedMetricsResult.status === "fulfilled") setSharedMetrics(sharedMetricsResult.value);
+    });
+    return () => { active = false; };
+  }, []);
 
   const [refreshing, setRefreshing] = useState(false);
   const [dateFilter, setDateFilter] = useState("Today");
@@ -361,19 +428,27 @@ export default function Dashboard() {
             onAction={() => nav("/reports")}
           />
 
+          {healthLoadError && <p className="dashboard-data-error">Platform Health: {healthLoadError}</p>}
+
           <div className="health-content">
 
             <div className="health-summary">
 
-              <Donut value="91%" />
+              <Donut
+                value={health.score == null ? "—" : `${health.score}%`}
+                percent={health.score ?? 0}
+                status={health.score == null ? "Unavailable" : "Platform health"}
+                className={health.score == null ? "unavailable" : ""}
+                style={{ "--health-percent": `${health.score ?? 0}%` }}
+              />
 
 
             </div>
 
             <div className="health-metrics">
 
-              {healthRows.map(
-                ([label, count, percent, tone]) => (
+              {health.rows.map(
+                ([label, count, percent, tone, widthPercent = percent]) => (
                   <div
                     className="health-row"
                     key={label}
@@ -387,7 +462,7 @@ export default function Dashboard() {
                     <div className="health-progress-line">
                       <span
                         className={tone}
-                        style={{ width: percent }}
+                        style={{ width: widthPercent }}
                       />
                     </div>
 
@@ -418,13 +493,20 @@ export default function Dashboard() {
             onAction={() => nav("/features")}
           />
 
+          {featuresLoadError && <p className="dashboard-data-error">Features: {featuresLoadError}</p>}
+
           <div className="coverage-content">
 
             <div className="coverage-visual">
 
               <Donut
-                value="44"
+                value={features.active ?? "—"}
                 className="coverage"
+                percent={features.total ? (features.active / features.total) * 100 : 0}
+                style={{
+                  "--included-percent": `${features.total ? (features.included / features.total) * 100 : 0}%`,
+                  "--included-end": `${features.total ? ((features.included + features.excluded) / features.total) * 100 : 0}%`,
+                }}
               />
 
             </div>
@@ -435,35 +517,35 @@ export default function Dashboard() {
             <div className="feature-metric">
               <span className="legend-dot blue" />
               <span>Total Features</span>
-              <b>48</b>
+              <b>{features.total ?? "—"}</b>
             </div>
 
             {/* Active Features */}
             <div className="feature-metric">
               <span className="legend-dot green" />
               <span>Active Features</span>
-              <b>44</b>
+              <b>{features.active ?? "—"}</b>
             </div>
 
             {/* Inactive Features */}
             <div className="feature-metric">
               <span className="legend-dot slate" />
               <span>Inactive Features</span>
-              <b>4</b>
+              <b>{features.inactive ?? "—"}</b>
             </div>
 
             {/* Included in Plans */}
             <div className="feature-metric">
               <span className="legend-dot teal" />
               <span>Included in Plans</span>
-              <b>41</b>
+              <b>{features.included ?? "—"}</b>
             </div>
 
             {/* Not Included in Any Plan */}
             <div className="feature-metric">
               <span className="legend-dot orange" />
               <span>Not Included in Any Plan</span>
-              <b>3</b>
+              <b>{features.excluded ?? "—"}</b>
             </div>
 
          
@@ -512,8 +594,12 @@ export default function Dashboard() {
 
           <div className="plan-tier-grid">
 
-            {planEntitlements.map(
-              ([label, value], index) => (
+            {(sharedMetrics.plans || [
+              { label: "Basic · 1 store", value: "—" },
+              { label: "Pro · 3 stores", value: "—" },
+              { label: "Executive · 5 stores", value: "—" },
+            ]).map(
+              ({ label, value }, index) => (
                 <div
                   className="plan-tier-card"
                   key={label}
@@ -548,7 +634,7 @@ export default function Dashboard() {
                 </span>
               </div>
 
-              <b>21</b>
+              <b>{sharedMetrics.entitlements?.storeCapacityReached ?? "—"}</b>
 
             </div>
 
@@ -564,7 +650,7 @@ export default function Dashboard() {
                 </span>
               </div>
 
-              <b>5</b>
+              <b>{sharedMetrics.entitlements?.terminalLimitReached ?? "—"}</b>
 
             </div>
 
@@ -581,7 +667,7 @@ export default function Dashboard() {
               </div>
 
               <b className="expired-value">
-                3
+                {sharedMetrics.entitlements?.expiredSubscriptions ?? "—"}
               </b>
 
             </div>
@@ -676,21 +762,21 @@ export default function Dashboard() {
         <div className="roles-summary">
 
           <div>
-            <strong>14</strong>
+            <strong>{sharedMetrics.roles?.activeTemplateCount ?? "—"}</strong>
             <span>active role templates</span>
           </div>
-
-          <span className="attention-text">
-            <i className="bi bi-exclamation-circle" />
-            {" "}
-            3 require attention
-          </span>
 
         </div>
 
         <div className="roles-grid">
 
-          {roleMetrics.map(
+          {(sharedMetrics.roles?.metrics || [
+            ["System Roles", null, "bi-shield-check", "blue"],
+            ["Custom Roles", null, "bi-person-badge", "purple"],
+            ["Active role templates", null, "bi-key", "purple"],
+            ["Total permissions", null, "bi-exclamation-circle", "orange"],
+            ["Employees Assigned", null, "bi-person-check", "blue"],
+          ]).map(
             ([label, value, icon, tone]) => (
 
               <div
