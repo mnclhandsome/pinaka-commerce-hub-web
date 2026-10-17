@@ -18,6 +18,9 @@ function buildUrl(path) {
   }
   if (/^https?:\/\//i.test(path)) return path;
   const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+
+  // Dashboard admin API is proxied separately to admin-api on port 3009.
+  if (normalizedPath.startsWith("/admin-api/")) return normalizedPath;
  
   if (/^https?:\/\//i.test(API_BASE_URL || "")) {
     try {
