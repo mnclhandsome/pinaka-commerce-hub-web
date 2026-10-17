@@ -60,6 +60,7 @@
 .ea-date-range-panel .ea-cancel-range { border-color:#cbd3e0; color:#53617a; }
 .ea-date-range-panel .ea-clear-dates { border-color:#cbd3e0; color:#53617a; }
 .ea-table-wrap { width:100%; overflow:auto; border:1px solid #e6ebf3; border-radius:6px; }
+.employee-attendance > .pagination-container { width: 100%; padding: 16px 0; background: transparent; box-sizing: border-box; }
 .ea-table { width:100%; min-width:850px; border-collapse:collapse; white-space:nowrap; }
 .ea-table th,.ea-table td { height:42px; padding:8px 12px; border-bottom:1px solid #e9edf4; text-align:left; vertical-align:middle; }
 .ea-table th { height:42px; color:#1b2945; background:#f1f3fd; font-size:12px; font-weight:650; }

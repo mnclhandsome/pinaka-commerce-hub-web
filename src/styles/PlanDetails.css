@@ -253,15 +253,16 @@
 /* Features and Limits page */
 
 .plan-view-features-table-wrap {
-  overflow: hidden;
+  overflow-x: auto;
   border: 1px solid #dce8f4;
   border-radius: 8px;
 }
 
 .plan-view-features-table {
   width: 100%;
+  min-width: 680px;
   border-collapse: collapse;
-  table-layout: fixed;
+  table-layout: auto;
 }
 
 .plan-view-features-table th,
@@ -281,22 +282,26 @@
   background: #f1f3fd;
   font-size: 12px;
   font-weight: 600;
+  white-space: nowrap;
 }
 
-.plan-view-features-table th:nth-child(1) {
-  width: 40%;
+.plan-view-features-table th:nth-child(1),
+.plan-view-features-table td:nth-child(1) {
+  width: 45%;
+  min-width: 240px;
 }
 
-.plan-view-features-table th:nth-child(2) {
-  width: 28%;
+.plan-view-features-table th:nth-child(2),
+.plan-view-features-table td:nth-child(2) {
+  width: 35%;
+  min-width: 200px;
 }
 
-.plan-view-features-table th:nth-child(3) {
+.plan-view-features-table th:nth-child(3),
+.plan-view-features-table td:nth-child(3) {
   width: 20%;
-}
-
-.plan-view-features-table th:nth-child(4) {
-  width: 12%;
+  min-width: 160px;
+  white-space: nowrap;
 }
 
 .plan-view-features-table tbody tr:last-child td {

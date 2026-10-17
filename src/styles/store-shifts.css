@@ -48,6 +48,7 @@
 .sm-button-primary:hover { background:#4325dc; }
 .sm-button-outline:hover { background:#f5f3ff; }
 .sm-records-card { overflow:hidden; padding:20px 18px 0; }
+.sm-records-card > .pagination-container { width: 100%; padding: 16px 0; background: transparent; box-sizing: border-box; }
 .sm-filter-card + .sm-records-card { border-top:1px solid #e1e8f2; border-radius:10px; box-shadow:0 1px 2px #19305a08; }
 .sm-records-card h2 { display:flex; align-items:center; gap:10px; margin:0 0 24px; color:#152448; font-size:19px; }
 .sm-records-card h2 > i { color:#5140ec; font-size:19px; }

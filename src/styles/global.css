@@ -76,9 +76,156 @@ table thead th {
     cursor: pointer;
 }
 
-.status-badge {
-    white-space: nowrap;
+/* =========================================================
+   STANDARDIZED STATUS BADGES (ACTIVE / INACTIVE)
+   - Strict visual symmetry and uniformity across the entire project
+   - Dimensions: 96px width x 32px height, capsule border-radius: 9999px
+   - Inner Flexbox centering: gap 8px, perfectly aligned 8px dot + text
+   - Active: #ECFDF5 background, #047857 dot & typography
+   - Inactive: #FEE2E2 background, #B91C1C dot & typography
+   ========================================================= */
+
+.status-badge,
+.status-badge--active,
+.status-badge--inactive,
+.store-status,
+.store-status-badge {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  width: 96px !important;
+  min-width: 96px !important;
+  max-width: 96px !important;
+  height: 32px !important;
+  min-height: 32px !important;
+  max-height: 32px !important;
+  padding: 0 12px !important;
+  border-radius: 9999px !important;
+  box-sizing: border-box !important;
+  font-family: inherit !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  line-height: 1 !important;
+  letter-spacing: 0.01em !important;
+  white-space: nowrap !important;
+  border: none !important;
+  box-shadow: none !important;
+  text-transform: capitalize !important;
+  vertical-align: middle !important;
 }
+
+/* Status Dot: handles <i>, <b>, .status-dot, and .status-badge__dot */
+.status-badge i,
+.status-badge b,
+.status-badge .status-dot,
+.status-badge__dot,
+.store-status i,
+.store-status-badge i {
+  display: inline-block !important;
+  width: 8px !important;
+  height: 8px !important;
+  min-width: 8px !important;
+  min-height: 8px !important;
+  max-width: 8px !important;
+  max-height: 8px !important;
+  border-radius: 50% !important;
+  background-color: currentColor !important;
+  flex: 0 0 8px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  font-size: 0 !important;
+  line-height: 0 !important;
+  border: none !important;
+  box-shadow: none !important;
+  vertical-align: middle !important;
+}
+
+/* Suppress any icon font glyphs (e.g. Bootstrap icon ::before) so the dot is a true 8x8 circle */
+.status-badge i::before,
+.status-badge__dot::before,
+.store-status i::before,
+.store-status-badge i::before {
+  display: none !important;
+}
+
+/* Auto-inject 8px dot for status badges that render text only */
+.status-badge:not(:has(i, b, .status-dot, .status-badge__dot))::before,
+.store-status:not(:has(i, b, .status-dot))::before,
+.store-status-badge:not(:has(i, b, .status-dot))::before {
+  content: "" !important;
+  display: inline-block !important;
+  width: 8px !important;
+  height: 8px !important;
+  min-width: 8px !important;
+  min-height: 8px !important;
+  max-width: 8px !important;
+  max-height: 8px !important;
+  border-radius: 50% !important;
+  background-color: currentColor !important;
+  flex: 0 0 8px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  vertical-align: middle !important;
+}
+
+/* Status Badge Text Span */
+.status-badge__text {
+  display: inline-flex !important;
+  align-items: center !important;
+  line-height: 1 !important;
+}
+
+/* Active Status State */
+.status-badge.active,
+.status-badge--active,
+.status-badge.status-active,
+.store-status.active,
+.store-status-badge.active {
+  background-color: #ecfdf5 !important;
+  color: #047857 !important;
+}
+
+.status-badge.active i,
+.status-badge.active b,
+.status-badge.active .status-dot,
+.status-badge.active .status-badge__dot,
+.status-badge--active i,
+.status-badge--active b,
+.status-badge--active .status-dot,
+.status-badge--active .status-badge__dot,
+.status-badge.status-active i,
+.store-status.active i,
+.store-status-badge.active i {
+  background-color: #047857 !important;
+  color: #047857 !important;
+}
+
+/* Inactive Status State */
+.status-badge.inactive,
+.status-badge--inactive,
+.status-badge.status-inactive,
+.store-status.inactive,
+.store-status-badge.inactive {
+  background-color: #fee2e2 !important;
+  color: #b91c1c !important;
+}
+
+.status-badge.inactive i,
+.status-badge.inactive b,
+.status-badge.inactive .status-dot,
+.status-badge.inactive .status-badge__dot,
+.status-badge--inactive i,
+.status-badge--inactive b,
+.status-badge--inactive .status-dot,
+.status-badge--inactive .status-badge__dot,
+.status-badge.status-inactive i,
+.store-status.inactive i,
+.store-status-badge.inactive i {
+  background-color: #b91c1c !important;
+  color: #b91c1c !important;
+}
+
 
 .form-grid {
     display: grid;
@@ -106,10 +253,16 @@ table thead th {
 
 
 /* =========================================================
-   COMMON PAGINATION
+   COMMON PAGINATION / STANDARDIZED TABLE PAGINATION FOOTER
 ========================================================= */
+.table-card {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.table-pagination-footer,
 .pagination-container {
-   width: 100%;
+    width: 100%;
     max-width: 100%;
     height: 60px;
     display: flex;
@@ -123,12 +276,11 @@ table thead th {
 
 .pagination-info {
     flex: 0 0 auto;
-
     color: #718096;
-
     font-size: 13px;
-
     white-space: nowrap;
+    margin-left: 0;
+    padding-left: 0;
 }
 
 .pagination-info strong {
@@ -136,16 +288,16 @@ table thead th {
     font-weight: 500;
 }
 
+.pagination-actions,
 .pagination-controls {
     display: flex;
     align-items: center;
     justify-content: flex-end;
-
     gap: 8px;
-
     flex: 0 0 auto;
-
     white-space: nowrap;
+    margin-right: 0;
+    padding-right: 0;
 }
 
 .pagination-page-size {
@@ -744,4 +896,254 @@ select:not(.pch-filter-sizing):not(.pch-master-filter-sizing) {
     .filter-reset-btn {
         margin-left: 0;
     }
+}
+
+/* =========================================================
+   APPLICATION-WIDE TABLE UI STANDARDIZATION (MERCHANTS REFERENCE)
+   - Consistent padding, alignment, header visibility, cell clamping
+   - Never truncate <th> headers (white-space: nowrap)
+   - Status columns sized for 96px pill + padding (min-width: 135px)
+   - Actions columns accommodate all buttons inline without wrapping
+   - Responsive scroll containers with overflow-x: auto
+   ========================================================= */
+
+/* Responsive Table Containers */
+:is(
+  .table-wrap,
+  .table-wrapper,
+  .table-responsive,
+  .table-scroll,
+  [class*="table-wrap"],
+  [class*="table-wrapper"],
+  [class*="table-scroll"],
+  [class*="table-container"]
+) {
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow-x: auto !important;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+  box-sizing: border-box !important;
+}
+
+/* Table Baseline Structure */
+table,
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+/* Table Headers: Never Truncate */
+table thead th,
+table th,
+.table thead th,
+.table th {
+  height: 44px;
+  padding: 0 14px !important;
+  background: #f1f3fd !important;
+  color: #102d59 !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  line-height: 1.4 !important;
+  white-space: nowrap !important;
+  text-overflow: clip !important;
+  overflow: visible !important;
+  text-align: left;
+  vertical-align: middle !important;
+  box-sizing: border-box !important;
+}
+
+/* Grid-based pseudo-table headers (row container already provides outer horizontal padding; inner cells start at 0) */
+.store-types-row-head > div,
+.plans-row-head > div,
+.store-features-row-head > div,
+.role-template-row-head > div {
+  height: 44px;
+  padding: 0 !important;
+  background: transparent !important;
+  color: #102d59 !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  line-height: 1.4 !important;
+  white-space: nowrap !important;
+  text-overflow: clip !important;
+  overflow: visible !important;
+  text-align: left;
+  display: inline-flex !important;
+  align-items: center !important;
+  height: 100% !important;
+  box-sizing: border-box !important;
+}
+
+table thead th i,
+table th i,
+.table thead th i,
+.table th i,
+.store-types-row-head i,
+.plans-row-head i,
+.store-features-row-head i,
+.role-template-row-head i {
+  margin-left: 6px !important;
+  display: inline-block !important;
+  vertical-align: middle !important;
+  font-size: 11px !important;
+}
+
+/* Data Cells Baseline */
+table tbody td,
+.table tbody td {
+  height: 52px;
+  padding: 10px 14px !important;
+  border-bottom: 1px solid #e4e8ef;
+  color: #4d5970;
+  font-size: 13px;
+  line-height: 1.4;
+  vertical-align: middle !important;
+  box-sizing: border-box !important;
+}
+
+table tbody tr:hover,
+.table tbody tr:hover {
+  background: #fafbfe;
+}
+
+table tbody tr:last-child td,
+.table tbody tr:last-child td {
+  border-bottom: 0 !important;
+}
+
+/* Typography & Visual Hierarchy: Primary Entities vs Secondary Identifiers */
+.merchant-name strong,
+.employee-name,
+.store-cell strong,
+.store-name strong,
+.store-type-name-cell strong,
+.store-types-name,
+.role-name-cell strong,
+.role-name-link,
+.role-template-name,
+.store-features-name,
+.tenders-table td strong,
+.tender-name strong,
+.vendor-name strong,
+.vendor-cell strong {
+  font-weight: 600 !important;
+  color: #102d59 !important;
+  font-size: 13px !important;
+}
+
+/* Master Setup — Standardized Code / Identifier Fields (Matching image_17681d.png reference) */
+.fp-permission-code-cell,
+.fp-col-key strong,
+.fp-key-cell strong,
+.role-code-cell strong,
+.role-key-cell strong,
+.role-code,
+.store-type-code-cell strong,
+.store-type-code,
+.tenders-table td:first-child,
+.tender-code,
+.col-code,
+.feature-code,
+.st-code,
+[class*="code-cell"] strong,
+[class*="code-cell"] {
+  color: #1e293b !important;
+  font-weight: 600 !important;
+  font-size: 14px !important;
+  white-space: nowrap !important;
+}
+
+/* Secondary muted identifiers (e.g. subordinate metadata under primary labels) */
+.merchant-name small,
+.employee-id,
+.store-cell small,
+.device-id,
+.vendor-code,
+.vendor-id {
+  font-weight: 400 !important;
+  color: #6b7280 !important;
+  font-size: 12px !important;
+}
+
+/* Status Column Sizing Standard: Size for 96px pill + padding */
+th:is([class*="status"], :has([class*="status"])),
+td:is([class*="status"], :has(.status-badge, .status, .store-status, .store-status-badge, [class*="status-pill"], [class*="status-badge"])) {
+  min-width: 135px !important;
+  white-space: nowrap !important;
+  box-sizing: border-box !important;
+}
+
+.status-badge,
+.status,
+.store-status,
+.store-status-badge,
+[class*="status-pill"] {
+  flex-shrink: 0 !important;
+}
+
+/* Actions Column: Keep All Controls Inline without Wrapping */
+.list-actions,
+[class*="row-actions"],
+.table-actions {
+  display: inline-flex !important;
+  align-items: center !important;
+  flex-wrap: nowrap !important;
+  white-space: nowrap !important;
+  gap: 6px !important;
+}
+
+.list-action-btn {
+  flex: 0 0 35px !important;
+  width: 35px !important;
+  min-width: 35px !important;
+  height: 35px !important;
+  flex-shrink: 0 !important;
+}
+
+/* Actions column sizing */
+th:is(.actions-col, [class*="actions"], :last-child),
+td:is(.actions-col, [class*="actions"], :last-child):has(.list-actions, .table-actions, [class*="row-actions"]) {
+  white-space: nowrap !important;
+  box-sizing: border-box !important;
+}
+
+/* Sizing based on number of buttons */
+td:has(.list-actions > button:nth-child(3)),
+th:has(+ th):last-child:has(.list-actions > button:nth-child(3)) {
+  min-width: 150px !important;
+}
+
+td:has(.list-actions > button:nth-child(2):last-child) {
+  min-width: 116px !important;
+}
+
+td:has(.list-actions > button:only-child) {
+  min-width: 75px !important;
+}
+
+/* Two-Line Controlled Text Truncation with Tooltip Compatibility */
+.pch-cell-clamp,
+.line-clamp-2,
+[class*="description-clamp"],
+[class*="description-text"],
+[class*="desc-text"],
+[class*="description-content"] > span,
+.role-description-text,
+.feature-description-clamp,
+.store-type-description-text,
+.fp-description-clamp {
+  display: -webkit-box !important;
+  -webkit-line-clamp: 2 !important;
+  line-clamp: 2 !important;
+  -webkit-box-orient: vertical !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  max-height: 38px;
+  line-height: 19px;
+  font-size: 13px;
+  font-weight: 400;
+  white-space: normal !important;
+  overflow-wrap: anywhere !important;
+  word-break: break-word !important;
 }

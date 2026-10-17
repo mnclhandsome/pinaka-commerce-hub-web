@@ -300,13 +300,13 @@ input {
 .orders-table-wrapper {
     width: 100%;
     min-width: 0;
-    overflow-x: hidden;
+    overflow-x: auto;
 }
 
 .orders-table {
     width: 100%;
-    min-width: 0;
-    table-layout: fixed;
+    min-width: 980px;
+    table-layout: auto;
     border-collapse: collapse;
 }
 
@@ -321,8 +321,7 @@ input {
     vertical-align: middle;
     font-weight: 600;
     text-align: left;
-    white-space: normal;
-    overflow-wrap: anywhere;
+    white-space: nowrap;
 }
 
 .orders-table td {
@@ -343,12 +342,12 @@ input {
     vertical-align: middle;
 }
 
-.orders-table th:nth-child(1) { width: 15%; }
-.orders-table th:nth-child(2) { width: 21%; }
-.orders-table th:nth-child(3) { width: 17%; }
-.orders-table th:nth-child(4) { width: 18%; }
-.orders-table th:nth-child(5) { width: 19%; }
-.orders-table th:nth-child(6) { width: 10%; }
+.orders-table th:nth-child(1) { width: 140px; min-width: 130px; }
+.orders-table th:nth-child(2) { width: 200px; min-width: 180px; }
+.orders-table th:nth-child(3) { width: 170px; min-width: 160px; }
+.orders-table th:nth-child(4) { width: 150px; min-width: 140px; }
+.orders-table th:nth-child(5) { width: 160px; min-width: 150px; }
+.orders-table th:nth-child(6) { width: 130px; min-width: 120px; }
 
 .orders-table th:last-child,
 .orders-table td:last-child {
@@ -714,7 +713,7 @@ input {
     width: calc(100% - 24px);
     max-width: calc(100% - 24px);
     margin: 0 12px;
-    padding: 16px 8px;
+    padding: 16px 0;
     box-sizing: border-box;
     border-top: 0;
 }
@@ -865,7 +864,7 @@ input {
         max-width: calc(100% - 20px);
         margin-right: 10px;
         margin-left: 10px;
-        padding: 12px 4px;
+        padding: 12px 0;
     }
 }
 

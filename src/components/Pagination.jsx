@@ -47,14 +47,14 @@ export default function Pagination({
   };
 
   return (
-    <div className="pagination-container">
+    <div className="pagination-container table-pagination-footer">
       <div className="pagination-info">
         Showing <strong>{startItem}</strong> to{" "}
         <strong>{endItem}</strong> of{" "}
         <strong>{totalItems}</strong> {itemLabel}
       </div>
 
-      <div className="pagination-controls">
+      <div className="pagination-controls pagination-actions">
         <div className="pagination-page-size">
           <span>Rows per page:</span>
 

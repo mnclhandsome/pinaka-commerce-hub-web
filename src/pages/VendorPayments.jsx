@@ -294,6 +294,7 @@ export default function VendorPayments({ viewMode } = {}) {
 
       {/* Vendors Table */}
       {view === "vendors" && (
+        <div className="vendor-history-table-scroll">
         <table className="vendor-table">
 
           <thead>
@@ -327,11 +328,12 @@ export default function VendorPayments({ viewMode } = {}) {
           </tbody>
 
         </table>
+        </div>
       )}
 
       {/* Vendor Payments Table */}
       {view === "payments" && (
-        <div className={viewMode ? "vendor-history-table-scroll" : undefined}>
+        <div className="vendor-history-table-scroll">
         <table className="vendor-table">
 
           <thead>

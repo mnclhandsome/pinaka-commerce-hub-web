@@ -1091,56 +1091,93 @@ a {
 ========================================================= */
 
 .status {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    padding: 5px 10px !important;
-    border-radius: 6px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    width: 96px !important;
+    min-width: 96px !important;
+    max-width: 96px !important;
+    height: 32px !important;
+    min-height: 32px !important;
+    max-height: 32px !important;
+    padding: 0 12px !important;
+    border-radius: 9999px !important;
+    box-sizing: border-box !important;
+    font-family: inherit !important;
     font-size: 12px !important;
-    font-weight: 500;
+    font-weight: 500 !important;
+    line-height: 1 !important;
+    letter-spacing: 0.01em !important;
+    white-space: nowrap !important;
+    border: none !important;
+    box-shadow: none !important;
+    text-transform: capitalize !important;
+    vertical-align: middle !important;
 }
 
 .status i {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    display: inline-block;
+    display: inline-block !important;
+    width: 8px !important;
+    height: 8px !important;
+    min-width: 8px !important;
+    min-height: 8px !important;
+    max-width: 8px !important;
+    max-height: 8px !important;
+    border-radius: 50% !important;
+    background-color: currentColor !important;
+    flex: 0 0 8px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    font-size: 0 !important;
+    line-height: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+    vertical-align: middle !important;
+}
+
+.status i::before {
+    display: none !important;
 }
 
 .status.active {
-    color: #319a5b;
-    background: #e5f6ea;
+    color: #047857 !important;
+    background-color: #ecfdf5 !important;
 }
 
 .status.active i {
-    background: #319a5b;
+    background-color: #047857 !important;
+    color: #047857 !important;
 }
 
 .status.suspended {
-    color: #dc5964;
-    background: #ffe8ea;
+    color: #dc5964 !important;
+    background-color: #ffe8ea !important;
 }
 
 .status.suspended i {
-    background: #dc5964;
+    background-color: #dc5964 !important;
+    color: #dc5964 !important;
 }
 
 .status.inactive {
-    color: #858d9d;
-    background: #eef0f3;
+    color: #b91c1c !important;
+    background-color: #fee2e2 !important;
 }
 
 .status.inactive i {
-    background: #858d9d;
+    background-color: #b91c1c !important;
+    color: #b91c1c !important;
 }
 
 .status.pending-setup {
-    color: #d18d25;
-    background: #fff0d9;
+    color: #d18d25 !important;
+    background-color: #fff0d9 !important;
 }
 
 .status.pending-setup i {
-    background: #d18d25;
+    background-color: #d18d25 !important;
+    color: #d18d25 !important;
 }
 
 .location-info {

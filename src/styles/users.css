@@ -398,24 +398,69 @@
 ========================================================= */
 
 .status-badge {
-    display: inline-flex;
-    align-items: center;
-
-    font-size: 13px;
-    font-weight: 500;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    width: 96px !important;
+    min-width: 96px !important;
+    max-width: 96px !important;
+    height: 32px !important;
+    min-height: 32px !important;
+    max-height: 32px !important;
+    padding: 0 12px !important;
+    border-radius: 9999px !important;
+    box-sizing: border-box !important;
+    font-family: inherit !important;
+    font-size: 12px !important;
+    font-weight: 500 !important;
+    line-height: 1 !important;
+    letter-spacing: 0.01em !important;
+    white-space: nowrap !important;
+    border: none !important;
+    box-shadow: none !important;
+    text-transform: capitalize !important;
+    vertical-align: middle !important;
+    background-color: #ecfdf5 !important;
+    color: #047857 !important;
 }
 
 .status-dot {
-    display: inline-block;
+    display: inline-block !important;
+    width: 8px !important;
+    height: 8px !important;
+    min-width: 8px !important;
+    min-height: 8px !important;
+    max-width: 8px !important;
+    max-height: 8px !important;
+    border-radius: 50% !important;
+    background-color: currentColor !important;
+    flex: 0 0 8px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    font-size: 0 !important;
+    line-height: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+    vertical-align: middle !important;
+}
 
-    width: 7px;
-    height: 7px;
+.status-badge.active {
+    background-color: #ecfdf5 !important;
+    color: #047857 !important;
+}
 
-    border-radius: 50%;
+.status-badge.active .status-dot {
+    background-color: #047857 !important;
+}
 
-    background: #39a76a;
+.status-badge.inactive {
+    background-color: #fee2e2 !important;
+    color: #b91c1c !important;
+}
 
-    margin-right: 7px;
+.status-badge.inactive .status-dot {
+    background-color: #b91c1c !important;
 }
 
 /* =========================================================
@@ -1019,24 +1064,56 @@
 ========================================================= */
 
 .detail-status {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: fit-content;
-    padding: 5px 10px;
-    border-radius: 999px;
-    font-size: 12px;
-    font-weight: 600;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    width: 96px !important;
+    min-width: 96px !important;
+    max-width: 96px !important;
+    height: 32px !important;
+    min-height: 32px !important;
+    max-height: 32px !important;
+    padding: 0 12px !important;
+    border-radius: 9999px !important;
+    box-sizing: border-box !important;
+    font-family: inherit !important;
+    font-size: 12px !important;
+    font-weight: 500 !important;
+    line-height: 1 !important;
+    letter-spacing: 0.01em !important;
+    white-space: nowrap !important;
+    border: none !important;
+    box-shadow: none !important;
+    text-transform: capitalize !important;
+    vertical-align: middle !important;
+}
+
+.detail-status:not(:has(i, b, .status-dot))::before {
+    content: "" !important;
+    display: inline-block !important;
+    width: 8px !important;
+    height: 8px !important;
+    min-width: 8px !important;
+    min-height: 8px !important;
+    max-width: 8px !important;
+    max-height: 8px !important;
+    border-radius: 50% !important;
+    background-color: currentColor !important;
+    flex: 0 0 8px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    vertical-align: middle !important;
 }
 
 .detail-status.active {
-    color: #166534;
-    background: #dcfce7;
+    color: #047857 !important;
+    background-color: #ecfdf5 !important;
 }
 
 .detail-status.inactive {
-    color: #991b1b;
-    background: #fee2e2;
+    color: #b91c1c !important;
+    background-color: #fee2e2 !important;
 }
 
 .detail-status.pending {

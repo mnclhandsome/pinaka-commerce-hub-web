@@ -269,8 +269,9 @@
     border-collapse: collapse;
 
     width: 100%;
+    min-width: 860px;
 
-    table-layout: fixed;
+    table-layout: auto;
 }
 
 
@@ -296,6 +297,7 @@
     font-weight: 600;
 
     color: #17233e;
+    white-space: nowrap;
 }
 
 .merchant-stores-embedded .store-table td {
@@ -320,24 +322,36 @@
    Keep close to Vendors natural table layout
 ========================================================= */
 
-.merchant-stores-embedded .store-table th:nth-child(1) {
+.merchant-stores-embedded .store-table th:nth-child(1),
+.merchant-stores-embedded .store-table td:nth-child(1) {
+    width: 22%;
+    min-width: 170px;
+}
+
+.merchant-stores-embedded .store-table th:nth-child(2),
+.merchant-stores-embedded .store-table td:nth-child(2) {
     width: 20%;
+    min-width: 150px;
 }
 
-.merchant-stores-embedded .store-table th:nth-child(2) {
-    width: 18%;
+.merchant-stores-embedded .store-table th:nth-child(3),
+.merchant-stores-embedded .store-table td:nth-child(3) {
+    width: 30%;
+    min-width: 200px;
 }
 
-.merchant-stores-embedded .store-table th:nth-child(3) {
-    width: 35%;
-}
-
-.merchant-stores-embedded .store-table th:nth-child(4) {
+.merchant-stores-embedded .store-table th:nth-child(4),
+.merchant-stores-embedded .store-table td:nth-child(4) {
     width: 15%;
+    min-width: 135px;
+    white-space: nowrap;
 }
 
-.merchant-stores-embedded .store-table th:nth-child(5) {
-    width: 12%;
+.merchant-stores-embedded .store-table th:nth-child(5),
+.merchant-stores-embedded .store-table td:nth-child(5) {
+    width: 13%;
+    min-width: 120px;
+    white-space: nowrap;
 }
 
 
@@ -463,31 +477,61 @@
 ========================================================= */
 
 .merchant-stores-embedded .store-status-badge {
-    display: inline-block;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    width: 96px !important;
+    min-width: 96px !important;
+    max-width: 96px !important;
+    height: 32px !important;
+    min-height: 32px !important;
+    max-height: 32px !important;
+    padding: 0 12px !important;
+    border-radius: 9999px !important;
+    box-sizing: border-box !important;
+    font-family: inherit !important;
+    font-size: 12px !important;
+    font-weight: 500 !important;
+    line-height: 1 !important;
+    letter-spacing: 0.01em !important;
+    white-space: nowrap !important;
+    border: none !important;
+    box-shadow: none !important;
+    text-transform: capitalize !important;
+    vertical-align: middle !important;
+}
 
-    padding: 2px 10px;
-
-    border-radius: 20px;
-
-    font-size: 12px;
-    font-weight: 400;
-
-    white-space: nowrap;
+.merchant-stores-embedded .store-status-badge:not(:has(i, b, .status-dot))::before {
+    content: "" !important;
+    display: inline-block !important;
+    width: 8px !important;
+    height: 8px !important;
+    min-width: 8px !important;
+    min-height: 8px !important;
+    max-width: 8px !important;
+    max-height: 8px !important;
+    border-radius: 50% !important;
+    background-color: currentColor !important;
+    flex: 0 0 8px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    vertical-align: middle !important;
 }
 
 .merchant-stores-embedded .store-status-badge.active {
-    background: #daf9ed;
-    color: #169b72;
+    background-color: #ecfdf5 !important;
+    color: #047857 !important;
 }
 
 .merchant-stores-embedded .store-status-badge.inactive {
-    background: #f0f1f5;
-    color: #667085;
+    background-color: #fee2e2 !important;
+    color: #b91c1c !important;
 }
 
 .merchant-stores-embedded .store-status-badge.pending {
-    background: #fff3d6;
-    color: #a16207;
+    background-color: #fff0d9 !important;
+    color: #d18d25 !important;
 }
 
 
@@ -612,6 +656,13 @@
 /* =========================================================
    PAGINATION
 ========================================================= */
+
+.merchant-stores-embedded .pagination-container {
+    width: 100%;
+    padding: 16px 0;
+    background: transparent;
+    box-sizing: border-box;
+}
 
 .merchant-stores-embedded .store-pagination {
     display: flex;
