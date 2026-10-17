@@ -388,6 +388,17 @@
 .merchant-employee-create-page .mv-create-content{padding:24px;}
 .merchant-employee-create-page .merchant-employee-embedded.add-employee-page{padding:0;}
 
+/* Keep the merchant employee save action visually primary within the tab. */
+.merchant-employee-create-page .save-employee-btn {
+  background: #5143bc;
+  border: 1px solid #5143bc;
+  color: #fff;
+}
+.merchant-employee-create-page .save-employee-btn:hover:not(:disabled) {
+  background: #4335a8;
+  border-color: #4335a8;
+}
+
 .add-employee-page .merchant-employee-fieldset {
   border: 0;
   padding: 0;

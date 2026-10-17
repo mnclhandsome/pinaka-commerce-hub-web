@@ -719,8 +719,9 @@
 #pch-new .pch-plan-detail-column {
     display: grid;
     min-width: 0;
-    align-content: start;
+    grid-template-rows: minmax(198px, 1fr) auto;
     gap: 12px;
+    height: 100%;
 }
 
 #pch-new .pch-plan-list,

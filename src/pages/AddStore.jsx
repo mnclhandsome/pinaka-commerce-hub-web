@@ -3154,13 +3154,13 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
               </tbody>
             </table>
           </div>
-          <div className="pagination-container sf-feature-pagination">
+          <div className="pagination-container sf-feature-pagination table-pagination-footer">
             <span className="pagination-info">
               Showing <strong>{filteredFeatures.length ? (currentFeaturePage - 1) * featurePageSize + 1 : 0}</strong> to{" "}
               <strong>{Math.min(currentFeaturePage * featurePageSize, filteredFeatures.length)}</strong> of{" "}
               <strong>{filteredFeatures.length}</strong> items
             </span>
-            <div className="pagination-controls">
+            <div className="pagination-controls pagination-actions">
               <label className="pagination-page-size">
                 <span>Rows per page:</span>
                 <span className="pagination-select-wrapper">
@@ -3652,14 +3652,14 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
               </tbody>
             </table>
           </div>
-          <div className="pagination-container employee-pagination-container">
+          <div className="pagination-container employee-pagination-container table-pagination-footer">
             <span className="pagination-info">
               Showing{" "}
               {employeeRows.length ? (employeePage - 1) * pageSize + 1 : 0}–
               {Math.min(employeePage * pageSize, employeeRows.length)} of{" "}
               {employeeRows.length} employees
             </span>
-            <div className="pagination-controls">
+            <div className="pagination-controls pagination-actions">
               <label className="pagination-page-size">
                 <span>Rows per page:</span>
                 <span className="pagination-select-wrapper">

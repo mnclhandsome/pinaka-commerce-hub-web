@@ -2705,7 +2705,11 @@
 }
 
 .service-charge-tiers-card > .pagination-container {
+    width: 100%;
     margin-top: 10px;
+    padding: 16px 0;
+    background: transparent;
+    box-sizing: border-box;
 }
 
 .service-charge-table-footer > span {
@@ -3315,7 +3319,11 @@
 }
 
 .cashback-tiers-card > .pagination-container {
+    width: 100%;
     margin-top: 10px;
+    padding: 16px 0;
+    background: transparent;
+    box-sizing: border-box;
 }
 
 .cashback-table-footer > span {
@@ -4830,7 +4838,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    flex-wrap: wrap;
+    flex-wrap: nowrap !important;
+    white-space: nowrap !important;
     gap: 8px;
     width: 100%;
     min-height: 32px;

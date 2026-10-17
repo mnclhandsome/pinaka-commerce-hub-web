@@ -8,6 +8,8 @@ import {
 } from "../shared";
 import {
     getPosCurrencyTax,
+    updateStoreTaxSettings,
+    createStoreTaxClass, updateStoreTaxClass, deleteStoreTaxClass,
     createPosCurrencyTax,
     updatePosCurrencyTax,
 } from "./api";
@@ -20,19 +22,14 @@ function currencyTaxPayload(values) {
         taxEnabled: values.taxEnabled,
         defaultTaxRate: values.defaultTaxRate === "" ? undefined : Number(values.defaultTaxRate),
         taxCalculation: values.taxCalculation,
-        taxClasses: values.taxClasses
-            .filter((item) => item.name.trim())
-            .map((item) => ({
-                ...(typeof item.id === "string" && serverTaxClassId.test(item.id) ? { id: item.id } : {}),
-                name: item.name.trim(),
-                rate: Number(item.rate),
-            })),
     };
 }
 
 export function TaxConfiguration() {
     const settings = usePosSettings();
     const savedId = useRef(null);
+    const savedClasses = useRef(new Map());
+    const [classesLoaded, setClassesLoaded] = useState(false);
     const [currency, setCurrency] = useConfigState("currency", settings.currency);
 
     const [rounding, setRounding] = useConfigState("rounding", 
@@ -51,31 +48,50 @@ export function TaxConfiguration() {
     const [taxCalculation, setTaxCalculation] =
         useConfigState("taxCalculation", "item-price");
 
-    const [taxClasses, setTaxClasses] = useConfigState("taxClasses", [
-        {
-            id: 1,
-            clientId: newRecordId(),
-            name: "Standard",
-            rate: "8.25",
-        },
-        {
-            id: 2,
-            clientId: newRecordId(),
-            name: "Reduced",
-            rate: "0.00",
-        },
-        {
-            id: 3,
-            clientId: newRecordId(),
-            name: "Zero Rated",
-            rate: "0.00",
-        },
-    ]);
+    const [taxClasses, setTaxClasses] = useConfigState("taxClasses", []);
 
     const [saving, setSaving] = useState(false);
+    const [updatingTaxEnabled, setUpdatingTaxEnabled] = useState(false);
+    const togglePending = useRef(false);
+    const handleTaxToggle = async () => {
+        if (!settings.storeId || saving || togglePending.current) return;
+        const next = !taxEnabled;
+        togglePending.current = true;
+        setUpdatingTaxEnabled(true);
+        try {
+            const result = await updateStoreTaxSettings(settings.storeId, next);
+            if (result?.success === false) throw new Error(result.message || "Unable to update tax settings.");
+            setTaxEnabled(next);
+            settings.session.baseline = { ...settings.session.baseline, taxEnabled: next };
+            if (next) {
+                try {
+                    const payload = result?.data || result;
+                    const classes = Array.isArray(payload?.taxClasses)
+                        ? payload.taxClasses
+                        : (await getPosCurrencyTax(settings.storeId))?.taxClasses;
+                    if (!Array.isArray(classes)) throw new Error("Tax classes were not returned. Please reload the page.");
+                    const rows = classes.map(item => ({ ...item, clientId: newRecordId(), name: item.name || "", rate: item.rate == null ? "" : String(item.rate) }));
+                    savedClasses.current = new Map(classes.filter(item => item.slug).map(item => [item.slug, item]));
+                    setTaxClasses(rows);
+                    setClassesLoaded(true);
+                    settings.session.baseline = { ...settings.session.baseline, taxClasses: rows };
+                } catch (error) {
+                    setClassesLoaded(false);
+                    alert(error?.message || "Taxes enabled, but tax classes could not be loaded. Please reload the page.");
+                }
+            }
+        } catch (error) {
+            alert(error?.message || "Unable to update tax settings.");
+        } finally {
+            togglePending.current = false;
+            setUpdatingTaxEnabled(false);
+        }
+    };
 
     const applyCurrencyTax = (record) => {
         savedId.current = record.id;
+        savedClasses.current = new Map((record.taxClasses || []).filter(item => item.slug).map(item => [item.slug, item]));
+        setClassesLoaded(true);
         setCurrency(record.currency);
         setRounding(record.rounding);
         setDecimalPlaces(String(record.decimalPlaces));
@@ -83,10 +99,11 @@ export function TaxConfiguration() {
         setDefaultTaxRate(record.defaultTaxRate === null || record.defaultTaxRate === undefined ? "" : String(record.defaultTaxRate));
         setTaxCalculation(record.taxCalculation);
         setTaxClasses((record.taxClasses || []).map((item) => ({
+            ...item,
             id: item.id,
             clientId: newRecordId(),
             name: item.name,
-            rate: String(item.rate),
+            rate: item.rate == null ? "" : String(item.rate),
         })));
         settings.session.baseline = { ...settings.session.draft };
     };
@@ -94,14 +111,24 @@ export function TaxConfiguration() {
     useEffect(() => {
         if (!settings.storeId) return undefined;
         let active = true;
-        getPosCurrencyTax(settings.storeId)
-            .then((record) => {
+        setClassesLoaded(false);
+        savedClasses.current = new Map();
+        const load = async () => {
+            try {
+                const record = await getPosCurrencyTax(settings.storeId);
                 if (active && record?.id) applyCurrencyTax(record);
-            })
-            .catch((error) => {
-                if (error instanceof ApiError && error.status === 404) return;
-                if (active) alert(error?.message || "Unable to load currency and tax settings.");
-            });
+                else if (active) { setTaxClasses([]); setClassesLoaded(true); }
+            } catch (error) {
+                if (!active) return;
+                if (error instanceof ApiError && error.status === 404) {
+                    setTaxClasses([]);
+                    setClassesLoaded(true);
+                    return;
+                }
+                alert(error?.message || "Unable to load currency and tax settings.");
+            }
+        };
+        load();
         return () => { active = false; };
     }, [settings.storeId]);
 
@@ -157,9 +184,39 @@ export function TaxConfiguration() {
             return;
         }
 
+        if (!classesLoaded) {
+            alert("Wait for tax classes to load before saving.");
+            return;
+        }
+        if (taxClasses.some(item => !item.name.trim() || (!(item.rates?.length > 1) && (item.rate === "" || !Number.isFinite(Number(item.rate)) || Number(item.rate) < 0 || Number(item.rate) > 100)))) {
+            alert("Each tax class needs a name and a rate between 0 and 100.");
+            return;
+        }
         setSaving(true);
 
         try {
+            for (const item of taxClasses) {
+                const original = item.slug ? savedClasses.current.get(item.slug) : null;
+                let result;
+                if (!item.slug) {
+                    result = await createStoreTaxClass(settings.storeId, { name: item.name.trim(), rate: Number(item.rate) });
+                    if (!result?.taxClass?.slug) throw new Error("Tax class created, but its slug was not returned. Reload before retrying.");
+                    const created = result.taxClass;
+                    item.slug = created.slug;
+                    setTaxClasses(items => items.map(row => row.clientId === item.clientId ? { ...row, ...created, rate: created.rate == null ? "" : String(created.rate) } : row));
+                } else if (original && Number(item.rate) !== Number(original.rate) && !(item.rates?.length > 1)) {
+                    result = await updateStoreTaxClass(settings.storeId, item.slug, { rate: Number(item.rate) });
+                }
+                if (result?.success === false) throw new Error(result.message || "Unable to save tax class.");
+                if (result?.taxClasses) savedClasses.current = new Map(result.taxClasses.map(row => [row.slug, row]));
+            }
+            for (const slug of [...savedClasses.current.keys()]) {
+                if (!taxClasses.some(item => item.slug === slug)) {
+                    const result = await deleteStoreTaxClass(settings.storeId, slug);
+                    if (result?.success === false) throw new Error(result.message || "Unable to delete tax class.");
+                    savedClasses.current.delete(slug);
+                }
+            }
             const payload = currencyTaxPayload({
                 currency,
                 rounding,
@@ -169,9 +226,15 @@ export function TaxConfiguration() {
                 taxCalculation,
                 taxClasses,
             });
-            const record = savedId.current
-                ? await updatePosCurrencyTax(settings.storeId, payload)
-                : await createPosCurrencyTax(settings.storeId, payload);
+            if (savedId.current) {
+                await updatePosCurrencyTax(settings.storeId, payload);
+            } else {
+                await createPosCurrencyTax(settings.storeId, payload);
+            }
+            const record = await getPosCurrencyTax(settings.storeId);
+            if (!record || !Array.isArray(record.taxClasses)) {
+                throw new Error("Settings saved, but tax classes could not be refreshed. Please reload the page.");
+            }
             applyCurrencyTax(record);
             return true;
         } finally {
@@ -358,11 +421,9 @@ export function TaxConfiguration() {
                                     ? "active"
                                     : ""
                             }`}
-                            onClick={() =>
-                                setTaxEnabled(
-                                    (value) => !value
-                                )
-                            }
+                            onClick={handleTaxToggle}
+                            disabled={saving || updatingTaxEnabled || !classesLoaded}
+                            aria-busy={updatingTaxEnabled}
                             aria-pressed={taxEnabled}
                         >
                             <span />
@@ -473,6 +534,7 @@ export function TaxConfiguration() {
 
                                                     <input
                                                         type="text"
+                                                        disabled={saving || Boolean(taxClass.slug)}
                                                         value={
                                                             taxClass.name
                                                         }
@@ -498,6 +560,9 @@ export function TaxConfiguration() {
                                                     <input
                                                         type="number"
                                                         min="0"
+                                                        max="100"
+                                                        disabled={saving || taxClass.rates?.length > 1}
+                                                        title={taxClass.rates?.length > 1 ? "Multiple regional rates cannot be edited in this form" : ""}
                                                         step="0.01"
                                                         value={
                                                             taxClass.rate
@@ -525,6 +590,7 @@ export function TaxConfiguration() {
                                                 <button
                                                     type="button"
                                                     className="tax-class-delete"
+                                                    disabled={saving || taxClass.slug === "standard"}
                                                     onClick={() =>
                                                         removeTaxClass(
                                                             taxClass.clientId
@@ -549,6 +615,7 @@ export function TaxConfiguration() {
                                     type="button"
                                     className="add-tax-class-button"
                                     onClick={addTaxClass}
+                                    disabled={saving || updatingTaxEnabled || !classesLoaded}
                                 >
                                     <i className="bi bi-plus-lg" />
                                     Add Tax Class
@@ -580,7 +647,7 @@ export function TaxConfiguration() {
                     type="button"
                     className="currency-tax-save-button"
                     onClick={saveTaxConfiguration}
-                    disabled={saving}
+                    disabled={saving || updatingTaxEnabled || !classesLoaded}
                 >
                     {saving
                         ? "Saving..."

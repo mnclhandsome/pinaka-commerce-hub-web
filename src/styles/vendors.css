@@ -507,52 +507,64 @@
 
 .vendors-table th:nth-child(1),
 .vendors-table td:nth-child(1) {
-  width: 110px;
+  width: 120px;
+  min-width: 110px;
 }
 
 .vendors-table th:nth-child(2),
 .vendors-table td:nth-child(2) {
-  width: 130px;
+  width: 140px;
+  min-width: 130px;
 }
 
 .vendors-table th:nth-child(3),
 .vendors-table td:nth-child(3) {
-  width: 150px;
+  width: 160px;
+  min-width: 150px;
 }
 
 .vendors-table th:nth-child(4),
 .vendors-table td:nth-child(4) {
-  width: 125px;
+  width: 140px;
+  min-width: 130px;
 }
 
 .vendors-table th:nth-child(5),
 .vendors-table td:nth-child(5) {
-  width: 145px;
+  width: 150px;
+  min-width: 145px;
 }
 
 .vendors-table th:nth-child(6),
 .vendors-table td:nth-child(6) {
-  width: 150px;
+  width: 160px;
+  min-width: 150px;
 }
 
 .vendors-table th:nth-child(7),
 .vendors-table td:nth-child(7) {
   width: 170px;
+  min-width: 160px;
 }
 
 .vendors-table th:nth-child(8),
 .vendors-table td:nth-child(8) {
-  width: 120px;
+  width: 130px;
+  min-width: 120px;
 }
 
 .vendors-table th:nth-child(9),
 .vendors-table td:nth-child(9) {
-  width: 120px;
+  width: 135px;
+  min-width: 135px;
+  white-space: nowrap;
 }
 
 .vendors-table th:nth-child(10),
 .vendors-table td:nth-child(10) {
-  width: 110px;
+  width: 150px;
+  min-width: 150px;
+  white-space: nowrap;
 }
 
 .vendors-table th {
@@ -628,7 +640,7 @@
    width: calc(100% - 24px);
   max-width: calc(100% - 24px);
   margin: 0 12px;
-  padding: 16px 8px;
+  padding: 16px 0;
   box-sizing: border-box;
   border-top: 0;
 }
@@ -699,25 +711,73 @@
    ========================================================= */
 
 .vendors-status {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
-  padding: 5px 10px !important;
-  font-size: 12px;
-  border-radius: 6px;
-  font-weight: 600;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  width: 96px !important;
+  min-width: 96px !important;
+  max-width: 96px !important;
+  height: 32px !important;
+  min-height: 32px !important;
+  max-height: 32px !important;
+  padding: 0 12px !important;
+  border-radius: 9999px !important;
+  box-sizing: border-box !important;
+  font-family: inherit !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  line-height: 1 !important;
+  letter-spacing: 0.01em !important;
+  white-space: nowrap !important;
+  border: none !important;
+  box-shadow: none !important;
+  text-transform: capitalize !important;
+  vertical-align: middle !important;
 }
 
+.vendors-status i {
+  display: inline-block !important;
+  width: 8px !important;
+  height: 8px !important;
+  min-width: 8px !important;
+  min-height: 8px !important;
+  max-width: 8px !important;
+  max-height: 8px !important;
+  border-radius: 50% !important;
+  background-color: currentColor !important;
+  flex: 0 0 8px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  font-size: 0 !important;
+  line-height: 0 !important;
+  border: none !important;
+  box-shadow: none !important;
+  vertical-align: middle !important;
+}
+
+.vendors-status i::before {
+  display: none !important;
+}
 
 .vendors-status.active {
-  background: #e5f6ea;
-  color: #319a5b;
+  background-color: #ecfdf5 !important;
+  color: #047857 !important;
+}
+
+.vendors-status.active i {
+  background-color: #047857 !important;
+  color: #047857 !important;
 }
 
 .vendors-status.inactive {
-  background: #ffe2e7;
-  color: #ed304d;
+  background-color: #fee2e2 !important;
+  color: #b91c1c !important;
+}
+
+.vendors-status.inactive i {
+  background-color: #b91c1c !important;
+  color: #b91c1c !important;
 }
 
 
@@ -1244,7 +1304,7 @@
     max-width: calc(100% - 16px);
     margin-right: 8px;
     margin-left: 8px;
-    padding: 12px 4px;
+    padding: 12px 0;
   }
 
   .vendors-page .pagination-container {
@@ -2586,27 +2646,6 @@
 
 .vendors-table td.vendors-actions {
   white-space: nowrap;
-}
-
-/* Keep shared vendor row action icons on the Store Type list color palette. */
-.vendors-table td.vendors-actions .list-actions .list-action-btn i.list-action-edit-icon,
-.vendors-table td.vendors-actions .list-actions .list-action-btn i.list-action-view-icon {
-  color: #5367f0 !important;
-}
-
-.vendors-table td.vendors-actions .list-actions .list-action-btn:hover:not(:disabled) i.list-action-edit-icon,
-.vendors-table td.vendors-actions .list-actions .list-action-btn:hover:not(:disabled) i.list-action-view-icon {
-  color: #5367f0 !important;
-}
-
-.vendors-table td.vendors-actions .list-actions .list-action-btn.vendors-delete-action,
-.vendors-table td.vendors-actions .list-actions .list-action-btn i.list-action-delete-icon {
-  color: #d9485f !important;
-}
-
-.vendors-table td.vendors-actions .list-actions .list-action-btn.vendors-delete-action:hover:not(:disabled),
-.vendors-table td.vendors-actions .list-actions .list-action-btn.vendors-delete-action:hover:not(:disabled) i.list-action-delete-icon {
-  color: #c5304b !important;
 }
 
 .vendors-table td:nth-child(9) .vendors-status {

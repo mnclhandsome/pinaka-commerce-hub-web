@@ -1167,6 +1167,8 @@
     box-sizing: border-box;
     width: calc(100% - 24px);
     margin: 0 12px;
+    padding: 16px 0;
+    border-top: 0;
 }
 
 @media (max-width: 700px) {
@@ -1174,7 +1176,7 @@
     .coupons-summary { margin-right: 0; margin-left: 0; }
     .coupons-toolbar { width: 100%; margin: 0; }
     .coupons-table-wrapper { width: calc(100% - 20px); max-width: calc(100% - 20px); margin: 0 10px; }
-    .coupons-table-wrapper + .pagination-container { width: calc(100% - 20px); margin: 0 10px; }
+    .coupons-table-wrapper + .pagination-container { width: calc(100% - 20px); margin: 0 10px; padding: 12px 0; }
 }
 
 .coupons-page .discount-product-picker { position: relative; min-width: 0; }

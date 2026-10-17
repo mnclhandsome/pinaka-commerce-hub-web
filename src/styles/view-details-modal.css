@@ -300,30 +300,56 @@
 ========================================================= */
 
 .view-details-value .detail-status {
-  display: inline-flex;
-  align-items: center;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  width: 96px !important;
+  min-width: 96px !important;
+  max-width: 96px !important;
+  height: 32px !important;
+  min-height: 32px !important;
+  max-height: 32px !important;
+  padding: 0 12px !important;
+  border-radius: 9999px !important;
+  box-sizing: border-box !important;
+  font-family: inherit !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  line-height: 1 !important;
+  letter-spacing: 0.01em !important;
+  white-space: nowrap !important;
+  border: none !important;
+  box-shadow: none !important;
+  text-transform: capitalize !important;
+  vertical-align: middle !important;
+}
 
-  min-height: 24px;
-
-  padding: 0 9px;
-
-  border-radius: 12px;
-
-  background: #eef1f5;
-  color: #68758a;
-
-  font-size: 10px;
-  font-weight: 600;
+.view-details-value .detail-status:not(:has(i, b, .status-dot))::before {
+  content: "" !important;
+  display: inline-block !important;
+  width: 8px !important;
+  height: 8px !important;
+  min-width: 8px !important;
+  min-height: 8px !important;
+  max-width: 8px !important;
+  max-height: 8px !important;
+  border-radius: 50% !important;
+  background-color: currentColor !important;
+  flex: 0 0 8px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  vertical-align: middle !important;
 }
 
 .view-details-value .detail-status.active {
-  background: #eaf7ef;
-  color: #2f8a55;
+  background-color: #ecfdf5 !important;
+  color: #047857 !important;
 }
 
 .view-details-value .detail-status.inactive {
-  background: #fceeee;
-  color: #b85a5a;
+  background-color: #fee2e2 !important;
+  color: #b91c1c !important;
 }
 
 .view-details-value .detail-status.pending {
