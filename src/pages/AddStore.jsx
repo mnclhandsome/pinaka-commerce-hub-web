@@ -28,6 +28,7 @@ import FilterDropdown from "../components/FilterDropdown";
 import FiltersBar from "../components/FiltersBar";
 import { api, ApiError, pendingStoreRead } from "../api/http";
 import { endpoints } from "../api/endpoints";
+import { normalizeStore, storeListFromResponse } from "../api/stores";
 import {
   getActiveSubscriptions,
   extractActiveSubscription,
@@ -892,8 +893,7 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
       const match = knownFeatures.find(feature =>
         identityValues(feature).some(value => identities.has(value)),
       );
-      if (!match) continue;
-      const name = featureName(match);
+      const name = featureName(match) || featureName(entry) || [...identities][0] || "";
       const lower = name.toLowerCase();
       if (name && !seen.has(lower)) {
         seen.add(lower);
@@ -1092,7 +1092,7 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
         const [result, featuresResult, plansResult] = await Promise.all([
           editing || embeddedStep !== null ? Promise.resolve([]) : pendingStoreRead("store-setup-merchants", () => listMerchants()).catch(() => []),
           editing || embeddedAccess ? Promise.resolve([]) : pendingStoreRead("store-setup-features", () => listFeatures()).catch(() => []),
-          editing || embeddedAccess ? Promise.resolve([]) : pendingStoreRead("store-setup-plans", () => listPlans()).catch(() => []),
+          embeddedAccess ? Promise.resolve([]) : pendingStoreRead("store-setup-plans", () => listPlans()).catch(() => []),
         ]);
         if (!cancelled) {
           setMerchants(
@@ -1308,7 +1308,9 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
             ? Promise.resolve({ merchant: merchantContext, subscription: existingStore?.subscription })
             : pendingStoreRead(`merchant:${merchantId}`, () => getMerchant(merchantId)),
           Promise.resolve([]),
-          editing || embeddedAccess ? Promise.resolve(null) : api.get(endpoints.merchantStores(merchantId)).catch(() => null),
+          editing || !embeddedAccess
+            ? pendingStoreRead(`merchant-stores:${merchantId}`, () => api.get(endpoints.merchantStores(encodeURIComponent(merchantId)))).catch(() => null)
+            : Promise.resolve(null),
         ]);
         if (cancelled) return;
 
@@ -1318,7 +1320,7 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
         setMerchantInfo(info);
         if (editing) setMerchants([info.owner]);
         setSubscription(info.subscription);
-        const listed = storesResult?.stores ?? storesResult?.data?.stores ?? [];
+        const listed = storeListFromResponse(storesResult);
         const response = result?.raw || result || {};
         const fallback =
           result?.stores ??
@@ -1326,8 +1328,8 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
           response.data?.stores ??
           info.owner.stores ??
           [];
-        const rows = Array.isArray(listed) && listed.length ? listed : fallback;
-        setMerchantStores(Array.isArray(rows) ? rows : []);
+        const rows = listed.length ? listed : storeListFromResponse(fallback);
+        setMerchantStores(rows.map(normalizeStore));
         const employeeRows = Array.isArray(employeeResult)
           ? employeeResult
           : (employeeResult?.employees ?? employeeResult?.data?.employees);
@@ -2526,7 +2528,7 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
                   <td>{validity}</td>
                   <td>{used}/{limit}</td>
                   <td>
-                    <span className="sf-status-pill">
+                    <span className={`sf-status-pill ${String(subscription?.status || "").trim().toLowerCase() === "inactive" ? "inactive" : "active"}`}>
                       {subscription?.status || "Not provided"}
                     </span>
                   </td>
@@ -2621,7 +2623,11 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
                         "—"}
                     </td>
                     <td>{locationText}</td>
-                    <td>{item.status || "—"}</td>
+                    <td>
+                      <span className={`sf-status-pill ${String(item.status || "").trim().toLowerCase() === "inactive" ? "inactive" : "active"}`}>
+                        {item.status || "—"}
+                      </span>
+                    </td>
                   </tr>;
                 })}
                 {!used && (

@@ -124,7 +124,6 @@ export default function Discounts({ embedded = false, storeId: storeIdProp }) {
   const [search, setSearch] = useState("");
   const [mode, setMode] = useState("");
   const [form, setForm] = useState(emptyForm());
-  const [formTab, setFormTab] = useState("details");
   const [formError, setFormError] = useState("");
   const [notice, setNotice] = useState("");
   const [deleteTarget, setDeleteTarget] = useState(null);
@@ -214,7 +213,6 @@ export default function Discounts({ embedded = false, storeId: storeIdProp }) {
 
   const openCreate = () => {
     setForm({ ...emptyForm("auto"), type: "" });
-    setFormTab("details");
     setFormError("");
     setMode("create");
   };
@@ -240,7 +238,6 @@ export default function Discounts({ embedded = false, storeId: storeIdProp }) {
       discounted_products: (discount.discount_product_ids || []).map(String).join(","),
       auto_apply: [true, 1, "1", "yes", "true"].includes(discount.pinaka_discount_auto_apply),
     });
-    setFormTab("details");
     setFormError("");
     setMode("edit");
   };
@@ -258,8 +255,18 @@ export default function Discounts({ embedded = false, storeId: storeIdProp }) {
     const validation = validateDiscountForm(form);
     if (!validation.ok) {
       setFormError(validation.message);
-      setFormTab(validation.tab);
       return;
+    }
+    if (form.discount_type !== "percent") {
+      const productPrice = Number.parseFloat(String(selectedProductPrice).replace(/[^\d.-]/g, ""));
+      if (!Number.isFinite(productPrice) || productPrice <= 0) {
+        setFormError("The selected product price is unavailable, so the discount cannot be validated.");
+        return;
+      }
+      if (Number(form.amount) >= productPrice) {
+        setFormError("The discount amount must be less than the selected product price.");
+        return;
+      }
     }
     {
       const payload = buildDiscountPayload(form);
@@ -305,6 +312,14 @@ export default function Discounts({ embedded = false, storeId: storeIdProp }) {
     }
   };
   const updateForm = (key, value) => setForm((current) => ({ ...current, [key]: value }));
+  const selectedProduct = catalogProducts.find(product => catalogProductId(product) === String(form.product));
+  const selectedProductPrice = selectedProduct?.price ?? selectedProduct?.payload?.price ?? "";
+  const numericProductPrice = Number.parseFloat(String(selectedProductPrice).replace(/[^\d.-]/g, ""));
+  const amountExceedsProductPrice = form.discount_type !== "percent"
+    && form.amount !== ""
+    && Number.isFinite(numericProductPrice)
+    && numericProductPrice > 0
+    && Number(form.amount) >= numericProductPrice;
 
   if (mode) {
     return (
@@ -317,20 +332,8 @@ export default function Discounts({ embedded = false, storeId: storeIdProp }) {
           <button type="button" className="coupon-form-cancel coupon-editor-back store-config-back-button" onClick={closeEditor}><i className="bi bi-arrow-left" /> Back to Discounts</button>
         </div>
         <form className="discount-editor-layout" onSubmit={saveDiscount}>
-          <nav className="discount-editor-tabs" aria-label="Discount settings">
-            {[
-              ["details", "bi-tag", "Discount details"],
-              ["rules", "bi-basket", "Products & rules"],
-              ["limits", "bi-calendar3", "Schedule & limits"],
-            ].map(([id, icon, label]) => (
-              <button key={id} type="button" className={formTab === id ? "active" : ""} onClick={() => setFormTab(id)} disabled={mode === "create" && !form.type}>
-                <i className={`bi ${icon}`} />{label}
-              </button>
-            ))}
-          </nav>
           <div className="discount-editor-main">
             <div className="discount-editor-body">
-              {formTab === "details" && <>
                 <h2>Discount details</h2>
                 <div className="coupon-editor-grid">
                   {mode === "create" ? <label className="coupon-form-field"><span className="discount-field-label">Select discount <span className="discount-required" title="Required" aria-label="Required">*</span></span>
@@ -343,48 +346,38 @@ export default function Discounts({ embedded = false, storeId: storeIdProp }) {
                   <label className="coupon-form-field"><span className="discount-field-label">Discount name <span className="discount-required" title="Required" aria-label="Required">*</span></span>
                     <input autoFocus value={form.code} onChange={(event) => updateForm("code", event.target.value)} placeholder="e.g. Weekend special" required />
                   </label>
+                  <div className="coupon-form-field discount-full-width"><span className="discount-field-label">{form.type === "mix_match" ? "Main product (trigger)" : "Product"} <span className="discount-required" title="Required" aria-label="Required">*</span></span>
+                    <DiscountProductPicker products={catalogProducts} value={form.product} onChange={value => { updateForm("product", value); setFormError(""); }} disabled={saving || !catalogProducts.length} />
+                    <small>{catalogError || (catalogProducts.length ? "Choose a product to see its price and configure a discount." : "No store products are available. Sync products before creating a discount.")}</small>
+                  </div>
+                  {form.product && <label className="coupon-form-field"><span>Product price</span>
+                    <input value={selectedProductPrice === "" ? "Price unavailable" : selectedProductPrice} disabled readOnly aria-label="Product price" />
+                  </label>}
+                  {form.product && <>
                   <label className="coupon-form-field"><span className="discount-field-label">Discount type <span className="discount-required" title="Required" aria-label="Required">*</span></span>
                     <select value={form.discount_type} onChange={(event) => updateForm("discount_type", event.target.value)} required>
                       {typeOptions[form.type].map(([value, label]) => <option key={value} value={value}>{label}</option>)}
                     </select>
                   </label>
                   <label className="coupon-form-field"><span className="discount-field-label">Amount {form.discount_type === "percent" ? "(%)" : ""} <span className="discount-required" title="Required" aria-label="Required">*</span></span>
-                    <input type="number" min="0.01" max={form.discount_type === "percent" ? 100 : undefined} step="0.01" value={form.amount} onChange={(event) => updateForm("amount", event.target.value)} placeholder="0.00" required />
+                    <input type="number" min="0.01" max={form.discount_type === "percent" ? 100 : undefined} step="0.01" value={form.amount} aria-invalid={amountExceedsProductPrice} onChange={(event) => { updateForm("amount", event.target.value); setFormError(""); }} placeholder="0.00" required />
                     <small>{form.discount_type === "percent" ? "Enter a percentage from 0 to 100." : "Enter the fixed discount amount."}</small>
+                    {amountExceedsProductPrice && <small className="discount-amount-error" role="alert">The discount amount must be less than the selected product price.</small>}
                   </label>
                   {form.type === "auto" && <label className="coupon-form-toggle discount-auto-toggle">
                     <input type="checkbox" checked={Boolean(form.auto_apply)} onChange={(event) => updateForm("auto_apply", event.target.checked)} />
                     <span>Apply automatically when conditions match</span>
                   </label>}
-                  </> : <p className="discount-select-hint">Choose a discount type to enable its settings.</p>}
-                </div>
-              </>}
-              {formTab === "rules" && <>
-                <h2>Products & rules</h2>
-                <div className="coupon-editor-grid">
-                  <div className="coupon-form-field"><span className="discount-field-label">{form.type === "mix_match" ? "Main product (trigger)" : "Product"} <span className="discount-required">*</span></span>
-                    <DiscountProductPicker products={catalogProducts} value={form.product} onChange={value => updateForm("product", value)} disabled={saving || !catalogProducts.length} />
-                    <small>{catalogError || (catalogProducts.length ? "Select a product from the store catalog." : "No store products are available. Sync products before creating a discount.")}</small>
-                  </div>
+                  </>}
+                  </> : <p className="discount-select-hint">Choose a discount type to show its name and product settings.</p>}
+                  {form.type && <>
                   {form.type === "mix_match" && <div className="coupon-form-field discount-full-width"><span className="discount-field-label">Discounted products <span className="discount-required">*</span></span>
                     <DiscountProductPicker products={catalogProducts} value={form.discounted_products} onChange={value => updateForm("discounted_products", value)} multiple disabled={saving} />
                     <small>These products receive the discount when the trigger product is present.</small>
-                  </div>}                  {form.type === "multipack" && <label className="coupon-form-field"><span className="discount-field-label">Pack quantity <span className="discount-required" title="Required" aria-label="Required">*</span></span>
+                  </div>}
+                  {form.type === "multipack" && <label className="coupon-form-field"><span className="discount-field-label">Pack quantity <span className="discount-required" title="Required" aria-label="Required">*</span></span>
                     <input type="number" min="1" step="1" value={form.qty} onChange={(event) => updateForm("qty", event.target.value)} placeholder="e.g. 3" required />
                   </label>}
-                  {form.type === "auto" && <>
-                    <label className="coupon-form-field">Minimum spend
-                      <input type="number" min="0" step="0.01" value={form.minimum_amount} onChange={(event) => updateForm("minimum_amount", event.target.value)} placeholder="No minimum" />
-                    </label>
-                    <label className="coupon-form-field">Maximum spend
-                      <input type="number" min="0" step="0.01" value={form.maximum_amount} onChange={(event) => updateForm("maximum_amount", event.target.value)} placeholder="No maximum" />
-                    </label>
-                  </>}
-                </div>
-              </>}
-              {formTab === "limits" && <>
-                <h2>Schedule & limits</h2>
-                <div className="coupon-editor-grid">
                   <label className="coupon-form-field">Start date
                     <input type="date" value={form.date_starts} onChange={(event) => updateForm("date_starts", event.target.value)} />
                   </label>
@@ -395,16 +388,8 @@ export default function Discounts({ embedded = false, storeId: storeIdProp }) {
                     <input type="number" min="0" step="1" value={form.usage_limit} onChange={(event) => updateForm("usage_limit", event.target.value)} placeholder="Unlimited" />
                     <small>{form.type === "multipack" ? "Maximum number of orders allowed for this pack." : "Maximum total uses for this discount."}</small>
                   </label>
-                  {form.type === "auto" && <>
-                    <label className="coupon-form-field">Minimum quantity
-                      <input type="number" min="0" step="1" value={form.min_qty} onChange={(event) => updateForm("min_qty", event.target.value)} placeholder="No minimum" />
-                    </label>
-                    <label className="coupon-form-field">Maximum quantity
-                      <input type="number" min="0" step="1" value={form.max_qty} onChange={(event) => updateForm("max_qty", event.target.value)} placeholder="No maximum" />
-                    </label>
                   </>}
                 </div>
-              </>}
               {formError && <p className="coupon-form-error" role="alert">{formError}</p>}
             </div>
             <div className="coupon-editor-actions">
