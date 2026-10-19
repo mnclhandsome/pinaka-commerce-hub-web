@@ -2,6 +2,7 @@ import FilterDropdown from "../components/FilterDropdown";
 import { useEffect, useMemo, useState } from "react";
 import Pagination from "../components/Pagination";
 import { storeDevicesSeed } from "../data/data";
+import BentoDetailModal from "../components/BentoDetailModal";
 import "../styles/store-devices.css";
 
 export default function StoreDevices({
@@ -792,98 +793,54 @@ export default function StoreDevices({
         </div>
       )}
 
-      {viewingDevice && (
-        <div
-          className="store-device-modal-overlay"
-          onMouseDown={(event) => {
-            if (event.target === event.currentTarget) {
-              setViewingDevice(null);
-            }
-          }}
-        >
-          <div
-            className="store-device-modal store-device-view-modal"
-            role="dialog"
-            aria-modal="true"
-            onMouseDown={(event) => event.stopPropagation()}
-          >
-            <div className="store-device-modal-header">
-              <div>
-                <h2>Device Details</h2>
-                <p>
-                  View device information for{" "}
-                  <strong>{viewingDevice.name}</strong>.
-                </p>
-              </div>
-
-              <button
-                type="button"
-                className="store-device-modal-close"
-                onClick={() => setViewingDevice(null)}
-                aria-label="Close"
-              >
-                <i className="bi bi-x-lg" />
-              </button>
-            </div>
-
-            <div className="store-device-view-body">
-              <div className="store-device-view-identity">
-                <div className="store-device-view-icon">
-                  <i className="bi bi-pc-display" />
-                </div>
-
-                <div>
-                  <strong>{viewingDevice.name}</strong>
-                  <span>{viewingDevice.deviceId || viewingDevice.id}</span>
-                </div>
-              </div>
-
-              <div className="store-device-view-grid">
-                <div className="store-device-view-field">
-                  <span>Device Name</span>
-                  <strong>{viewingDevice.name || "—"}</strong>
-                </div>
-
-                <div className="store-device-view-field">
-                  <span>Device ID</span>
-                  <strong>{viewingDevice.deviceId || "—"}</strong>
-                </div>
-
-                <div className="store-device-view-field">
-                  <span>Device Type</span>
-                  <strong>{viewingDevice.type || "—"}</strong>
-                </div>
-
-                <div className="store-device-view-field">
-                  <span>Status</span>
-                  <strong
-                    className={`store-device-view-status ${
-                      viewingDevice.status === "Active" ? "active" : "inactive"
-                    }`}
-                  >
-                    {viewingDevice.status || "—"}
-                  </strong>
-                </div>
-
-                <div className="store-device-view-field full">
-                  <span>Last Updated</span>
-                  <strong>{viewingDevice.updatedAt || "Recently"}</strong>
-                </div>
-              </div>
-            </div>
-
-            <div className="store-device-modal-footer">
-              <button
-                type="button"
-                className="store-device-cancel-btn"
-                onClick={() => setViewingDevice(null)}
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <BentoDetailModal
+        open={Boolean(viewingDevice)}
+        onClose={() => setViewingDevice(null)}
+        headerIcon="bi-hdd-network"
+        title="Device Details"
+        code={viewingDevice?.deviceId ? `ID: ${viewingDevice.deviceId}` : ""}
+        size="compact"
+        hero={
+          viewingDevice
+            ? {
+                icon: "bi-tablet",
+                title: viewingDevice.name,
+                status: viewingDevice.status || "Active",
+                metricLabel: "DEVICE TYPE",
+                metricValue: viewingDevice.type || "POS Terminal",
+              }
+            : null
+        }
+        layout="borderless-2"
+        fields={
+          viewingDevice
+            ? [
+                {
+                  label: "ASSIGNED STORE",
+                  value: viewingDevice.storeName || store?.name || "Current Store",
+                },
+                {
+                  label: "DEVICE ID",
+                  value: viewingDevice.deviceId || viewingDevice.id,
+                  mono: true,
+                },
+                {
+                  label: "STATUS",
+                  value: viewingDevice.status || "Operational",
+                  render: (val) => (
+                    <span className="bento-field-value status-text-success">
+                      {val || "Operational"}
+                    </span>
+                  ),
+                },
+                {
+                  label: "LAST UPDATED",
+                  value: viewingDevice.updatedAt || "Recently",
+                },
+              ]
+            : []
+        }
+      />
     </div>
   );
 }

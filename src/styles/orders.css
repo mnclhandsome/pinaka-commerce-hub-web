@@ -464,55 +464,74 @@ input {
 ========================================================= */
 
 .order-status {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 0 8px;
-    border-radius: 6px;
-    font-size: 11px;
-    white-space: nowrap;
-    width: 120px;
-    min-width: 120px;
-    height: 26px;
-    justify-content: center;
-    box-sizing: border-box;
-
+    display: inline-flex  !important;
+    align-items: center  !important;
+    font-family: inherit !important;
+    font-size: 12px !important;
+    font-weight: 500 !important;
+    line-height: 1 !important;
+    letter-spacing: 0.01em !important;
+    gap: 8px !important;
+    padding: 0 12px !important;
+    border-radius: 9999px !important;
+    font-size: 12px !important;
+    font-weight: 500 !important;
+    white-space: nowrap !important;
+    width: 120px !important;
+    min-width: 120px !important;
+    height: 32px !important;
+    justify-content: center !important;
+    box-sizing: border-box !important;
+    text-transform: capitalize !important;
 }
 
 .order-status i {
-    font-size: 7px;
+    font-size: 8px;
     flex-shrink: 0;
     line-height: 1;
 }
 
-.order-status.completed {
+.order-status.completed,
+.order-status.active {
     background: #e7f6ec;
     color: #177245;
+}
+
+.order-status.created {
+    background: #eff6ff;
+    color: #1e40af;
+
 }
 
 .order-status.pending {
     background: #e8f3fb;
     color: #17638c;
+  
 }
 
 .order-status.processing {
     background: #edf0ff;
     color: #5660bd;
+    
 }
 
-.order-status.cancelled {
-    background: #f0f0f1;
-    color: #6e737c;
+.order-status.cancelled,
+.order-status.inactive {
+    background: #fee2e2 ;
+    color: #b91c1c;
+    
 }
 
 .order-status.refunded {
     background: #fde8e8;
     color: #bd3131;
+    
 }
 
 .order-status.partial {
     background: #f6edff;
     color: #8750bd;
+   
 }
 
 /* =========================================================

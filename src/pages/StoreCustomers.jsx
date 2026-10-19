@@ -2,7 +2,7 @@ import FilterDropdown from "../components/FilterDropdown";
 import { useEffect, useMemo, useState } from "react";
 import Pagination from "../components/Pagination";
 import { customersSeed } from "../data/data";
-import ViewDetailsModal from "../components/ViewDetailsModal";
+import BentoDetailModal from "../components/BentoDetailModal";
 import "../styles/store-customers.css";
 
 export default function StoreCustomers({
@@ -422,51 +422,102 @@ export default function StoreCustomers({
 
       </div>
 
-      <ViewDetailsModal
+      <BentoDetailModal
         open={Boolean(selectedCustomer)}
-        title="Customer Details"
-        subtitle={
-          selectedCustomer
-            ? selectedCustomer.name ||
-              `${selectedCustomer.firstName || ""} ${selectedCustomer.lastName || ""}`.trim()
-            : ""
-        }
-        data={selectedCustomer}
         onClose={() => setSelectedCustomer(null)}
-        fields={[
-          {
-            key: "customerId",
-            label: "Customer ID",
-            value: (customer) =>
-              customer.customerId || customer.id || "",
-          },
-          {
-            key: "name",
-            label: "Customer Name",
-            value: (customer) =>
-              customer.name ||
-              `${customer.firstName || ""} ${customer.lastName || ""}`.trim(),
-          },
-          { key: "email", label: "Email" },
-          { key: "phone", label: "Phone" },
-          { key: "type", label: "Customer Type" },
-          {
-            key: "status",
-            label: "Status",
-            render: (value) => (
-              <span
-                className={`detail-status ${
-                  value === "Active" ? "active" : "inactive"
-                }`}
-              >
-                {value || "—"}
-              </span>
-            ),
-          },
-          { key: "ordersCount", label: "Total Orders" },
-          { key: "totalSpent", label: "Total Spent" },
-          { key: "updatedAt", label: "Last Updated" },
-        ]}
+        headerIcon="bi-person"
+        title="Customer Details"
+        code={selectedCustomer?.customerId || selectedCustomer?.id ? `ID: ${selectedCustomer.customerId || selectedCustomer.id}` : ""}
+        hero={
+          selectedCustomer
+            ? {
+                icon: "bi-person-circle",
+                title:
+                  selectedCustomer.name ||
+                  `${selectedCustomer.firstName || ""} ${selectedCustomer.lastName || ""}`.trim() ||
+                  "Customer",
+                subtitle: selectedCustomer.type || "Retail Customer",
+                status: selectedCustomer.status || "Active",
+                metricLabel: "TOTAL SPENT",
+                metricValue:
+                  typeof selectedCustomer.totalSpent === "number"
+                    ? `$${selectedCustomer.totalSpent.toFixed(2)}`
+                    : selectedCustomer.totalSpent || "$0.00",
+              }
+            : null
+        }
+        layout="bento-3"
+        maxWidth="max-w-4xl"
+        sections={
+          selectedCustomer
+            ? [
+                {
+                  title: "ACCOUNT IDENTITY",
+                  fields: [
+                    {
+                      label: "CUSTOMER ID",
+                      value: selectedCustomer.customerId || selectedCustomer.id,
+                      mono: true,
+                    },
+                    {
+                      label: "CUSTOMER TYPE",
+                      value: selectedCustomer.type || "Retail Customer",
+                    },
+                    {
+                      label: "STATUS",
+                      value: selectedCustomer.status || "Active",
+                      render: (val) => (
+                        <span
+                          className={`bento-status-pill ${
+                            String(val).toLowerCase() === "active" ? "active" : "inactive"
+                          }`}
+                        >
+                          {val || "Active"}
+                        </span>
+                      ),
+                    },
+                  ],
+                },
+                {
+                  title: "COMMUNICATION",
+                  fields: [
+                    {
+                      label: "EMAIL ADDRESS",
+                      value: selectedCustomer.email,
+                    },
+                    {
+                      label: "PHONE NUMBER",
+                      value: selectedCustomer.phone,
+                    },
+                    {
+                      label: "STORE SCOPE",
+                      value: store?.name || "Current Store",
+                    },
+                  ],
+                },
+                {
+                  title: "ORDER ACTIVITY",
+                  fields: [
+                    {
+                      label: "TOTAL ORDERS",
+                      value: `${selectedCustomer.ordersCount ?? 0} Orders`,
+                    },
+                    {
+                      label: "LIFETIME VALUE",
+                      value:
+                        typeof selectedCustomer.totalSpent === "number"
+                          ? `$${selectedCustomer.totalSpent.toFixed(2)}`
+                          : selectedCustomer.totalSpent || "$0.00",
+                    },
+                    {
+                      label: "LAST UPDATED",
+                      value: selectedCustomer.updatedAt || "Recently",
+                    },
+                  ],
+                },
+              ]
+            : []
+        }
       />
     </div>
   );

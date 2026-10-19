@@ -32,6 +32,19 @@ function titleCase(value) {
   return text.toLowerCase().replace(/\b\w/g, (letter) => letter.toUpperCase());
 }
 
+function statusClass(status) {
+  const value = String(status || "").toLowerCase();
+  if (value.includes("create")) return "created";
+  if (value.includes("complete")) return "completed";
+  if (value.includes("pending")) return "pending";
+  if (value.includes("cancel")) return "cancelled";
+  if (value.includes("refund")) return "refunded";
+  if (value.includes("partial")) return "partial";
+  if (value.includes("inactive")) return "inactive";
+  if (value.includes("active")) return "active";
+  return "processing";
+}
+
 function lineItemSku(item) {
   const metadata = asArray(item.meta_data || item.metaData);
   const metadataSku = metadata.find((entry) =>
@@ -227,7 +240,7 @@ export default function OrderDetail() {
           <p>Order, payment, line, and tender details for this sale.</p>
         </div>
         {view && (
-          <span className={`order-status ${String(view.status).toLowerCase().includes("complete") ? "completed" : "processing"}`}>
+          <span className={`order-status ${statusClass(view.status)}`}>
             <i className="bi bi-circle-fill" />
             {view.status}
           </span>

@@ -20,8 +20,58 @@
 .merchant-tenders .mt-sort{border:0;padding:0;background:transparent;color:inherit}
 .merchant-tenders .mt-name{display:flex;align-items:center;gap:10px}
 .merchant-tenders .mt-avatar{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:50%;background:#eeeaff;color:#5143bc;font-size:20px}
-.merchant-tenders .mt-badge{display:inline-block;padding:6px 10px;border-radius:20px;font-size:10px}
-.merchant-tenders .mt-active{background:#daf9ed;color:#169b72}.merchant-tenders .mt-inactive{background:#f0f1f5;color:#667085}
+.merchant-tenders .mt-badge {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  width: 96px !important;
+  min-width: 96px !important;
+  max-width: 96px !important;
+  height: 32px !important;
+  min-height: 32px !important;
+  max-height: 32px !important;
+  padding: 0 12px !important;
+  border-radius: 9999px !important;
+  box-sizing: border-box !important;
+  font-family: inherit !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  line-height: 1 !important;
+  letter-spacing: 0.01em !important;
+  white-space: nowrap !important;
+  border: none !important;
+  box-shadow: none !important;
+  text-transform: capitalize !important;
+  vertical-align: middle !important;
+}
+
+.merchant-tenders .mt-badge::before {
+  content: "" !important;
+  display: inline-block !important;
+  width: 8px !important;
+  height: 8px !important;
+  min-width: 8px !important;
+  min-height: 8px !important;
+  max-width: 8px !important;
+  max-height: 8px !important;
+  border-radius: 50% !important;
+  background-color: currentColor !important;
+  flex: 0 0 8px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  vertical-align: middle !important;
+}
+
+.merchant-tenders .mt-active {
+  background-color: #ecfdf5 !important;
+  color: #047857 !important;
+}
+
+.merchant-tenders .mt-inactive {
+  background-color: #fee2e2 !important;
+  color: #b91c1c !important;
+}
 .merchant-tenders .mt-actions,.merchant-tenders .mt-footer>div{display:flex;align-items:center;gap:8px}
 .merchant-tenders .mt-footer{font-size:12px;margin-bottom:0}.merchant-tenders .mt-page{padding:6px;color:#5143bc}
 .mt-dialog{position:fixed;inset:0;margin:auto;width:min(760px,calc(100vw - 32px));max-height:90vh;padding:24px;border:1px solid #e1e4eb;border-radius:9px;box-shadow:0 20px 80px #17233e30;overflow:auto}

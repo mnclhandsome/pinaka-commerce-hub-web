@@ -4,6 +4,7 @@ import Pagination from "../components/Pagination";
 import { listStoreSafeDrops } from "../api/storeSafeDrops";
 import { listStoreEmployees } from "../api/employees";
 import { isUuid } from "../api/storeDetails";
+import BentoDetailModal from "../components/BentoDetailModal";
 import "../styles/safe-drops.css";
 
 const currency = (value) => `$${Number(value || 0).toFixed(2)}`;
@@ -158,6 +159,85 @@ export default function SafeDrops({ store, storeId: storeIdProp, merchantId }) {
       </table></div>
       <Pagination currentPage={page} totalPages={Math.max(1, Math.ceil(rows.length / pageSize))} totalItems={rows.length} pageSize={pageSize} onPageChange={setPage} onPageSizeChange={(size) => { setPageSize(size); setPage(1); }} itemLabel="items" showWhenEmpty pageSizeOptions={[10, 25, 50]} />
     </section>
-    {selected && <div className="sd-modal-backdrop" role="presentation" onClick={() => setSelected(null)}><section className="sd-modal" role="dialog" aria-modal="true" aria-labelledby="sd-modal-title" onClick={(event) => event.stopPropagation()}><button className="sd-modal-close" type="button" aria-label="Close" onClick={() => setSelected(null)}>×</button><h2 id="sd-modal-title">Safe Drop – Shift {selected.shift}</h2><p>{selected.shiftId} · {selected.employee} · {dateParts(selected.created).date} {dateParts(selected.created).time}</p><h3>Denominations</h3>{selected.denominations.map((item, itemIndex) => <div className="sd-modal-line" key={`${item.count}-${item.amount}-${itemIndex}`}><span>{item.count} × {currency(item.amount)}</span><strong>{currency(item.total)}</strong></div>)}{!selected.denominations.length && <div className="sd-modal-line"><span>No denominations recorded</span></div>}<div className="sd-modal-line"><span>Total Notes</span><strong>{selected.totalNotes}</strong></div><div className="sd-modal-line sd-modal-total"><span>Total Amount</span><strong>{currency(selected.total)}</strong></div></section></div>}
+    <BentoDetailModal
+      open={Boolean(selected)}
+      onClose={() => setSelected(null)}
+      headerIcon="bi-safe"
+      title="Safe Drop Details"
+      code={selected?.shiftId ? `Shift ID: ${selected.shiftId}` : (selected?.id ? `Drop ID: ${selected.id}` : "")}
+      size="compact"
+      hero={
+        selected
+          ? {
+              icon: "bi-vault",
+              title: `Safe Drop — Shift ${selected.shift}`,
+              subtitle: `${selected.employee || "Staff"} • ${dateParts(selected.created).date} ${dateParts(selected.created).time}`,
+              status: "Completed",
+              metricLabel: "TOTAL DROP VALUE",
+              metricValue: currency(selected.total || 0),
+            }
+          : null
+      }
+      layout="bento-2"
+      sections={
+        selected
+          ? [
+              {
+                title: "SHIFT & AUDIT SPECS",
+                className: "p-3 space-y-2 flex flex-col justify-between",
+                fields: [
+                  {
+                    label: "SHIFT REFERENCE",
+                    value: selected.shiftId,
+                    mono: true,
+                  },
+                  {
+                    label: "AUTHORIZED CASHIER",
+                    value: selected.employee,
+                  },
+                  {
+                    label: "DROPPED AT",
+                    value: `${dateParts(selected.created).date} ${dateParts(selected.created).time}`,
+                  },
+                  {
+                    label: "STATUS",
+                    value: "Completed",
+                  },
+                ],
+              },
+              {
+                title: "DENOMINATIONS BREAKDOWN",
+                className: "p-3 flex flex-col justify-between",
+                customContent: (
+                  <div className="flex flex-col justify-between h-full space-y-2">
+                    <div className="space-y-1">
+                      {selected.denominations.map((item, idx) => (
+                        <div
+                          key={idx}
+                          className="flex items-center justify-between py-1.5 px-2.5 bg-slate-50/80 rounded-md text-xs text-slate-700 border border-slate-100"
+                        >
+                          <span>
+                            {item.count} × {currency(item.amount)}
+                          </span>
+                          <strong className="text-slate-900 font-semibold">{currency(item.total)}</strong>
+                        </div>
+                      ))}
+                      {!selected.denominations.length && (
+                        <div className="text-xs text-slate-400 italic py-2">
+                          No denominations recorded
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex items-center justify-between pt-2 border-t border-slate-100 text-xs font-semibold">
+                      <span>Total Notes: <b>{selected.totalNotes || 0}</b></span>
+                      <span className="text-sm font-bold text-indigo-600">Total: {currency(selected.total)}</span>
+                    </div>
+                  </div>
+                ),
+              },
+            ]
+          : []
+      }
+    />
   </main>;
 }

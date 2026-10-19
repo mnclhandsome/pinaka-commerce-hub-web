@@ -500,6 +500,23 @@
   display: none !important;
 }
 
+.tenders-status:not(:has(i, b, .status-dot))::before {
+  content: "" !important;
+  display: inline-block !important;
+  width: 8px !important;
+  height: 8px !important;
+  min-width: 8px !important;
+  min-height: 8px !important;
+  max-width: 8px !important;
+  max-height: 8px !important;
+  border-radius: 50% !important;
+  background-color: currentColor !important;
+  flex: 0 0 8px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  vertical-align: middle !important;
+}
+
 .tenders-status.active {
   background-color: #ecfdf5 !important;
   color: #047857 !important;

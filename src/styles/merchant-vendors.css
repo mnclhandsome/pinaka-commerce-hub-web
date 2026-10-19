@@ -463,32 +463,59 @@
 ========================================================= */
 
 .merchant-vendors .mv-badge {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 5px 12px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: 500;
-    line-height: 1;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    width: 96px !important;
+    min-width: 96px !important;
+    max-width: 96px !important;
+    height: 32px !important;
+    min-height: 32px !important;
+    max-height: 32px !important;
+    padding: 0 12px !important;
+    border-radius: 9999px !important;
+    box-sizing: border-box !important;
+    font-family: inherit !important;
+    font-size: 12px !important;
+    font-weight: 500 !important;
+    line-height: 1 !important;
+    letter-spacing: 0.01em !important;
+    white-space: nowrap !important;
+    border: none !important;
+    box-shadow: none !important;
+    text-transform: capitalize !important;
+    vertical-align: middle !important;
 }
 
 /* Active */
 .merchant-vendors .mv-active {
-    background: #daf9ed;
-    color: #169b72;
+    background-color: #ecfdf5 !important;
+    color: #047857 !important;
 }
 
 /* Inactive */
 .merchant-vendors .mv-inactive {
-    background: #f0f1f5;
-    color: #667085;
+    background-color: #fee2e2 !important;
+    color: #b91c1c !important;
 }
 
-/* Remove any dot/icon before status */
+/* Standardized 8px dot */
 .merchant-vendors .mv-badge::before {
-    content: none !important;
-    display: none !important;
+    content: "" !important;
+    display: inline-block !important;
+    width: 8px !important;
+    height: 8px !important;
+    min-width: 8px !important;
+    min-height: 8px !important;
+    max-width: 8px !important;
+    max-height: 8px !important;
+    border-radius: 50% !important;
+    background-color: currentColor !important;
+    flex: 0 0 8px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    vertical-align: middle !important;
 }
 
 /* =========================================================

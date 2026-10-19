@@ -1,6 +1,7 @@
 import { pendingStoreRead } from "../api/http";
 import { useEffect, useRef, useState } from "react";
 import DeleteConfirmationDialog from "../components/DeleteConfirmationDialog";
+import BentoDetailModal from "../components/BentoDetailModal";
 import ListActions from "../components/ListActions";
 import "../styles/merchant-tenders.css";
 import Pagination from "../components/Pagination";
@@ -217,11 +218,7 @@ const [pickerPageSize, setPickerPageSize] = useState(25);
 
  
 useEffect(() => {
-  if (modal?.type === "view") {
-    if (!dialog.current?.open) {
-      dialog.current?.showModal();
-    }
-  } else if (dialog.current?.open) {
+  if (dialog.current?.open) {
     dialog.current.close();
     addButton.current?.focus();
   }
@@ -357,7 +354,7 @@ useEffect(() => {
     <span
       className={`mt-badge ${active(tender) ? "mt-active" : "mt-inactive"}`}
     >
-      ● {tender.status}
+      {tender.status}
     </span>
   );
 
@@ -758,6 +755,77 @@ useEffect(() => {
             removeTender(modal.tender.id);
           }
         }}
+      />
+
+      <BentoDetailModal
+        open={Boolean(modal?.tender && modal?.type === "view")}
+        onClose={close}
+        headerIcon="bi-credit-card-2-front"
+        title="Tender Details"
+        code={modal?.tender?.code ? `Code: ${modal.tender.code}` : ""}
+        size="compact"
+        hero={
+          modal?.tender
+            ? {
+                icon: "bi-credit-card",
+                title: modal.tender.name || "Tender",
+                status: modal.tender.status || "Active",
+                metricLabel: "TENDER TYPE",
+                metricValue: modal.tender.type || modal.tender.code || "Payment Method",
+              }
+            : null
+        }
+        layout="bento-2"
+        sections={
+          modal?.tender
+            ? [
+                {
+                  title: "TENDER SPECIFICATIONS",
+                  fields: [
+                    {
+                      label: "TENDER NAME",
+                      value: modal.tender.name,
+                    },
+                    {
+                      label: "TENDER CODE",
+                      value: modal.tender.code,
+                      mono: true,
+                    },
+                    {
+                      label: "STATUS",
+                      value: modal.tender.status || "Active",
+                      render: (val) => (
+                        <span
+                          className={`bento-status-pill ${
+                            String(val).toLowerCase() === "active" ? "active" : "inactive"
+                          }`}
+                        >
+                          {val || "Active"}
+                        </span>
+                      ),
+                    },
+                  ],
+                },
+                {
+                  title: "SYSTEM AUDIT",
+                  fields: [
+                    {
+                      label: "CREATED AT",
+                      value: modal.tender.createdAt ? new Date(modal.tender.createdAt).toLocaleString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "Not specified",
+                    },
+                    {
+                      label: "LAST UPDATED",
+                      value: modal.tender.updatedAt ? new Date(modal.tender.updatedAt).toLocaleString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "Recently",
+                    },
+                    {
+                      label: "CONFIGURATION",
+                      value: modal.tender.isDefault ? "Default Method" : "Standard Method",
+                    },
+                  ],
+                },
+              ]
+            : []
+        }
       />
     </div>
   );

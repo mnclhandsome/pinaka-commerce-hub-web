@@ -1,7 +1,7 @@
 import FilterDropdown from "../components/FilterDropdown";
 import { useEffect, useMemo, useRef, useState } from "react";
 import Pagination from "../components/Pagination";
-import ViewDetailsModal from "../components/ViewDetailsModal";
+import BentoDetailModal from "../components/BentoDetailModal";
 import DeleteConfirmationDialog from "../components/DeleteConfirmationDialog";
 import { api, pendingStoreRead } from "../api/http";
 import { normalizeCatalog } from "../api/products";
@@ -804,107 +804,132 @@ export default function Coupons({
                 VIEW COUPON DETAILS
             ================================================= */}
 
-            <ViewDetailsModal
+            <BentoDetailModal
                 open={Boolean(selectedCoupon)}
-                title="Coupon Details"
-                subtitle={
-                    selectedCoupon?.code
-                        ? `Coupon Code: ${selectedCoupon.code}`
-                        : ""
-                }
-                data={selectedCoupon}
-                fields={[
-                    {
-                        label: "Coupon Code",
-                        key: "code",
-                        fullWidth: true,
-                    },
-                    {
-                        label: "Coupon Type",
-                        key: "type",
-                    },
-                    {
-                        label: "Coupon Amount",
-                        key: "amount",
-                    },
-                    {
-                        label: "Usage",
-                        value: (coupon) =>
-                            `${coupon?.usedCount || 0} / ${
-                                coupon?.usageLimit || "∞"
-                            }`,
-                    },
-                    {
-                        label: "Expiry Date",
-                        key: "expiryDate",
-                    },
-                    {
-                        label: "Description",
-                        key: "description",
-                        fullWidth: true,
-                    },
-                    {
-                        label: "Issued Order IDs",
-                        key: "issuedOrderIds",
-                        fullWidth: true,
-                        render: (values) =>
-                            values?.length ? (
-                                <div className="view-details-list">
-                                    {values.map((orderId) => (
-                                        <div
-                                            key={orderId}
-                                            className="view-details-list-item"
-                                        >
-                                            <strong>{orderId}</strong>
-                                        </div>
-                                    ))}
-                                </div>
-                            ) : (
-                                <span>—</span>
-                            ),
-                    },
-                    {
-                        label: "Used Order IDs",
-                        key: "usedOrderIds",
-                        fullWidth: true,
-                        render: (values) =>
-                            values?.length ? (
-                                <div className="view-details-list">
-                                    {values.map((orderId) => (
-                                        <div
-                                            key={orderId}
-                                            className="view-details-list-item"
-                                        >
-                                            <strong>{orderId}</strong>
-                                        </div>
-                                    ))}
-                                </div>
-                            ) : (
-                                <span>—</span>
-                            ),
-                    },
-                    {
-                        label: "Product IDs",
-                        key: "productIds",
-                        fullWidth: true,
-                        render: (values) =>
-                            values?.length ? (
-                                <div className="view-details-list">
-                                    {values.map((productId) => (
-                                        <div
-                                            key={productId}
-                                            className="view-details-list-item"
-                                        >
-                                            <strong>{productId}</strong>
-                                        </div>
-                                    ))}
-                                </div>
-                            ) : (
-                                <span>—</span>
-                            ),
-                    },
-                ]}
                 onClose={() => setSelectedCoupon(null)}
+                headerIcon="bi-ticket-perforated"
+                title="Coupon Details"
+                code={selectedCoupon?.code ? `Code: ${selectedCoupon.code}` : ""}
+                hero={
+                    selectedCoupon
+                        ? {
+                              icon: "bi-ticket-detailed",
+                              title: selectedCoupon.code || "Coupon",
+                              subtitle: selectedCoupon.type || "Store Discount",
+                              status: selectedCoupon.status || "Active",
+                              metricLabel: "DISCOUNT VALUE",
+                              metricValue: selectedCoupon.amount
+                                  ? (String(selectedCoupon.type || "").toLowerCase().includes("percent")
+                                        ? `${selectedCoupon.amount}%`
+                                        : `$${selectedCoupon.amount}`)
+                                  : "—",
+                          }
+                        : null
+                }
+                layout="bento-3"
+                sections={
+                    selectedCoupon
+                        ? [
+                              {
+                                  title: "DISCOUNT SPECS",
+                                  fields: [
+                                      {
+                                          label: "COUPON CODE",
+                                          value: selectedCoupon.code,
+                                          mono: true,
+                                      },
+                                      {
+                                          label: "DISCOUNT TYPE",
+                                          value: selectedCoupon.type || "Percentage discount",
+                                      },
+                                      {
+                                          label: "STATUS",
+                                          value: selectedCoupon.status || "Active",
+                                          render: (val) => (
+                                              <span
+                                                  className={`bento-status-pill ${
+                                                      String(val).toLowerCase() === "active"
+                                                          ? "active"
+                                                          : "inactive"
+                                                  }`}
+                                              >
+                                                  {val || "Active"}
+                                              </span>
+                                          ),
+                                      },
+                                  ],
+                              },
+                              {
+                                  title: "USAGE CONSTRAINTS",
+                                  fields: [
+                                      {
+                                          label: "USAGE REDEEMED",
+                                          value: `${selectedCoupon.usedCount || 0} / ${
+                                              selectedCoupon.usageLimit || "Unlimited"
+                                          }`,
+                                      },
+                                      {
+                                          label: "EXPIRATION DATE",
+                                          value: selectedCoupon.expiryDate,
+                                          emptyText: "No Expiration",
+                                      },
+                                      {
+                                          label: "DESCRIPTION",
+                                          value: selectedCoupon.description,
+                                          emptyText: "No description provided",
+                                      },
+                                  ],
+                              },
+                              {
+                                  title: "LINKED REFERENCES",
+                                  fields: [
+                                      {
+                                          label: "PRODUCT IDS",
+                                          value: selectedCoupon.productIds,
+                                          render: (val) => {
+                                              if (!val || !val.length)
+                                                  return (
+                                                      <span className="bento-field-value empty-state">
+                                                          No products linked
+                                                      </span>
+                                                  );
+                                              return (
+                                                  <div className="bento-chips-wrap">
+                                                      {val.map((p, i) => (
+                                                          <span key={i} className="bento-chip">
+                                                              {p}
+                                                          </span>
+                                                      ))}
+                                                  </div>
+                                              );
+                                          },
+                                      },
+                                      {
+                                          label: "USED ORDER IDS",
+                                          value: selectedCoupon.usedOrderIds,
+                                          render: (val) => {
+                                              if (!val || !val.length)
+                                                  return (
+                                                      <span className="bento-field-value empty-state">
+                                                          No orders used
+                                                      </span>
+                                                  );
+                                              return (
+                                                  <div className="bento-chips-wrap">
+                                                      {val.map((o, i) => (
+                                                          <span key={i} className="bento-chip">
+                                                              {o}
+                                                          </span>
+                                                      ))}
+                                                  </div>
+                                              );
+                                          },
+                                      },
+                                  ],
+                              },
+                          ]
+                        : []
+                }
             />
 
             <DeleteConfirmationDialog

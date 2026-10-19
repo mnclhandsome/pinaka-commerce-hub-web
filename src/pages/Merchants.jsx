@@ -29,6 +29,7 @@ import Pagination from "../components/Pagination";
 import ListActions from "../components/ListActions";
 import FiltersBar from "../components/FiltersBar";
 import DeleteConfirmationDialog from "../components/DeleteConfirmationDialog";
+import BentoDetailModal from "../components/BentoDetailModal";
 import "../styles/merchants.css";
 import "../styles/merchant-details.css";
 import "../styles/global.css";
@@ -602,6 +603,7 @@ async function openEmployeeEdit(employee) {
   aria-labelledby="merchant-tab-employees"
   hidden={activeTab !== "employees"}
   tabIndex={0}
+  className="merchant-panel-content flex-1 min-w-0 w-full max-w-full overflow-hidden"
 >
   {employeesError && (
     <div className="alert alert-danger" role="alert">
@@ -1425,7 +1427,7 @@ function MerchantEmployeeList({employees,merchantName,onAdd,onRefresh,onEdit}) {
   const filtered=employees.filter(e=>[employeeName(e),e.id,e.employeeCode,e.username,e.phone,e.phoneNumber,e.email].join(' ').toLowerCase().includes(filters.query.trim().toLowerCase())).sort((a,b)=>(Date.parse(b.createdAt)||0)-(Date.parse(a.createdAt)||0));
   const pages = Math.max(1, Math.ceil(filtered.length / pageSize));
   const current = Math.min(page, pages);
-  return <div className="mel">
+  return <div className="mel w-full max-w-full min-w-0 overflow-hidden">
     <EmployeeToast message={notice} onClose={()=>setNotice("")} />
 
 {deleteTarget && (
@@ -1448,7 +1450,7 @@ function MerchantEmployeeList({employees,merchantName,onAdd,onRefresh,onEdit}) {
   />
 )}
 
-<section className="mel-card">
+<section className="mel-card w-full max-w-full min-w-0 overflow-hidden">
  
 <div className="mel-heading">
   <div>
@@ -1474,7 +1476,7 @@ function MerchantEmployeeList({employees,merchantName,onAdd,onRefresh,onEdit}) {
     setPage(1);   
   }}
 />
-   <div className="mel-scroll"><table><thead><tr>{['Employee','Email','Phone','Login PIN','Gender','Status','Actions'].map(title=><th key={title}>{title}</th>)}</tr></thead><tbody>
+   <div className="mel-scroll w-full overflow-x-auto"><table className="w-full min-w-[800px] text-left"><thead><tr>{['Employee','Email','Phone','Login PIN','Gender','Status','Actions'].map(title=><th key={title}>{title}</th>)}</tr></thead><tbody>
       {filtered.slice((current - 1) * pageSize, current * pageSize).map((e, index) => (
     <tr key={e.id || e.employeeCode || index}>
         <td>
@@ -1522,7 +1524,109 @@ function MerchantEmployeeList({employees,merchantName,onAdd,onRefresh,onEdit}) {
   showWhenEmpty={true}
 />
     </section>
-    <dialog ref={dialog} className="mel-dialog" aria-labelledby="mel-title" onCancel={event=>{event.preventDefault();setView(null);}}><header className="mel-heading"><h2 id="mel-title">Employee Details</h2><button onClick={()=>setView(null)} aria-label="Close employee details">×</button></header>{view&&<dl>{Object.entries({Name:employeeName(view),Email:view.email,Phone:view.phone || view.phoneNumber,Username:view.username,Gender:view.gender,'Login PIN':view.loginPin || view.login_pin || view.employeeLoginPin || (view.pinSet ? 'Set' : ''),Status:view.status,'Employee Code':view.employeeCode || view.employee_code}).map(([key,value])=><div key={key}><dt>{key}</dt><dd>{value || '—'}</dd></div>)}</dl>}</dialog>
+    <BentoDetailModal
+      open={Boolean(view)}
+      onClose={() => setView(null)}
+      headerIcon="bi-person-badge"
+      title="Employee Details"
+      code={view?.employeeCode || view?.employee_code || (view?.id ? `ID: ${view.id}` : "")}
+      hero={
+        view
+          ? {
+              icon: "bi-person",
+              title: employeeName(view),
+              subtitle: roleNames(view).join(", ") || view.username || "Staff Member",
+              status: view.status || "Active",
+              metricLabel: "ROLE / POSITION",
+              metricValue: roleNames(view)[0] || "Staff",
+            }
+          : null
+      }
+      layout="bento-3"
+      sections={
+        view
+          ? [
+              {
+                title: "PROFILE & SECURITY",
+                fields: [
+                  {
+                    label: "EMPLOYEE CODE",
+                    value: view.employeeCode || view.employee_code || view.id,
+                    mono: true,
+                  },
+                  {
+                    label: "USERNAME",
+                    value: view.username,
+                  },
+                  {
+                    label: "LOGIN PIN",
+                    value:
+                      view.pinSet || view.loginPin || view.login_pin || view.employeeLoginPin
+                        ? "•••• (Configured)"
+                        : "Not set",
+                  },
+                ],
+              },
+              {
+                title: "CONTACT & PERSONAL",
+                fields: [
+                  {
+                    label: "PHONE NUMBER",
+                    value: view.phone || view.phoneNumber,
+                  },
+                  {
+                    label: "EMAIL ADDRESS",
+                    value: view.email,
+                  },
+                  {
+                    label: "GENDER",
+                    value: view.gender,
+                  },
+                ],
+              },
+              {
+                title: "ASSIGNMENT & AUDIT",
+                fields: [
+                  {
+                    label: "PRIMARY ROLE",
+                    value: roleNames(view).join(", ") || "Employee",
+                  },
+                  {
+                    label: "ASSIGNED STORES",
+                    value: storeNames(view).join(", ") || "All Stores",
+                  },
+                  {
+                    label: "STATUS",
+                    value: view.status || "Active",
+                    render: (val) => (
+                      <span
+                        className={`bento-status-pill ${
+                          String(val).toLowerCase() === "active" ? "active" : "inactive"
+                        }`}
+                      >
+                        {val || "Active"}
+                      </span>
+                    ),
+                  },
+                ],
+              },
+            ]
+          : []
+      }
+      secondaryAction={
+        onEdit && view
+          ? {
+              label: "Edit",
+              icon: "bi-pencil",
+              onClick: () => {
+                const target = view;
+                setView(null);
+                onEdit(target);
+              },
+            }
+          : null
+      }
+    />
   </div>;
 }
 
@@ -1703,7 +1807,7 @@ return (
                     <td>{d.serial}</td>
                     <td>
                       <span className={'mdl-badge ' + (['active', 'online'].includes(String(d.status || '').toLowerCase()) ? 'mdl-active' : 'mdl-inactive')}>
-                        ● {d.status}
+                        {d.status}
                       </span>
                     </td>
                     <td>
@@ -1745,45 +1849,67 @@ return (
   showWhenEmpty={true}
 />
     </section>
-
-    <dialog
-      className="mdl-dialog"
-      ref={dialog}
-      aria-labelledby="mdl-title"
-      onCancel={(e) => {
-        e.preventDefault();
-        setView(null);
-      }}
-    >
-      <header className="mdl-header">
-        <h2 id="mdl-title">Device Details</h2>
-        <button
-          aria-label="Close device details"
-          onClick={() => setView(null)}
-        >
-          ×
-        </button>
-      </header>
-
-      {view && (
-        <dl>
-          {Object.entries({
-            Device: view.name,
-            Type: view.type,
-            Store: view.storeLabel,
-            'Serial No.': view.serial,
-            Status: view.status,
-            'Device ID': view.deviceIdentifier,
-            'Device Code': view.deviceCode,
-          }).map(([key, value]) => (
-            <div key={key}>
-              <dt>{key}</dt>
-              <dd>{value || '—'}</dd>
-            </div>
-          ))}
-        </dl>
-      )}
-    </dialog>
+    <BentoDetailModal
+      open={Boolean(view)}
+      onClose={() => setView(null)}
+      headerIcon="bi-tablet"
+      title="Device Details"
+      code={view?.deviceCode ? view.deviceCode : (view?.deviceIdentifier || "")}
+      size="compact"
+      hero={
+        view
+          ? {
+              icon: "bi-tablet",
+              title: view.name,
+              status: view.status || "Active",
+              metricLabel: "DEVICE TYPE",
+              metricValue: view.type || "POS Terminal",
+            }
+          : null
+      }
+      layout="borderless-2"
+      fields={
+        view
+          ? [
+              {
+                label: "ASSIGNED STORE",
+                value: view.storeLabel,
+              },
+              {
+                label: "SERIAL NUMBER",
+                value: view.serial,
+                mono: true,
+              },
+              {
+                label: "DEVICE ID",
+                value: view.deviceIdentifier || view.id,
+                mono: true,
+              },
+              {
+                label: "STATUS",
+                value: view.status || "Operational",
+                render: (val) => (
+                  <span className="bento-field-value status-text-success">
+                    {val || "Operational"}
+                  </span>
+                ),
+              },
+            ]
+          : []
+      }
+      secondaryAction={
+        onEdit && view
+          ? {
+              label: "Edit",
+              onClick: () => {
+                const target = view;
+                setView(null);
+                onEdit(target);
+              },
+            }
+          : null
+      }
+    />
   </div>
 );
 
