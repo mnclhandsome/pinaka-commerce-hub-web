@@ -206,11 +206,11 @@
 
 .store-subnav-group-items .store-subnav-item:hover {
   background: #f3f0ff;
-  color: #5937e8;
+  color: #5143bc;
 }
 
 .store-subnav-group-items .store-subnav-item:hover i {
-  color: #5937e8;
+  color: #4f30cb;
 }
 
 
@@ -219,7 +219,7 @@
    ========================================================= */
 
 .store-subnav-group-items .store-subnav-item.active {
-  background: #5937e8;
+  background: #5143bc;
   color: #fff;
   font-weight: 600;
 }
@@ -4526,17 +4526,17 @@
   word-break: normal;
 }
 .store-workspace-page .store-workspace-card .vendor-history-screen .vendor-history-table-scroll > .vendor-table th:nth-child(1),
-.store-workspace-page .store-workspace-card .vendor-history-screen .vendor-history-table-scroll > .vendor-table td:nth-child(1) { width: 23%; }
+.store-workspace-page .store-workspace-card .vendor-history-screen .vendor-history-table-scroll > .vendor-table td:nth-child(1) { width: 20%; }
 .store-workspace-page .store-workspace-card .vendor-history-screen .vendor-history-table-scroll > .vendor-table th:nth-child(2),
-.store-workspace-page .store-workspace-card .vendor-history-screen .vendor-history-table-scroll > .vendor-table td:nth-child(2) { width: 17%; }
+.store-workspace-page .store-workspace-card .vendor-history-screen .vendor-history-table-scroll > .vendor-table td:nth-child(2) { width: 18%; }
 .store-workspace-page .store-workspace-card .vendor-history-screen .vendor-history-table-scroll > .vendor-table th:nth-child(3),
-.store-workspace-page .store-workspace-card .vendor-history-screen .vendor-history-table-scroll > .vendor-table td:nth-child(3) { width: 15%; }
+.store-workspace-page .store-workspace-card .vendor-history-screen .vendor-history-table-scroll > .vendor-table td:nth-child(3) { width: 20%; }
 .store-workspace-page .store-workspace-card .vendor-history-screen .vendor-history-table-scroll > .vendor-table th:nth-child(4),
 .store-workspace-page .store-workspace-card .vendor-history-screen .vendor-history-table-scroll > .vendor-table td:nth-child(4) { width: 16%; }
 .store-workspace-page .store-workspace-card .vendor-history-screen .vendor-history-table-scroll > .vendor-table th:nth-child(5),
-.store-workspace-page .store-workspace-card .vendor-history-screen .vendor-history-table-scroll > .vendor-table td:nth-child(5) { width: 13%; }
+.store-workspace-page .store-workspace-card .vendor-history-screen .vendor-history-table-scroll > .vendor-table td:nth-child(5) { width: 12%; }
 .store-workspace-page .store-workspace-card .vendor-history-screen .vendor-history-table-scroll > .vendor-table th:nth-child(6),
-.store-workspace-page .store-workspace-card .vendor-history-screen .vendor-history-table-scroll > .vendor-table td:nth-child(6) { width: 16%; }
+.store-workspace-page .store-workspace-card .vendor-history-screen .vendor-history-table-scroll > .vendor-table td:nth-child(6) { width: 14%; }
 .store-workspace-page .store-workspace-card .vendor-history-screen .vendor-toolbar > .pch-filter-dropdown {
   box-sizing: border-box;
   flex: 0 0 200px;

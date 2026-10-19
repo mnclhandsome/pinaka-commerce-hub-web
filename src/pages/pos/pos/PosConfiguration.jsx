@@ -248,7 +248,7 @@ export default function PosConfiguration({ merchantId, storeId, store } = {}) {
                     onClick={() => requestLeave(null)}
                 >
                     <i className="bi bi-arrow-left" />
-                    <span>Back to POS Configuration</span>
+                    <span>Back</span>
                 </button>
 
             </div>
