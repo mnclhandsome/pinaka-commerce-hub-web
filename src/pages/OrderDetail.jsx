@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation, useParams, useSearchParams } from "react-router-dom";
+import { ArrowLeft, ShoppingBag, CreditCard, CircleDollarSign, Package, ReceiptText, History } from "lucide-react";
 import { formatMoney, getOrder } from "../api/orders";
 import { extractProducts, normalizeProduct, productsApi } from "../api/products";
 import "../styles/orders.css";
+import "../styles/employee-view.css";
 
 function metaValue(entries, key) {
   const match = asArray(entries).find((entry) => entry?.key === key);
@@ -239,12 +241,13 @@ function buildView(payload) {
   };
 }
 
-export default function OrderDetail() {
-  const { orderId } = useParams();
+export default function OrderDetail({ embedded = false, orderId: providedOrderId, storeId: providedStoreId, orderNumber: providedOrderNumber, onBack }) {
+  const { orderId: routeOrderId } = useParams();
   const location = useLocation();
   const [searchParams] = useSearchParams();
-  const storeId = searchParams.get("store") || "";
-  const orderNumber = searchParams.get("number") || "";
+  const orderId = providedOrderId || routeOrderId;
+  const storeId = providedStoreId || searchParams.get("store") || "";
+  const orderNumber = providedOrderNumber || searchParams.get("number") || "";
   const [view, setView] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -295,58 +298,32 @@ export default function OrderDetail() {
   }, [orderId, storeId, orderNumber]);
 
   return (
-    <div className="page-content orders-page order-detail-page">
-      <div className="orders-header">
-        <div>
-          <Link className="order-detail-back" to={backTo}>
-            <i className="bi bi-arrow-left" /> Back to orders
-          </Link>
-          <h1>{view ? `Order ${view.number}` : "Order"}</h1>
-          <p>Order, payment, line, and tender details for this sale.</p>
-        </div>
-        {view && (
-          <span className={`order-status ${String(view.status).toLowerCase().includes("complete") ? "completed" : "processing"}`}>
-            <i className="bi bi-circle-fill" />
-            {view.status}
-          </span>
-        )}
+    <div className="employee-view-page order-detail-page">
+      <div className="employee-view-header order-detail-heading-row">
+        <div><h1>View Order</h1><p>Order, payment, customer, and item details for this sale.</p></div>
+        {embedded
+          ? <button type="button" className="order-detail-back" onClick={onBack}><ArrowLeft size={16} /> Back</button>
+          : <Link className="order-detail-back" to={backTo}><ArrowLeft size={16} /> Back</Link>}
       </div>
 
-      {loading && <div className="orders-banner">Loading order...</div>}
-      {error && <div className="orders-banner error">{error}</div>}
+      {loading && <p role="status">Loading order...</p>}
+      {error && <div className="employee-view-error" role="alert">{error}</div>}
 
       {view && (
-        <div className="order-detail-layout">
+        <div className="employee-view-sections order-detail-layout">
           <DetailBlock title="Order">
-            <Field label="Order ID" value={view.number} />
-            <Field label="Client order ID" value={view.clientOrderId} />
-            <Field label="Created" value={view.createdAt} />
-            <Field label="Currency" value={view.currency} />
-            <Field label="Timezone" value={view.timezone} />
-            <Field label="Customer" value={view.customer} />
-            <Field label="Phone" value={view.phone} />
-            <Field label="Email" value={view.email} />
+            <Fields items={[["Order ID", view.number], ["Client order ID", view.clientOrderId], ["Created", view.createdAt], ["Currency", view.currency], ["Timezone", view.timezone], ["Customer", view.customer], ["Phone", view.phone], ["Email", view.email]]} />
           </DetailBlock>
 
           <DetailBlock title="Payment and device">
-            <Field label="Payment" value={view.paymentMethod} />
-            <Field label="Payment status" value={view.paymentStatus} />
-            <Field label="Pay later" value={view.payLater} />
-            <Field label="Device" value={view.deviceId} />
-            <Field label="Placed by" value={view.placedBy} />
-            <Field label="Shift" value={view.shiftId} />
+            <Fields items={[["Payment", view.paymentMethod], ["Payment status", view.paymentStatus], ["Pay later", view.payLater], ["Device", view.deviceId], ["Placed by", view.placedBy], ["Shift", view.shiftId]]} />
           </DetailBlock>
 
           <DetailBlock title="Totals">
-            <Field label="Subtotal" value={view.subtotal} />
-            <Field label="Discount" value={view.discount} />
-            <Field label="Tax" value={view.tax} />
-            <Field label="Fees" value={view.fees} />
-            <Field label="Total" value={view.total} />
+            <Fields items={[["Subtotal", view.subtotal], ["Discount", view.discount], ["Tax", view.tax], ["Fees", view.fees], ["Total", view.total]]} />
           </DetailBlock>
 
-          <section className="order-detail-block">
-            <h2>Line items</h2>
+          <DetailBlock title="Line items">
             <Lines
               columns={["Product", "SKU", "Qty", "Subtotal", "Total"]}
               rows={view.lineItems.map((item) => [
@@ -357,7 +334,7 @@ export default function OrderDetail() {
                 formatMoney(item.total ?? item.subtotal, view.currency),
               ])}
             />
-          </section>
+          </DetailBlock>
 
           <section className="order-detail-block">
             <h2>Fees, discounts, tax, and coupons</h2>
@@ -381,10 +358,9 @@ export default function OrderDetail() {
               columns={["Code", "Discount"]}
               rows={view.couponLines.map((coupon) => [coupon.code || "—", formatMoney(coupon.discount ?? coupon.discount_amount ?? coupon.amount, view.currency)])}
             />
-          </section>
+          </DetailBlock>
 
-          <section className="order-detail-block">
-            <h2>Payments</h2>
+          <DetailBlock title="Payments">
             <Lines
               columns={["Method", "Amount", "Status", "Created"]}
               rows={view.payments.map((payment) => [
@@ -394,10 +370,9 @@ export default function OrderDetail() {
                 displayDate(payment.created_at || payment.createdAt),
               ])}
             />
-          </section>
+          </DetailBlock>
 
-          <section className="order-detail-block">
-            <h2>Status history</h2>
+          <DetailBlock title="Status history">
             <Lines
               columns={["From", "To", "Changed by", "Reason", "When"]}
               rows={view.history.map((entry) => [
@@ -408,7 +383,7 @@ export default function OrderDetail() {
                 displayDate(entry.createdAt),
               ])}
             />
-          </section>
+          </DetailBlock>
         </div>
       )}
     </div>
@@ -416,20 +391,24 @@ export default function OrderDetail() {
 }
 
 function DetailBlock({ title, children }) {
+  const Icon = title === "Order" ? ShoppingBag
+    : title === "Payment and device" || title === "Payments" ? CreditCard
+      : title === "Totals" ? CircleDollarSign
+        : title === "Line items" ? Package
+          : title === "Fees, tax, and coupons" ? ReceiptText : History;
   return (
-    <section className="order-detail-block">
-      <h2>{title}</h2>
-      <div className="order-detail-grid">{children}</div>
+    <section className="employee-view-card order-detail-block">
+      <div className="employee-view-card-header"><span><Icon size={19} /></span><h2>{title}</h2></div>
+      {children}
     </section>
   );
 }
 
-function Field({ label, value }) {
+function Fields({ items }) {
   return (
-    <div className="order-detail-field">
-      <span>{label}</span>
-      <strong>{value || "—"}</strong>
-    </div>
+    <dl className="employee-view-grid">
+      {items.map(([label, value]) => <div className="employee-view-field" key={label}><dt>{label}</dt><dd>{value || "—"}</dd></div>)}
+    </dl>
   );
 }
 

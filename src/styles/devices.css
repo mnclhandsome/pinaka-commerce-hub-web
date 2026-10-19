@@ -651,7 +651,7 @@
 
   border-collapse: collapse;
 
-  table-layout: auto;
+  table-layout: fixed;
 }
 
 
@@ -728,43 +728,43 @@
 
 .devices-table th:nth-child(1),
 .devices-table td:nth-child(1) {
-  width: 140px;
-  min-width: 130px;
+  width: 180px;
+  min-width: 180px;
 }
 
 .devices-table th:nth-child(2),
 .devices-table td:nth-child(2) {
-  width: 150px;
-  min-width: 140px;
+  width: 130px;
+  min-width: 130px;
 }
 
 .devices-table th:nth-child(3),
 .devices-table td:nth-child(3) {
-  width: 200px;
-  min-width: 180px;
+  width: 160px;
+  min-width: 160px;
 }
 
 .devices-table th:nth-child(4),
 .devices-table td:nth-child(4) {
-  width: 140px;
-  min-width: 130px;
+  width: 150px;
+  min-width: 150px;
 }
 
 .devices-table th:nth-child(5),
 .devices-table td:nth-child(5) {
-  width: 170px;
-  min-width: 150px;
+  width: 160px;
+  min-width: 160px;
 }
 
 .devices-table th:nth-child(6),
 .devices-table td:nth-child(6) {
-  width: 180px;
-  min-width: 160px;
+  width: 150px;
+  min-width: 150px;
 }
 
 .devices-table th:nth-child(7),
 .devices-table td:nth-child(7) {
-  width: 155px;
+  width: 150px;
   min-width: 150px;
   white-space: nowrap;
 }
@@ -775,9 +775,6 @@
   min-width: 150px;
   white-space: nowrap;
 }
-
-
-
 
 /* =========================================================
    DEVICE NAME

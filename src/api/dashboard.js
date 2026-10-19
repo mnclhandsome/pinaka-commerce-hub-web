@@ -1,5 +1,5 @@
 import { api } from "./http";
-
+import { endpoints } from "./endpoints";
 const configuredDashboardBase =
   import.meta.env.VITE_ADMIN_DASHBOARD_API_BASE_URL ||
   "/admin-api/api/v1/admin/dashboard";
@@ -10,7 +10,15 @@ const dashboardBase = configuredDashboardBase.replace(
 
 export const getDashboardPlatformHealth = () => api.get(`${dashboardBase}/platform-health`);
 export const getDashboardFeatures = () => api.get(`${dashboardBase}/features`);
-
+export const getAdministrationOverview = async () => {
+  const response = await api.get(
+    import.meta.env.VITE_ADMINISTRATION_OVERVIEW_API_URL || endpoints.administrationOverview
+  );
+  if (response?.success === false) {
+    throw new Error(response.message || "Could not load Administration Overview.");
+  }
+  return response?.data ?? response;
+};
 const roleMetric = (label, value, icon, tone) => [
   label,
   value === null || value === undefined ? "—" : Number(value).toLocaleString(),

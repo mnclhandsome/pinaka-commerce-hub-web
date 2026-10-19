@@ -1,11 +1,13 @@
 import { pendingStoreRead } from "../api/http";
 import { useEffect, useMemo, useState } from "react";
-import { Link, useLocation, useSearchParams } from "react-router-dom";
+import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import Pagination from "../components/Pagination";
 import FiltersBar from "../components/FiltersBar";
+import ListActions from "../components/ListActions";
 import { listMerchants } from "../api/merchants";
 import { listMerchantStores } from "../api/stores";
 import { listOrders } from "../api/orders";
+import OrderDetail from "./OrderDetail";
 import "../styles/orders.css";
 
 function statusClass(status) {
@@ -36,6 +38,7 @@ export default function Orders({
   store,
 }) {
   const location = useLocation();
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [merchants, setMerchants] = useState([]);
   const [stores, setStores] = useState([]);
@@ -46,6 +49,7 @@ export default function Orders({
     storeId || (!embedded && searchParams.get("store")) || "",
   );
   const [orders, setOrders] = useState([]);
+  const [viewedOrder, setViewedOrder] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [search, setSearch] = useState("");
@@ -263,6 +267,16 @@ export default function Orders({
     />
   );
 
+  if (embedded && viewedOrder) {
+    return <OrderDetail
+      embedded
+      orderId={viewedOrder.id}
+      orderNumber={viewedOrder.wooOrderId}
+      storeId={selectedStore}
+      onBack={() => setViewedOrder(null)}
+    />;
+  }
+
   return (
     <div className="page-content orders-page">
       <div className="orders-header">
@@ -301,6 +315,7 @@ export default function Orders({
                     <th>Status</th>
                     <th>Customer</th>
                     <th>Total</th>
+                    <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -339,14 +354,31 @@ export default function Orders({
                       </td>
                       <td>
                         <div className="order-author">
-                          <span>{order.author}</span>
+                          <span>{embedded ? String(order.author || "").replace(/^\s*\.\s*/, "").trim() || "Walk-in Customer" : order.author}</span>
                         </div>
                       </td>
                       <td><strong className="order-total">{order.total}</strong></td>
+                      <td className="orders-actions-cell">
+                        <ListActions
+                          onView={() => {
+                            if (embedded) {
+                              setViewedOrder(order);
+                              return;
+                            }
+
+                            navigate(`/orders/${encodeURIComponent(order.id)}?${new URLSearchParams({
+                              ...(selectedMerchant ? { merchant: selectedMerchant } : {}),
+                              ...(selectedStore ? { store: selectedStore } : {}),
+                              number: order.wooOrderId,
+                            }).toString()}`, { state: { from: `${location.pathname}${location.search}` } });
+                          }}
+                          viewLabel={`View order ${order.wooOrderId}`}
+                        />
+                      </td>
                     </tr>
                   )) : (
                     <tr>
-                      <td className="orders-table-empty" colSpan="6">
+                      <td className="orders-table-empty" colSpan="7">
                         <div className="products-table-empty-state">
                           <strong>
                             {!selectedStore
@@ -386,15 +418,6 @@ export default function Orders({
             itemLabel="orders"
             showWhenEmpty={true}
           />
-        )}
-
-        {selectedStore && !loading && filteredOrders.length > 0 && (
-          <div className="orders-footer">
-            <span className="orders-source">
-              <i className="bi bi-arrow-repeat" />
-              Store orders
-            </span>
-          </div>
         )}
       </div>
     </div>

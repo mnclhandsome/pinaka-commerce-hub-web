@@ -21,6 +21,10 @@ function buildUrl(path) {
 
   // Dashboard admin API is proxied separately to admin-api on port 3009.
   if (normalizedPath.startsWith("/admin-api/")) return normalizedPath;
+
+  // Routes under /api are handled by the Vite/reverse proxy and must not be
+  // prefixed with the connector API base path.
+  if (normalizedPath.startsWith("/api/")) return normalizedPath;
  
   if (/^https?:\/\//i.test(API_BASE_URL || "")) {
     try {
@@ -36,6 +40,9 @@ function buildUrl(path) {
   }
  
   if (normalizedPath.startsWith("/connector/") || normalizedPath.startsWith("/connectors/")) {
+    return normalizedPath;
+  }
+   if (API_BASE_URL && normalizedPath.startsWith(API_BASE_URL)) {
     return normalizedPath;
   }
   return `${API_BASE_URL || ""}${normalizedPath}`;

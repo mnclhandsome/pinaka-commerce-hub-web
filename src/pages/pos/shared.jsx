@@ -287,7 +287,7 @@ export function ConfigHeader({ icon, title, description, children }) {
         <div><h2>{title}</h2><p>{description}</p></div>
     </div><div className="pc-heading-actions">
         <button type="button" className="pc-button pos-config-heading-back" onClick={() => settings.requestLeave(null)}>
-            <i className="bi bi-arrow-left" aria-hidden="true" /> Back to POS Configuration
+            <i className="bi bi-arrow-left" aria-hidden="true" /> Back
         </button>
         {children}
     </div></header>;

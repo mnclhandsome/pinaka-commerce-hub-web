@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import Pagination from "../../../components/Pagination";
 import FiltersBar from "../../../components/FiltersBar";
+import ListActions from "../../../components/ListActions";
 import { devicesApi } from "../../../api/devices";
 import { createStoreDeviceMapping, deleteStoreDeviceMapping, getStoreDeviceMappings } from "../../../api/storeDeviceMappings";
 import "../../../styles/merchant-vendors.css";
@@ -32,7 +33,7 @@ async function combineMappings(rows, devices) {
   })).then((mappings) => mappings.filter((mapping) => mapping.deviceId != null));
 }
 
-export function DeviceMapping() {
+export function DeviceMapping({ onBack }) {
   const settings = usePosSettings();
   const [devices, setDevices] = useState([]);
   const [mappings, setMappings] = useConfigState("deviceMappings", []);
@@ -259,7 +260,7 @@ export function DeviceMapping() {
   </section>;
 
   return <section className="merchant-vendors mv-device-mapped-page">
-    <header className="mv-card mv-header"><div><h2>Devices</h2><p>These are the devices mapped to this store.</p></div><button type="button" className="mv-primary" onClick={openPicker}>＋ Add Existing Device</button></header>
+    <header className="mv-card mv-header"><div><h2>Devices</h2><p>These are the devices mapped to this store.</p></div><div className="mv-device-header-actions"><button type="button" onClick={onBack}>← Back</button><button type="button" className="mv-primary" onClick={openPicker}>＋ Add Existing Device</button></div></header>
     {error && <p role="alert" className="mv-error">{error}</p>}
     <section className="mv-card mv-device-list-card">
       <h3>Mapped Device List</h3>
@@ -274,7 +275,7 @@ export function DeviceMapping() {
         onClear={() => { setMappedSearch(""); setMappedTypeFilter("all"); setMappedStatusFilter("all"); setMappedPage(1); }}
       />
       <div className="mv-scroll"><table><thead><tr><th>Device Code</th><th>Device ID</th><th>Device Name</th><th>Serial Number</th><th>Device Type</th><th>Actions</th></tr></thead><tbody>
-        {mappedRows.map((device) => <tr key={device.deviceId}><td>{device.code || "—"}</td><td>{device.deviceIdentifier || "—"}</td><td><strong>{device.name || "—"}</strong></td><td>{device.serial || "—"}</td><td>{device.type || "—"}</td><td><button type="button" className="mv-device-remove pc-icon-action pc-danger" aria-label={`Remove ${device.name || "device"}`} title="Delete" disabled={deletingMappingId === String(device.deviceId)} onClick={() => removeMapping(device)}><i className="bi bi-trash3" aria-hidden="true" /></button></td></tr>)}
+        {mappedRows.map((device) => <tr key={device.deviceId}><td>{device.code || "—"}</td><td>{device.deviceIdentifier || "—"}</td><td><strong>{device.name || "—"}</strong></td><td>{device.serial || "—"}</td><td>{device.type || "—"}</td><td><ListActions onDelete={() => removeMapping(device)} deleteLabel={`Remove ${device.name || "device"} from this store`} deleteDisabled={deletingMappingId === String(device.deviceId)} /></td></tr>)}
         {!mappedRows.length && <tr><td colSpan="7">No mapped devices match. Use Add Existing Device to select from merchant devices.</td></tr>}
       </tbody></table></div>
       <Pagination currentPage={mappedPage} totalPages={mappedPageCount} totalItems={filteredMappings.length}
