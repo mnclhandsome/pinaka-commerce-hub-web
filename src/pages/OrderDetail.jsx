@@ -366,8 +366,7 @@ export default function OrderDetail({ embedded = false, orderId: providedOrderId
             />
           </DetailBlock>
 
-          <section className="order-detail-block">
-            <h2>Fees, discounts, tax, and coupons</h2>
+          <DetailBlock title="Fees, discounts, tax, and coupons">
             <h3>Fees</h3>
             <Lines
               columns={["Name", "Tax status", "Total"]}
