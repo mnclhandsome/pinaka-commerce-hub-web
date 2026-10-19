@@ -193,8 +193,8 @@
 
 .discount-editor-layout {
   display: grid;
-  grid-template-columns: 230px minmax(0, 1fr);
-  min-height: 490px;
+  grid-template-columns: minmax(0, 1fr);
+  min-height: 0;
   overflow: hidden;
   border: 1px solid #e0e4ec;
   border-radius: 11px;
@@ -310,6 +310,10 @@
 
 .discount-full-width {
   grid-column: 1 / -1;
+}
+
+.discount-amount-error {
+  color: #b42318 !important;
 }
 
 .discount-editor-main .coupon-editor-actions {
