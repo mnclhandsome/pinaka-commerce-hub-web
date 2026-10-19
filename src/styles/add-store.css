@@ -1541,11 +1541,11 @@
 }
 
 .sf-employee-summary > div:first-child {
-  padding-left: 0;
+  padding-left: 16px;
 }
 
 .sf-employee-summary > div:last-child {
-  border: 0;
+  border: 1px solid #e5ddff;
 }
 
 .sf-employee-summary small,
@@ -2111,7 +2111,7 @@
 .sf-employee-summary > div:nth-child(1) { border-color: #d8f0e3; background: linear-gradient(110deg, #fff 0%, #effaf4 100%); }
 .sf-employee-summary > div:nth-child(2) { border-color: #f7e5cb; background: linear-gradient(110deg, #fff 0%, #fff7ec 100%); }
 .sf-employee-summary > div:nth-child(3) { border-color: #e5ddff; background: linear-gradient(110deg, #fff 0%, #f5f1ff 100%); }
-.sf-employee-summary-icon { display: grid; width: 40px; height: 40px; grid-row: 1 / span 2; place-items: center; border-radius: 50%; }
+.sf-employee-summary-icon { display: grid; width: 40px; height: 40px; grid-row: 1 / span 2; place-items: center; border-radius: 50%; font-size: 16px; line-height: 1; }
 .sf-employee-summary > div:nth-child(1) .sf-employee-summary-icon { background: #ddf5e8; color: #18a56a; }
 .sf-employee-summary > div:nth-child(2) .sf-employee-summary-icon { background: #fff0d9; color: #e89324; }
 .sf-employee-summary > div:nth-child(3) .sf-employee-summary-icon { background: #ece5ff; color: #7054e8; }

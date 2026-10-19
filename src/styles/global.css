@@ -918,8 +918,8 @@ select:not(.pch-filter-sizing):not(.pch-master-filter-sizing) {
   [class*="table-scroll"],
   [class*="table-container"]
 ) {
-  width: 100% !important;
-  max-width: 100% !important;
+  width: 100%;
+  max-width: 100%;
   overflow-x: auto !important;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-x: contain;

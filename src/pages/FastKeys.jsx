@@ -6,6 +6,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import FilterDropdown from "../components/FilterDropdown";
 import Pagination from "../components/Pagination";
 import DeleteConfirmationDialog from "../components/DeleteConfirmationDialog";
+import ListActions from "../components/ListActions";
 
 
 const emptyForm = {
@@ -413,7 +414,7 @@ export default function FastKeys() {
                 <td><div className="fast-key-products"><small>{item.products.length} products</small>{item.products.slice(0,3).map((name,index) => <span key={index}>{name}</span>)}{item.products.length > 3 && <b>+{item.products.length - 3} more</b>}</div></td>
                 <td><span className="fast-key-employee" title={item.employeeId}>{item.employeeId}</span></td>
                 <td>{formatTimestamp(item.date)}</td><td>{formatTimestamp(item.updatedAt)}</td>
-                <td><div className="fast-key-actions"><button type="button" className="edit-button" onClick={() => openForm(item)} aria-label={`Edit ${item.title}`}><i className="bi bi-pencil" /></button><button type="button" className="delete-button" onClick={() => remove(item)} aria-label={`Delete ${item.title}`}><i className="bi bi-trash" /></button></div></td>
+                <td><ListActions onEdit={() => openForm(item)} onDelete={() => remove(item)} editLabel={`Edit ${item.title}`} deleteLabel={`Delete ${item.title}`} deleteIconClassName="bi bi-trash" /></td>
               </tr>
             )) : (
               <tr>
