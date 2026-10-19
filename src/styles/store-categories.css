@@ -287,19 +287,6 @@
   min-width: 180px;
 }
 
-.category-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex: 0 0 34px;
-  width: 34px;
-  height: 34px;
-  border: 1px solid #e2def8;
-  border-radius: 7px;
-  background: #f5f3ff;
-  color: #6953d8;
-  font-size: 15px;
-}
 
 .tag-icon {
   border-color: #dce8f6;

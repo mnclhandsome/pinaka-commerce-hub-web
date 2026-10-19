@@ -53,8 +53,8 @@ a {
 ========================================================= */
 
 .sidebar {
-    width: 178px;
-    min-width: 178px;
+    width: 266px;
+    min-width: 266px;
 
     height: 100vh;
 
@@ -237,9 +237,10 @@ a {
 ========================================================= */
 
 .main-content {
-    margin-left: 178px;
-
-    width: calc(100% - 178px);
+    margin-left: 266px;
+    width: auto;
+    min-width: 0;
+    flex: 1 1 auto;
 
     min-height: 100vh;
 
@@ -532,6 +533,9 @@ a {
 ========================================================= */
 
 .page-content {
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
     padding: 18px 24px 0;
     flex: 1;
 }
@@ -1431,6 +1435,10 @@ dialog.merchant-delete-dialog::backdrop {
 
 @media (max-width: 767px) {
 
+    .page-content {
+        padding: 12px;
+    }
+
     .topbar {
         padding: 0 10px;
     }
@@ -1525,7 +1533,7 @@ dialog.merchant-delete-dialog::backdrop {
     }
 
     .page-content {
-        padding: 10px;
+        padding: 12px;
     }
 
     .profile {
@@ -1717,8 +1725,8 @@ dialog.merchant-delete-dialog::backdrop {
 /* .mdl input:not([type=checkbox]){height:40px;border:1px solid #dfe3eb;border-radius:6px;padding:10px 12px;font:inherit;width:100%;min-width:0} */
 .mdl .mdl-toolbar input{max-width:460px}
 .mdl .mdl-scroll{overflow:auto;border:1px solid #e5ebf4;border-radius:6px}
-.mdl table{border-collapse:collapse;width:100%;white-space:nowrap;font-size:13px}
-.mdl th,.mdl td{height:52px;text-align:left;padding:10px 14px;border-bottom:1px solid #edf0f5;vertical-align:middle}
+.mdl table{border-collapse:collapse;width:100%;min-width:1200px;table-layout:fixed;white-space:nowrap;font-size:13px}
+.mdl th,.mdl td{height:52px;text-align:left;padding:10px 14px;border-bottom:1px solid #edf0f5;vertical-align:middle;overflow:hidden;text-overflow:ellipsis}
 .mdl th{height:44px;background:#f1f3fd;font-size:12px;font-weight:600}
 .mdl .mdl-sort{border:0;padding:0;background:transparent;color:inherit}
 .mdl .mdl-name{display:flex;align-items:center;gap:10px}

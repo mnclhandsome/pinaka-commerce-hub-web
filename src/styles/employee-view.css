@@ -1,6 +1,6 @@
 .employee-view-page { width: 100%; min-height: calc(100vh - 64px); box-sizing: border-box; padding: 18px 24px 28px; background: #f5f7fb; color: #183354; }
 .employee-view-topbar { min-height: 64px; display: flex; align-items: center; gap: 13px; padding: 0 28px; margin: -18px -24px 20px; background: #fff; border-bottom: 1px solid #cdccd7; font-size: 14px; }
-.employee-view-topbar button { display: inline-flex; align-items: center; gap: 8px; border: 0; padding: 0; background: none; color: #5143bc; font: inherit; font-weight: 600; cursor: pointer; }
+.employee-view-topbar :is(button, a) { display: inline-flex; align-items: center; gap: 8px; border: 0; padding: 0; background: none; color: #5143bc; font: inherit; font-weight: 600; cursor: pointer; text-decoration: none; }
 .employee-view-topbar > span { color: #a3acc0; }
 .employee-view-header { margin-bottom: 20px; }
 .employee-view-header h1 { margin: 0; color: #132d50; font-size: 27px; line-height: 32px; font-weight: 750; }

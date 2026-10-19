@@ -677,13 +677,6 @@ export default function StoreCategories({
                     <td>
 
                       <div className="category-name-cell">
-
-                        <div className="category-icon">
-
-                          <i className="bi bi-folder" />
-
-                        </div>
-
                         <div>
 
                           <strong>

@@ -242,7 +242,7 @@ export default function PosConfiguration({ merchantId, storeId, store, embedded 
                 return <MappingConfiguration value={mappings} registers={registers} onSave={setMappings} onBack={() => requestLeave(null)} onManageRegisters={() => requestLeave("cash-register")} />;
 
             case "device-mapping":
-                return <DeviceMapping />;
+                return <DeviceMapping onBack={() => requestLeave(null)} />;
 
             default:
                 return null;

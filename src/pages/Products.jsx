@@ -919,24 +919,6 @@ function ProductRow({
             <td>
 
                 <div className="product-info">
-
-                    <div className="product-image">
-
-                        {product.image ? (
-                            <img
-                                src={
-                                    product.image
-                                }
-                                alt={
-                                    product.name
-                                }
-                            />
-                        ) : (
-                            <i className="bi bi-image" />
-                        )}
-
-                    </div>
-
                     <div>
 
                         <strong>
