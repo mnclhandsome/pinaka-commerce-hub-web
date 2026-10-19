@@ -1613,9 +1613,11 @@ a {
 
 .super-admin-dashboard .dashboard-health-feature-grid .dashboard-donut.coverage {
   background: conic-gradient(
-    #35a9a5 0 var(--included-percent, 85.42%),
-    #ed921d var(--included-percent, 85.42%) var(--included-end, 91.67%),
-    #9aaac0 var(--included-end, 91.67%) 100%
+    #4f82ed 0 var(--feature-total-end, 33.33%),
+    #20ae70 var(--feature-total-end, 33.33%) var(--feature-active-end, 66.66%),
+    #9aaac0 var(--feature-active-end, 66.66%) var(--feature-inactive-end, 68.16%),
+    #35a9a5 var(--feature-inactive-end, 68.16%) var(--feature-included-end, 99.5%),
+    #ed921d var(--feature-included-end, 99.5%) 100%
   );
 }
 .coverage-total { font-size:9px; color:#74809a; }

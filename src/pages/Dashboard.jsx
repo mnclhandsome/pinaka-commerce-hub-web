@@ -105,16 +105,25 @@ function normalizeHealth(response) {
       `${numericPercent ?? 0}%`,
     ];
   };
-  const score = Object.prototype.hasOwnProperty.call(health, "platform_health_score_pct")
+  const apiScore = Object.prototype.hasOwnProperty.call(health, "platform_health_score_pct")
     ? health.platform_health_score_pct
     : firstValue(health, ["healthScore", "health_score", "score", "overallHealth"], null);
+  const rows = [
+    metricRow("Devices active", health.devices, "active_count", "total_count", "active_pct", "good"),
+    metricRow("Stores synchronized", health.stores_synchronized, "synchronized_count", "eligible_count", "synchronized_pct", "warn"),
+    metricRow("POS configuration complete", health.pos_configuration, "completed_count", "eligible_count", "completed_pct", "warn"),
+  ];
+  const availablePercentages = rows
+    .map(([, , percent]) => percent === "—" ? null : Number(String(percent).replace(/%$/, "")))
+    .filter(value => Number.isFinite(value));
+  const score = apiScore == null
+    ? (availablePercentages.length
+      ? Math.round(availablePercentages.reduce((sum, value) => sum + value, 0) / availablePercentages.length)
+      : null)
+    : Number(String(apiScore).replace(/%$/, ""));
   return {
-    score: score == null ? null : Number(String(score).replace(/%$/, "")),
-    rows: [
-      metricRow("Devices active", health.devices, "active_count", "total_count", "active_pct", "good"),
-      metricRow("Stores synchronized", health.stores_synchronized, "synchronized_count", "eligible_count", "synchronized_pct", "warn"),
-      metricRow("POS configuration complete", health.pos_configuration, "completed_count", "eligible_count", "completed_pct", "warn"),
-    ],
+    score: Number.isFinite(score) ? score : null,
+    rows,
   };
 }
 
@@ -207,6 +216,27 @@ function Donut({ value, className = "", percent = 91, style = {}, status = "Heal
       </div>
     </div>
   );
+}
+
+function getFeatureDonutStyle(features) {
+  const values = [features.total, features.active, features.inactive, features.included, features.excluded]
+    .map(value => Math.max(0, Number(value) || 0));
+  const total = values.reduce((sum, value) => sum + value, 0);
+  if (!total) return {};
+
+  const zeroSlice = 1.5;
+  const zeroCount = values.filter(value => value === 0).length;
+  const visibleSpace = 100 - zeroCount * zeroSlice;
+  const slices = values.map(value => value === 0 ? zeroSlice : (value / total) * visibleSpace);
+  let edge = 0;
+  const ends = slices.map(slice => (edge += slice));
+
+  return {
+    "--feature-total-end": `${ends[0]}%`,
+    "--feature-active-end": `${ends[1]}%`,
+    "--feature-inactive-end": `${ends[2]}%`,
+    "--feature-included-end": `${ends[3]}%`,
+  };
 }
 
 /* =========================================================
@@ -503,10 +533,7 @@ export default function Dashboard() {
                 value={features.active ?? "—"}
                 className="coverage"
                 percent={features.total ? (features.active / features.total) * 100 : 0}
-                style={{
-                  "--included-percent": `${features.total ? (features.included / features.total) * 100 : 0}%`,
-                  "--included-end": `${features.total ? ((features.included + features.excluded) / features.total) * 100 : 0}%`,
-                }}
+                style={getFeatureDonutStyle(features)}
               />
 
             </div>
