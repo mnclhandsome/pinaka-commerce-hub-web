@@ -13,6 +13,13 @@ import ListActions from "../components/ListActions";
 const isUuid = (value) =>
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(value || ""));
 
+// Status ni Title Case ("Active", "Inactive") loki marchadaniki helper
+const formatStatus = (status) => {
+  if (!status) return "Active";
+  const str = String(status).trim();
+  return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+};
+
 function toStoreRow(store) {
   const address = store.address && typeof store.address === "object" ? store.address : null;
   const typeValue = store.storeType ?? store.type;
@@ -47,7 +54,7 @@ function toStoreRow(store) {
     city: address?.city || store.city || "",
     state: address?.state || store.state || "",
     address: typeof store.address === "string" ? store.address : address?.street || "",
-    status: store.status || "Active",
+    status: formatStatus(store.status || "Active"),
   };
 }
 
@@ -74,13 +81,10 @@ export default function MerchantStores({
   const [deleteError, setDeleteError] = useState("");
   const [deleting, setDeleting] = useState(false);
   const [activatingStoreId, setActivatingStoreId] = useState("");
-  
 
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
-
-  
 
   useEffect(() => {
     let cancelled = false;
@@ -131,7 +135,7 @@ export default function MerchantStores({
   }, [merchantId, attempt]);
 
   /* =========================
-     SEARCH
+      SEARCH
   ========================== */
 
   const filteredStores = useMemo(() => {
@@ -163,7 +167,7 @@ export default function MerchantStores({
   }, [stores, search]);
 
   /* =========================
-     PAGINATION
+      PAGINATION
   ========================== */
 
   const totalPages = Math.max(
@@ -188,7 +192,7 @@ export default function MerchantStores({
   };
 
   /* =========================
-     HELPERS
+      HELPERS
   ========================== */
 
   const getStoreId = (store) =>
@@ -227,8 +231,7 @@ export default function MerchantStores({
   };
 
   const getStoreStatus = (store) =>
-    store.status ??
-    "Active";
+    formatStatus(store.status ?? "Active");
 
   const getStatusClass = (status) =>
     String(status || "active")
@@ -236,7 +239,7 @@ export default function MerchantStores({
       .replace(/\s+/g, "-");
 
   /* =========================
-     NAVIGATION
+      NAVIGATION
   ========================== */
 
   const handleNewStore = () => {
@@ -317,48 +320,44 @@ export default function MerchantStores({
         </section>
       ) : (
         <div className="merchant-stores-layout">
-
-        
-
           {/* =====================================
               STORE LIST
           ====================================== */}
 
           <section className="stores-card store-list-card">
-
             {error && <p className="store-action-error" role="alert">{error}</p>}
 
             <div className="store-list-heading">
-                  <div className="store-list-heading-content">
-                    <h2>Store List</h2>
-                    <p> Manage the store locations for this merchant. </p>
-                   </div>
-                      <button
-                         className="btn-new-store"
-                          type="button"
-                          onClick={handleNewStore} >
-                          <i className="bi bi-plus-lg" />
-                           New Store
-                            </button>
-                             </div>
+              <div className="store-list-heading-content">
+                <h2>Store List</h2>
+                <p> Manage the store locations for this merchant. </p>
+              </div>
+              <button
+                className="btn-new-store"
+                type="button"
+                onClick={handleNewStore}
+              >
+                <i className="bi bi-plus-lg" />
+                New Store
+              </button>
+            </div>
 
-                 {/* SEARCH + FILTERS */}
-                  <FiltersBar
-                      searchValue={search}
-                    onSearchChange={setSearch}
-                      searchPlaceholder="Search stores by name, type or location..."
-                      filters={[]}
-                      onClear={handleReset}
-                       showClear={true}
-                        />
+            {/* SEARCH + FILTERS */}
+            <FiltersBar
+              searchValue={search}
+              onSearchChange={setSearch}
+              searchPlaceholder="Search stores by name, type or location..."
+              filters={[]}
+              onClear={handleReset}
+              showClear={true}
+            />
+
             {/* =====================================
                 TABLE
             ====================================== */}
 
             <div className="store-table-wrapper">
-
               <table className="store-table">
-
                 <thead>
                   <tr>
                     <th>Store </th>
@@ -370,7 +369,6 @@ export default function MerchantStores({
                 </thead>
 
                 <tbody>
-
                   {visibleStores.length === 0 ? (
                     <tr>
                       <td
@@ -382,20 +380,12 @@ export default function MerchantStores({
                     </tr>
                   ) : (
                     visibleStores.map((store, index) => {
-
                       const storeId = store.storeId || store.storeCode || "—";
-
-                      const storeName =
-                        getStoreName(store);
-
-                      const storeType =
-                        getStoreType(store);
-
-                      const location =
-                        getStoreLocation(store);
-
-                      const status =
-                        getStoreStatus(store);
+                      const storeName = getStoreName(store);
+                      const storeType = getStoreType(store);
+                      const location = getStoreLocation(store);
+                      const status = getStoreStatus(store);
+                      const isInactive = String(status).trim().toLowerCase() === "inactive";
 
                       return (
                         <tr
@@ -405,115 +395,123 @@ export default function MerchantStores({
                             `store-${index}`
                           }
                         >
-
                           {/* STORE */}
-
                           <td>
-                            <button type="button" className="store-name-cell store-name-link" title={`View ${storeName}`} onClick={() => handleStoreOverview(store)}>
+                            <button
+                              type="button"
+                              className="store-name-cell store-name-link"
+                              title={`View ${storeName}`}
+                              onClick={() => handleStoreOverview(store)}
+                            >
                               <div className="store-name-info">
-
-                                <strong>
-                                  {storeName}
-                                </strong>
-
-                                <span>
-                                  Store ID: {storeId}
-                                </span>
-
+                                <strong>{storeName}</strong>
+                                <span>Store ID: {storeId}</span>
                               </div>
-
                             </button>
                           </td>
 
                           {/* TYPE */}
-
                           <td>
-                            <span className="store-type">
-                              {storeType}
-                            </span>
+                            <span className="store-type">{storeType}</span>
                           </td>
 
                           {/* LOCATION */}
-
                           <td>
-                            <span className="store-location" title={location} aria-label={`Address: ${location}`}>
+                            <span
+                              className="store-location"
+                              title={location}
+                              aria-label={`Address: ${location}`}
+                            >
                               {shortLocation(location)}
                             </span>
                           </td>
 
                           {/* STATUS */}
-
                           <td>
                             <span
                               className={`store-status-badge ${getStatusClass(
                                 status
                               )}`}
                             >
-                              {status}
+                              {formatStatus(status)}
                             </span>
                           </td>
 
                           {/* ACTIONS */}
-
                           <td>
                             <ListActions
                               onEdit={() => handleEdit(store)}
                               editLabel={`Edit ${storeName}`}
-                              onActivate={String(status).toUpperCase() === "INACTIVE" ? async () => {
-                                  const storeUuid = getStoreId(store);
-                                  setActivatingStoreId(storeUuid);
-                                  setError("");
-                                  try {
-                                    await activateStore(store.storeCode || storeUuid, store);
-                                    setStores((current) => current.map((item) => item.uuid === storeUuid ? { ...item, status: "ACTIVE" } : item));
-                                  } catch (failure) {
-                                    setError(failure.message || "Unable to activate store.");
-                                  } finally {
-                                    setActivatingStoreId("");
-                                  }
-                                } : undefined}
+                              onActivate={
+                                isInactive
+                                  ? async () => {
+                                      const storeUuid = getStoreId(store);
+                                      setActivatingStoreId(storeUuid);
+                                      setError("");
+                                      try {
+                                        await activateStore(
+                                          store.storeCode || storeUuid,
+                                          store
+                                        );
+                                        setStores((current) =>
+                                          current.map((item) =>
+                                            item.uuid === storeUuid
+                                              ? { ...item, status: "Active" }
+                                              : item
+                                          )
+                                        );
+                                      } catch (failure) {
+                                        setError(
+                                          failure.message || "Unable to activate store."
+                                        );
+                                      } finally {
+                                        setActivatingStoreId("");
+                                      }
+                                    }
+                                  : undefined
+                              }
                               activateLabel={`Activate ${storeName}`}
                               activateDisabled={Boolean(activatingStoreId)}
-                              onDelete={String(status).toUpperCase() === "INACTIVE" ? undefined : () => { setDeleteError(""); setDeleteTarget(store); }}
+                              onDelete={
+                                isInactive
+                                  ? undefined
+                                  : () => {
+                                      setDeleteError("");
+                                      setDeleteTarget(store);
+                                    }
+                              }
                               deleteLabel={`Deactivate ${storeName}`}
                             />
                           </td>
-
                         </tr>
                       );
                     })
                   )}
-
                 </tbody>
-
               </table>
-
             </div>
 
-           
-{/* =====================================
-    PAGINATION
-====================================== */}
-
-<Pagination
-  currentPage={currentPage}
-  totalPages={totalPages}
-  totalItems={filteredStores.length}
-  pageSize={pageSize}
-  onPageChange={setPage}
-  onPageSizeChange={(size) => {
-    setPageSize(size);
-    setPage(1);
-  }}
-  itemLabel="stores"
-  showWhenEmpty={true}
-/>
-
-
+            {/* =====================================
+                PAGINATION
+            ====================================== */}
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalItems={filteredStores.length}
+              pageSize={pageSize}
+              onPageChange={setPage}
+              onPageSizeChange={(size) => {
+                setPageSize(size);
+                setPage(1);
+              }}
+              itemLabel="stores"
+              showWhenEmpty={true}
+            />
           </section>
         </div>
       )}
-            <DeleteConfirmationDialog
+
+      <DeleteConfirmationDialog
         isOpen={Boolean(deleteTarget)}
         title="Deactivate Store?"
         message={`Are you sure you want to deactivate ${
@@ -548,7 +546,7 @@ export default function MerchantStores({
             setStores((current) =>
               current.map((store) =>
                 store.uuid === targetUuid
-                  ? { ...store, status: "INACTIVE" }
+                  ? { ...store, status: "Inactive" }
                   : store
               )
             );
