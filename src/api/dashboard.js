@@ -14,6 +14,9 @@ export const getAdministrationOverview = async () => {
   const response = await api.get(
     import.meta.env.VITE_ADMINISTRATION_OVERVIEW_API_URL || endpoints.administrationOverview
   );
+  if (response?.success === false) {
+    throw new Error(response.message || "Could not load Administration Overview.");
+  }
   return response?.data ?? response;
 };
 const roleMetric = (label, value, icon, tone) => [
