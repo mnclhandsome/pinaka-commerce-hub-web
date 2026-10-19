@@ -7,12 +7,42 @@ import "../styles/orders.css";
 import "../styles/employee-view.css";
 
 function metaValue(entries, key) {
-  const match = (Array.isArray(entries) ? entries : []).find((entry) => entry?.key === key);
+  const match = asArray(entries).find((entry) => entry?.key === key);
   return match?.value;
 }
 
 function asArray(value) {
-  return Array.isArray(value) ? value : [];
+  if (Array.isArray(value)) return value;
+  if (typeof value === "string") {
+    try {
+      const parsed = JSON.parse(value);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  }
+  return [];
+}
+
+function asObject(value) {
+  if (value && typeof value === "object" && !Array.isArray(value)) return value;
+  if (typeof value === "string") {
+    try {
+      const parsed = JSON.parse(value);
+      return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed : {};
+    } catch {
+      return {};
+    }
+  }
+  return {};
+}
+
+function metaValueFrom(entries, keys) {
+  for (const key of keys) {
+    const value = metaValue(entries, key);
+    if (value !== undefined && value !== null && value !== "") return value;
+  }
+  return undefined;
 }
 
 function displayDate(value) {
@@ -95,21 +125,26 @@ function catalogSkuForLineItem(item, skuById) {
 
 function buildView(payload) {
   // The API may return the order directly or wrap it in `data` / `order`.
-  const response = payload?.data && typeof payload.data === "object" ? payload.data : payload;
-  const order = response?.order || response || {};
-  const storeOrder = response?.storeOrder || response?.store_order || {};
-  const request = order.requestPayload || order.request_payload || {};
+  const payloadData = asObject(payload?.data);
+  const response = Object.keys(payloadData).length ? payloadData : asObject(payload);
+  const order = asObject(response?.order || response);
+  const storeOrder = asObject(response?.storeOrder || response?.store_order || order?.storeOrder || order?.store_order);
+  const request = asObject(order.requestPayload || order.request_payload || storeOrder.requestPayload || storeOrder.request_payload);
   const billing = request.billing || order.billing || {};
   const customer = order.customer && typeof order.customer === "object" ? order.customer : {};
-  const metadata = asArray(storeOrder.metaData).length ? storeOrder.metaData : asArray(order.metadata || order.meta_data);
+  const metadata = asArray(storeOrder.metaData).length
+    ? asArray(storeOrder.metaData)
+    : asArray(storeOrder.metadata || storeOrder.meta_data).length
+      ? asArray(storeOrder.metadata || storeOrder.meta_data)
+      : asArray(order.metadata || order.meta_data || request.meta_data);
   const currency = storeOrder.currency || order.currency || request.currency || "USD";
   const rawLineItems = [
-    storeOrder.lineItems,
-    storeOrder.line_items,
-    order.lineItems,
-    order.line_items,
-    request.line_items,
-    response?.items,
+    asArray(storeOrder.lineItems),
+    asArray(storeOrder.line_items),
+    asArray(order.lineItems),
+    asArray(order.line_items),
+    asArray(request.line_items),
+    asArray(response?.items),
   ].find((items) => Array.isArray(items) && items.length) || [];
   const lineItems = rawLineItems.map((item) => ({
     ...item,
@@ -120,12 +155,44 @@ function buildView(payload) {
     total: item.total ?? item.totalPrice ?? item.total_price ?? item.subtotal,
   }));
   const taxLines = [storeOrder.taxLines, storeOrder.tax_lines, order.taxLines, order.tax_lines, request.tax_lines]
-    .find((lines) => Array.isArray(lines) && lines.length) || [];
+    .map(asArray).find((lines) => lines.length) || [];
   const payments = asArray(storeOrder.payments).length
-    ? storeOrder.payments
-    : asArray(metaValue(metadata, "_pos_payments"));
+    ? asArray(storeOrder.payments)
+    : asArray(order.payments).length
+      ? asArray(order.payments)
+      : asArray(metaValue(metadata, "_pos_payments"));
   const subtotal = storeOrder.subtotal ?? storeOrder.subtotalAmount ?? storeOrder.subtotal_amount ?? order.subtotal ?? order.subtotalAmount ?? order.subtotal_amount;
-  const discount = storeOrder.discountTotal ?? storeOrder.discount_total ?? order.discountAmount ?? order.discount_amount;
+  const couponLines = [storeOrder.couponLines, storeOrder.coupon_lines, order.couponLines, order.coupon_lines, request.coupon_lines]
+    .map(asArray).find((lines) => lines.length) || [];
+  const feeLines = [storeOrder.feeLines, storeOrder.fee_lines, order.feeLines, order.fee_lines, request.fee_lines]
+    .map(asArray).find((lines) => lines.length) || [];
+  const discount = storeOrder.discountTotal ?? storeOrder.discount_total ?? storeOrder.discountAmount ?? storeOrder.discount_amount
+    ?? order.discountTotal ?? order.discount_total ?? order.discountAmount ?? order.discount_amount;
+  const discountLines = [
+    ...couponLines.map((coupon) => {
+      const couponMeta = coupon.meta_data || coupon.metaData;
+      return {
+        name: coupon.code || coupon.name || "Coupon",
+        type: titleCase(metaValueFrom(couponMeta, ["discount_type", "discountType"])) || "Coupon",
+        amount: coupon.discount ?? coupon.discount_amount ?? coupon.amount ?? coupon.discountAmount,
+      };
+    }),
+    ...lineItems.flatMap((item) => {
+      const itemMeta = item.meta_data || item.metaData;
+      const amount = metaValueFrom(itemMeta, ["_pos_auto_discount", "pos_auto_discount"]);
+      const value = Number(amount);
+      return Number.isFinite(value) && value > 0 ? [{
+        name: item.name,
+        type: titleCase(metaValueFrom(itemMeta, ["_pos_discount_type", "pos_discount_type"])) || "Automatic discount",
+        amount: value,
+      }] : [];
+    }),
+    ...(Number(metaValueFrom(metadata, ["_merchant_discount", "merchant_discount"])) > 0 ? [{
+      name: "Merchant discount",
+      type: "Merchant discount",
+      amount: Number(metaValueFrom(metadata, ["_merchant_discount", "merchant_discount"])),
+    }] : []),
+  ];
   const taxLineTotal = taxLines.reduce(
     (sum, line) => sum + (Number(line.tax_total ?? line.taxTotal ?? line.amount) || 0),
     0,
@@ -134,10 +201,20 @@ function buildView(payload) {
     (sum, item) => sum + (Number(item.total_tax ?? item.totalTax ?? item.tax) || 0),
     0,
   );
-  const tax = storeOrder.taxTotal ?? storeOrder.tax_total ?? order.taxAmount ?? order.tax_amount
-    ?? (taxLines.length ? taxLineTotal : itemTaxTotal);
-  const total = order.totalAmount ?? order.total_amount ?? storeOrder.total ?? storeOrder.totalAmount ?? storeOrder.total_amount ?? request.total;
+  const tax = storeOrder.taxTotal ?? storeOrder.tax_total ?? storeOrder.taxAmount ?? storeOrder.tax_amount
+    ?? storeOrder.totalTax ?? storeOrder.total_tax ?? storeOrder.tax
+    ?? order.taxTotal ?? order.tax_total ?? order.taxAmount ?? order.tax_amount
+    ?? order.totalTax ?? order.total_tax ?? order.tax
+    ?? request.tax_total ?? request.total_tax ?? request.cart_tax
+    ?? (taxLines.length ? taxLineTotal : undefined)
+    ?? (itemTaxTotal || undefined)
+    ?? metaValueFrom(metadata, ["_pos_order_tax", "pos_order_tax"]);
+  const total = order.totalAmount ?? order.total_amount ?? storeOrder.total ?? storeOrder.totalAmount ?? storeOrder.total_amount ?? order.total ?? request.total;
   const shownSubtotal = subtotal ?? lineItems.reduce((sum, item) => sum + (Number(item.subtotal) || 0), 0);
+  const feeTotal = storeOrder.feeTotal ?? storeOrder.fee_total ?? order.feeTotal ?? order.fee_total
+    ?? feeLines.reduce((sum, fee) => sum + (Number(fee.total ?? fee.amount) || 0), 0);
+  const inferredDiscount = discountLines.reduce((sum, row) => sum + (Number(row.amount) || 0), 0);
+  const shownDiscount = Number(discount) > 0 ? discount : inferredDiscount > 0 ? inferredDiscount : discount;
   const shownTotal = total ?? (payments.length
     ? payments.reduce((sum, payment) => sum + (Number(payment.amount) || 0), 0)
     : lineItems.reduce((sum, item) => sum + (Number(item.total) || 0), 0));
@@ -163,14 +240,15 @@ function buildView(payload) {
     shiftId: storeOrder.shiftId || order.shiftId || metaValue(metadata, "shift_id") || "—",
     payLater: storeOrder.payLater ? "Yes" : "No",
     subtotal: formatMoney(shownSubtotal, currency),
-    discount: formatMoney(discount, currency),
+    discount: formatMoney(shownDiscount, currency),
     tax: formatMoney(tax, currency),
-    fees: formatMoney(storeOrder.feeTotal ?? storeOrder.fee_total ?? order.feeTotal ?? order.fee_total, currency),
+    fees: formatMoney(feeTotal, currency),
     total: formatMoney(shownTotal, currency),
     lineItems,
-    feeLines: asArray(storeOrder.feeLines).length ? storeOrder.feeLines : asArray(request.fee_lines),
+    feeLines,
     taxLines,
-    couponLines: asArray(storeOrder.couponLines).length ? storeOrder.couponLines : asArray(request.coupon_lines),
+    couponLines,
+    discountLines,
     payments,
     history: asArray(response?.history),
   };
@@ -288,11 +366,17 @@ export default function OrderDetail({ embedded = false, orderId: providedOrderId
             />
           </DetailBlock>
 
-          <DetailBlock title="Fees, tax, and coupons">
+          <section className="order-detail-block">
+            <h2>Fees, discounts, tax, and coupons</h2>
             <h3>Fees</h3>
             <Lines
               columns={["Name", "Tax status", "Total"]}
               rows={view.feeLines.map((fee) => [fee.name || "Fee", fee.tax_status || "—", formatMoney(fee.total, view.currency)])}
+            />
+            <h3>Discounts</h3>
+            <Lines
+              columns={["Name", "Type", "Amount"]}
+              rows={view.discountLines.map((discount) => [discount.name || "Discount", discount.type || "—", formatMoney(discount.amount, view.currency)])}
             />
             <h3>Tax</h3>
             <Lines
@@ -301,8 +385,8 @@ export default function OrderDetail({ embedded = false, orderId: providedOrderId
             />
             <h3>Coupons</h3>
             <Lines
-              columns={["Code"]}
-              rows={view.couponLines.map((coupon) => [coupon.code || "—"])}
+              columns={["Code", "Discount"]}
+              rows={view.couponLines.map((coupon) => [coupon.code || "—", formatMoney(coupon.discount ?? coupon.discount_amount ?? coupon.amount, view.currency)])}
             />
           </DetailBlock>
 
