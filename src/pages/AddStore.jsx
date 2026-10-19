@@ -2526,7 +2526,7 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
                   <td>{validity}</td>
                   <td>{used}/{limit}</td>
                   <td>
-                    <span className="sf-status-pill">
+                    <span className={`sf-status-pill ${String(subscription?.status || "").trim().toLowerCase() === "inactive" ? "inactive" : "active"}`}>
                       {subscription?.status || "Not provided"}
                     </span>
                   </td>
@@ -2620,8 +2620,11 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
                         item.type ||
                         "—"}
                     </td>
-                    <td>{locationText}</td>
-                    <td>{item.status || "—"}</td>
+                    <td>
+                      <span className={`store-status ${String(item.status || "").trim().toLowerCase() === "inactive" ? "inactive" : "active"}`}>
+                        {item.status || "—"}
+                      </span>
+                    </td>
                   </tr>;
                 })}
                 {!used && (

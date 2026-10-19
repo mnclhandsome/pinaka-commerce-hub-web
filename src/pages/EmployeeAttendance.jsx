@@ -270,7 +270,7 @@ export function AttendanceDetails({ record, store, onBack }) {
             <div>
               <dt>Status</dt>
               <dd>
-                <span className="ea-profile-status">
+                <span className={`ea-profile-status ${String(profile.status || "").trim().toLowerCase() === "inactive" ? "inactive" : "active"}`}>
                   {profile.status || "—"}
                 </span>
               </dd>

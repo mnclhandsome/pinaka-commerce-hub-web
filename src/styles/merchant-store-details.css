@@ -247,19 +247,7 @@ body {
     font-size: 12px;
     font-weight: 500;
 }
-
-.status-badge {
-    width: fit-content;
-    padding: 4px 10px;
-    border-radius: 5px;
-    font-size: 10px !important;
-    font-weight: 500 !important;
-}
-
-.status-badge.active {
-    background: #e1f5e8;
-    color: #269553;
-}
+/* Inherits standardized .status-badge capsule from global.css */
 
 /* =========================================================
    STORES CARD

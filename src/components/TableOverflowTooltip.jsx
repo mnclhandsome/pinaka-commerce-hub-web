@@ -1,4 +1,3 @@
-
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
@@ -6,34 +5,83 @@ const TABLE_CELL_SELECTOR = [
   "td",
   "th",
   "[data-pch-table-cell]",
-  ".plans-row",
-  ".store-types-row",
-  ".store-features-row",
-  ".role-template-row",
+  ".plans-row > *",
+  ".store-types-row > *",
+  ".store-features-row > *",
+  ".role-template-row > *",
   "[class*='-cell']",
 ].join(", ");
+
+function isTruncatedByCSS(element) {
+  if (!(element instanceof Element)) return false;
+  const style = window.getComputedStyle(element);
+
+  // Check for single line ellipsis
+  const hasEllipsis =
+    style.textOverflow === "ellipsis" &&
+    (style.overflow === "hidden" || style.overflowX === "hidden");
+
+  // Check for multi-line line clamp
+  const hasLineClamp =
+    style.webkitLineClamp &&
+    style.webkitLineClamp !== "none" &&
+    style.display === "-webkit-box";
+
+  return hasEllipsis || Boolean(hasLineClamp);
+}
 
 function getOverflowingText(target) {
   if (!(target instanceof Element)) return null;
 
-  // Ignore action buttons or controls inside cells
-  if (target.closest("button, a, input, select, textarea, .list-actions, [class*='actions']")) {
+  // Ignore action buttons, interactive controls, pills, and status badges
+  if (
+    target.closest(
+      "button, a, input, select, textarea, .list-actions, [class*='actions'], .status-badge, [class*='status-pill'], [class*='badge']"
+    )
+  ) {
     return null;
   }
 
   const cell = target.closest(TABLE_CELL_SELECTOR);
   if (!cell) return null;
 
+  // Never treat a row, table or wrapper as an overflowing cell
+  if (
+    cell.matches(
+      "tr, .plans-row, .store-types-row, .store-features-row, .role-template-row, [class*='-row'], [class*='-table']"
+    )
+  ) {
+    return null;
+  }
+
   let element = target;
 
   while (element && cell.contains(element)) {
+    if (
+      element.matches?.(
+        "tr, .plans-row, .store-types-row, .store-features-row, .role-template-row, [class*='-row'], [class*='-table']"
+      )
+    ) {
+      break;
+    }
+
     const text = element.innerText?.trim();
 
-    if (
-      text &&
-      (element.scrollWidth > element.clientWidth + 1 ||
-        element.scrollHeight > element.clientHeight + 1)
-    ) {
+    // Ignore empty/placeholder characters and single words under 5 characters (prevents short prices, codes, badges)
+    if (!text || text === "—" || text === "-" || text.length <= 4) {
+      if (element === cell) break;
+      element = element.parentElement;
+      continue;
+    }
+
+    const hasScrollOverflow =
+      element.scrollWidth > element.clientWidth + 2 ||
+      element.scrollHeight > element.clientHeight + 2;
+
+    // Check if the element itself or its parent enforces CSS truncation
+    const isTruncated = isTruncatedByCSS(element) || isTruncatedByCSS(element.parentElement);
+
+    if (hasScrollOverflow && isTruncated) {
       return {
         element,
         text,
