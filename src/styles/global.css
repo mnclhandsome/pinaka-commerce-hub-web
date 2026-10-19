@@ -89,7 +89,18 @@ table thead th {
 .status-badge--active,
 .status-badge--inactive,
 .store-status,
-.store-status-badge {
+.store-status-badge,
+.mv-badge,
+.pc-badge,
+.sf-status-pill,
+.ea-profile-status,
+.success-status-pill,
+.detail-status,
+.store-device-view-status,
+.mdl-badge,
+.mt-badge,
+.tenders-status,
+.device-status {
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
@@ -121,7 +132,18 @@ table thead th {
 .status-badge .status-dot,
 .status-badge__dot,
 .store-status i,
-.store-status-badge i {
+.store-status-badge i,
+.mv-badge i,
+.pc-badge i,
+.sf-status-pill i,
+.ea-profile-status i,
+.success-status-pill i,
+.detail-status i,
+.store-device-view-status i,
+.mdl-badge i,
+.mt-badge i,
+.tenders-status i,
+.device-status i {
   display: inline-block !important;
   width: 8px !important;
   height: 8px !important;
@@ -145,14 +167,36 @@ table thead th {
 .status-badge i::before,
 .status-badge__dot::before,
 .store-status i::before,
-.store-status-badge i::before {
+.store-status-badge i::before,
+.mv-badge i::before,
+.pc-badge i::before,
+.sf-status-pill i::before,
+.ea-profile-status i::before,
+.success-status-pill i::before,
+.detail-status i::before,
+.store-device-view-status i::before,
+.mdl-badge i::before,
+.mt-badge i::before,
+.tenders-status i::before,
+.device-status i::before {
   display: none !important;
 }
 
 /* Auto-inject 8px dot for status badges that render text only */
 .status-badge:not(:has(i, b, .status-dot, .status-badge__dot))::before,
 .store-status:not(:has(i, b, .status-dot))::before,
-.store-status-badge:not(:has(i, b, .status-dot))::before {
+.store-status-badge:not(:has(i, b, .status-dot))::before,
+.mv-badge:not(:has(i, b, .status-dot))::before,
+.pc-badge:not(:has(i, b, .status-dot))::before,
+.sf-status-pill:not(:has(i, b, .status-dot))::before,
+.ea-profile-status:not(:has(i, b, .status-dot))::before,
+.success-status-pill:not(:has(i, b, .status-dot))::before,
+.detail-status:not(:has(i, b, .status-dot))::before,
+.store-device-view-status:not(:has(i, b, .status-dot))::before,
+.mdl-badge:not(:has(i, b, .status-dot))::before,
+.mt-badge:not(:has(i, b, .status-dot))::before,
+.tenders-status:not(:has(i, b, .status-dot))::before,
+.device-status:not(:has(i, b, .status-dot))::before {
   content: "" !important;
   display: inline-block !important;
   width: 8px !important;
@@ -181,7 +225,26 @@ table thead th {
 .status-badge--active,
 .status-badge.status-active,
 .store-status.active,
-.store-status-badge.active {
+.store-status-badge.active,
+.mv-badge.mv-active,
+.mv-badge.active,
+.pc-badge.pc-active,
+.pc-badge.active,
+.sf-status-pill.active,
+.sf-status-pill:not(.inactive):not(.status-inactive),
+.ea-profile-status.active,
+.ea-profile-status:not(.inactive):not(.status-inactive),
+.success-status-pill,
+.detail-status.active,
+.store-device-view-status.active,
+.mdl-badge.mdl-active,
+.mdl-badge.active,
+.mdl-badge.online,
+.mt-badge.mt-active,
+.mt-badge.active,
+.tenders-status.active,
+.device-status.active,
+.device-status.online {
   background-color: #ecfdf5 !important;
   color: #047857 !important;
 }
@@ -196,7 +259,23 @@ table thead th {
 .status-badge--active .status-badge__dot,
 .status-badge.status-active i,
 .store-status.active i,
-.store-status-badge.active i {
+.store-status-badge.active i,
+.mv-badge.mv-active i,
+.mv-badge.active i,
+.pc-badge.pc-active i,
+.pc-badge.active i,
+.sf-status-pill.active i,
+.ea-profile-status.active i,
+.detail-status.active i,
+.store-device-view-status.active i,
+.mdl-badge.mdl-active i,
+.mdl-badge.active i,
+.mdl-badge.online i,
+.mt-badge.mt-active i,
+.mt-badge.active i,
+.tenders-status.active i,
+.device-status.active i,
+.device-status.online i {
   background-color: #047857 !important;
   color: #047857 !important;
 }
@@ -206,7 +285,25 @@ table thead th {
 .status-badge--inactive,
 .status-badge.status-inactive,
 .store-status.inactive,
-.store-status-badge.inactive {
+.store-status-badge.inactive,
+.mv-badge.mv-inactive,
+.mv-badge.inactive,
+.pc-badge.pc-inactive,
+.pc-badge.inactive,
+.sf-status-pill.inactive,
+.sf-status-pill.status-inactive,
+.ea-profile-status.inactive,
+.ea-profile-status.status-inactive,
+.detail-status.inactive,
+.store-device-view-status.inactive,
+.mdl-badge.mdl-inactive,
+.mdl-badge.inactive,
+.mdl-badge.offline,
+.mt-badge.mt-inactive,
+.mt-badge.inactive,
+.tenders-status.inactive,
+.device-status.inactive,
+.device-status.offline {
   background-color: #fee2e2 !important;
   color: #b91c1c !important;
 }
@@ -221,7 +318,23 @@ table thead th {
 .status-badge--inactive .status-badge__dot,
 .status-badge.status-inactive i,
 .store-status.inactive i,
-.store-status-badge.inactive i {
+.store-status-badge.inactive i,
+.mv-badge.mv-inactive i,
+.mv-badge.inactive i,
+.pc-badge.pc-inactive i,
+.pc-badge.inactive i,
+.sf-status-pill.inactive i,
+.ea-profile-status.inactive i,
+.detail-status.inactive i,
+.store-device-view-status.inactive i,
+.mdl-badge.mdl-inactive i,
+.mdl-badge.inactive i,
+.mdl-badge.offline i,
+.mt-badge.mt-inactive i,
+.mt-badge.inactive i,
+.tenders-status.inactive i,
+.device-status.inactive i,
+.device-status.offline i {
   background-color: #b91c1c !important;
   color: #b91c1c !important;
 }
@@ -515,40 +628,7 @@ table thead th {
 
 
 
-/* Shared status pills for the Employees and Devices list tables. */
-:is(.employees-table, .devices-table, .mel) :is(.employee-status, .device-status):is(.active, .inactive) {
-    box-sizing: border-box;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 90px;
-    min-width: 90px;
-    height: 26px;
-    padding: 5px 10px;
-    gap: 5px;
-    border: 0;
-    border-radius: 6px;
-    font-size: 12px;
-    line-height: 16px;
-    font-weight: 500;
-    white-space: nowrap;
-}
-:is(.employees-table, .devices-table, .mel) :is(.employee-status, .device-status).active {
-    color: #319a5b;
-    background: #e5f6ea;
-}
-:is(.employees-table, .devices-table, .mel) :is(.employee-status, .device-status).inactive {
-    color: #e9445b;
-    background: #ffe5ea;
-}
-:is(.employees-table, .devices-table, .mel) :is(.employee-status, .device-status):is(.active, .inactive)::before {
-    content: "";
-    width: 5px;
-    height: 5px;
-    flex: 0 0 5px;
-    border-radius: 50%;
-    background: currentColor;
-}
+/* Inherits standardized status badges from lines 88-280 */
 
 /* =========================================================
    LIST ACTIONS CSS
@@ -918,8 +998,8 @@ select:not(.pch-filter-sizing):not(.pch-master-filter-sizing) {
   [class*="table-scroll"],
   [class*="table-container"]
 ) {
-  width: 100% !important;
-  max-width: 100% !important;
+  width: 100%;
+  max-width: 100%;
   overflow-x: auto !important;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-x: contain;

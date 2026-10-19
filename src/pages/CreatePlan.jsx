@@ -25,6 +25,7 @@ const emptyForm = {
   trialPeriod: "",
   effectiveFrom: "",
 };
+
 function normalizeStoreTypeFeatures(response) {
   const source =
     response?.features ??
@@ -188,10 +189,8 @@ export default function CreatePlan() {
   const itemsPerPage = 5;
 
   // FIELD VALIDATIONS
-  // FIELD VALIDATIONS
   const codeError = useMemo(() => {
     if (!form.code) return "";
-    // Allows letters, numbers, underscores (_), and hyphens (-)
     if (!/^[a-zA-Z0-9_-]+$/.test(form.code)) {
       return "Plan Code can only contain letters, numbers, underscores (_), and hyphens (-).";
     }
@@ -200,7 +199,6 @@ export default function CreatePlan() {
 
   const nameError = useMemo(() => {
     if (!form.name) return "";
-    // Allows letters, numbers, underscores (_), hyphens (-), and spaces
     if (!/^[a-zA-Z0-9_\- ]+$/.test(form.name)) {
       return "Plan Name can only contain letters, numbers, underscores (_), hyphens (-), and spaces.";
     }
@@ -231,6 +229,7 @@ export default function CreatePlan() {
       setStoreTypesLoading(false);
     }
   }
+
   function formatDateParts(value) {
     if (!value) return { date: "—", time: "" };
 
@@ -252,6 +251,7 @@ export default function CreatePlan() {
       }),
     };
   }
+
   async function fetchPlans() {
     try {
       setPlansLoading(true);
@@ -310,7 +310,6 @@ export default function CreatePlan() {
         const features = normalizeStoreTypeFeatures(response);
         setStoreTypeFeatures(features);
 
-        // Keep any existing feature IDs that still belong to this store type.
         setIncludedFeatures((current) => {
           if (!Array.isArray(current) || current.length === 0) return [];
 
@@ -350,8 +349,6 @@ export default function CreatePlan() {
     };
   }, [form.applicableStoreType, storeTypes]);
 
-  // The plan API returns includedFeatures as names, while the checkbox UI
-  // uses feature IDs. Convert saved names to IDs after features are loaded.
   useEffect(() => {
     if (
       pendingIncludedFeatureNames.length === 0 ||
@@ -387,9 +384,6 @@ export default function CreatePlan() {
       })
       .filter(Boolean);
 
-    console.log("Saved feature names from API:", pendingIncludedFeatureNames);
-    console.log("Converted saved feature IDs:", selectedFeatureIds);
-
     setIncludedFeatures(selectedFeatureIds);
     setPendingIncludedFeatureNames([]);
   }, [pendingIncludedFeatureNames, storeTypeFeatures]);
@@ -420,26 +414,26 @@ export default function CreatePlan() {
     setCurrentPage(1);
   }, [search, billingFilter, statusFilter]);
 
- const totalPlans = filteredPlans.length;
-const totalPages = Math.max(1, Math.ceil(totalPlans / itemsPerPage));
+  const totalPlans = filteredPlans.length;
+  const totalPages = Math.max(1, Math.ceil(totalPlans / itemsPerPage));
 
-const paginatedPlans = useMemo(() => {
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  return filteredPlans.slice(startIndex, startIndex + itemsPerPage);
-}, [filteredPlans, currentPage, itemsPerPage]);
+  const paginatedPlans = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    return filteredPlans.slice(startIndex, startIndex + itemsPerPage);
+  }, [filteredPlans, currentPage, itemsPerPage]);
 
-useEffect(() => {
-  if (currentPage > totalPages) {
-    setCurrentPage(totalPages);
-  }
-}, [currentPage, totalPages]);
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, totalPages]);
 
- const canContinueStepOne =
-  form.name.trim() &&
-  form.applicableStoreType &&
-  form.status &&
-  !codeError &&
-  !nameError;
+  const canContinueStepOne =
+    form.name.trim() &&
+    form.applicableStoreType &&
+    form.status &&
+    !codeError &&
+    !nameError;
 
   const canContinuePricing =
     form.billingModel &&
@@ -475,6 +469,7 @@ useEffect(() => {
       [name]: name === "code" ? value.toUpperCase() : value,
     }));
   }
+
   function getFeatureDisplayName(id) {
     const match = storeTypeFeatures.find(
       (f) =>
@@ -520,23 +515,11 @@ useEffect(() => {
       setSavingPlan(true);
       setMessage("");
 
-      let savedPlan;
-
-      // Keep feature IDs for the API payload.
-      // The checkbox state already contains the selected feature IDs,
-      // so do not convert them to feature names before create/update.
-      const selectedFeatureIds = includedFeatures.filter(Boolean);
-
-      console.log("Selected Feature IDs:", selectedFeatureIds);
-      console.log("Feature IDs sent to API:", selectedFeatureIds);
-
       if (editingId) {
-        savedPlan = await updatePlan(editingId, planData, selectedFeatureIds);
-
+        await updatePlan(editingId, planData, includedFeatures.filter(Boolean));
         setMessage("Plan updated successfully.");
       } else {
-        savedPlan = await createPlan(planData, selectedFeatureIds);
-
+        await createPlan(planData, includedFeatures.filter(Boolean));
         setMessage("Plan created successfully.");
       }
 
@@ -580,59 +563,54 @@ useEffect(() => {
       ? plan.includedFeatures
       : [];
 
-    // The store-type features may load after the plan data. Keep the saved
-    // names temporarily and convert them to checkbox IDs in the effect above.
     setIncludedFeatures([]);
     setPendingIncludedFeatureNames(savedFeatureNames);
     setPlanStep(1);
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
-  
-function openDeleteConfirmation(plan) {
-  setDeleteTarget(plan);
-  setDeleteError("");
-}
-
-function closeDeleteConfirmation() {
-  if (deletingPlan) return;
-
-  setDeleteTarget(null);
-  setDeleteError("");
-}
-
-async function confirmDelete() {
-  const planId = deleteTarget?.id ?? deleteTarget?._id;
-
-  if (
-    planId === undefined ||
-    planId === null ||
-    String(planId).trim() === "" ||
-    deletingPlan
-  ) {
-    return;
+  function openDeleteConfirmation(plan) {
+    setDeleteTarget(plan);
+    setDeleteError("");
   }
 
-  try {
-    setDeletingPlan(true);
-    setDeleteError("");
-    setMessage("");
-
-    await deletePlan(planId);
-
-    const refreshedPlans = await listPlans();
-    setPlans(Array.isArray(refreshedPlans) ? refreshedPlans : []);
-
-    setMessage(`${deleteTarget.name} deactivated successfully.`);
+  function closeDeleteConfirmation() {
+    if (deletingPlan) return;
     setDeleteTarget(null);
     setDeleteError("");
-  } catch (error) {
-    setDeleteError(error?.message || "Failed to deactivate plan.");
-  } finally {
-    setDeletingPlan(false);
   }
-}
 
+  async function confirmDelete() {
+    const planId = deleteTarget?.id ?? deleteTarget?._id;
+
+    if (
+      planId === undefined ||
+      planId === null ||
+      String(planId).trim() === "" ||
+      deletingPlan
+    ) {
+      return;
+    }
+
+    try {
+      setDeletingPlan(true);
+      setDeleteError("");
+      setMessage("");
+
+      await deletePlan(planId);
+
+      const refreshedPlans = await listPlans();
+      setPlans(Array.isArray(refreshedPlans) ? refreshedPlans : []);
+
+      setMessage(`${deleteTarget.name} deactivated successfully.`);
+      setDeleteTarget(null);
+      setDeleteError("");
+    } catch (error) {
+      setDeleteError(error?.message || "Failed to deactivate plan.");
+    } finally {
+      setDeletingPlan(false);
+    }
+  }
 
   return (
     <section className="plans-page">
@@ -682,9 +660,7 @@ async function confirmDelete() {
 
           <div className="plan-create-grid three-columns plan-information-grid">
             <label className="plan-field ">
-              <span>
-                Plan Code
-              </span>
+              <span>Plan Code</span>
               <input
                 {...textInputProps}
                 name="code"
@@ -693,9 +669,8 @@ async function confirmDelete() {
                 placeholder="Auto Generated"
                 readOnly
                 disabled
-                className={codeError ? "input-error" : "plan-placeholder" }
+                className={codeError ? "input-error" : "plan-placeholder"}
               />
-            
             </label>
 
             <label className="plan-field">
@@ -758,27 +733,27 @@ async function confirmDelete() {
             </label>
 
             <label className="plan-field plan-information-status-field">
-  <span>
-    Status <b>*</b>
-  </span>
+              <span>
+                Status <b>*</b>
+              </span>
 
-  <select
-  name="status"
-  value={form.status}
-  onChange={updateField}
-  className={`plan-status-select ${
-    form.status === "Active"
-      ? "active"
-      : form.status === "Inactive"
-      ? "inactive"
-      : ""
-  }`}
->
-  <option value="">Select Status</option>
-  <option value="Active">Active</option>
-  <option value="Inactive">Inactive</option>
-</select>
-</label>
+              <select
+                name="status"
+                value={form.status}
+                onChange={updateField}
+                className={`plan-status-select ${
+                  form.status === "Active"
+                    ? "active"
+                    : form.status === "Inactive"
+                    ? "inactive"
+                    : ""
+                }`}
+              >
+                <option value="">Select Status</option>
+                <option value="Active">Active</option>
+                <option value="Inactive">Inactive</option>
+              </select>
+            </label>
           </div>
 
           <div className="plan-actions plan-information-actions">
@@ -1265,7 +1240,7 @@ async function confirmDelete() {
             <aside className="plan-review-note">
               <i className="bi bi-info-circle-fill" />
               Once saved, the plan will be available for assignment
-               to merchants and stores.
+              to merchants and stores.
             </aside>
           </div>
 
@@ -1317,7 +1292,8 @@ async function confirmDelete() {
               />
             </label>
 
-            <FilterDropdown preserveToolbarLayout
+            <FilterDropdown
+              preserveToolbarLayout
               value={billingFilter}
               onChange={(event) => setBillingFilter(event.target.value)}
             >
@@ -1325,10 +1301,11 @@ async function confirmDelete() {
               <option value="Per store">Per Store</option>
               <option value="Per terminal">Per Terminal</option>
               <option value="Flat rate">Flat Rate</option>
-                <option value="Custom">Custom</option>
+              <option value="Custom">Custom</option>
             </FilterDropdown>
 
-            <FilterDropdown preserveToolbarLayout
+            <FilterDropdown
+              preserveToolbarLayout
               value={statusFilter}
               onChange={(event) => setStatusFilter(event.target.value)}
             >
@@ -1367,14 +1344,18 @@ async function confirmDelete() {
             </div>
 
             {/* DATA ROWS */}
-            {/* DATA ROWS */}
             {paginatedPlans.map((plan) => {
               const planId = plan.id ?? plan._id;
-              // FIXED ORDER: Check createdAt / updatedAt first
               const createdAt =
                 plan.createdAt || plan.created_at || plan.createdOn;
               const updatedAt =
                 plan.updatedAt || plan.updated_at || plan.updatedOn;
+              const hasDescription =
+                plan.description &&
+                plan.description.trim() !== "" &&
+                plan.description !== "—" &&
+                plan.description !== "-";
+
               return (
                 <div
                   className="plans-row"
@@ -1386,36 +1367,45 @@ async function confirmDelete() {
                     })
                   }
                 >
-                  <div className="plan-code-cell">
+                  <div className="plan-code-cell" data-no-tooltip="true">
                     <strong>{plan.code || "—"}</strong>
                   </div>
 
-                  <div className="plan-name-cell">
+                  <div
+                    className="plan-name-cell"
+                    data-pch-table-cell="true"
+                    data-truncate="true"
+                  >
                     <strong>{plan.name || "—"}</strong>
                   </div>
 
-<div className="plan-description-cell">
-  <span className="plan-description-text">
-    {plan.description || "—"}
-  </span>
-</div>
+                  <div
+                    className="plan-description-cell"
+                    data-pch-table-cell={hasDescription ? "true" : undefined}
+                    data-truncate={hasDescription ? "true" : undefined}
+                    data-no-tooltip={!hasDescription ? "true" : undefined}
+                  >
+                    <span className="plan-description-text">
+                      {plan.description || "—"}
+                    </span>
+                  </div>
 
-
-
-                  <div>
+                  <div className="plan-type-cell" data-no-tooltip="true">
                     <span className="plan-type-badge">
                       {storeTypeDisplayName(plan.storeType, storeTypes) || "—"}
                     </span>
                   </div>
 
-                  <div>{plan.billingModel || "—"}</div>
+                  <div className="plan-billing-cell" data-no-tooltip="true">
+                    {plan.billingModel || "—"}
+                  </div>
 
-                  <div className="plan-price-cell">
+                  <div className="plan-price-cell" data-no-tooltip="true">
                     {plan.currency} {plan.price}
                     <small>/{plan.cycle ? plan.cycle.toLowerCase() : ""}</small>
                   </div>
 
-                  <div>
+                  <div className="plan-status-cell" data-no-tooltip="true">
                     <span
                       className={`plan-status ${
                         plan.status === "Inactive" ? "inactive" : ""
@@ -1429,7 +1419,7 @@ async function confirmDelete() {
                   {(() => {
                     const parts = formatDateParts(createdAt);
                     return (
-                      <div className="plan-date-cell">
+                      <div className="plan-date-cell" data-no-tooltip="true">
                         <strong>{parts.date}</strong>
                         {parts.time && <span>{parts.time}</span>}
                       </div>
@@ -1439,17 +1429,23 @@ async function confirmDelete() {
                   {(() => {
                     const parts = formatDateParts(updatedAt);
                     return (
-                      <div className="plan-date-cell">
+                      <div className="plan-date-cell" data-no-tooltip="true">
                         <strong>{parts.date}</strong>
                         {parts.time && <span>{parts.time}</span>}
                       </div>
                     );
                   })()}
 
-                  <div className="plan-actions-cell">
+                  <div className="plan-actions-cell" data-no-tooltip="true">
                     <ListActions
-                      onEdit={(event) => { event.stopPropagation(); editPlan(plan); }}
-                      onDelete={(event) => { event.stopPropagation(); openDeleteConfirmation(plan); }}
+                      onEdit={(event) => {
+                        event.stopPropagation();
+                        editPlan(plan);
+                      }}
+                      onDelete={(event) => {
+                        event.stopPropagation();
+                        openDeleteConfirmation(plan);
+                      }}
                       editLabel={`Edit ${plan.name}`}
                       deleteLabel={`Deactivate ${plan.name}`}
                       editButtonClassName="plan-edit-icon"
@@ -1464,37 +1460,35 @@ async function confirmDelete() {
 
         {/* PAGINATION UI (5 PER PAGE) */}
         <div className="plans-pagination">
-  <Pagination
-    currentPage={currentPage}
-    totalPages={totalPages}
-    totalItems={totalPlans}
-    pageSize={itemsPerPage}
-    onPageChange={setCurrentPage}
-    onPageSizeChange={() => {}}
-    itemLabel="plans"
-  />
-</div>
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalItems={totalPlans}
+            pageSize={itemsPerPage}
+            onPageChange={setCurrentPage}
+            onPageSizeChange={() => {}}
+            itemLabel="plans"
+          />
+        </div>
       </section>
 
-      
-<DeleteConfirmationDialog
-  isOpen={Boolean(deleteTarget)}
-  title="Deactivate Plan?"
-  message={
-    deleteTarget
-      ? `Are you sure you want to deactivate "${deleteTarget.name || "this plan"}"?`
-      : ""
-  }
-  cancelLabel="Cancel"
-  confirmLabel="Deactivate"
-  busyLabel="Deactivating..."
-  busy={deletingPlan}
-  error={deleteError}
-  iconClassName="bi bi-trash3"
-  onCancel={closeDeleteConfirmation}
-  onConfirm={confirmDelete}
-/>
-
+      <DeleteConfirmationDialog
+        isOpen={Boolean(deleteTarget)}
+        title="Deactivate Plan?"
+        message={
+          deleteTarget
+            ? `Are you sure you want to deactivate "${deleteTarget.name || "this plan"}"?`
+            : ""
+        }
+        cancelLabel="Cancel"
+        confirmLabel="Deactivate"
+        busyLabel="Deactivating..."
+        busy={deletingPlan}
+        error={deleteError}
+        iconClassName="bi bi-trash3"
+        onCancel={closeDeleteConfirmation}
+        onConfirm={confirmDelete}
+      />
 
       {message && (
         <div className="plan-toast">

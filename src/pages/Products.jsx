@@ -2,7 +2,7 @@ import { pendingStoreRead } from "../api/http";
 import FilterDropdown from "../components/FilterDropdown";
 import { useEffect, useMemo, useState } from "react";
 import Pagination from "../components/Pagination";
-import ViewDetailsModal from "../components/ViewDetailsModal";
+import BentoDetailModal from "../components/BentoDetailModal";
 import {
     productsApi,
     normalizeCatalog,
@@ -851,27 +851,93 @@ export default function Products({
             </div>
 
             {/* =================================================
-                VIEW PRODUCT DETAILS
+                UNIFIED MODERN PRODUCT MODAL
             ================================================= */}
 
-            <ViewDetailsModal
-                open={Boolean(
-                    selectedProduct
-                )}
+            <BentoDetailModal
+                open={Boolean(selectedProduct)}
+                onClose={() => setSelectedProduct(null)}
+                headerIcon="bi-box-seam"
                 title="Product Details"
-                subtitle={
+                code={
                     selectedProduct?.sku
                         ? `SKU: ${selectedProduct.sku}`
+                        : selectedProduct?.id
+                        ? `ID: ${selectedProduct.id}`
                         : ""
                 }
-                data={selectedProduct}
-                fields={
-                    productDetailsFields
+                size="compact"
+                hero={
+                    selectedProduct
+                        ? {
+                              icon: "bi-box-seam",
+                              image: selectedProduct.image,
+                              title: selectedProduct.name || "Product",
+                              status: selectedProduct.stockStatus || "In Stock",
+                              metricLabel: "PRICE",
+                              metricValue:
+                                  selectedProduct.price !== undefined &&
+                                  selectedProduct.price !== null &&
+                                  selectedProduct.price !== ""
+                                      ? String(selectedProduct.price).startsWith("$")
+                                          ? selectedProduct.price
+                                          : `$${Number(selectedProduct.price).toFixed(2)}`
+                                      : "$0.00",
+                          }
+                        : null
                 }
-                onClose={() =>
-                    setSelectedProduct(
-                        null
-                    )
+                fields={
+                    selectedProduct
+                        ? [
+                              {
+                                  label: "CATEGORY",
+                                  value: selectedProduct.category || "Uncategorized",
+                              },
+                              {
+                                  label: "BRAND",
+                                  value: selectedProduct.brand || "—",
+                              },
+                              {
+                                  label: "PRODUCT TYPE",
+                                  value: selectedProduct.type || "Simple Product",
+                              },
+                              {
+                                  label: "QUANTITY / UNITS",
+                                  value:
+                                      selectedProduct.quantity !== undefined &&
+                                      selectedProduct.quantity !== null &&
+                                      selectedProduct.quantity !== ""
+                                          ? `${selectedProduct.quantity} units`
+                                          : "—",
+                              },
+                              {
+                                  label: "TAGS",
+                                  value: selectedProduct.tags,
+                                  fullWidth: true,
+                                  render: (tags) => {
+                                      if (Array.isArray(tags) && tags.length > 0) {
+                                          return (
+                                              <div className="bento-chips-wrap">
+                                                  {tags.map((tag) => (
+                                                      <span key={tag} className="bento-chip">
+                                                          {tag}
+                                                      </span>
+                                                  ))}
+                                              </div>
+                                          );
+                                      }
+                                      if (typeof tags === "string" && tags.trim()) {
+                                          return <span className="bento-field-value">{tags}</span>;
+                                      }
+                                      return (
+                                          <span className="bento-field-value empty-state">
+                                              No tags assigned
+                                          </span>
+                                      );
+                                  },
+                              },
+                          ]
+                        : []
                 }
             />
 

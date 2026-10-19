@@ -2168,12 +2168,13 @@
   border-radius: 9px;
 }
 
-.store-section-editor .sf-panel {border-color: var(--store-border); border-radius: 10px; box-shadow: none; }
+.store-section-editor .sf-panel:not(.sf-employee-assignment-panel):not(.sf-employee-summary) { border: 1px solid var(--store-border); border-radius: 10px; box-shadow: none; }
+.store-section-editor .sf-employee-summary { border: 0; }
 .store-section-editor .sf-panel-head { padding: 16px 20px; min-height: 64px; }
 .store-section-editor .sf-panel-head h2 { font-size: 16px; font-weight: 600; color: var(--store-heading); }
 .store-section-editor .sf-panel-head p { font-size: 13px; line-height: 1.5; color: var(--store-muted); }
 .store-section-editor .sf-plan-summary,
-.store-section-editor .sf-employee-summary { padding: 20px; gap: 8px; }
+.store-section-editor .sf-employee-summary { padding: 20px 10px 20px; gap: 8px; }
 .store-section-editor .sf-plan-summary small,
 .store-section-editor .sf-employee-summary small { font-size: 12px; color: var(--store-muted); }
 .store-section-editor .sf-plan-summary strong,
@@ -2193,11 +2194,11 @@
 .store-section-editor .sf-employee-tools { justify-content: flex-end; }
 .store-section-editor .sf-employee-tools {
   display: grid;
-  grid-template-columns: minmax(180px, 1fr) 145px auto;
+  grid-template-columns: minmax(0, 1fr) 145px auto;
   justify-content: normal;
   box-sizing: border-box;
-  width: 100%;
-  margin: 0 0 16px;
+  width: calc(100% - 24px);
+  margin: 0 12px 16px;
   padding: 0;
 }
 .store-section-editor .sf-employee-tools .sf-search { grid-column: 1; width: 100%; min-width: 0; flex: initial; }
@@ -2227,6 +2228,7 @@
   box-sizing: border-box;
   width: calc(100% - 24px);
   margin: 0 12px;
+  overflow-x: auto;
   border: 1px solid #dfe9f4;
   border-radius: 8px;
   background: #fff;
@@ -2285,7 +2287,7 @@
 @media (max-width: 900px) {
   .store-section-editor .sf-employees-table-wrap { width: calc(100% - 20px); margin-right: 10px; margin-left: 10px; }
   .store-section-editor .employee-pagination-container { width: calc(100% - 20px); margin-right: 10px; margin-left: 10px; }
-  .store-section-editor .sf-employee-tools { width: calc(100% - 20px); margin-right: 10px; margin-left: 10px; padding-right: 22px; }
+  .store-section-editor .sf-employee-tools { width: calc(100% - 20px); margin-right: 10px; margin-left: 10px; }
   .store-section-editor .sf-plan-summary,
   .store-section-editor .sf-employee-summary { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 16px; }
   .store-section-editor .sf-employee-summary { max-width: 100%; }

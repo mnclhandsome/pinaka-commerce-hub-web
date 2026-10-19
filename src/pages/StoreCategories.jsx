@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import FilterDropdown from "../components/FilterDropdown";
 import Pagination from "../components/Pagination";
-import ViewDetailsModal from "../components/ViewDetailsModal";
+import BentoDetailModal from "../components/BentoDetailModal";
 import { getStoreCatalogTaxonomies } from "../api/storeConnector";
 import "../styles/store-categories.css";
 
@@ -570,46 +570,117 @@ export default function StoreCategories({
 
 
   /* =========================================================
-     SELECT MODAL FIELDS
+     MODAL HERO & ATTRIBUTES
   ========================================================= */
 
-  const getModalFields = () => {
-
-    if (
-      selectedItemType ===
-      "category"
-    ) {
-      return categoryDetailsFields;
-    }
-
-    if (
-      selectedItemType ===
-      "tag"
-    ) {
-      return tagDetailsFields;
-    }
-
-    return attributeDetailsFields;
+  const getCategoryHero = () => {
+    if (!selectedItem) return null;
+    const isCat = selectedItemType === "category";
+    const isTag = selectedItemType === "tag";
+    return {
+      icon: isCat ? "bi-folder2-open" : isTag ? "bi-tag" : "bi-sliders",
+      title: selectedItem.name || (isCat ? "Category" : isTag ? "Tag" : "Attribute"),
+      status: selectedItem.status || "Active",
+      metricLabel: "TOTAL PRODUCTS",
+      metricValue: String(selectedItem.productCount ?? 0),
+    };
   };
 
+  const getCategoryFields = () => {
+    if (!selectedItem) return [];
+    if (selectedItemType === "category") {
+      return [
+        {
+          label: "PARENT CATEGORY",
+          value: selectedItem.parent || "None (Root Category)",
+        },
+        {
+          label: "VISIBILITY",
+          value:
+            selectedItem.visibility ||
+            (String(selectedItem.status || "").toLowerCase() === "inactive"
+              ? "Hidden"
+              : "Visible"),
+        },
+        {
+          label: "DISPLAY ORDER",
+          value: String(
+            selectedItem.displayOrder ??
+              selectedItem.menu_order ??
+              selectedItem.order ??
+              0
+          ),
+        },
+        {
+          label: "SLUG",
+          value:
+            selectedItem.slug && selectedItem.slug !== "—"
+              ? selectedItem.slug
+              : selectedItem.id
+              ? String(selectedItem.id)
+              : "—",
+          mono: true,
+        },
+        {
+          label: "DESCRIPTION",
+          value: selectedItem.description || "No description provided",
+          fullWidth: true,
+        },
+      ];
+    }
+
+    if (selectedItemType === "tag") {
+      return [
+        { label: "TAG NAME", value: selectedItem.name },
+        { label: "STATUS", value: selectedItem.status || "Active", isStatus: true },
+        { label: "SLUG", value: selectedItem.slug || "—", mono: true },
+        { label: "PRODUCT COUNT", value: `${selectedItem.productCount ?? 0} products` },
+        {
+          label: "DESCRIPTION",
+          value: selectedItem.description || "No description provided",
+          fullWidth: true,
+        },
+      ];
+    }
+
+    return [
+      { label: "ATTRIBUTE NAME", value: selectedItem.name },
+      { label: "STATUS", value: selectedItem.status || "Active", isStatus: true },
+      { label: "SLUG", value: selectedItem.slug || "—", mono: true },
+      { label: "PRODUCT COUNT", value: `${selectedItem.productCount ?? 0} products` },
+      {
+        label: "TERMS / VALUES",
+        value:
+          Array.isArray(selectedItem.terms) && selectedItem.terms.length
+            ? selectedItem.terms
+            : null,
+        fullWidth: true,
+        render: (terms) =>
+          Array.isArray(terms) && terms.length ? (
+            <div className="bento-chips-wrap">
+              {terms.map((term) => (
+                <span key={term} className="bento-chip">
+                  {term}
+                </span>
+              ))}
+            </div>
+          ) : (
+            <span className="bento-field-value empty-state">No terms defined</span>
+          ),
+      },
+    ];
+  };
 
   /* =========================================================
      MODAL TITLE
   ========================================================= */
 
   const getModalTitle = () => {
-
-    if (
-      selectedItemType ===
-      "category"
-    ) {
+    if (selectedItemType === "category") {
       return "Category Details";
     }
 
-    if (
-      selectedItemType ===
-      "tag"
-    ) {
+    if (selectedItemType === "tag") {
       return "Tag Details";
     }
 
@@ -1469,32 +1540,30 @@ export default function StoreCategories({
       </div>
 
       {/* =====================================================
-         VIEW DETAILS MODAL
+         UNIFIED MODERN MODAL
       ===================================================== */}
 
-      <ViewDetailsModal
-        open={
-          Boolean(
-            selectedItem
-          )
+      <BentoDetailModal
+        open={Boolean(selectedItem)}
+        onClose={closeView}
+        headerIcon={
+          selectedItemType === "category"
+            ? "bi-folder"
+            : selectedItemType === "tag"
+            ? "bi-tags"
+            : "bi-sliders"
         }
-        title={
-          getModalTitle()
-        }
-        subtitle={
-          selectedItem?.id
+        title={getModalTitle()}
+        code={
+          selectedItem?.slug && selectedItem.slug !== "—"
+            ? `Slug: ${selectedItem.slug}`
+            : selectedItem?.id
             ? `ID: ${selectedItem.id}`
             : ""
         }
-        data={
-          selectedItem
-        }
-        fields={
-          getModalFields()
-        }
-        onClose={
-          closeView
-        }
+        size="compact"
+        hero={getCategoryHero()}
+        fields={getCategoryFields()}
       />
 
     </div>

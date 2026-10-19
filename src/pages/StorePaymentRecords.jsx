@@ -1,7 +1,7 @@
 import FilterDropdown from "../components/FilterDropdown";
 import Pagination from "../components/Pagination";
 import { useEffect, useMemo, useState } from "react";
-import ViewDetailsModal from "../components/ViewDetailsModal";
+import BentoDetailModal from "../components/BentoDetailModal";
 import { listStorePosPayments } from "../api/storePosPayments";
 import { listStoreEmployees } from "../api/employees";
 import { isUuid } from "../api/storeDetails";
@@ -238,58 +238,92 @@ export default function StorePaymentRecords({ store, storeId: storeIdProp, merch
         />}
       </div>
  
-      <ViewDetailsModal
+      <BentoDetailModal
         open={Boolean(selectedPayment)}
-        title="Payment Details"
-        subtitle={
-          selectedPayment
-            ? selectedPayment.title
-            : ""
-        }
-        data={selectedPayment}
         onClose={() => setSelectedPayment(null)}
-        fields={[
-          { key: "id", label: "Payment ID" },
-          { key: "title", label: "Payment Title", fullWidth: true },
-          { key: "orderId", label: "Order ID" },
-          { key: "clientOrderId", label: "Client Order ID" },
-          {
-            key: "orderTotal",
-            label: "Order Total",
-            render: (value) => money(value),
-          },
-          {
-            key: "tenderAmount",
-            label: "Tender Amount",
-            render: (value) => money(value),
-          },
-          {
-            key: "balanceAmount",
-            label: "Balance Amount",
-            render: (value) => money(value),
-          },
-          {
-            key: "changeAmount",
-            label: "Change Amount",
-            render: (value) => money(value),
-          },
-          { key: "transactionId", label: "Transaction ID" },
-          { key: "paymentMethod", label: "Payment Method" },
-          { key: "paymentType", label: "Payment Type" },
-          { key: "paymentAcceptedBy", label: "Payment Accepted By" },
-          { key: "shiftId", label: "Shift ID" },
-          { key: "date", label: "Payment Date" },
-          {
-            key: "status",
-            label: "Status",
-            render: (value) => (
-              <span className="detail-status active">
-                {value || "—"}
-              </span>
-            ),
-          },
-          { key: "notes", label: "Notes", fullWidth: true },
-        ]}
+        headerIcon="bi-receipt"
+        title="Payment Details"
+        code={
+          selectedPayment?.transactionId && selectedPayment.transactionId !== "—"
+            ? `Ref: ${selectedPayment.transactionId}`
+            : (selectedPayment?.id ? `ID: ${selectedPayment.id}` : "")
+        }
+        hero={
+          selectedPayment
+            ? {
+                icon: "bi-credit-card",
+                title: selectedPayment.paymentMethod ? `${selectedPayment.paymentMethod} Payment` : "Payment Record",
+                subtitle: `Order #${selectedPayment.orderId || "—"}`,
+                status: selectedPayment.status || "Completed",
+                metricLabel: "AMOUNT PAID",
+                metricValue: money(selectedPayment.tenderAmount || selectedPayment.orderTotal || 0),
+              }
+            : null
+        }
+        layout="bento-3"
+        sections={
+          selectedPayment
+            ? [
+                {
+                  title: "TRANSACTION TOTALS",
+                  fields: [
+                    {
+                      label: "ORDER TOTAL",
+                      value: money(selectedPayment.orderTotal),
+                    },
+                    {
+                      label: "TENDER AMOUNT",
+                      value: money(selectedPayment.tenderAmount),
+                    },
+                    {
+                      label: "CHANGE / BALANCE",
+                      value:
+                        selectedPayment.changeAmount > 0
+                          ? `Change: ${money(selectedPayment.changeAmount)}`
+                          : `Balance: ${money(selectedPayment.balanceAmount)}`,
+                    },
+                  ],
+                },
+                {
+                  title: "METHOD & ORDER",
+                  fields: [
+                    {
+                      label: "PAYMENT METHOD",
+                      value: selectedPayment.paymentMethod,
+                    },
+                    {
+                      label: "ORDER NUMBER",
+                      value: selectedPayment.orderId,
+                      mono: true,
+                    },
+                    {
+                      label: "TRANSACTION ID",
+                      value: selectedPayment.transactionId,
+                      mono: true,
+                    },
+                  ],
+                },
+                {
+                  title: "OPERATIONAL AUDIT",
+                  fields: [
+                    {
+                      label: "ACCEPTED BY",
+                      value: selectedPayment.paymentAcceptedBy,
+                    },
+                    {
+                      label: "SHIFT REFERENCE",
+                      value: selectedPayment.shiftId,
+                      mono: true,
+                    },
+                    {
+                      label: "PAYMENT DATE",
+                      value: selectedPayment.date,
+                    },
+                  ],
+                },
+              ]
+            : []
+        }
       />
     </div>
   );

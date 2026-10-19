@@ -64,6 +64,19 @@ function titleCase(value) {
   return text.toLowerCase().replace(/\b\w/g, (letter) => letter.toUpperCase());
 }
 
+function statusClass(status) {
+  const value = String(status || "").toLowerCase();
+  if (value.includes("create")) return "created";
+  if (value.includes("complete")) return "completed";
+  if (value.includes("pending")) return "pending";
+  if (value.includes("cancel")) return "cancelled";
+  if (value.includes("refund")) return "refunded";
+  if (value.includes("partial")) return "partial";
+  if (value.includes("inactive")) return "inactive";
+  if (value.includes("active")) return "active";
+  return "processing";
+}
+
 function lineItemSku(item) {
   const metadata = asArray(item.meta_data || item.metaData);
   const metadataSku = metadata.find((entry) =>
@@ -298,12 +311,29 @@ export default function OrderDetail({ embedded = false, orderId: providedOrderId
   }, [orderId, storeId, orderNumber]);
 
   return (
-    <div className="employee-view-page order-detail-page">
-      <div className="employee-view-header order-detail-heading-row">
-        <div><h1>View Order</h1><p>Order, payment, customer, and item details for this sale.</p></div>
-        {embedded
-          ? <button type="button" className="order-detail-back" onClick={onBack}><ArrowLeft size={16} /> Back</button>
-          : <Link className="order-detail-back" to={backTo}><ArrowLeft size={16} /> Back</Link>}
+    <div className="page-content orders-page order-detail-page">
+      <div className="orders-header">
+        <div>
+          {embedded
+            ? (
+              <button type="button" className="order-detail-back" onClick={onBack}>
+                <ArrowLeft size={16} /> Back
+              </button>
+            )
+            : (
+              <Link className="order-detail-back" to={backTo}>
+                <ArrowLeft size={16} /> Back to orders
+              </Link>
+            )}
+          <h1>{view ? `Order ${view.number}` : "Order"}</h1>
+          <p>Order, payment, line, and tender details for this sale.</p>
+        </div>
+        {view && (
+          <span className={`order-status ${statusClass(view.status)}`}>
+            <i className="bi bi-circle-fill" />
+            {view.status}
+          </span>
+        )}
       </div>
 
       {loading && <p role="status">Loading order...</p>}

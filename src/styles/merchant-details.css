@@ -100,6 +100,8 @@
 
 .merchant-readonly .merchant-view-main > [role="tabpanel"] {
   min-width: 0;
+  max-width: 100%;
+  width: 100%;
 }
 
 /* Merchant detail list cards share a content edge for the toolbar, table and
@@ -161,9 +163,11 @@
   .mdl-scroll,
   .mv-scroll
 ) {
+  width: 100%;
   max-width: 100%;
   min-width: 0;
   box-sizing: border-box;
+  overflow-x: auto;
 }
 
 /* This tab's legacy layout padded the whole component in addition to its

@@ -2622,9 +2622,8 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
                         item.type ||
                         "—"}
                     </td>
-                    <td>{locationText}</td>
                     <td>
-                      <span className={`sf-status-pill ${String(item.status || "").trim().toLowerCase() === "inactive" ? "inactive" : "active"}`}>
+                      <span className={`store-status ${String(item.status || "").trim().toLowerCase() === "inactive" ? "inactive" : "active"}`}>
                         {item.status || "—"}
                       </span>
                     </td>

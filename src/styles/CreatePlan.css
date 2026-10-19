@@ -756,7 +756,6 @@
   display: flex !important;
   align-items: center;
   background: #f1f3fd !important;
-  border-left: 1px solid #e4e8ef;
   padding-left: 12px !important;
   box-sizing: border-box;
 }
@@ -766,7 +765,7 @@
   align-self: stretch;
   display: flex;
   align-items: center;
-  border-left: 1px solid #e4e8ef;
+
   padding-left: 12px;
   box-sizing: border-box;
 }
@@ -1624,10 +1623,30 @@
   overflow-y: hidden !important;
 }
 
-/* Chrome / Edge - hide textarea scrollbar completely */
+
 .plan-information-grid .plan-description-field textarea::-webkit-scrollbar {
   display: none !important;
   width: 0 !important;
   height: 0 !important;
 }
 
+
+.plans-row {
+  border-bottom: 1px solid #eef2f6 !important;
+  width: 100% !important;
+}
+
+
+.plans-row .plan-actions-cell {
+  border-bottom: 1px solid #eef2f6 !important;
+}
+
+
+.plans-row .plan-actions-cell,
+.plans-row-head .plan-actions-header {
+  border-left: none !important;
+}
+
+.plans-row .plan-date-cell:last-of-type {
+  border-right: none !important;
+}

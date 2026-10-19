@@ -8,19 +8,21 @@ export const orderFields = [
     {
         key: "status",
         label: "Status",
-        render: (value) => (
-            <span
-                className={`detail-status ${
-                    value === "Completed"
-                        ? "active"
-                        : value === "Cancelled" || value === "Refunded"
-                            ? "inactive"
-                            : "pending"
-                }`}
-            >
-                {value || "—"}
-            </span>
-        ),
+        render: (value) => {
+            const val = String(value || "").toLowerCase();
+            const cls = val.includes("create")
+                ? "created"
+                : val.includes("complete") || val === "active"
+                    ? "active"
+                    : val.includes("cancel") || val.includes("refund") || val === "inactive"
+                        ? "inactive"
+                        : "pending";
+            return (
+                <span className={`detail-status ${cls}`}>
+                    {value || "—"}
+                </span>
+            );
+        },
     },
     { key: "author", label: "Author" },
     { key: "salesChannel", label: "Sales Channel" },

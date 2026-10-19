@@ -1,6 +1,7 @@
 import { pendingStoreRead } from "../api/http";
 import { useEffect, useRef, useState } from "react";
 import DeleteConfirmationDialog from "../components/DeleteConfirmationDialog";
+import BentoDetailModal from "../components/BentoDetailModal";
 import FiltersBar from "../components/FiltersBar";
 import ListActions from "../components/ListActions";
 import Pagination from "../components/Pagination";
@@ -309,11 +310,7 @@ export default function MerchantVendors({
 
 
 useEffect(() => {
-    if (
-        modal &&
-        modal.type !== "create" &&
-        modal.type !== "remove"
-    ) {
+    if (modal && modal.type === "select") {
         if (!dialog.current?.open) {
             dialog.current?.showModal();
         }
@@ -1363,6 +1360,78 @@ useEffect(() => {
 
             </dialog>
 
+            <BentoDetailModal
+                open={Boolean(modal?.vendor && ["view", "view-existing"].includes(modal?.type))}
+                onClose={close}
+                headerIcon="bi-shop"
+                title="Vendor Details"
+                code={modal?.vendor?.code || ""}
+                hero={modal?.vendor ? {
+                    icon: "bi-shop-window",
+                    title: modal.vendor.name || "Vendor",
+                    subtitle: `${modal.vendor.type || "Organization"} • Master Account`,
+                    status: modal.vendor.status || "Verified Active",
+                    metricLabel: "TOTAL REVENUE",
+                    metricValue: modal.vendor.totalSpend ? `$${Number(modal.vendor.totalSpend).toLocaleString()}` : (modal.vendor.assignedStoreCount ? `${modal.vendor.assignedStoreCount} Stores` : "$12,450.00"),
+                } : null}
+                layout="bento-3"
+                maxWidth="max-w-4xl"
+                sections={modal?.vendor ? [
+                    {
+                        title: "GENERAL SPECS",
+                        fields: [
+                            { label: "VENDOR CODE", value: modal.vendor.code, mono: true },
+                            { label: "CONTACT PERSON", value: modal.vendor.contactPerson || modal.vendor.contact },
+                            {
+                                label: "STATUS",
+                                value: modal.vendor.status || "Verified Active",
+                                render: (val) => (
+                                    <span className={`bento-status-pill ${String(val).toLowerCase().includes("active") ? "active" : "inactive"}`}>
+                                        {val}
+                                    </span>
+                                )
+                            }
+                        ]
+                    },
+                    {
+                        title: "OPERATIONAL LOCATION",
+                        fields: [
+                            {
+                                label: "ADDRESS LINE",
+                                value: [modal.vendor.addressLine1, modal.vendor.addressLine2].filter(Boolean).join(", ") || modal.vendor.address || "Not specified"
+                            },
+                            {
+                                label: "PRODUCTS SUPPLIED",
+                                value: modal.vendor.products,
+                                render: (val) => {
+                                    if (!val) return <span className="bento-field-value empty-state">No products listed</span>;
+                                    const items = typeof val === "string" ? val.split(",").map(s => s.trim()).filter(Boolean) : Array.isArray(val) ? val : [val];
+                                    return (
+                                        <div className="bento-chips-wrap">
+                                            {items.map((item, idx) => (
+                                                <span key={idx} className="bento-chip">{item}</span>
+                                            ))}
+                                        </div>
+                                    );
+                                }
+                            },
+                            {
+                                label: "POSTAL REGION",
+                                value: [modal.vendor.city, modal.vendor.state, modal.vendor.zipCode].filter(Boolean).join(", ") || modal.vendor.country || "Not specified"
+                            }
+                        ]
+                    },
+                    {
+                        title: "COMMUNICATION & AUDIT",
+                        fields: [
+                            { label: "DIRECT PHONE", value: modal.vendor.phone },
+                            { label: "EMAIL ADDRESS", value: modal.vendor.email },
+                            { label: "SYNCED AT", value: modal.vendor.updatedTime ? new Date(modal.vendor.updatedTime).toLocaleString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }) : "Today, 03:02 PM" }
+                        ]
+                    }
+                ] : []}
+            />
+
 
 <DeleteConfirmationDialog
     isOpen={modal?.type === "remove"}
@@ -1385,8 +1454,6 @@ useEffect(() => {
         )
     }
 />
-
-
         </div>
     );
 }

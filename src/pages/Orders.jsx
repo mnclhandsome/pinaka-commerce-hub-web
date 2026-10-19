@@ -12,11 +12,14 @@ import "../styles/orders.css";
 
 function statusClass(status) {
   const value = String(status || "").toLowerCase();
+  if (value.includes("create")) return "created";
   if (value.includes("complete")) return "completed";
   if (value.includes("pending")) return "pending";
   if (value.includes("cancel")) return "cancelled";
   if (value.includes("refund")) return "refunded";
   if (value.includes("partial")) return "partial";
+  if (value.includes("inactive")) return "inactive";
+  if (value.includes("active")) return "active";
   return "processing";
 }
 

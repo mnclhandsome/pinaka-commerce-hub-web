@@ -525,39 +525,52 @@ input {
 }
 
 .order-status i {
-    font-size: 7px;
+    font-size: 8px;
     flex-shrink: 0;
     line-height: 1;
 }
 
-.order-status.completed {
+.order-status.completed,
+.order-status.active {
     background: #e7f6ec;
     color: #177245;
+}
+
+.order-status.created {
+    background: #eff6ff;
+    color: #1e40af;
+
 }
 
 .order-status.pending {
     background: #e8f3fb;
     color: #17638c;
+  
 }
 
 .order-status.processing {
     background: #edf0ff;
     color: #5660bd;
+    
 }
 
-.order-status.cancelled {
-    background: #f0f0f1;
-    color: #6e737c;
+.order-status.cancelled,
+.order-status.inactive {
+    background: #fee2e2 ;
+    color: #b91c1c;
+    
 }
 
 .order-status.refunded {
     background: #fde8e8;
     color: #bd3131;
+    
 }
 
 .order-status.partial {
     background: #f6edff;
     color: #8750bd;
+   
 }
 
 /* =========================================================

@@ -1505,7 +1505,7 @@ export default function AddStore() {
       </Panel>
       <Panel title="2. Select a Plan" subtitle="Plan details from the selected merchant subscription.">
         <div className="sf-plan-table-wrap"><table className="sf-plan-table"><thead><tr><th>Selected Plan</th><th>Plan Name</th><th>Billing Type</th><th>Price</th><th>Validity</th><th>Stores Used</th><th>Stores Limit</th><th>Status</th></tr></thead>
-          <tbody><tr><td><span className="sf-radio-dot" /></td><td><strong>{planName}</strong><small>{plan?.description || "Merchant subscription plan"}</small></td><td>{billing}</td><td>{planPrice == null ? "—" : `${subscription?.currency || currencyCode} ${planPrice}`}</td><td>{validity}</td><td>{used}</td><td>{limit}</td><td><span className="sf-status-pill">{subscription?.status || "Not provided"}</span></td></tr></tbody>
+          <tbody><tr><td><span className="sf-radio-dot" /></td><td><strong>{planName}</strong><small>{plan?.description || "Merchant subscription plan"}</small></td><td>{billing}</td><td>{planPrice == null ? "—" : `${subscription?.currency || currencyCode} ${planPrice}`}</td><td>{validity}</td><td>{used}</td><td>{limit}</td><td><span className={`sf-status-pill ${String(subscription?.status || "").trim().toLowerCase() === "inactive" ? "inactive" : "active"}`}>{subscription?.status || "Not provided"}</span></td></tr></tbody>
         </table></div>
       </Panel>
       <Panel title="Plan Details">
