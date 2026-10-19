@@ -38,6 +38,9 @@ function buildUrl(path) {
   if (normalizedPath.startsWith("/connector/") || normalizedPath.startsWith("/connectors/")) {
     return normalizedPath;
   }
+   if (API_BASE_URL && normalizedPath.startsWith(API_BASE_URL)) {
+    return normalizedPath;
+  }
   return `${API_BASE_URL || ""}${normalizedPath}`;
 }
  

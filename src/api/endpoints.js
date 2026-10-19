@@ -98,4 +98,6 @@ export const endpoints = {
   orders: (storeId) =>
     `/orders${storeId ? `?storeId=${encodeURIComponent(storeId)}` : ""}`,
   order: (id) => `/orders/${encodeURIComponent(id)}`,
+  // dashboard overview 
+  administrationOverview: "https://pch.alektasolutions.com/api/v1/admin/administration-overview",
 };
