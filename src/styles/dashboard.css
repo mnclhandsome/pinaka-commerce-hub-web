@@ -1493,6 +1493,7 @@ a {
 }
 
 .super-admin-dashboard button { font: inherit; }
+.super-admin-dashboard .dashboard-data-error { margin: 10px 18px 0; color: #b42318; font-size: 11px; }
 .super-dashboard-head { display:flex; align-items:flex-end; justify-content:space-between; gap:24px; margin-bottom:20px; }
 .super-dashboard-head h1 { margin:0 0 5px; color:#152348; font-size:27px; line-height:1.1; letter-spacing:-.6px; font-weight:750; }
 .super-dashboard-head p { margin:0; color:#6c7893; font-size:12px; }
@@ -1584,7 +1585,8 @@ a {
 .super-admin-dashboard .coverage-content { display:grid; grid-template-columns:145px minmax(0,1fr); align-items:center; gap:16px; flex:1; padding:20px 18px; }
 .super-admin-dashboard .health-summary,
 .super-admin-dashboard .coverage-visual { display:flex; align-items:center; justify-content:center; width:145px; min-height:145px; padding:0; }
-.super-admin-dashboard .dashboard-health-feature-grid .dashboard-donut { width:145px; height:145px; border-radius:50%; background:conic-gradient(#20ae70 0 91%,#dce4ee 91% 100%); display:flex; align-items:center; justify-content:center; flex:none; }
+.super-admin-dashboard .dashboard-health-feature-grid .dashboard-donut { width:145px; height:145px; border-radius:50%; background:conic-gradient(#20ae70 0 var(--health-percent, 91%),#dce4ee var(--health-percent, 91%) 100%); display:flex; align-items:center; justify-content:center; flex:none; }
+.super-admin-dashboard .dashboard-health-feature-grid .dashboard-donut.unavailable { background:#dce4ee; }
 .super-admin-dashboard .dashboard-health-feature-grid .dashboard-donut-hole { width:110px; height:110px; border-radius:50%; background:#fff; display:flex; flex-direction:column; align-items:center; justify-content:center; box-shadow:0 1px 3px rgba(31,51,91,.05); }
 .super-admin-dashboard .dashboard-health-feature-grid .dashboard-donut-hole strong { font-size:26px; line-height:1; color:#17264d; }
 .super-admin-dashboard .dashboard-health-feature-grid .dashboard-donut-hole span { margin-top:5px; font-size:9px; color:#687590; }
@@ -1623,9 +1625,11 @@ a {
 
 .super-admin-dashboard .dashboard-health-feature-grid .dashboard-donut.coverage {
   background: conic-gradient(
-    #35a9a5 0 85.42%,        /* Included in Plans - 41 */
-    #ed921d 85.42% 91.67%,   /* Not Included - 3 */
-    #9aaac0 91.67% 100%      /* Inactive - 4 */
+    #4f82ed 0 var(--feature-total-end, 33.33%),
+    #20ae70 var(--feature-total-end, 33.33%) var(--feature-active-end, 66.66%),
+    #9aaac0 var(--feature-active-end, 66.66%) var(--feature-inactive-end, 68.16%),
+    #35a9a5 var(--feature-inactive-end, 68.16%) var(--feature-included-end, 99.5%),
+    #ed921d var(--feature-included-end, 99.5%) 100%
   );
 }
 .coverage-total { font-size:9px; color:#74809a; }
