@@ -98,4 +98,6 @@ export const endpoints = {
   orders: (storeId) =>
     `/orders${storeId ? `?storeId=${encodeURIComponent(storeId)}` : ""}`,
   order: (id) => `/orders/${encodeURIComponent(id)}`,
+  // dashboard overview 
+  administrationOverview: "/api/v1/admin/administration-overview",
 };

@@ -1,7 +1,8 @@
 import FilterDropdown from "../components/FilterDropdown";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
+    getAdministrationOverview,
   getDashboardFeatures,
   getDashboardPlatformHealth,
   getDashboardSharedMetrics,
@@ -11,62 +12,74 @@ import {
    KPI DATA
 ========================================================= */
 
-const kpis = [
-  {
-    label: "Merchants",
-    value: "148",
-    trend: "+12%",
-    detail: (
-      <>
-        <b className="is-good"><strong>139</strong>{" "}<span>active</span></b>
-        <span><strong>4</strong>{" "}<span>onboarding</span></span>
-        <span><strong>5</strong>{" "}<span>inactive</span></span>
-      </>
-    ),
-    icon: "bi-shop",
-    tone: "blue",
-  },
-  {
-    label: "Stores",
-    value: "342",
-    trend: "+8%",
-    detail: (
-      <>
-        <b className="is-good"><strong>331</strong>{" "}<span>active</span></b>
-        <span><strong>6</strong>{" "}<span>pending</span></span>
-        <span><strong>5</strong>{" "}<span>inactive</span></span>
-      </>
-    ),
-    icon: "bi-buildings",
-    tone: "green",
-  },
-  {
-    label: "Employees",
-    value: "2,486",
-    trend: "+5%",
-    detail: (
-      <>
-        <b className="is-warning"><strong>24</strong>{" "}<span>without roles</span></b>
-        <span><strong>6</strong>{" "}<span>locked</span></span>
-      </>
-    ),
-    icon: "bi-people",
-    tone: "orange",
-  },
-  {
-    label: "Active subscriptions",
-    value: "136",
-    trend: "+3%",
-    detail: (
-      <>
-        <b className="is-warning"><strong>3</strong>{" "}<span>expiring</span></b>
-        <span><strong>4</strong>{" "}<span>payment pending</span></span>
-      </>
-    ),
-    icon: "bi-credit-card-2-front",
-    tone: "purple",
-  },
-];
+const defaultAdministrationOverview = {
+  merchants: {},
+  stores: {},
+  employees: {},
+  subscriptions: {},
+  features: {},
+};
+
+const displayNumber = (value) =>
+  value == null ? "—" : Number(value).toLocaleString();
+
+const displayGrowth = (value) => {
+  if (value == null || value === "") return "—";
+  const numericValue = Number(value);
+  if (!Number.isFinite(numericValue)) return "—";
+  return `${numericValue > 0 ? "+" : ""}${numericValue}%`;
+};
+
+function buildKpis(overview) {
+  return [
+    {
+      label: "Merchants",
+      value: overview.merchants.total_count,
+      trend: overview.merchants.growth_percentage,
+      details: [
+        ["active", overview.merchants.active_count, "is-good"],
+        ["onboarding", overview.merchants.onboarding_count],
+        ["inactive", overview.merchants.inactive_count],
+      ],
+      icon: "bi-shop",
+      tone: "blue",
+    },
+    {
+      label: "Stores",
+      value: overview.stores.total_count,
+      trend: overview.stores.growth_percentage,
+      details: [
+        ["active", overview.stores.active_count, "is-good"],
+        ["pending", overview.stores.pending_count],
+        ["inactive", overview.stores.inactive_count],
+      ],
+      icon: "bi-buildings",
+      tone: "green",
+    },
+    {
+      label: "Employees",
+      value: overview.employees.total_count,
+      trend: overview.employees.growth_percentage,
+      details: [
+        ["without roles", overview.employees.without_roles_count, "is-warning"],
+        ["locked", overview.employees.locked_count],
+      ],
+      icon: "bi-people",
+      tone: "orange",
+    },
+    {
+      label: "Active subscriptions",
+      value: overview.subscriptions.active_count,
+      trend: overview.subscriptions.growth_percentage,
+      details: [
+        ["expiring", overview.subscriptions.expiring_count, "is-warning"],
+        ["payment pending", overview.subscriptions.payment_pending_count],
+      ],
+      icon: "bi-credit-card-2-front",
+      tone: "purple",
+    },
+  ];
+}
 
 /* =========================================================
    PLATFORM HEALTH
@@ -149,52 +162,65 @@ function normalizeFeatures(response) {
   };
 }
 
+function normalizeAdministrationOverview(response) {
+  const data = unwrapDashboardData(response);
+  return {
+    merchants: data.merchants ?? {},
+    stores: data.stores ?? {},
+    employees: data.employees ?? {},
+    subscriptions: data.subscriptions ?? {},
+    features: data.features ?? {},
+  };
+}
+
 /* =========================================================
    ADMINISTRATION MODULES
 ========================================================= */
 
-const adminModules = [
-  {
-    title: "Merchants",
-    icon: "bi-shop",
-    rows: [
-      ["Pending onboarding", "10"],
-      ["Suspended accounts", "4"],
-      ["Setup completion", "96%"],
-    ],
-    path: "/merchants",
-  },
-  {
-    title: "Users & Access",
-    icon: "bi-people",
-    rows: [
-      ["Total employees", "14"],
-      ["Employees without roles", "126"],
-      ["inactive", "30"],
-    ],
-    path: "/employees",
-  },
-  {
-    title: "Stores",
-    icon: "bi-buildings",
-    rows: [
-      ["Active stores", "331"],
-      ["Pending stores", "6"],
-      ["Inactive stores", "5"],
-    ],
-    path: "/stores",
-  },
-  {
-    title: "Subscriptions",
-    icon: "bi-credit-card",
-    rows: [
-      ["Trial", "5"],
-      ["Expiring soon", "3"],
-      ["Expired", "2"],
-    ],
-    path: "/subscriptions",
-  },
-];
+function buildAdminModules(overview) {
+  return [
+    {
+      title: "Merchants",
+      icon: "bi-shop",
+      rows: [
+        ["Active merchants", overview.merchants.active_count],
+        ["Pending onboarding", overview.merchants.onboarding_count],
+        ["Inactive merchants", overview.merchants.inactive_count],
+      ],
+      path: "/merchants",
+    },
+    {
+      title: "Users & Access",
+      icon: "bi-people",
+      rows: [
+        ["Total employees", overview.employees.total_count],
+        ["Employees without roles", overview.employees.without_roles_count],
+        ["Locked employees", overview.employees.locked_count],
+      ],
+      path: "/employees",
+    },
+    {
+      title: "Stores",
+      icon: "bi-buildings",
+      rows: [
+        ["Active stores", overview.stores.active_count],
+        ["Pending stores", overview.stores.pending_count],
+        ["Inactive stores", overview.stores.inactive_count],
+      ],
+      path: "/stores",
+    },
+    {
+      title: "Subscriptions",
+      icon: "bi-credit-card",
+      rows: [
+        ["Active subscriptions", overview.subscriptions.active_count],
+        ["Expiring soon", overview.subscriptions.expiring_count],
+        ["Payment pending", overview.subscriptions.payment_pending_count],
+      ],
+      path: "/subscriptions",
+    },
+  ];
+}
 
 /* =========================================================
    PLANS & ENTITLEMENTS
@@ -282,26 +308,58 @@ export default function Dashboard() {
 
   const [health, setHealth] = useState(defaultHealth);
   const [features, setFeatures] = useState(defaultFeatures);
+  const [administrationOverview, setAdministrationOverview] = useState(defaultAdministrationOverview);
   const [sharedMetrics, setSharedMetrics] = useState({ plans: null, entitlements: null, roles: null });
   const [healthLoadError, setHealthLoadError] = useState("");
   const [featuresLoadError, setFeaturesLoadError] = useState("");
+  const [administrationLoadError, setAdministrationLoadError] = useState("");
 
-  useEffect(() => {
-    let active = true;
-    Promise.allSettled([
+  const loadDashboard = useCallback(async () => {
+    const [healthResult, featuresResult, sharedMetricsResult, administrationResult] = await Promise.allSettled([
       getDashboardPlatformHealth(),
       getDashboardFeatures(),
       getDashboardSharedMetrics(),
-    ]).then(([healthResult, featuresResult, sharedMetricsResult]) => {
-      if (!active) return;
-      if (healthResult.status === "fulfilled") setHealth(normalizeHealth(healthResult.value));
-      else setHealthLoadError(healthResult.reason?.message || "Could not load Platform Health.");
-      if (featuresResult.status === "fulfilled") setFeatures(normalizeFeatures(featuresResult.value));
-      else setFeaturesLoadError(featuresResult.reason?.message || "Could not load Features.");
-      if (sharedMetricsResult.status === "fulfilled") setSharedMetrics(sharedMetricsResult.value);
-    });
-    return () => { active = false; };
+      getAdministrationOverview(),
+    ]);
+
+    if (healthResult.status === "fulfilled") {
+      setHealth(normalizeHealth(healthResult.value));
+      setHealthLoadError("");
+    } else {
+      setHealthLoadError(healthResult.reason?.message || "Could not load Platform Health.");
+    }
+
+    if (featuresResult.status === "fulfilled") {
+      setFeatures(normalizeFeatures(featuresResult.value));
+      setFeaturesLoadError("");
+    } else {
+      setFeaturesLoadError(featuresResult.reason?.message || "Could not load Features.");
+    }
+
+    if (sharedMetricsResult.status === "fulfilled") setSharedMetrics(sharedMetricsResult.value);
+
+    if (administrationResult.status === "fulfilled") {
+      const overview = normalizeAdministrationOverview(administrationResult.value);
+      setAdministrationOverview(overview);
+      setFeatures((currentFeatures) => ({
+        ...currentFeatures,
+        total: overview.features.total_count ?? currentFeatures.total,
+        active: overview.features.active_count ?? currentFeatures.active,
+        inactive: overview.features.inactive_count ?? currentFeatures.inactive,
+      }));
+      setAdministrationLoadError("");
+    } else {
+      setAdministrationLoadError(
+        administrationResult.reason?.message || "Could not load Administration Overview."
+      );
+    }
   }, []);
+
+  useEffect(() => {
+    loadDashboard().catch(() => {
+      // Individual source failures are handled above with Promise.allSettled.
+    });
+  }, [loadDashboard]);
 
   const [refreshing, setRefreshing] = useState(false);
   const [dateFilter, setDateFilter] = useState("Today");
@@ -309,13 +367,17 @@ export default function Dashboard() {
   const [customEndDate, setCustomEndDate] = useState("");
   const [planFilter, setPlanFilter] = useState("All plans");
 
-  const refresh = () => {
+  const refresh = async () => {
     setRefreshing(true);
-
-    window.setTimeout(() => {
+    try {
+      await loadDashboard();
+    } finally {
       setRefreshing(false);
-    }, 700);
+    }
   };
+
+  const kpis = buildKpis(administrationOverview);
+  const adminModules = buildAdminModules(administrationOverview);
 
   return (
     <div className="page-content super-admin-dashboard">
@@ -416,13 +478,13 @@ export default function Dashboard() {
 
               <div className="dashboard-kpi-value-row">
 
-                <strong>{item.value}</strong>
+                <strong>{displayNumber(item.value)}</strong>
 
                 <small>
                   <span className="dashboard-kpi-trend">
-                    <i className="bi bi-arrow-up" />
+                    <i className={`bi ${Number(item.trend) < 0 ? "bi-arrow-down" : "bi-arrow-up"}`} />
                     {" "}
-                    {item.trend}
+                    {displayGrowth(item.trend)}
                   </span>
                   <span className="trend-period">vs last 30 days</span>
                 </small>
@@ -430,7 +492,12 @@ export default function Dashboard() {
               </div>
 
               <div className="dashboard-kpi-details">
-                {item.detail}
+                {item.details.map(([label, value, className]) => {
+                  const detail = <><strong>{displayNumber(value)}</strong>{" "}<span>{label}</span></>;
+                  return className
+                    ? <b className={className} key={label}>{detail}</b>
+                    : <span key={label}>{detail}</span>;
+                })}
               </div>
 
             </div>
@@ -716,6 +783,10 @@ export default function Dashboard() {
             onAction={() => nav("/merchants")}
           />
 
+          {administrationLoadError && (
+            <p className="dashboard-data-error">Administration Overview: {administrationLoadError}</p>
+          )}
+
           <div className="admin-grid">
 
             {adminModules.map((module) => (
@@ -753,7 +824,7 @@ export default function Dashboard() {
 
                         <span>{label}</span>
 
-                        <b>{value}</b>
+                        <b>{displayNumber(value)}</b>
 
                       </div>
 
