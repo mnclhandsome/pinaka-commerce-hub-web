@@ -5,6 +5,7 @@ import { listStoreSafeDrops } from "../api/storeSafeDrops";
 import { listStoreEmployees } from "../api/employees";
 import { isUuid } from "../api/storeDetails";
 import BentoDetailModal from "../components/BentoDetailModal";
+import ListActions from "../components/ListActions";
 import "../styles/safe-drops.css";
 
 const currency = (value) => `$${Number(value || 0).toFixed(2)}`;
@@ -151,7 +152,7 @@ export default function SafeDrops({ store, storeId: storeIdProp, merchantId }) {
           <td title={row.employee === "Unknown employee" ? row.createdBy : undefined}>{row.employee}</td>
           <td>{row.denominations.length ? row.denominations.map((item, itemIndex) => <span className="sd-denomination" key={`${item.count}-${item.amount}-${itemIndex}`}>{item.count} × {currency(item.amount)} = {currency(item.total)}</span>) : "-"}</td>
           <td className="sd-total">{currency(row.total)}</td><td>{created.date}<small>{created.time}</small></td><td>{updated.date}<small>{updated.time}</small></td>
-          <td><button className="sd-view" type="button" aria-label={`View safe drop ${row.id}`} onClick={() => setSelected(row)}><i className="bi bi-eye" aria-hidden="true" /></button></td>
+          <td><ListActions onView={() => setSelected(row)} viewLabel={`View safe drop ${row.id}`} /></td>
         </tr>; })}
           {loading && <tr><td className="sd-empty" colSpan="7">Loading safe drops...</td></tr>}
           {!loading && error && <tr><td className="sd-empty" colSpan="7" role="alert">{error}</td></tr>}

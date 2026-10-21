@@ -12,6 +12,7 @@ import { DeviceMapping } from "./device-mapping/DeviceMapping";
 import { RegisterConfiguration, registerRows } from "./cash-registers/RegisterConfiguration";
 import { MappingConfiguration, mappingRows } from "./terminal-mappings/MappingConfiguration";
 import { SafeConfiguration } from "./safe-drop/SafeConfiguration";
+import { PrinterSettings } from "./printer-settings/PrinterSettings";
 import { getPosCashRegisters } from "./cash-registers/api";
 import { getPosTerminalMappings } from "./terminal-mappings/api";
 
@@ -106,6 +107,15 @@ const configurationCards = [
         component: "device-mapping",
         enabled: true,
     },
+    {
+        id: "printer-settings",
+        icon: "printer",
+        iconClass: "blue",
+        title: "Printer Settings",
+        description: "Add a receipt logo, header, and footer for this store.",
+        component: "printer-settings",
+        enabled: true,
+    },
 ];
 
 const initialRegisters = [
@@ -159,6 +169,11 @@ export default function PosConfiguration({ merchantId, storeId, store, embedded 
     const [busy, setBusy] = useState(false);
     const [notice, setNotice] = useState("");
     const saveLock = useRef(false);
+    useEffect(() => {
+        if (!notice) return undefined;
+        const timeout = window.setTimeout(() => setNotice(""), 3000);
+        return () => window.clearTimeout(timeout);
+    }, [notice]);
     const session = useMemo(() => ({ saved: savedScreens.current[selectedConfig] || {}, baseline: {}, draft: {}, resets: {}, save: null, editorDirty: null, resetEditor: null }), [selectedConfig]);
     const isDirty = () => snapshotKey(session.draft) !== snapshotKey(session.baseline) || !!session.editorDirty?.();
     const leave = (target) => { setPendingLeave(null); setNotice(""); setSelectedConfig(target); };
@@ -243,6 +258,9 @@ export default function PosConfiguration({ merchantId, storeId, store, embedded 
 
             case "device-mapping":
                 return <DeviceMapping onBack={() => requestLeave(null)} />;
+
+            case "printer-settings":
+                return <PrinterSettings onBack={() => requestLeave(null)} />;
 
             default:
                 return null;

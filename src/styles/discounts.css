@@ -24,6 +24,12 @@
   white-space: nowrap;
 }
 
+.discounts-table td {
+  height: 64px;
+  padding-top: 6px;
+  padding-bottom: 6px;
+}
+
 .discount-name-cell strong {
   white-space: nowrap;
 }

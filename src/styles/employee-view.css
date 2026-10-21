@@ -3,7 +3,7 @@
 .employee-view-topbar :is(button, a) { display: inline-flex; align-items: center; gap: 8px; border: 0; padding: 0; background: none; color: #5143bc; font: inherit; font-weight: 600; cursor: pointer; text-decoration: none; }
 .employee-view-topbar > span { color: #a3acc0; }
 .employee-view-header { margin-bottom: 20px; }
-.employee-view-header h1 { margin: 0; color: #132d50; font-size: 27px; line-height: 32px; font-weight: 750; }
+.employee-view-header h1 { margin: 0; color: #132d50; font-size: 24px; line-height: 32px; font-weight: 600; }
 .employee-view-header p { margin: 6px 0 0; color: #75819a; font-size: 14px; line-height: 1.45; }
 .employee-view-sections { display: grid; gap: 16px; }
 .employee-view-card { padding: 18px 16px; background: #fff; border: 1px solid #e1e8f1; border-radius: 8px; min-width: 0; }

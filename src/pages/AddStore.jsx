@@ -2538,55 +2538,23 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
           </div>
         </Panel>
         <Panel title="Plan Details" className="sf-plan-details-card">
-          <div className="sf-plan-details">
-            <div className="sf-plan-title">
-              <span className="sf-icon-square bi bi-file-earmark-text" />
-              <div>
-                <strong>{planName}</strong>
-              </div>
-            </div>
-            <div className="sf-plan-metrics">
-              <div>
-                <strong>
-                  {planPrice == null
-                    ? "—"
-                    : `${subscription?.currency || currencyCode} ${planPrice}`}
-                </strong>
-                <small>Price</small>
-              </div>
-              <div>
-                <strong>{billing}</strong>
-                <small>Billing Type</small>
-              </div>
-              <div>
-                <strong>
-                  {used} / {limit}
-                </strong>
-                <small>Stores Used</small>
-              </div>
-              <div>
-                <strong>
-                  {Number.isFinite(storeLimit)
-                    ? Math.max(0, storeLimit - used)
-                    : "—"}
-                </strong>
-                <small>Remaining to map</small>
-              </div>
-              <div>
-                <strong>{subscription?.status || "Not provided"}</strong>
-                <small>Status</small>
-              </div>
-            </div>
-            <div className="sf-key-features">
-              <strong>Key Features</strong>
-              <div className="sf-key-feature-count">
-                <strong>{includedFeatures.length}</strong>
-                <small>included features</small>
-              </div>
-            </div>
+          <div className="sf-plan-details-table-wrap">
+            <table className="sf-plan-details-table">
+              <thead><tr><th>Plan</th><th>Price</th><th>Billing Type</th><th>Stores Used</th><th>Remaining to Map</th><th>Status</th><th>Key Features</th></tr></thead>
+              <tbody><tr>
+                <td><span className="sf-plan-details-name"><span className="sf-icon-square bi bi-file-earmark-text" /><strong>{planName}</strong></span></td>
+                <td>{planPrice == null ? "—" : `${subscription?.currency || currencyCode} ${planPrice}`}</td>
+                <td>{billing}</td>
+                <td>{used} / {limit}</td>
+                <td>{Number.isFinite(storeLimit) ? Math.max(0, storeLimit - used) : "—"}</td>
+                <td><span className={`sf-status-pill ${String(subscription?.status || "").trim().toLowerCase() === "inactive" ? "inactive" : "active"}`}>{subscription?.status || "Not provided"}</span></td>
+                <td><strong className="sf-plan-details-feature-count">{includedFeatures.length}</strong><small> included features</small></td>
+              </tr></tbody>
+            </table>
           </div>
         </Panel>
         <Panel
+          className="sf-existing-stores-panel"
           title="Existing stores mapped to this merchant"
           subtitle={
             Number.isFinite(storeLimit)
@@ -3033,7 +3001,7 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
 
   const featuresScreen = () => {
     const includedCount = featureRows.filter((row) =>
-      entitled(row.name),
+      enabledFeatures.includes(row.name),
     ).length;
     return (
       <>

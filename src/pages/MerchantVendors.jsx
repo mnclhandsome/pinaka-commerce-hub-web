@@ -877,32 +877,17 @@ useEffect(() => {
                         </div>
                     </header>
                 )}
-                {storeScope ? (
-                    <div className="mv-toolbar">
-                        <input aria-label="Search assigned vendors"
-                            placeholder="Search vendors by code, name, type or phone…"
-                            value={query}
-                            onChange={(event) => { setQuery(event.target.value); setPage(1); }} />
-                        <button type="button" onClick={() => {
-                            setQuery("");
-                            setPage(1);
-                            setSort({ key: "name", direction: 1 });
-                        }}>
-                            <i className="bi bi-arrow-counterclockwise" aria-hidden="true" /> Clear
-                        </button>
-                    </div>
-                ) : (
-                    <FiltersBar
-                        searchValue={query}
-                        onSearchChange={(value) => { setQuery(value); setPage(1); }}
-                        searchPlaceholder={"Search vendors by code, name, type or phone\u2026"}
-                        onClear={() => {
-                            setQuery("");
-                            setPage(1);
-                            setSort({ key: "name", direction: 1 });
-                        }}
-                    />
-                )}
+                <FiltersBar
+                    searchValue={query}
+                    onSearchChange={(value) => { setQuery(value); setPage(1); }}
+                    searchPlaceholder="Search vendors by code, name, type or phone..."
+                    searchAriaLabel={storeScope ? "Search assigned vendors" : "Search vendors"}
+                    onClear={() => {
+                        setQuery("");
+                        setPage(1);
+                        setSort({ key: "name", direction: 1 });
+                    }}
+                />
 
                 {(loading || mappedLoading) && !rows.length ? (
                     <p role="status">

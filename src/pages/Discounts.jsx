@@ -5,6 +5,7 @@ import { normalizeCatalog } from "../api/products";
 import FilterDropdown from "../components/FilterDropdown";
 import Pagination from "../components/Pagination";
 import DeleteConfirmationDialog from "../components/DeleteConfirmationDialog";
+import ListActions from "../components/ListActions";
 import { buildDiscountPayload, catalogProductId, storedProductId, validateDiscountForm } from "./discountForm";
 import "../styles/coupons.css";
 import "../styles/discounts.css";
@@ -472,8 +473,12 @@ export default function Discounts({ embedded = false, storeId: storeIdProp }) {
                   <td>{formatSystemDate(discount.date_starts)}</td>
                   <td>{formatSystemDate(discount.date_expires)}</td>
                   <td className="coupon-row-actions">
-                    <button type="button" aria-label={`Edit ${discount.code}`} onClick={() => openEdit(discount)}><i className="bi bi-pencil" /></button>
-                    <button type="button" aria-label={`Delete ${discount.code}`} onClick={() => { setDeleteError(""); setDeleteTarget(discount); }}><i className="bi bi-trash3" /></button>
+                    <ListActions
+                      onEdit={() => openEdit(discount)}
+                      onDelete={() => { setDeleteError(""); setDeleteTarget(discount); }}
+                      editLabel={`Edit ${discount.code}`}
+                      deleteLabel={`Delete ${discount.code}`}
+                    />
                   </td>
                 </tr>
               )) : (

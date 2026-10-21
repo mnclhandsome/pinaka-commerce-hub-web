@@ -60,6 +60,7 @@
 .sm-table-wrap::-webkit-scrollbar-thumb:hover { background:#3c465a; }
 .sm-table { width:100%; min-width:1650px; border-collapse:separate; border-spacing:0; }
 .sm-table th, .sm-table td { padding:13px 12px; border-right:1px solid #e2eaf4; border-bottom:1px solid #e2eaf4; text-align:left; vertical-align:middle; white-space:nowrap; }
+.sm-table th:nth-child(2), .sm-table td:nth-child(2) { width:120px; min-width:120px; max-width:120px; overflow:hidden; text-overflow:ellipsis; }
 .sm-table th:nth-child(4), .sm-table td:nth-child(4),
 .sm-table th:nth-child(7), .sm-table td:nth-child(7) { min-width:150px; }
 .sm-table th:nth-child(5), .sm-table td:nth-child(5),

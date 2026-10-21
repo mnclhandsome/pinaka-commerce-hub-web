@@ -1,6 +1,6 @@
 import { pendingStoreRead } from "../api/http";
 import { useEffect, useMemo, useState } from "react";
-import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import Pagination from "../components/Pagination";
 import FiltersBar from "../components/FiltersBar";
 import ListActions from "../components/ListActions";
@@ -282,14 +282,16 @@ export default function Orders({
 
   return (
     <div className="page-content orders-page">
-      <div className="orders-header">
-        <div className="orders-title-area">
-          <div>
-            <h1>Orders</h1>
-            <p>View orders and transaction information for this store.</p>
+      {!embedded && (
+        <div className="orders-header">
+          <div className="orders-title-area">
+            <div>
+              <h1>Orders</h1>
+              <p>View orders and transaction information.</p>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       <div className="orders-summary">
         <SummaryCard icon="bi-bag-fill" tone="purple" label="Total Orders" value={orders.length} meta="Live Records" metaTone="positive" />
@@ -327,17 +329,7 @@ export default function Orders({
                       <td>
                         <div className="order-id-cell">
                           <div>
-                            <Link
-                              className="order-id-link"
-                              to={`/orders/${encodeURIComponent(order.id)}?${new URLSearchParams({
-                                ...(selectedMerchant ? { merchant: selectedMerchant } : {}),
-                                ...(selectedStore ? { store: selectedStore } : {}),
-                                number: order.wooOrderId,
-                              }).toString()}`}
-                              state={{ from: `${location.pathname}${location.search}` }}
-                            >
-                              <strong>{order.wooOrderId}</strong>
-                            </Link>
+                            <strong>{order.wooOrderId}</strong>
                             <small>{order.paymentMethod || "POS"}</small>
                           </div>
                         </div>
