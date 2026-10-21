@@ -293,17 +293,16 @@ export default function Coupons({
     // SUMMARY
     // =========================================================
 
-    const activeCount = coupons.filter(
-        (coupon) => coupon.status === "Active"
+    const fixedCartCount = filteredCoupons.filter(
+        (coupon) => coupon.type === "Fixed cart discount"
     ).length;
 
     const expiredCount = coupons.filter(
         (coupon) => coupon.status === "Expired"
     ).length;
 
-    const usedCount = coupons.filter(
-        (coupon) =>
-            Number(coupon.usedCount || 0) > 0
+    const percentageCount = filteredCoupons.filter(
+        (coupon) => coupon.type === "Percentage discount"
     ).length;
 
     // =========================================================
@@ -545,37 +544,37 @@ export default function Coupons({
 
                 </div>
 
-                {/* ACTIVE */}
+                {/* FIXED CART DISCOUNT */}
 
                 <div className="coupon-summary-card">
 
                     <div className="coupon-summary-icon green">
-                        <i className="bi bi-check-circle" />
+                        <i className="bi bi-cart" />
                     </div>
 
                     <div>
-                        <span>Active</span>
+                        <span>Fixed cart discount</span>
 
                         <strong>
-                            {activeCount}
+                            {fixedCartCount}
                         </strong>
                     </div>
 
                 </div>
 
-                {/* USED */}
+                {/* PERCENTAGE DISCOUNT */}
 
                 <div className="coupon-summary-card">
 
                     <div className="coupon-summary-icon orange">
-                        <i className="bi bi-clock-history" />
+                        <i className="bi bi-percent" />
                     </div>
 
                     <div>
-                        <span>Used</span>
+                        <span>Percentage discount</span>
 
                         <strong>
-                            {usedCount}
+                            {percentageCount}
                         </strong>
                     </div>
 
@@ -708,8 +707,8 @@ export default function Coupons({
                             <tr>
 
                                 <th>Code</th>
-                                <th>Issued Order ID</th>
-                                <th>Used Order ID</th>
+                                {/* <th>Issued Order ID</th> */}
+                                {/* <th>Used Order ID</th> */}
                                 <th>Coupon Type</th>
                                 <th>Coupon Amount</th>
                                 <th>Usage / Limit</th>
@@ -737,7 +736,7 @@ export default function Coupons({
                                 )
                             ) : (
                                 <tr>
-                                    <td className="coupons-table-empty" colSpan="9">
+                                    <td className="coupons-table-empty" colSpan="7">
                                         <div className="products-table-empty-state">
                                 
                                             <strong>
@@ -1159,6 +1158,7 @@ function CouponRow({ coupon, onView, onEdit, onDelete }) {
                 ISSUED ORDER ID
             ================================================= */}
 
+            {/*
             <td>
 
                 <OrderList
@@ -1166,11 +1166,13 @@ function CouponRow({ coupon, onView, onEdit, onDelete }) {
                 />
 
             </td>
+            */}
 
             {/* =================================================
                 USED ORDER ID
             ================================================= */}
 
+            {/*
             <td>
 
                 <OrderList
@@ -1178,6 +1180,7 @@ function CouponRow({ coupon, onView, onEdit, onDelete }) {
                 />
 
             </td>
+            */}
 
             {/* =================================================
                 COUPON TYPE
