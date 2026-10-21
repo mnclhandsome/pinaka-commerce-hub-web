@@ -962,7 +962,7 @@ export default function Vendors({
 
           <label>
             <span>
-              Vendor Name <b>*</b>
+              Vendor Name <span className="text-red-500">*</span>
             </span>
 
             <input
@@ -986,7 +986,7 @@ export default function Vendors({
 
           <label>
             <span>
-              Vendor Type <b>*</b>
+              Vendor Type <span className="text-red-500">*</span>
             </span>
 
             <select
@@ -1020,7 +1020,7 @@ export default function Vendors({
             <label>
               <span>
                 Contact Person Name{" "}
-                <b>*</b>
+                <span className="text-red-500">*</span>
               </span>
 
               <input
@@ -1049,7 +1049,7 @@ export default function Vendors({
 
           <label>
             <span>
-              Phone Number <b>*</b>
+              Phone Number <span className="text-red-500">*</span>
             </span>
 
             <input
@@ -1076,7 +1076,7 @@ export default function Vendors({
 
           <label>
             <span>
-              Email Address <b>*</b>
+              Email Address <span className="text-red-500">*</span>
             </span>
 
             <input
@@ -1100,7 +1100,7 @@ export default function Vendors({
 
           <label>
             <span>
-              Products Supplied <b>*</b>
+              Products Supplied <span className="text-red-500">*</span>
             </span>
 
             <input
@@ -1126,7 +1126,7 @@ export default function Vendors({
 
           <label>
             <span>
-              Address Line 1 <b>*</b>
+              Address Line 1 <span className="text-red-500">*</span>
             </span>
 
             <input
@@ -1175,7 +1175,7 @@ export default function Vendors({
 
           <label>
             <span>
-              City <b>*</b>
+              City <span className="text-red-500">*</span>
             </span>
 
             <input
@@ -1199,7 +1199,7 @@ export default function Vendors({
 
           <label>
             <span>
-              State <b>*</b>
+              State <span className="text-red-500">*</span>
             </span>
 
             <select
@@ -1223,7 +1223,7 @@ export default function Vendors({
 
           <label>
             <span>
-              ZIP Code <b>*</b>
+              ZIP Code <span className="text-red-500">*</span>
             </span>
 
             <input
@@ -1249,7 +1249,7 @@ export default function Vendors({
 
           <label>
             <span>
-              Country <b>*</b>
+              Country <span className="text-red-500">*</span>
             </span>
 
             <select
@@ -1275,7 +1275,7 @@ export default function Vendors({
             viewingId !== null) && (
             <label>
               <span>
-                Status <b>*</b>
+                Status <span className="text-red-500">*</span>
               </span>
 
               <select

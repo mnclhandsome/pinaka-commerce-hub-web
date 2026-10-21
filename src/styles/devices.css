@@ -157,43 +157,49 @@
   min-height: 95px;
   padding: 10px;
   box-sizing: border-box;
-
   display: flex;
   align-items: center;
   gap: 0;
 
   background: linear-gradient(
-    135deg,
+    120deg,
     #fff 0%,
     #f3efff 100%
   );
 
-  border: 1px solid #edf0f5;
+  border-color: #e4dcf5;
+  border: 1px solid #e4dcf5;
   border-radius: 8px;
 }
 
 .device-stat-card:has(.device-stat-icon.green) {
   background: linear-gradient(
-    135deg,
+    120deg,
     #fff 0%,
     #eafaf2 100%
   );
+  border-color: #d9f0e4;
+  border: 1px solid #d9f0e4;
 }
 
 .device-stat-card:has(.device-stat-icon.orange) {
   background: linear-gradient(
-    135deg,
+    120deg,
     #fff 0%,
     #fff5e5 100%
   );
+  border-color: #fff1df;
+  border: 1px solid #fff1df;
 }
 
 .device-stat-card:has(.device-stat-icon.red) {
   background: linear-gradient(
-    135deg,
+    120deg,
     #fff 0%,
     #fff0f2 100%
   );
+  border-color: #ffe9ea;
+  border: 1px solid #ffe9ea;
 }
 
 .device-stat-icon {
@@ -201,13 +207,9 @@
   height: 40px;
   min-width: 40px;
   flex-shrink: 0;
-
   margin: 0 18px 0 6px;
-
   border-radius: 50%;
-
   font-size: 16px;
-
   display: flex;
   align-items: center;
   justify-content: center;

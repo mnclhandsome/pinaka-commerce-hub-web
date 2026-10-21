@@ -469,7 +469,10 @@
 
 .store-types-list-card > .pagination-container {
   width: 100%;
-  padding: 16px 0;
+  height: auto;
+  min-height: auto;
+  margin-top: 12px;
+  padding: 0;
   background: transparent;
 }
 

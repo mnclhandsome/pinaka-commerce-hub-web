@@ -513,6 +513,14 @@ export default function StoreConfiguration() {
     [store]
   );
 
+  const isWebsiteConnection = section === "overview" || location.pathname.endsWith("/overview");
+  const headerStatusText = isWebsiteConnection
+    ? "Website Connected"
+    : store?.status || "Active";
+  const headerStatusClass = isWebsiteConnection
+    ? "active"
+    : statusClass;
+
   const displayStoreCode = store?.storeCode || (String(store?.id || "").startsWith("STR-") ? store.id : "");
   const displayStoreName = store?.name && !isUuid(store.name)
     ? store.name
@@ -680,11 +688,11 @@ export default function StoreConfiguration() {
                 </div>
 
                 <span
-                  className={`store-status ${statusClass}`}
+                  className={`store-status ${headerStatusClass}`}
                 >
-                  {connected
-                    ? "Website Connected"
-                    : store?.status || "Active"}
+                  {headerStatusText}
+
+
                 </span>
 
               </div>

@@ -316,13 +316,19 @@
 }
 
 .merchant-vendors th:nth-child(7),
-.merchant-vendors td:nth-child(7) {
-    width: 8%;
+.merchant-vendors td:nth-child(7),
+.merchant-vendors th.mv-status-th,
+.merchant-vendors td.mv-status-cell {
+    width: 130px;
+    min-width: 125px;
+    overflow: visible !important;
+    text-overflow: clip !important;
 }
 
 .merchant-vendors th:nth-child(8),
 .merchant-vendors td:nth-child(8) {
-    width: 8%;
+    width: 90px;
+    min-width: 80px;
 }
 
 /* =========================================================
@@ -486,6 +492,8 @@
     box-shadow: none !important;
     text-transform: capitalize !important;
     vertical-align: middle !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
 }
 
 /* Active */
@@ -522,8 +530,11 @@
    ACTIONS COLUMN
 ========================================================= */
 
-.merchant-vendors td:last-child {
-    overflow: visible;
+.merchant-vendors td:last-child,
+.merchant-vendors td.mv-status-cell,
+.merchant-vendors td:has(.mv-badge) {
+    overflow: visible !important;
+    text-overflow: clip !important;
 }
 
 .merchant-vendors .mv-actions {

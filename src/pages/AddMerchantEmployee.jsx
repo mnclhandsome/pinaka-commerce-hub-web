@@ -484,7 +484,7 @@ export function MerchantEmployeeForm({
                     className={`employee-field employee-phone-field${errors.phone ? " employee-phone-invalid" : ""}`}
                   >
                     <label>
-                      Phone Number <span>*</span>
+                      Phone Number <span className="text-red-500">*</span>
                     </label>
 
                     <PhoneInput
@@ -515,7 +515,7 @@ export function MerchantEmployeeForm({
 
                   <div className="employee-field">
                     <label>
-                      Date of Birth <span>*</span>
+                      Date of Birth <span className="text-red-500">*</span>
                     </label>
 
                     <div className="input-with-icon">
@@ -538,7 +538,7 @@ export function MerchantEmployeeForm({
                   <SelectField
                     label={
                       <>
-                        Gender <span>*</span>
+                        Gender <span className="text-red-500">*</span>
                       </>
                     }
                     name="gender"
@@ -566,7 +566,7 @@ export function MerchantEmployeeForm({
                   <FormField
                     label={
                       <>
-                        Address Line 1 <span>*</span>
+                        Address Line 1 <span className="text-red-500">*</span>
                       </>
                     }
                     name="address1"
@@ -688,7 +688,7 @@ export function MerchantEmployeeForm({
 
                   <div className="employee-field">
                     <label>
-                      Temporary Password <span>*</span>
+                      Temporary Password <span className="text-red-500">*</span>
                     </label>
 
                     <div className="password-input">
@@ -796,7 +796,7 @@ function FormField({
   return (
     <div className="employee-field">
       <label>
-        {label} {required && <span>*</span>}
+        {label} {required && <span className="text-red-500">*</span>}
       </label>
 
       <input
@@ -831,7 +831,7 @@ function SelectField({
   return (
     <div className="employee-field">
       <label>
-        {label} {required && <span>*</span>}
+        {label} {required && <span className="text-red-500">*</span>}
       </label>
 
       <div className="employee-select">

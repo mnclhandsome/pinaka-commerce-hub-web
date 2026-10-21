@@ -553,9 +553,17 @@
 }
 
 .role-pagination {
-  margin-top: 15px;
+  margin-top: 12px;
   color: #6380ae;
   font-size: 13px;
+}
+
+.role-pagination .pagination-container {
+  width: 100%;
+  height: auto;
+  min-height: auto;
+  padding: 0;
+  background: transparent;
 }
 
 /* Delete confirmation */

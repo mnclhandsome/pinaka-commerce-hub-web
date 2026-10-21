@@ -471,6 +471,8 @@ const applySavedRolePermissions = (
   }
   return next;
 };
+const renderFieldLabel = (label) => { if (label == null || typeof label !== "string") return label; if (!label.includes("*")) return label; const parts = label.split("*"); return (<>{parts.map((part, index) => (<span key={index}>{part}{index < parts.length - 1 && (<span className="text-red-500" style={{ color: "#dc2626" }}>*</span>)}</span>))}</>); };
+
 const Field = ({
   label,
   value,
@@ -483,7 +485,7 @@ const Field = ({
 }) => (
   <label className={`sf-field${invalid ? " sf-field-invalid" : ""}`}>
     <span>
-      {label}
+      {renderFieldLabel(label)}
       {optional && <small> (Optional)</small>}
     </span>
     <input
@@ -509,7 +511,7 @@ const SelectField = ({
 }) => (
   <label className={`sf-field${invalid ? " sf-field-invalid" : ""}`}>
     <span>
-      {label}
+      {renderFieldLabel(label)}
       {optional && <small> (Optional)</small>}
     </span>
     <FilterDropdown
@@ -2654,7 +2656,7 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
           >
             <div className="sf-form-grid sf-basic-grid">
               <div className="sf-field sf-merchant-field">
-                <label htmlFor="sf-merchant">Merchant *</label>
+                <label htmlFor="sf-merchant">Merchant <span className="text-red-500" style={{ color: "#dc2626" }}>*</span></label>
                 <FilterDropdown
                   id="sf-merchant"
                   aria-required="true"

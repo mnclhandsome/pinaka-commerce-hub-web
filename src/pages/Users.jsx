@@ -1423,6 +1423,13 @@ export default function Users({
                                                 key={
                                                     user.id
                                                 }
+                                                style={{ cursor: "pointer" }}
+                                                onClick={(event) => {
+                                                    if (event.target.closest('button, a, input, select, textarea, label, [role="button"], [contenteditable="true"]')) {
+                                                        return;
+                                                    }
+                                                    setSelectedUser(user);
+                                                }}
                                             >
 
                                                 {/* USER */}
@@ -1524,7 +1531,7 @@ export default function Users({
 
                                                 <td>
 
-                                                    <div className="table-actions">
+                                                    <div className="table-actions" onClick={(e) => e.stopPropagation()}>
 
                                                         {/* VIEW */}
 
@@ -1532,11 +1539,12 @@ export default function Users({
                                                             type="button"
                                                             className="table-action"
                                                             title="View User"
-                                                            onClick={() =>
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
                                                                 setSelectedUser(
                                                                     user
-                                                                )
-                                                            }
+                                                                );
+                                                            }}
                                                         >
                                                             <i className="bi bi-eye" />
                                                         </button>
@@ -1548,11 +1556,12 @@ export default function Users({
                                                             type="button"
                                                             className="table-action"
                                                             title="Edit User"
-                                                            onClick={() =>
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
                                                                 startEdit(
                                                                     user
-                                                                )
-                                                            }
+                                                                );
+                                                            }}
                                                         >
                                                             <i className="bi bi-pencil" />
                                                         </button>

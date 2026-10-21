@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowLeft, Pencil } from "lucide-react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import {
@@ -74,10 +74,12 @@ function merchantDetailToDraft(result, fallback = {}) {
   };
 }
 
+function renderFieldLabel(label) { if (label == null || typeof label !== "string") return label; if (!label.includes("*")) return label; const parts = label.split("*"); return (<>{parts.map((part, index) => (<span key={index}>{part}{index < parts.length - 1 && (<span className="text-red-500" style={{ color: "#dc2626" }}>*</span>)}</span>))}</>); }
+
 function Field({ label, value, onChange, error, ...props }) {
   return (
     <label className={`pch-field${error ? " pch-field-invalid" : ""}`}>
-      {label}
+      {renderFieldLabel(label)}
       <input {...props} aria-invalid={Boolean(error)} value={value ?? ""} onChange={(event) => onChange?.(event.target.value)} />
       {error && <span className="pch-field-error" role="alert">{error}</span>}
     </label>
@@ -87,7 +89,7 @@ function Field({ label, value, onChange, error, ...props }) {
 function Select({ label, value, options, onChange, placeholder, error, ...props }) {
   return (
     <label className={`pch-field${error ? " pch-field-invalid" : ""}`}>
-      {label}
+      {renderFieldLabel(label)}
       <FilterDropdown {...props} aria-label={label} aria-required={props.required} aria-invalid={Boolean(error)} value={value ?? ""} onChange={(event) => onChange(event.target.value)}>
         <option value="">{placeholder || `Select ${label.replace(/\s*\*$/, "")}`}</option>
         {options.map((option) => {
@@ -422,7 +424,7 @@ function MerchantEditor({ merchantId, localMerchants, onSave }) {
               <Field label="Last Name *" placeholder="Enter last name" value={merchant.lastName} required error={fieldErrors.lastName} onChange={(v) => updateField("lastName", v)} />
               <Field label="Email Address *" type="email" placeholder="Enter email address" value={merchant.email} required error={fieldErrors.email} onChange={(v) => updateField("email", v)} />
               <div className={`pch-field pch-phone-field${fieldErrors.phone ? " pch-field-invalid" : ""}`}>
-                <label htmlFor="merchant-phone">Phone Number *</label>
+                <label htmlFor="merchant-phone">Phone Number <span className="text-red-500" style={{ color: "#dc2626" }}>*</span></label>
                 <PhoneInput country="in" enableSearch countryCodeEditable={false} autoFormat value={merchant.phone} onMount={(_value, data) => { if (data?.countryCode) setPhoneCountry(data.countryCode); if (data?.dialCode) setPhoneDialCode(data.dialCode); }} onChange={(value, data) => { updateField("phone", value); if (data?.countryCode) setPhoneCountry(data.countryCode); if (data?.dialCode) setPhoneDialCode(data.dialCode); }} inputProps={{ id: "merchant-phone", name: "phone", required: true, autoComplete: "tel", "aria-invalid": Boolean(fieldErrors.phone) }} />
                 {fieldErrors.phone && <span className="pch-field-error" role="alert">{fieldErrors.phone}</span>}
               </div>

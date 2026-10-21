@@ -675,7 +675,7 @@ export default function CreatePlan() {
 
             <label className="plan-field">
               <span>
-                Plan Name <b>*</b>
+                Plan Name <span className="text-red-500">*</span>
               </span>
               <input
                 {...textInputProps}
@@ -689,7 +689,7 @@ export default function CreatePlan() {
 
             <label className="plan-field">
               <span>
-                Applicable Store Type <b>*</b>
+                Applicable Store Type <span className="text-red-500">*</span>
               </span>
               <select
                 name="applicableStoreType"
@@ -734,7 +734,7 @@ export default function CreatePlan() {
 
             <label className="plan-field plan-information-status-field">
               <span>
-                Status <b>*</b>
+                Status <span className="text-red-500">*</span>
               </span>
 
               <select
@@ -791,7 +791,7 @@ export default function CreatePlan() {
           <div className="plan-pricing-grid three-columns">
             <label className="plan-field">
               <span>
-                Pricing Basis <b>*</b>
+                Pricing Basis <span className="text-red-500">*</span>
               </span>
               <select
                 autoComplete="off"
@@ -809,7 +809,7 @@ export default function CreatePlan() {
 
             <label className="plan-field">
               <span>
-                Currency <b>*</b>
+                Currency <span className="text-red-500">*</span>
               </span>
               <select
                 autoComplete="off"
@@ -826,7 +826,7 @@ export default function CreatePlan() {
 
             <label className="plan-field">
               <span>
-                Billing Frequency <b>*</b>
+                Billing Frequency <span className="text-red-500">*</span>
               </span>
               <select
                 autoComplete="off"
@@ -845,7 +845,7 @@ export default function CreatePlan() {
           <div className="plan-pricing-grid three-columns">
             <label className="plan-field">
               <span>
-                Base Subscription Price <b>*</b>
+                Base Subscription Price <span className="text-red-500">*</span>
               </span>
               <div className="plan-price-input">
                 <input
@@ -863,7 +863,7 @@ export default function CreatePlan() {
 
             <label className="plan-field">
               <span>
-                Stores Included <b>*</b>
+                Stores Included <span className="text-red-500">*</span>
               </span>
               <input
                 {...textInputProps}
@@ -877,7 +877,7 @@ export default function CreatePlan() {
 
             <label className="plan-field">
               <span>
-                POS Terminals Included <b>*</b>
+                POS Terminals Included <span className="text-red-500">*</span>
               </span>
               <input
                 {...textInputProps}
@@ -925,7 +925,7 @@ export default function CreatePlan() {
 
             <label className="plan-field">
               <span>
-                Employee Licenses Included <b>*</b>
+                Employee Licenses Included <span className="text-red-500">*</span>
               </span>
               <input
                 {...textInputProps}
@@ -1005,7 +1005,7 @@ export default function CreatePlan() {
           <div className="plan-features-limits-grid">
             <section className="plan-feature-panel">
               <h3>
-                Available Features <b>*</b>
+                Available Features <span className="text-red-500">*</span>
               </h3>
 
               {storeTypeFeaturesLoading && (

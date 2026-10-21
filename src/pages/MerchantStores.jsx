@@ -389,6 +389,13 @@ export default function MerchantStores({
 
                       return (
                         <tr
+                          style={{ cursor: "pointer" }}
+                          onClick={(event) => {
+                            if (event.target.closest('button, a, input, select, textarea, label, [role="button"], [contenteditable="true"]')) {
+                              return;
+                            }
+                            handleStoreOverview(store);
+                          }}
                           key={
                             store.id ??
                             store.storeId ??
@@ -401,7 +408,10 @@ export default function MerchantStores({
                               type="button"
                               className="store-name-cell store-name-link"
                               title={`View ${storeName}`}
-                              onClick={() => handleStoreOverview(store)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleStoreOverview(store);
+                              }}
                             >
                               <div className="store-name-info">
                                 <strong>{storeName}</strong>

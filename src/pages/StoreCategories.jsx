@@ -743,6 +743,13 @@ export default function StoreCategories({
 
                   <tr
                     key={item.id}
+                    style={{ cursor: "pointer" }}
+                    onClick={(event) => {
+                      if (event.target.closest('button, a, input, select, textarea, label, [role="button"], [contenteditable="true"]')) {
+                        return;
+                      }
+                      openView(item, "category");
+                    }}
                   >
 
                     <td>
@@ -824,12 +831,13 @@ export default function StoreCategories({
                         type="button"
                         className="table-action"
                         title="View Category"
-                        onClick={() =>
+                        onClick={(e) => {
+                          e.stopPropagation();
                           openView(
                             item,
                             "category"
-                          )
-                        }
+                          );
+                        }}
                       >
                         <i className="bi bi-eye" />
                       </button>
@@ -961,6 +969,13 @@ export default function StoreCategories({
 
                   <tr
                     key={item.id}
+                    style={{ cursor: "pointer" }}
+                    onClick={(event) => {
+                      if (event.target.closest('button, a, input, select, textarea, label, [role="button"], [contenteditable="true"]')) {
+                        return;
+                      }
+                      openView(item, "tag");
+                    }}
                   >
 
                     <td>
@@ -1035,12 +1050,13 @@ export default function StoreCategories({
                         type="button"
                         className="table-action"
                         title="View Tag"
-                        onClick={() =>
+                        onClick={(e) => {
+                          e.stopPropagation();
                           openView(
                             item,
                             "tag"
-                          )
-                        }
+                          );
+                        }}
                       >
                         <i className="bi bi-eye" />
                       </button>
@@ -1176,6 +1192,13 @@ export default function StoreCategories({
 
                   <tr
                     key={item.id}
+                    style={{ cursor: "pointer" }}
+                    onClick={(event) => {
+                      if (event.target.closest('button, a, input, select, textarea, label, [role="button"], [contenteditable="true"]')) {
+                        return;
+                      }
+                      openView(item, "attribute");
+                    }}
                   >
 
                     <td>
@@ -1300,12 +1323,13 @@ export default function StoreCategories({
                         type="button"
                         className="table-action"
                         title="View Attribute"
-                        onClick={() =>
+                        onClick={(e) => {
+                          e.stopPropagation();
                           openView(
                             item,
                             "attribute"
-                          )
-                        }
+                          );
+                        }}
                       >
                         <i className="bi bi-eye" />
                       </button>
