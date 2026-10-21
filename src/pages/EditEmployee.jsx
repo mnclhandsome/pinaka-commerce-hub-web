@@ -731,7 +731,7 @@ export default function EditEmployee({ employee: employeeProp, onBack: onBackPro
                   }`}
                 >
                   <label>
-                    Phone Number <span>*</span>
+                    Phone Number <span className="text-red-500">*</span>
                   </label>
 
                   <input
@@ -755,7 +755,7 @@ export default function EditEmployee({ employee: employeeProp, onBack: onBackPro
                 {/* DATE OF BIRTH */}
                 <div className="employee-field">
                   <label>
-                    Date of Birth <span>*</span>
+                    Date of Birth <span className="text-red-500">*</span>
                   </label>
 
                   <div className="input-with-icon">
@@ -1081,7 +1081,7 @@ function FormField({
     <div className="employee-field">
       <label>
         {label}
-        {required && <span> *</span>}
+        {required && <span className="text-red-500">*</span>}
       </label>
 
       <input
@@ -1118,7 +1118,7 @@ function SelectField({
     <div className="employee-field">
       <label>
         {label}
-        {required && <span> *</span>}
+        {required && <span className="text-red-500">*</span>}
       </label>
 
       <div className="employee-select">

@@ -270,6 +270,19 @@ export default function Orders({
     />
   );
 
+  const handleViewOrder = (order) => {
+    if (embedded) {
+      setViewedOrder(order);
+      return;
+    }
+
+    navigate(`/orders/${encodeURIComponent(order.id)}?${new URLSearchParams({
+      ...(selectedMerchant ? { merchant: selectedMerchant } : {}),
+      ...(selectedStore ? { store: selectedStore } : {}),
+      number: order.wooOrderId,
+    }).toString()}`, { state: { from: `${location.pathname}${location.search}` } });
+  };
+
   if (embedded && viewedOrder) {
     return <OrderDetail
       embedded
@@ -300,7 +313,7 @@ export default function Orders({
         <SummaryCard icon="bi-cash-stack" tone="blue" label="Total Value" value={`$${totalAmount.toFixed(2)}`} meta="Across loaded orders" metaTone="info" />
       </div>
 
-      <div className="orders-card">
+      <div className="orders-card w-full max-w-full min-w-0 overflow-hidden">
         {ordersToolbar}
 
         {error && <div className="orders-banner error">{error}</div>}
@@ -310,8 +323,8 @@ export default function Orders({
           <>
             
 
-            <div className="orders-table-wrapper">
-              <table className="orders-table">
+            <div className="orders-table-wrapper w-full overflow-x-auto">
+              <table className="orders-table w-full min-w-[880px] text-left">
                 <thead>
                   <tr>
                     <th>Order ID</th>
@@ -325,7 +338,16 @@ export default function Orders({
                 </thead>
                 <tbody>
                   {paginatedOrders.length ? paginatedOrders.map((order) => (
-                    <tr key={order.id}>
+                    <tr
+                      key={order.id}
+                      style={{ cursor: "pointer" }}
+                      onClick={(event) => {
+                        if (event.target.closest('button, a, input, select, textarea, label, [role="button"], [contenteditable="true"]')) {
+                          return;
+                        }
+                        handleViewOrder(order);
+                      }}
+                    >
                       <td>
                         <div className="order-id-cell">
                           <div>
@@ -355,18 +377,7 @@ export default function Orders({
                       <td><strong className="order-total">{order.total}</strong></td>
                       <td className="orders-actions-cell">
                         <ListActions
-                          onView={() => {
-                            if (embedded) {
-                              setViewedOrder(order);
-                              return;
-                            }
-
-                            navigate(`/orders/${encodeURIComponent(order.id)}?${new URLSearchParams({
-                              ...(selectedMerchant ? { merchant: selectedMerchant } : {}),
-                              ...(selectedStore ? { store: selectedStore } : {}),
-                              number: order.wooOrderId,
-                            }).toString()}`, { state: { from: `${location.pathname}${location.search}` } });
-                          }}
+                          onView={() => handleViewOrder(order)}
                           viewLabel={`View order ${order.wooOrderId}`}
                         />
                       </td>

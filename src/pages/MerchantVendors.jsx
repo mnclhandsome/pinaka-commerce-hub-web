@@ -609,7 +609,7 @@ useEffect(() => {
                     : "mv-inactive"
             }`}
         >
-             {vendor.status}
+            {vendor.status}
         </span>
     );
 
@@ -692,7 +692,7 @@ useEffect(() => {
                           "status",
                       ]
                 ).map((key) => (
-                    <th key={key}>
+                    <th key={key} className={key === "status" ? "mv-status-th" : undefined}>
                         {select ? (
                             {
                                 code: "Vendor Code",
@@ -917,6 +917,13 @@ useEffect(() => {
                                         .map((vendor) => (
                                             <tr
                                                 key={vendor.id}
+                                                style={{ cursor: "pointer" }}
+                                                onClick={(event) => {
+                                                    if (event.target.closest('button, a, input, select, textarea, label, [role="button"], [contenteditable="true"]')) {
+                                                        return;
+                                                    }
+                                                    setModal({ type: "view", vendor });
+                                                }}
                                             >
 
                                                 <td>
@@ -947,7 +954,7 @@ useEffect(() => {
                                                     </td>
                                                 )}
 
-                                                <td>
+                                                <td className="mv-status-cell">
                                                     {badge(vendor)}
                                                 </td>
 

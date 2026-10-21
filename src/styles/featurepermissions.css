@@ -1024,14 +1024,19 @@
    ========================================================= */
 
 .feature-permissions-page .fp-list-footer {
- width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 20px;
+  width: 100%;
+  display: block;
   margin: 0;
-  padding: 18px 0 0;
+  padding: 12px 0 0;
   box-sizing: border-box;
+}
+
+.feature-permissions-page .fp-list-footer .pagination-container {
+  width: 100%;
+  height: auto;
+  min-height: auto;
+  padding: 0;
+  background: transparent;
 }
 
 .feature-permissions-page .fp-list-footer > span {

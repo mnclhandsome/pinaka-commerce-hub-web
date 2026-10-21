@@ -18,13 +18,16 @@ export default function ListActions({
     deleteIconClassName = "bi bi-trash3",
 }) {
     return (
-        <div className="list-actions">
+        <div className="list-actions" onClick={(event) => event.stopPropagation()}>
             {onView && (
                 <button
                     type="button"
                     className="list-action-btn"
                     disabled={viewDisabled}
-                    onClick={(event) => onView(event)}
+                    onClick={(event) => {
+                        event.stopPropagation();
+                        onView(event);
+                    }}
                     title={viewLabel}
                     aria-label={viewLabel}
                 >
@@ -37,13 +40,14 @@ export default function ListActions({
                     type="button"
                     className={`list-action-btn ${editButtonClassName}`.trim()}
                     disabled={editDisabled}
-                    onClick={(event) => onEdit(event)}
+                    onClick={(event) => {
+                        event.stopPropagation();
+                        onEdit(event);
+                    }}
                     title={editLabel}
                     aria-label={editLabel}
                 >
-                    
                     <i className="bi bi-pencil list-action-edit-icon" aria-hidden="true" />
-                  
                 </button>
             )}
 
@@ -52,7 +56,10 @@ export default function ListActions({
                     type="button"
                     className="list-action-btn text-success"
                     disabled={activateDisabled}
-                    onClick={(event) => onActivate(event)}
+                    onClick={(event) => {
+                        event.stopPropagation();
+                        onActivate(event);
+                    }}
                     title={activateLabel}
                     aria-label={activateLabel}
                 >
@@ -65,7 +72,10 @@ export default function ListActions({
                     type="button"
                     className={`list-action-btn text-danger ${deleteButtonClassName}`.trim()}
                     disabled={deleteDisabled}
-                    onClick={(event) => onDelete(event)}
+                    onClick={(event) => {
+                        event.stopPropagation();
+                        onDelete(event);
+                    }}
                     title={deleteLabel}
                     aria-label={deleteLabel}
                 >

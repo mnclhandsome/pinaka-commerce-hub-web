@@ -126,6 +126,21 @@ table thead th {
   vertical-align: middle !important;
 }
 
+/* Prevent CSS text-overflow ellipsis (...) from ever appearing on table cells containing status badges/pills */
+td:has(.status-badge, .status-badge--active, .status-badge--inactive, .store-status, .store-status-badge, .mv-badge, .pc-badge, .sf-status-pill, .ea-profile-status, .success-status-pill, .detail-status, .store-device-view-status, .mdl-badge, .mt-badge, .tenders-status, .device-status, .order-status, .vendors-status, .employee-status),
+th:has(.status-badge, .status-badge--active, .status-badge--inactive, .store-status, .store-status-badge, .mv-badge, .pc-badge, .sf-status-pill, .ea-profile-status, .success-status-pill, .detail-status, .store-device-view-status, .mdl-badge, .mt-badge, .tenders-status, .device-status, .order-status, .vendors-status, .employee-status) {
+  overflow: visible !important;
+  text-overflow: clip !important;
+}
+
+/* Prevent CSS text-overflow ellipsis (...) from ever appearing on table cells containing status badges/pills */
+td:has(.status-badge, .status-badge--active, .status-badge--inactive, .store-status, .store-status-badge, .mv-badge, .pc-badge, .sf-status-pill, .ea-profile-status, .success-status-pill, .detail-status, .store-device-view-status, .mdl-badge, .mt-badge, .tenders-status, .device-status, .order-status, .vendors-status, .employee-status),
+th:has(.status-badge, .status-badge--active, .status-badge--inactive, .store-status, .store-status-badge, .mv-badge, .pc-badge, .sf-status-pill, .ea-profile-status, .success-status-pill, .detail-status, .store-device-view-status, .mdl-badge, .mt-badge, .tenders-status, .device-status, .order-status, .vendors-status, .employee-status) {
+  overflow: visible !important;
+  text-overflow: clip !important;
+}
+
+
 /* Status Dot: handles <i>, <b>, .status-dot, and .status-badge__dot */
 .status-badge i,
 .status-badge b,
@@ -161,6 +176,13 @@ table thead th {
   border: none !important;
   box-shadow: none !important;
   vertical-align: middle !important;
+}
+
+/* Prevent CSS text-overflow ellipsis (...) from ever appearing on table cells containing status badges/pills */
+td:has(.status-badge, .status-badge--active, .status-badge--inactive, .store-status, .store-status-badge, .mv-badge, .pc-badge, .sf-status-pill, .ea-profile-status, .success-status-pill, .detail-status, .store-device-view-status, .mdl-badge, .mt-badge, .tenders-status, .device-status, .order-status, .vendors-status, .employee-status),
+th:has(.status-badge, .status-badge--active, .status-badge--inactive, .store-status, .store-status-badge, .mv-badge, .pc-badge, .sf-status-pill, .ea-profile-status, .success-status-pill, .detail-status, .store-device-view-status, .mdl-badge, .mt-badge, .tenders-status, .device-status, .order-status, .vendors-status, .employee-status) {
+  overflow: visible !important;
+  text-overflow: clip !important;
 }
 
 /* Suppress any icon font glyphs (e.g. Bootstrap icon ::before) so the dot is a true 8x8 circle */
@@ -212,6 +234,14 @@ table thead th {
   padding: 0 !important;
   vertical-align: middle !important;
 }
+
+/* Prevent CSS text-overflow ellipsis (...) from ever appearing on table cells containing status badges/pills */
+td:has(.status-badge, .status-badge--active, .status-badge--inactive, .store-status, .store-status-badge, .mv-badge, .pc-badge, .sf-status-pill, .ea-profile-status, .success-status-pill, .detail-status, .store-device-view-status, .mdl-badge, .mt-badge, .tenders-status, .device-status, .order-status, .vendors-status, .employee-status),
+th:has(.status-badge, .status-badge--active, .status-badge--inactive, .store-status, .store-status-badge, .mv-badge, .pc-badge, .sf-status-pill, .ea-profile-status, .success-status-pill, .detail-status, .store-device-view-status, .mdl-badge, .mt-badge, .tenders-status, .device-status, .order-status, .vendors-status, .employee-status) {
+  overflow: visible !important;
+  text-overflow: clip !important;
+}
+
 
 /* Status Badge Text Span */
 .status-badge__text {
@@ -1226,4 +1256,26 @@ td:has(.list-actions > button:only-child) {
   white-space: normal !important;
   overflow-wrap: anywhere !important;
   word-break: break-word !important;
+}
+
+
+/* Required Field Asterisks across all forms, flows, modals, and drawers */
+.text-red-500,
+.required-star,
+.required-asterisk,
+.discount-required,
+span.required,
+label span.required,
+.employee-field label span,
+.field label span,
+.field-label span.req,
+.plan-field b,
+.plan-feature-panel b,
+.vendors-form label b,
+.tenders-form label b,
+.role-field b,
+.feature-field label span,
+.fp-field label span,
+.coupon-form-field span .text-red-500 {
+  color: #dc2626 !important;
 }

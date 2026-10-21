@@ -436,7 +436,7 @@ async function confirmDeleteTemplate() {
 
 <label className="role-field role-code-field">
   <span>
-    Role Template Code <b>*</b>
+    Role Template Code <span className="text-red-500">*</span>
   </span>
 
   <div className="role-input-wrap role-placeholder">
@@ -466,7 +466,7 @@ async function confirmDeleteTemplate() {
 <label className="role-field role-name-field">
 <span>
 
-                Role Template Name <b>*</b>
+                Role Template Name <span className="text-red-500">*</span>
 </span>
 <div className="role-input-wrap">
 <input
@@ -487,7 +487,7 @@ async function confirmDeleteTemplate() {
             {/* ------------------ STATUS ------------------ */}
 <label className="role-field role-status-field">
   <span>
-    Status <b>*</b>
+    Status <span className="text-red-500">*</span>
   </span>
 
   <div

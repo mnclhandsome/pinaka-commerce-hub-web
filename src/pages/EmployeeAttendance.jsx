@@ -324,6 +324,8 @@ export default function EmployeeAttendance({
   embedded = false,
   onViewRecord,
 }) {
+  const [internalRecord, setInternalRecord] = useState(null);
+  const handleView = (row) => (onViewRecord ? onViewRecord(row) : setInternalRecord(row));
   const [records, setRecords] = useState([]);
   const [employeeDirectory, setEmployeeDirectory] = useState([]);
 
@@ -559,6 +561,10 @@ export default function EmployeeAttendance({
     link.click();
     link.remove();
     URL.revokeObjectURL(url);
+  }
+
+  if (internalRecord && !onViewRecord) {
+    return <AttendanceDetails record={internalRecord} store={store} onBack={() => setInternalRecord(null)} />;
   }
 
   /* ---------------------------------------------------------
@@ -801,7 +807,16 @@ export default function EmployeeAttendance({
             ) : (
               <>
                 {pageRows.map((row) => (
-                  <tr key={row.id}>
+                  <tr
+                    key={row.id}
+                    style={{ cursor: "pointer" }}
+                    onClick={(event) => {
+                      if (event.target.closest('button, a, input, select, textarea, label, [role="button"], [contenteditable="true"]')) {
+                        return;
+                      }
+                      handleView(row);
+                    }}
+                  >
                     <td>{displayDate(row.date)}</td>
                     <td>{row.code || "—"}</td>
                     <td>{row.name || "—"}</td>
@@ -821,7 +836,7 @@ export default function EmployeeAttendance({
 
                     <td>
                       <ListActions
-                        onView={() => onViewRecord?.(row)}
+                        onView={() => handleView(row)}
                         viewLabel={`View ${row.name} attendance`}
                       />
                     </td>

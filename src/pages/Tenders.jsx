@@ -465,7 +465,7 @@ async function confirmDeleteTender() {
          
 <label className="tenders-code-field">
   <span>
-    Tender Code <b>*</b>
+    Tender Code <span className="text-red-500">*</span>
   </span>
 
   <input
@@ -486,7 +486,7 @@ async function confirmDeleteTender() {
 
           <label className={fieldErrors.name ? "has-error" : ""}>
             <span>
-              Tender Name <b>*</b>
+              Tender Name <span className="text-red-500">*</span>
             </span>
 
             <input
@@ -503,7 +503,7 @@ async function confirmDeleteTender() {
 
 <label className={fieldErrors.status ? "has-error" : ""}>
   <span>
-    Status <b>*</b>
+    Status <span className="text-red-500">*</span>
   </span>
 
   <select

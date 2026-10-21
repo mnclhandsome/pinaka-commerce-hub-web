@@ -270,11 +270,14 @@
   width: 100%;
   display: block;
   box-sizing: border-box;
+  margin-top: 12px;
 }
 
 .role-templates-footer .pagination-container {
   width: 100%;
-  padding: 16px 0;
+  height: auto;
+  min-height: auto;
+  padding: 0;
   background: transparent;
   box-sizing: border-box;
 }
@@ -303,14 +306,7 @@
   border-top: 1px solid #e3e8f1;
 }
 
-.role-templates-footer {
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  width: 100%;
-  min-height: 60px;
-  box-sizing: border-box;
-}
+
 
 
 

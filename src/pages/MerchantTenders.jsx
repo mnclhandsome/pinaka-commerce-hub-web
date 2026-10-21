@@ -611,7 +611,16 @@ export default function MerchantTenders({
 
                   <tbody>
                     {paginatedRows.map((tender) => (
-                      <tr key={tender.id}>
+                      <tr
+                        key={tender.id}
+                        style={{ cursor: "pointer" }}
+                        onClick={(event) => {
+                          if (event.target.closest('button, a, input, select, textarea, label, [role="button"], [contenteditable="true"]')) {
+                            return;
+                          }
+                          setModal({ type: "view", tender });
+                        }}
+                      >
                         <td>{name(tender)}</td>
                         <td>{tender.code}</td>
                         <td>{badge(tender)}</td>

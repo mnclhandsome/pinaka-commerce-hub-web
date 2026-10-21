@@ -147,7 +147,7 @@ export default function SafeDrops({ store, storeId: storeIdProp, merchantId }) {
       ]} onClear={reset} />
       {showCustomDate && <div className="sd-custom-date"><label>From<input type="date" value={draftFrom} max={draftTo || undefined} onChange={(event) => { setDraftFrom(event.target.value); setDateError(""); }} /></label><label>To<input type="date" value={draftTo} min={draftFrom || undefined} onChange={(event) => { setDraftTo(event.target.value); setDateError(""); }} /></label><button type="button" onClick={applyCustomDate}>Apply date range</button><button className="sd-cancel-date" type="button" onClick={() => { setShowCustomDate(false); setDateError(""); }}>Cancel</button>{dateError && <p role="alert">{dateError}</p>}</div>}
       <div className="sd-table-wrap"><table className="sd-table"><thead><tr><th>Safe Drop / Shift</th><th>Employee</th><th>Denominations</th><th>Total Amount</th><th>Created At</th><th>Updated At</th><th>Actions</th></tr></thead>
-        <tbody>{!loading && !error && visibleRows.map((row, index) => { const created = dateParts(row.created); const updated = dateParts(row.updated); return <tr key={row.id || index}>
+        <tbody>{!loading && !error && visibleRows.map((row, index) => { const created = dateParts(row.created); const updated = dateParts(row.updated); return <tr key={row.id || index} style={{ cursor: "pointer" }} onClick={(event) => { if (event.target.closest('button, a, input, select, textarea, label, [role="button"], [contenteditable="true"]')) return; setSelected(row); }}>
           <td><strong className="sd-record-name" title={row.shiftId}>Safe Drop – Shift {row.shift}</strong></td>
           <td title={row.employee === "Unknown employee" ? row.createdBy : undefined}>{row.employee}</td>
           <td>{row.denominations.length ? row.denominations.map((item, itemIndex) => <span className="sd-denomination" key={`${item.count}-${item.amount}-${itemIndex}`}>{item.count} × {currency(item.amount)} = {currency(item.total)}</span>) : "-"}</td>
@@ -166,79 +166,146 @@ export default function SafeDrops({ store, storeId: storeIdProp, merchantId }) {
       headerIcon="bi-safe"
       title="Safe Drop Details"
       code={selected?.shiftId ? `Shift ID: ${selected.shiftId}` : (selected?.id ? `Drop ID: ${selected.id}` : "")}
-      size="compact"
-      hero={
-        selected
-          ? {
-              icon: "bi-vault",
-              title: `Safe Drop — Shift ${selected.shift}`,
-              subtitle: `${selected.employee || "Staff"} • ${dateParts(selected.created).date} ${dateParts(selected.created).time}`,
-              status: "Completed",
-              metricLabel: "TOTAL DROP VALUE",
-              metricValue: currency(selected.total || 0),
-            }
-          : null
-      }
-      layout="bento-2"
-      sections={
-        selected
-          ? [
-              {
-                title: "SHIFT & AUDIT SPECS",
-                className: "p-3 space-y-2 flex flex-col justify-between",
-                fields: [
-                  {
-                    label: "SHIFT REFERENCE",
-                    value: selected.shiftId,
-                    mono: true,
-                  },
-                  {
-                    label: "AUTHORIZED CASHIER",
-                    value: selected.employee,
-                  },
-                  {
-                    label: "DROPPED AT",
-                    value: `${dateParts(selected.created).date} ${dateParts(selected.created).time}`,
-                  },
-                  {
-                    label: "STATUS",
-                    value: "Completed",
-                  },
-                ],
-              },
-              {
-                title: "DENOMINATIONS BREAKDOWN",
-                className: "p-3 flex flex-col justify-between",
-                customContent: (
-                  <div className="flex flex-col justify-between h-full space-y-2">
-                    <div className="space-y-1">
-                      {selected.denominations.map((item, idx) => (
-                        <div
-                          key={idx}
-                          className="flex items-center justify-between py-1.5 px-2.5 bg-slate-50/80 rounded-md text-xs text-slate-700 border border-slate-100"
-                        >
-                          <span>
-                            {item.count} × {currency(item.amount)}
-                          </span>
-                          <strong className="text-slate-900 font-semibold">{currency(item.total)}</strong>
-                        </div>
-                      ))}
-                      {!selected.denominations.length && (
-                        <div className="text-xs text-slate-400 italic py-2">
-                          No denominations recorded
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex items-center justify-between pt-2 border-t border-slate-100 text-xs font-semibold">
-                      <span>Total Notes: <b>{selected.totalNotes || 0}</b></span>
-                      <span className="text-sm font-bold text-indigo-600">Total: {currency(selected.total)}</span>
+      maxWidth="max-w-3xl"
+      size="medium"
+    >
+      {selected && (
+        <div className="sd-modal-content">
+          {/* Hero Highlight Card */}
+          <div className="sd-modal-hero">
+            <div className="sd-modal-hero-left">
+              <div className="sd-modal-icon-box">
+                <svg
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.75"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <rect x="3" y="5" width="18" height="14" rx="3" />
+                  <line x1="3" y1="12" x2="21" y2="12" />
+                </svg>
+              </div>
+              <div className="sd-modal-hero-info">
+                <div className="sd-modal-hero-title-row">
+                  <h3 className="sd-modal-hero-title">
+                    Safe Drop — Shift {selected.shift}
+                  </h3>
+                  <span className="sd-modal-hero-pill">
+                    Completed
+                  </span>
+                </div>
+                <p className="sd-modal-hero-sub">
+                  {selected.employee || "Staff"} • {dateParts(selected.created).date} {dateParts(selected.created).time}
+                </p>
+              </div>
+            </div>
+
+            <div className="sd-modal-hero-metric">
+              <span className="sd-modal-metric-label">
+                TOTAL DROP VALUE
+              </span>
+              <p className="sd-modal-metric-val">
+                {currency(selected.total || 0)}
+              </p>
+            </div>
+          </div>
+
+          {/* Two Columns Grid */}
+          <div className="sd-modal-grid">
+            {/* Left Card: SHIFT & AUDIT SPECS */}
+            <div className="sd-modal-card">
+              <div>
+                <h4 className="sd-modal-card-title">
+                  SHIFT & AUDIT SPECS
+                </h4>
+                <div className="sd-modal-specs">
+                  <div className="sd-spec-item">
+                    <span className="sd-spec-label">
+                      SHIFT REFERENCE
+                    </span>
+                    <p className="sd-spec-val mono">
+                      {selected.shiftId || "—"}
+                    </p>
+                  </div>
+                  <div className="sd-spec-item">
+                    <span className="sd-spec-label">
+                      AUTHORIZED CASHIER
+                    </span>
+                    <p className="sd-spec-val bold">
+                      {selected.employee || "Staff"}
+                    </p>
+                  </div>
+                  <div className="sd-spec-item">
+                    <span className="sd-spec-label">
+                      DROPPED AT
+                    </span>
+                    <p className="sd-spec-val">
+                      {dateParts(selected.created).date} {dateParts(selected.created).time}
+                    </p>
+                  </div>
+                  <div className="sd-spec-item">
+                    <span className="sd-spec-label">
+                      STATUS
+                    </span>
+                    <div>
+                      <span className="sd-spec-pill">
+                        Completed
+                      </span>
                     </div>
                   </div>
-                ),
-              },
-            ]
-          : []
-      }
-    />
+                </div>
+              </div>
+            </div>
+
+            {/* Right Card: DENOMINATIONS BREAKDOWN */}
+            <div className="sd-modal-card">
+              <div>
+                <h4 className="sd-modal-card-title">
+                  DENOMINATIONS BREAKDOWN
+                </h4>
+                {/* Table Header */}
+                <div className="sd-denom-table-head">
+                  <span>DENOMINATION</span>
+                  <span className="text-center">COUNT</span>
+                  <span className="text-right">AMOUNT</span>
+                </div>
+
+                {/* Rows */}
+                <div className="sd-denom-table-body">
+                  {selected.denominations.map((item, idx) => (
+                    <div key={idx} className="sd-denom-row">
+                      <span>{currency(item.amount)}</span>
+                      <span className="text-center">{item.count}</span>
+                      <span className="text-right">{currency(item.total)}</span>
+                    </div>
+                  ))}
+                  {!selected.denominations.length && (
+                    <div className="sd-denom-empty">
+                      No denominations recorded
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Bottom Totals */}
+              <div className="sd-denom-summary">
+                <div className="sd-summary-line">
+                  <span>Total Notes:</span>
+                  <strong>{selected.totalNotes || 0}</strong>
+                </div>
+                <div className="sd-summary-line">
+                  <span>Total Amount:</span>
+                  <strong>{currency(selected.total || 0)}</strong>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </BentoDetailModal>
   </main>;
 }

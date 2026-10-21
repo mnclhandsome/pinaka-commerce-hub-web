@@ -1478,7 +1478,16 @@ function MerchantEmployeeList({employees,merchantName,onAdd,onRefresh,onEdit}) {
 />
    <div className="mel-scroll w-full overflow-x-auto"><table className="w-full min-w-[800px] text-left"><thead><tr>{['Employee','Email','Phone','Login PIN','Gender','Status','Actions'].map(title=><th key={title}>{title}</th>)}</tr></thead><tbody>
       {filtered.slice((current - 1) * pageSize, current * pageSize).map((e, index) => (
-    <tr key={e.id || e.employeeCode || index}>
+    <tr
+        key={e.id || e.employeeCode || index}
+        style={{ cursor: "pointer" }}
+        onClick={(event) => {
+            if (event.target.closest('button, a, input, select, textarea, label, [role="button"], [contenteditable="true"]')) {
+                return;
+            }
+            setView(e);
+        }}
+    >
         <td>
             <strong>{employeeName(e)}</strong>
             {e.employeeCode && <small>{e.employeeCode}</small>}
@@ -1794,7 +1803,16 @@ return (
 
             {!loading &&
               paginatedRows.map((d, index) => (
-                  <tr key={d.id || d.deviceId || index}>
+                  <tr
+                    key={d.id || d.deviceId || index}
+                    style={{ cursor: "pointer" }}
+                    onClick={(event) => {
+                      if (event.target.closest('button, a, input, select, textarea, label, [role="button"], [contenteditable="true"]')) {
+                        return;
+                      }
+                      setView(d);
+                    }}
+                  >
                     <td>{d.deviceIdentifier}</td>
                     <td>{d.deviceCode}</td>
                     <td>

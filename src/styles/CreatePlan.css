@@ -922,11 +922,14 @@
   width: 100%;
   display: block;
   box-sizing: border-box;
+  margin-top: 12px;
 }
 
 .plans-pagination .pagination-container {
   width: 100%;
-  padding: 16px 0;
+  height: auto;
+  min-height: auto;
+  padding: 0;
   background: transparent;
 }
 

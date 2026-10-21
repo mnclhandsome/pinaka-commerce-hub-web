@@ -947,7 +947,7 @@ export default function AddEmployee() {
 
                 <div className="employee-field employee-phone-field">
                   <label>
-                    Phone Number <span>*</span>
+                    Phone Number <span className="text-red-500">*</span>
                   </label>
 
                   <PhoneInput
@@ -995,7 +995,7 @@ export default function AddEmployee() {
                 <div className="employee-field">
                   {/* <label>Date of Birth</label> */}
                   <label>
-                    Date of Birth <span>*</span>
+                    Date of Birth <span className="text-red-500">*</span>
                   </label>
 
                   <div className="input-with-icon">
@@ -1018,7 +1018,7 @@ export default function AddEmployee() {
                 <SelectField
                   label={
                     <>
-                      Gender <span>*</span>
+                      Gender <span className="text-red-500">*</span>
                     </>
                   }
                   name="gender"
@@ -1047,7 +1047,7 @@ export default function AddEmployee() {
                 <FormField
                   label={
                     <>
-                      Address Line 1 <span>*</span>
+                      Address Line 1 <span className="text-red-500">*</span>
                     </>
                   }
                   name="address1"
@@ -1186,7 +1186,7 @@ export default function AddEmployee() {
 
                 <div className="employee-field">
                   <label>
-                    Temporary Password <span>*</span>
+                    Temporary Password <span className="text-red-500">*</span>
                   </label>
 
                   <div className="password-input">
@@ -1243,7 +1243,7 @@ export default function AddEmployee() {
               {/* MERCHANT */}
               <div className="employee-field work-merchant-field">
                 <label>
-                  Merchant <span>*</span>
+                  Merchant <span className="text-red-500">*</span>
                 </label>
 
                 <div className="employee-select">
@@ -1379,7 +1379,7 @@ function StoreRoleAssignment({
 
       <div className="store-role-field">
         <label>
-          Role(s) <span>*</span>
+          Role(s) <span className="text-red-500">*</span>
         </label>
 
         <div className="role-multi-select-wrapper">
@@ -1474,7 +1474,7 @@ function FormField({
   return (
     <div className="employee-field">
       <label>
-        {label} {required && <span>*</span>}
+        {label} {required && <span className="text-red-500">*</span>}
       </label>
 
       <input
@@ -1509,7 +1509,7 @@ function SelectField({
   return (
     <div className="employee-field">
       <label>
-        {label} {required && <span>*</span>}
+        {label} {required && <span className="text-red-500">*</span>}
       </label>
 
       <div className="employee-select">

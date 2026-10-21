@@ -878,14 +878,16 @@
 
 .feature-pagination-row {
   width: 100%;
-  margin-top: 18px;
+  margin-top: 12px;
   display: block;
   box-sizing: border-box;
 }
 
 .feature-pagination-row .pagination-container {
   width: 100%;
-  padding: 16px 0;
+  height: auto;
+  min-height: auto;
+  padding: 0;
   background: transparent;
 }
 
