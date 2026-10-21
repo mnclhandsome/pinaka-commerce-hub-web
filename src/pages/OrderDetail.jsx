@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation, useParams, useSearchParams } from "react-router-dom";
 import { ArrowLeft, ShoppingBag, CreditCard, CircleDollarSign, Package, ReceiptText, History } from "lucide-react";
-import { formatMoney, getOrder } from "../api/orders";
+import { formatMoney, getOrder, normalizeOrderStatus } from "../api/orders";
 import { extractProducts, normalizeProduct, productsApi } from "../api/products";
 import "../styles/orders.css";
 import "../styles/employee-view.css";
@@ -222,7 +222,7 @@ function buildView(payload) {
   return {
     id: order.id,
     number: String(order.orderNumber || order.order_number || order.number || request.number || order.id || "").replace(/^#/, ""),
-    status: titleCase(storeOrder.status || storeOrder.orderStatus || storeOrder.order_status || order.orderStatus || order.order_status || order.status || request.status),
+    status: normalizeOrderStatus(storeOrder.status || storeOrder.orderStatus || storeOrder.order_status || order.orderStatus || order.order_status || order.status || request.status),
     currency: storeOrder.currency || order.currency || request.currency || "USD",
     timezone: storeOrder.timezone || storeOrder.time_zone || "UTC",
     createdAt: displayDate(storeOrder.createdAt || storeOrder.created_at || order.createdAt || order.created_at || request.date_created || request.created_at),

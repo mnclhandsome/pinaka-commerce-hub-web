@@ -2168,7 +2168,7 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
   };
 
   const goTo = async (index) => {
-    if (saving || subscriptionLoading) return;
+    if (saving || subscriptionLoading || rolesLoading || storeTypeRolesLoading) return;
     const next = Math.max(0, Math.min(STEPS.length - 1, index));
     if (next > step) {
       let currentSub = subscription;
@@ -2580,7 +2580,11 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
                 {merchantStores.map((item, index) => {
                   const cityState = [item.city || item.address?.city, item.state || item.address?.state].filter(Boolean);
                   const locationParts = [...new Map(cityState.map((value) => [String(value).trim().toLowerCase(), String(value).trim()])).values()];
-                  const locationText = locationParts.length ? locationParts.join(", ") : item.address?.street || (typeof item.address === "string" ? item.address : "—");
+                  const locationText = locationParts.length
+                    ? locationParts.join(", ")
+                    : item.address?.street ||
+                      (typeof item.address === "string" ? item.address : item.location) ||
+                      "—";
                   return <tr key={item.storeCode || item.id || item.storeId || index}>
                     <td>{index + 1}</td>
                     <td>{item.storeName || item.name || "Unnamed store"}</td>
@@ -2592,6 +2596,7 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
                         item.type ||
                         "—"}
                     </td>
+                    <td>{locationText}</td>
                     <td>
                       <span className={`store-status ${String(item.status || "").trim().toLowerCase() === "inactive" ? "inactive" : "active"}`}>
                         {item.status || "—"}
@@ -4021,11 +4026,15 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
           {(mastersLoading ||
             merchantLoading ||
             featuresLoading ||
-            subscriptionLoading) && (
+            subscriptionLoading ||
+            rolesLoading ||
+            storeTypeRolesLoading) && (
             <div className="sf-loading-note" role="status">
               {subscriptionLoading
                 ? "Fetching active subscription…"
-                : "Loading merchant setup…"}
+                : rolesLoading || storeTypeRolesLoading
+                  ? "Loading roles available for this store type…"
+                  : "Loading merchant setup…"}
             </div>
           )}
           <form onSubmit={submit} noValidate>
@@ -4035,7 +4044,9 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
                 mastersLoading ||
                 merchantLoading ||
                 featuresLoading ||
-                subscriptionLoading
+                subscriptionLoading ||
+                rolesLoading ||
+                storeTypeRolesLoading
               }
               style={{ border: 0, padding: 0, margin: 0, minWidth: 0 }}
             >
