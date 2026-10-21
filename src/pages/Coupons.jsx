@@ -994,7 +994,7 @@ function CouponEditor({ mode, form, setForm, error, busy, products = [], catalog
     };
     const field = (label, name, options = {}) => (
         <label className="coupon-form-field" key={name}>
-            <span>{label}{options.required ? " *" : ""}</span>
+            <span>{label}{options.required ? <> <span className="text-red-500">*</span></> : ""}</span>
             {options.textarea ? (
                 <textarea name={name} value={form[name] || ""} onChange={change} rows={3} />
             ) : options.select ? (

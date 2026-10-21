@@ -609,7 +609,7 @@ useEffect(() => {
                     : "mv-inactive"
             }`}
         >
-             {vendor.status}
+            {vendor.status}
         </span>
     );
 
@@ -692,7 +692,7 @@ useEffect(() => {
                           "status",
                       ]
                 ).map((key) => (
-                    <th key={key}>
+                    <th key={key} className={key === "status" ? "mv-status-th" : undefined}>
                         {select ? (
                             {
                                 code: "Vendor Code",
@@ -877,32 +877,17 @@ useEffect(() => {
                         </div>
                     </header>
                 )}
-                {storeScope ? (
-                    <div className="mv-toolbar">
-                        <input aria-label="Search assigned vendors"
-                            placeholder="Search vendors by code, name, type or phone…"
-                            value={query}
-                            onChange={(event) => { setQuery(event.target.value); setPage(1); }} />
-                        <button type="button" onClick={() => {
-                            setQuery("");
-                            setPage(1);
-                            setSort({ key: "name", direction: 1 });
-                        }}>
-                            <i className="bi bi-arrow-counterclockwise" aria-hidden="true" /> Clear
-                        </button>
-                    </div>
-                ) : (
-                    <FiltersBar
-                        searchValue={query}
-                        onSearchChange={(value) => { setQuery(value); setPage(1); }}
-                        searchPlaceholder={"Search vendors by code, name, type or phone\u2026"}
-                        onClear={() => {
-                            setQuery("");
-                            setPage(1);
-                            setSort({ key: "name", direction: 1 });
-                        }}
-                    />
-                )}
+                <FiltersBar
+                    searchValue={query}
+                    onSearchChange={(value) => { setQuery(value); setPage(1); }}
+                    searchPlaceholder="Search vendors by code, name, type or phone..."
+                    searchAriaLabel={storeScope ? "Search assigned vendors" : "Search vendors"}
+                    onClear={() => {
+                        setQuery("");
+                        setPage(1);
+                        setSort({ key: "name", direction: 1 });
+                    }}
+                />
 
                 {(loading || mappedLoading) && !rows.length ? (
                     <p role="status">
@@ -932,6 +917,13 @@ useEffect(() => {
                                         .map((vendor) => (
                                             <tr
                                                 key={vendor.id}
+                                                style={{ cursor: "pointer" }}
+                                                onClick={(event) => {
+                                                    if (event.target.closest('button, a, input, select, textarea, label, [role="button"], [contenteditable="true"]')) {
+                                                        return;
+                                                    }
+                                                    setModal({ type: "view", vendor });
+                                                }}
                                             >
 
                                                 <td>
@@ -962,7 +954,7 @@ useEffect(() => {
                                                     </td>
                                                 )}
 
-                                                <td>
+                                                <td className="mv-status-cell">
                                                     {badge(vendor)}
                                                 </td>
 

@@ -30,12 +30,17 @@
    STORE HEADER
    ========================================================= */
 
-.store-workspace-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 16px;
-  margin-bottom: 18px;
+.store-workspace-header,
+.store-workspace-page .store-workspace-header {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 16px !important;
+  margin: 0 0 18px 0 !important;
+  padding: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
 }
 
 .store-workspace-header h1 {
@@ -48,6 +53,32 @@
   margin: 6px 0 0;
   color: #7c8799;
   font-size: 13px;
+}
+
+.store-workspace-header .store-status,
+.store-workspace-page .store-workspace-header .store-status {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  width: auto !important;
+  min-width: auto !important;
+  max-width: none !important;
+  height: 32px !important;
+  min-height: 32px !important;
+  max-height: 32px !important;
+  padding: 0 16px !important;
+  border-radius: 9999px !important;
+  font-family: inherit !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  line-height: 1 !important;
+  letter-spacing: 0.01em !important;
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
+  margin: 0 !important;
+  box-sizing: border-box !important;
+  overflow: visible !important;
 }
 
 
@@ -233,7 +264,13 @@
    MAIN WORKSPACE
    ========================================================= */
 
-.store-workspace-card {
+.store-workspace-card,
+.store-workspace-page .store-workspace-card {
+  width: 100% !important;
+  max-width: 100% !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  box-sizing: border-box !important;
   border: 1px solid #e4e8f0;
   border-radius: 12px;
   background: #fff;
@@ -2168,7 +2205,7 @@
   border-radius: 9px;
 }
 
-.store-section-editor .sf-panel:not(.sf-employee-assignment-panel):not(.sf-employee-summary) { border: 1px solid var(--store-border); border-radius: 10px; box-shadow: none; }
+.store-section-editor .sf-panel:not(.sf-employee-assignment-panel):not(.sf-employee-summary) {  border-radius: 10px; box-shadow: none; }
 .store-section-editor .sf-employee-summary { border: 0; }
 .store-section-editor .sf-panel-head { padding: 16px 20px; min-height: 64px; }
 .store-section-editor .sf-panel-head h2 { font-size: 16px; font-weight: 600; color: var(--store-heading); }
@@ -2248,12 +2285,12 @@
   width: calc(100% - 24px);
   margin: 0 12px;
 }
-.store-section-editor .sf-feature-pagination {
+/* .store-section-editor .sf-feature-pagination {
   box-sizing: border-box;
   width: 100%;
   margin: 0;
   padding: 16px 14px;
-}
+} */
 .store-section-editor .sf-table th { height: 44px; padding: 0 14px; font-size: 12px; font-weight: 600; line-height: 18px; color: #58677e; background: #f1f3fd; }
 .store-section-editor .sf-table td { height: 52px; padding: 10px 14px; font-size: 13px; line-height: 18px; color: var(--store-text); }
 .store-section-editor .sf-feature-table td:nth-child(3) { color: var(--store-muted); }
@@ -4048,10 +4085,33 @@
   box-sizing: border-box;
   width: 100%;
   max-width: 100%;
+  min-width: 0;
   margin: 0;
+  overflow-x: auto !important;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
   border: 1px solid #e6ebf3;
   border-radius: 6px;
   background: #fff;
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 #f1f3f9;
+}
+.store-workspace-page .store-workspace-card :is(.coupons-table-wrapper, .orders-table-wrapper)::-webkit-scrollbar {
+  height: 6px;
+}
+.store-workspace-page .store-workspace-card :is(.coupons-table-wrapper, .orders-table-wrapper)::-webkit-scrollbar-track {
+  background: #f1f3f9;
+  border-radius: 4px;
+}
+.store-workspace-page .store-workspace-card :is(.coupons-table-wrapper, .orders-table-wrapper)::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+.store-workspace-page .store-workspace-card :is(.coupons-table-wrapper, .orders-table-wrapper)::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+.store-workspace-page .orders-card .orders-table {
+  min-width: 880px;
 }
 .store-workspace-page .store-workspace-card :is(.coupons-table-wrapper, .orders-table-wrapper) + .pagination-container,
 .store-workspace-page .store-workspace-card .orders-card > .pagination-container {
@@ -4222,8 +4282,10 @@
   color: #674ed9;
   font-size: 16px;
 }
-.store-workspace-page .store-section-editor .sf-plan-summary > div:nth-child(2) .sf-feature-summary-icon { background: #e4f7eb; color: #2eaa62; }
-.store-workspace-page .store-section-editor .sf-plan-summary > div:nth-child(3) .sf-feature-summary-icon { background: #e4f7eb; color: #2eaa62; }
+.store-workspace-page .store-section-editor .sf-plan-summary > div:nth-child(2) { border-color: #d6ecdf; background: linear-gradient(135deg, #fff 0%, #eafaf2 100%); }
+.store-workspace-page .store-section-editor .sf-plan-summary > div:nth-child(2) .sf-feature-summary-icon { background: #dcf4e6; color: #20a861; }
+.store-workspace-page .store-section-editor .sf-plan-summary > div:nth-child(3) { border-color: #d8e7fb; background: linear-gradient(135deg, #fff 0%, #edf5ff 100%); }
+.store-workspace-page .store-section-editor .sf-plan-summary > div:nth-child(3) .sf-feature-summary-icon { background: #deebff; color: #3978d4; }
 .store-workspace-page .store-section-editor .sf-plan-summary > div:nth-child(4) .sf-feature-summary-icon { background: #ffe9ea; color: #df5c66; }
 .store-workspace-page .store-section-editor .sf-plan-summary small {
   margin: 0;
@@ -4621,4 +4683,53 @@
     min-width: 0;
     flex-basis: auto;
   }
+}
+
+/* =========================================================
+   STORE WORKSPACE HEADER & CARD FLUSH ALIGNMENT
+   ========================================================= */
+
+.store-workspace-page .store-workspace-header {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 16px !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: 0 0 18px 0 !important;
+  padding: 0 !important;
+  box-sizing: border-box !important;
+}
+
+.store-workspace-page .store-workspace-header .store-status {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  width: auto !important;
+  min-width: auto !important;
+  max-width: none !important;
+  height: 32px !important;
+  min-height: 32px !important;
+  max-height: 32px !important;
+  padding: 0 16px !important;
+  margin: 0 !important;
+  border-radius: 9999px !important;
+  box-sizing: border-box !important;
+  font-family: inherit !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  line-height: 1 !important;
+  letter-spacing: 0.01em !important;
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
+  overflow: visible !important;
+}
+
+.store-workspace-page .store-workspace-card {
+  width: 100% !important;
+  max-width: 100% !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  box-sizing: border-box !important;
 }

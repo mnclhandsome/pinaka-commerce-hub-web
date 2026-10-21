@@ -653,7 +653,7 @@ const paginatedStoreTypes = filteredStoreTypes.slice(
           <div className="store-type-field">
             <label>
 
-              Store Type Name <span className="required">*</span>
+              Store Type Name <span className="required text-red-500">*</span>
             </label>
             <input
 
@@ -683,7 +683,7 @@ const paginatedStoreTypes = filteredStoreTypes.slice(
           
 <div className="store-type-field">
   <label>
-    Status <span className="required">*</span>
+    Status <span className="required text-red-500">*</span>
   </label>
 
   <div className="select-shell">

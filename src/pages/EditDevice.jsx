@@ -398,7 +398,7 @@ function EditField({ label, required, error, children }) {
       <label>
         {label}
 
-        {required && <span className="required-star">*</span>}
+        {required && <span className="required-star text-red-500">*</span>}
       </label>
 
       {children}

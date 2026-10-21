@@ -1208,7 +1208,7 @@ const paginatedPermissions = filteredPermissions.slice(
     >
       <label htmlFor="permission-feature">
         Feature
-        <span>*</span>
+        <span className="text-red-500">*</span>
       </label>
 
       <div className="fp-select-wrap">
@@ -1253,7 +1253,7 @@ const paginatedPermissions = filteredPermissions.slice(
 >
   <label htmlFor="permission-name">
     Permission Name
-    <span>*</span>
+    <span className="text-red-500">*</span>
   </label>
 
   <input
@@ -1309,7 +1309,7 @@ const paginatedPermissions = filteredPermissions.slice(
 <div className="fp-field">
   <label htmlFor="permission-status">
     Status
-    <span>*</span>
+    <span className="text-red-500">*</span>
   </label>
 
   <div className="fp-select-wrap">

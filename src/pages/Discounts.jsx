@@ -5,6 +5,7 @@ import { normalizeCatalog } from "../api/products";
 import FilterDropdown from "../components/FilterDropdown";
 import Pagination from "../components/Pagination";
 import DeleteConfirmationDialog from "../components/DeleteConfirmationDialog";
+import ListActions from "../components/ListActions";
 import { buildDiscountPayload, catalogProductId, storedProductId, validateDiscountForm } from "./discountForm";
 import "../styles/coupons.css";
 import "../styles/discounts.css";
@@ -354,12 +355,12 @@ export default function Discounts({ embedded = false, storeId: storeIdProp }) {
                     <input value={selectedProductPrice === "" ? "Price unavailable" : selectedProductPrice} disabled readOnly aria-label="Product price" />
                   </label>}
                   {form.product && <>
-                  <label className="coupon-form-field"><span className="discount-field-label">Discount type <span className="discount-required" title="Required" aria-label="Required">*</span></span>
+                  <label className="coupon-form-field"><span className="discount-field-label">Discount type <span className="discount-required text-red-500" title="Required" aria-label="Required">*</span></span>
                     <select value={form.discount_type} onChange={(event) => updateForm("discount_type", event.target.value)} required>
                       {typeOptions[form.type].map(([value, label]) => <option key={value} value={value}>{label}</option>)}
                     </select>
                   </label>
-                  <label className="coupon-form-field"><span className="discount-field-label">Amount {form.discount_type === "percent" ? "(%)" : ""} <span className="discount-required" title="Required" aria-label="Required">*</span></span>
+                  <label className="coupon-form-field"><span className="discount-field-label">Amount {form.discount_type === "percent" ? "(%)" : ""} <span className="discount-required text-red-500" title="Required" aria-label="Required">*</span></span>
                     <input type="number" min="0.01" max={form.discount_type === "percent" ? 100 : undefined} step="0.01" value={form.amount} aria-invalid={amountExceedsProductPrice} onChange={(event) => { updateForm("amount", event.target.value); setFormError(""); }} placeholder="0.00" required />
                     <small>{form.discount_type === "percent" ? "Enter a percentage from 0 to 100." : "Enter the fixed discount amount."}</small>
                     {amountExceedsProductPrice && <small className="discount-amount-error" role="alert">The discount amount must be less than the selected product price.</small>}
@@ -371,11 +372,11 @@ export default function Discounts({ embedded = false, storeId: storeIdProp }) {
                   </>}
                   </> : <p className="discount-select-hint">Choose a discount type to show its name and product settings.</p>}
                   {form.type && <>
-                  {form.type === "mix_match" && <div className="coupon-form-field discount-full-width"><span className="discount-field-label">Discounted products <span className="discount-required">*</span></span>
+                  {form.type === "mix_match" && <div className="coupon-form-field discount-full-width"><span className="discount-field-label">Discounted products <span className="discount-required text-red-500">*</span></span>
                     <DiscountProductPicker products={catalogProducts} value={form.discounted_products} onChange={value => updateForm("discounted_products", value)} multiple disabled={saving} />
                     <small>These products receive the discount when the trigger product is present.</small>
                   </div>}
-                  {form.type === "multipack" && <label className="coupon-form-field"><span className="discount-field-label">Pack quantity <span className="discount-required" title="Required" aria-label="Required">*</span></span>
+                  {form.type === "multipack" && <label className="coupon-form-field"><span className="discount-field-label">Pack quantity <span className="discount-required text-red-500" title="Required" aria-label="Required">*</span></span>
                     <input type="number" min="1" step="1" value={form.qty} onChange={(event) => updateForm("qty", event.target.value)} placeholder="e.g. 3" required />
                   </label>}
                   <label className="coupon-form-field">Start date
@@ -472,8 +473,12 @@ export default function Discounts({ embedded = false, storeId: storeIdProp }) {
                   <td>{formatSystemDate(discount.date_starts)}</td>
                   <td>{formatSystemDate(discount.date_expires)}</td>
                   <td className="coupon-row-actions">
-                    <button type="button" aria-label={`Edit ${discount.code}`} onClick={() => openEdit(discount)}><i className="bi bi-pencil" /></button>
-                    <button type="button" aria-label={`Delete ${discount.code}`} onClick={() => { setDeleteError(""); setDeleteTarget(discount); }}><i className="bi bi-trash3" /></button>
+                    <ListActions
+                      onEdit={() => openEdit(discount)}
+                      onDelete={() => { setDeleteError(""); setDeleteTarget(discount); }}
+                      editLabel={`Edit ${discount.code}`}
+                      deleteLabel={`Delete ${discount.code}`}
+                    />
                   </td>
                 </tr>
               )) : (

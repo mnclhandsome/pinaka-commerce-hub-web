@@ -637,11 +637,14 @@
 }
 
 .vendors-page > .vendors-list-card > .pagination-container {
-   width: calc(100% - 24px);
-  max-width: calc(100% - 24px);
-  margin: 0 12px;
-  padding: 16px 0;
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  min-height: auto;
+  margin: 12px 0 0;
+  padding: 0;
   box-sizing: border-box;
+  background: transparent;
   border-top: 0;
 }
 
@@ -1807,26 +1810,31 @@
 .vendors-stat-card {
   min-width: 0;
   height: 95px;
-  min-height: 112px;
+  min-height: 95px;
   padding: 10px;
   box-sizing: border-box;
   display: flex;
   align-items: center;
   border: 1px solid #edf0f5;
   border-radius: 8px;
-  background: linear-gradient(135deg, #fff 0%, #f3efff 100%);
+  background:  linear-gradient(120deg, #ffffff 0%, #f3efff 100%);
+  border-color: #e4dcf5;
+
 }
 
 .vendors-stat-card:has(.vendors-stat-icon.green) {
-  background: linear-gradient(135deg, #fff 0%, #eafaf2 100%);
+  background: linear-gradient(120deg, #fff 0%, #eafaf2 100%);
+  border-color: #d9f0e4;
 }
 
 .vendors-stat-card:has(.vendors-stat-icon.orange) {
-  background: linear-gradient(135deg, #fff 0%, #fff5e5 100%);
+  background: linear-gradient(120deg, #fff 0%, #fff5e5 100%);
+  border-color: #fff1df;
 }
 
 .vendors-stat-card:has(.vendors-stat-icon.red) {
-  background: linear-gradient(135deg, #fff 0%, #fff0f2 100%);
+  background: linear-gradient(120deg, #fff 0%, #fff0f2 100%);
+  border-color: #ffe9ea;
 }
 
 .vendors-stat-icon {
@@ -2624,7 +2632,10 @@
 
 .vendors-table th:nth-child(9),
 .vendors-table td:nth-child(9) {
-  width: 115px;
+  width: 135px;
+  min-width: 130px;
+  overflow: visible !important;
+  text-overflow: clip !important;
 }
 
 .vendors-table th:nth-child(10),
@@ -2648,8 +2659,12 @@
   white-space: nowrap;
 }
 
-.vendors-table td:nth-child(9) .vendors-status {
+.vendors-table td:nth-child(9) .vendors-status,
+.vendors-table td:has(.vendors-status),
+.vendors-table td .vendors-status {
   white-space: nowrap;
+  overflow: visible !important;
+  text-overflow: clip !important;
 }
 
 @media (max-width: 700px) {

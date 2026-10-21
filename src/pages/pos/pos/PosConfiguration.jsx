@@ -149,6 +149,11 @@ export default function PosConfiguration({ merchantId, storeId, store } = {}) {
     const [busy, setBusy] = useState(false);
     const [notice, setNotice] = useState("");
     const saveLock = useRef(false);
+    useEffect(() => {
+        if (!notice) return undefined;
+        const timeout = window.setTimeout(() => setNotice(""), 3000);
+        return () => window.clearTimeout(timeout);
+    }, [notice]);
     const session = useMemo(() => ({ saved: savedScreens.current[selectedConfig] || {}, baseline: {}, draft: {}, resets: {}, save: null, editorDirty: null, resetEditor: null }), [selectedConfig]);
     const isDirty = () => snapshotKey(session.draft) !== snapshotKey(session.baseline) || !!session.editorDirty?.();
     const leave = (target) => { setPendingLeave(null); setNotice(""); setSelectedConfig(target); };

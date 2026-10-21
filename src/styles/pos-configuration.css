@@ -4531,6 +4531,13 @@
 .pc-screen input:not([type=checkbox]), .pc-screen select { width: 100%; min-width: 0; min-height: 39px; border: 1px solid #d8e1ee; border-radius: 5px; padding: 8px 10px; background: white; color: var(--pc-ink); font: inherit; font-size: 12px; transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.18s ease; }
 .pc-field > .pch-filter-dropdown { display: grid; width: 100%; }
 .pc-field > .pch-filter-dropdown > .pch-filter-sizing { width: 100%; }
+.pc-screen .pc-field textarea { width:100%; min-height:100px; resize:vertical; border:1px solid #d8e1ee; border-radius:5px; padding:10px; background:#fff; color:var(--pc-ink); font:inherit; font-size:12px; }
+.pc-screen .pc-field textarea:focus { outline:none; border-color:#5143bc; box-shadow:0 0 0 3px rgba(81,67,188,.08); }
+.pc-printer-logo-row { display:flex; align-items:center; gap:18px; margin-top:16px; }
+.pc-printer-logo-preview, .pc-printer-logo-placeholder { display:grid; width:132px; height:88px; flex:0 0 132px; place-items:center; object-fit:contain; border:1px solid #e0e7f1; border-radius:7px; background:#f8faff; color:#8795aa; font-size:26px; }
+.pc-printer-logo-controls { display:flex; flex-wrap:wrap; align-items:flex-end; gap:12px; min-width:0; }
+.pc-printer-logo-controls .pc-field { min-width:min(300px, 100%); }
+.pc-printer-logo-controls > small { color:#65758e; font-size:11px; }
 .pc-field > .pch-filter-dropdown > .pch-filter-trigger { transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.18s ease; }
 .pc-field:focus-within > .pch-filter-dropdown > .pch-filter-trigger { transform: translateY(-1px); }
 .pc-field input:focus, .pc-field select:focus { transform: translateY(-1px); box-shadow: 0 0 0 3px rgba(81, 67, 188, 0.08); }

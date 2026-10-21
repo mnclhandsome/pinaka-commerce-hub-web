@@ -7,7 +7,7 @@ import "../styles/orders.css";
 import "../styles/employee-view.css";
 
 function metaValue(entries, key) {
-  const match = asArray(entries).find((entry) => entry?.key === key);
+  const match = asArray(entries).find((entry) => entry?.key === key)
   return match?.value;
 }
 
@@ -311,20 +311,15 @@ export default function OrderDetail({ embedded = false, orderId: providedOrderId
   }, [orderId, storeId, orderNumber]);
 
   return (
-    <div className="page-content orders-page order-detail-page">
-      <div className="orders-header">
+    <div className="employee-view-page order-detail-page">
+      <header className="employee-view-topbar">
+        {embedded
+          ? <button type="button" onClick={onBack}><ArrowLeft size={16} /> Orders</button>
+          : <Link to={backTo}><ArrowLeft size={16} /> Orders</Link>}
+        <span>/</span><strong>View Order</strong>
+      </header>
+      <div className="employee-view-header order-detail-heading-row">
         <div>
-          {embedded
-            ? (
-              <button type="button" className="order-detail-back" onClick={onBack}>
-                <ArrowLeft size={16} /> Back
-              </button>
-            )
-            : (
-              <Link className="order-detail-back" to={backTo}>
-                <ArrowLeft size={16} /> Back to orders
-              </Link>
-            )}
           <h1>{view ? `Order ${view.number}` : "Order"}</h1>
           <p>Order, payment, line, and tender details for this sale.</p>
         </div>
