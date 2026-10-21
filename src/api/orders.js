@@ -13,6 +13,11 @@ function titleCase(value) {
     .replace(/\b\w/g, (letter) => letter.toUpperCase());
 }
 
+export function normalizeOrderStatus(value) {
+  const status = titleCase(value || "Created");
+  return status.toLowerCase() === "created" ? "Pending Payment" : status;
+}
+
 export function currencySymbol(currency = "USD") {
   switch (String(currency || "USD").toUpperCase()) {
     case "EUR":
@@ -57,7 +62,7 @@ export function normalizeOrder(order = {}) {
     time: validDate
       ? created.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })
       : "",
-    status: titleCase(order.orderStatus || order.order_status || order.status || "Created"),
+    status: normalizeOrderStatus(order.orderStatus || order.order_status || order.status || "Created"),
     author: order.customerName || order.customer_name || metaValue(metadata, "pos_placed_by") || "Walk-in Customer",
     paymentMethod: titleCase(order.paymentMethod || order.payment_method || ""),
     totalValue: Number.isFinite(totalValue) ? totalValue : 0,

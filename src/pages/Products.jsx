@@ -48,6 +48,11 @@ export default function Products({
 
     const [selectedProduct, setSelectedProduct] = useState(null);
 
+    const getStockStatus = (product) =>
+        String(product?.stockStatus || "")
+            .toLowerCase()
+            .replace(/[\s_-]+/g, "");
+
     // =========================================================
     // LOAD PRODUCTS FROM API
     // =========================================================
@@ -535,36 +540,8 @@ export default function Products({
 
                         <strong>
                             {
-                                products.filter(
-                                    (product) =>
-                                        product.stockStatus ===
-                                        "In stock"
-                                ).length
-                            }
-                        </strong>
-                    </div>
-
-                </div>
-
-                {/* LOW STOCK */}
-
-                <div className="product-summary-card">
-
-                    <div className="summary-card-icon orange">
-                        <i className="bi bi-exclamation-circle" />
-                    </div>
-
-                    <div>
-                        <span>
-                            Low Stock
-                        </span>
-
-                        <strong>
-                            {
-                                products.filter(
-                                    (product) =>
-                                        product.stockStatus ===
-                                        "Low stock"
+                                products.filter((product) =>
+                                    getStockStatus(product) === "instock"
                                 ).length
                             }
                         </strong>
@@ -587,10 +564,8 @@ export default function Products({
 
                         <strong>
                             {
-                                products.filter(
-                                    (product) =>
-                                        product.stockStatus ===
-                                        "Out of stock"
+                                products.filter((product) =>
+                                    getStockStatus(product) === "outofstock"
                                 ).length
                             }
                         </strong>
@@ -699,10 +674,6 @@ export default function Products({
                             In Stock
                         </option>
 
-                        <option value="Low stock">
-                            Low Stock
-                        </option>
-
                         <option value="Out of stock">
                             Out of Stock
                         </option>
@@ -745,6 +716,17 @@ export default function Products({
 
                         <table className="products-table">
 
+                            <colgroup>
+                                <col className="products-col-product" />
+                                <col className="products-col-sku" />
+                                <col className="products-col-stock" />
+                                <col className="products-col-price" />
+                                <col className="products-col-category" />
+                                <col className="products-col-tags" />
+                                <col className="products-col-updated" />
+                                <col className="products-col-status" />
+                            </colgroup>
+
                             <thead>
 
                                 <tr>
@@ -755,7 +737,6 @@ export default function Products({
                                     <th>Price</th>
                                     <th>Category</th>
                                     <th>Tags</th>
-                                    <th>Brand</th>
                                     <th>Updated</th>
                                     <th>Status</th>
 
@@ -783,7 +764,7 @@ export default function Products({
                                     )
                                 ) : (
                                     <tr>
-                                        <td className="products-table-empty-cell" colSpan="9">
+                                        <td className="products-table-empty-cell" colSpan="8">
                                             <div className="products-table-empty-state">
                                             
                                                 <strong>No products found</strong>
@@ -1120,19 +1101,6 @@ function ProductRow({
                     )}
 
                 </div>
-
-            </td>
-
-            {/* =================================================
-                BRAND
-            ================================================= */}
-
-            <td>
-
-                <span className="product-brand">
-                    {product.brand ||
-                        "—"}
-                </span>
 
             </td>
 
