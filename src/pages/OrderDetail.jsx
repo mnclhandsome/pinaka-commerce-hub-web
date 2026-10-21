@@ -312,22 +312,23 @@ export default function OrderDetail({ embedded = false, orderId: providedOrderId
 
   return (
     <div className="employee-view-page order-detail-page">
-      {!embedded && (
-        <header className="employee-view-topbar">
-          <Link to={backTo}><ArrowLeft size={16} /> Orders</Link>
-          <span>/</span><strong>View Order</strong>
-        </header>
-      )}
+      <header className="employee-view-topbar">
+        {embedded
+          ? <button type="button" onClick={onBack}><ArrowLeft size={16} /> Orders</button>
+          : <Link to={backTo}><ArrowLeft size={16} /> Orders</Link>}
+        <span>/</span><strong>View Order</strong>
+      </header>
       <div className="employee-view-header order-detail-heading-row">
         <div>
-          <h1>View Order</h1><p>Order, payment, line, and tender details for this sale.</p>
+          <h1>{view ? `Order ${view.number}` : "Order"}</h1>
+          <p>Order, payment, line, and tender details for this sale.</p>
         </div>
-        <div className="order-detail-heading-actions">
-          {view && <span className={`order-status ${statusClass(view.status)}`}><i className="bi bi-circle-fill" />{view.status}</span>}
-          {embedded
-            ? <button type="button" className="order-detail-back" onClick={onBack}><ArrowLeft size={16} /> Back to Orders</button>
-            : <Link className="order-detail-back" to={backTo}><ArrowLeft size={16} /> Back to Orders</Link>}
-        </div>
+        {view && (
+          <span className={`order-status ${statusClass(view.status)}`}>
+            <i className="bi bi-circle-fill" />
+            {view.status}
+          </span>
+        )}
       </div>
 
       {loading && <p role="status">Loading order...</p>}

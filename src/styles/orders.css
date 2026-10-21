@@ -873,6 +873,34 @@ input {
 }
 .order-detail-back:hover { background: #f8f7ff; }
 
+.order-detail-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 18px;
+    color: #7b879b;
+    font-size: 14px;
+}
+
+.order-detail-breadcrumb a,
+.order-detail-breadcrumb button {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: #5143bc;
+    font: inherit;
+    font-weight: 500;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.order-detail-breadcrumb a:hover,
+.order-detail-breadcrumb button:hover { color: #392a9e; }
+.order-detail-breadcrumb [aria-current="page"] { color: #17233e; font-weight: 600; }
+
 .order-detail-heading-actions { display:flex; align-items:center; justify-content:flex-end; gap:14px; }
 
 .order-detail-heading-row {
