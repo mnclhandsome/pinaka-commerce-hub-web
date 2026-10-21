@@ -18,7 +18,7 @@ import { formatDate, listSubscriptions } from "../api/subscriptions";
 import { listPlans } from "../api/plans";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { listMerchants, getMerchant, updateMerchantStatus } from "../api/merchants";
+import { listMerchants, getMerchant, updateMerchantStatus, deleteMerchant } from "../api/merchants";
 import { EmployeeToast, EmployeeDeleteDialog } from "../components/EmployeeFeedback";
 import { listMerchantEmployees, getEmployee, deleteEmployee } from "../api/employees";
 import { api, ApiError, pendingStoreRead } from "../api/http";
@@ -857,9 +857,10 @@ const [statusFilter, setStatusFilter] = useState("");
     deleteInFlight.current = true; setDeleting(true); setDeleteError('');
     const target = deleteTarget;
     try {
-      const targetId = target.merchantId || target.id;
-      const res = await updateMerchantStatus(targetId, 'INACTIVE');
-      console.log("[DEACTIVATE MERCHANT API RESPONSE]", res);
+      const targetId = [target.uuid, target.id, target.merchantId].find(value =>
+        typeof value === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value));
+      if (!targetId) throw new Error('Merchant UUID is unavailable. Refresh the merchant list and try again.');
+      await deleteMerchant(targetId);
       onLocalDelete?.(target.id);
       if (!mounted.current) return;
       setMerchants(previous => previous.map(item => item.id === target.id
@@ -872,7 +873,10 @@ const [statusFilter, setStatusFilter] = useState("");
   async function activateMerchant(merchant) {
     setDeleteError('');
     try {
-      await updateMerchantStatus(merchant.merchantId || merchant.id, 'ACTIVE');
+      const merchantUuid = [merchant.uuid, merchant.id, merchant.merchantId].find(value =>
+        typeof value === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value));
+      if (!merchantUuid) throw new Error('Merchant UUID is unavailable. Refresh the merchant list and try again.');
+      await updateMerchantStatus(merchantUuid, 'ACTIVE');
       setMerchants(previous => previous.map(item => item.id === merchant.id
         ? { ...item, status: 'Active', isDeleted: false }
         : item));
