@@ -39,29 +39,109 @@ const blankMerchant = () => ({
 
 function merchantDetailToDraft(result, fallback = {}) {
   const response = result?.raw || {};
-  const raw = response.merchant || response.data?.merchant || response.data || response;
-  const address = raw.businessAddress || raw.address || {};
+  const raw = response.merchant || response.data?.merchant || response.data || response || result?.merchant || fallback || {};
+  const address = raw.businessAddress || raw.address || fallback.address || {};
   const subscription = result?.subscription || raw.subscription || {};
-  const owner = String(raw.ownerName || raw.merchantName || "").trim().split(/\s+/);
+  const owner = String(raw.ownerName || raw.merchantName || raw.name || fallback.name || "").trim().split(/\s+/).filter(Boolean);
   const planId = subscription.planId || subscription.plan_id || raw.planId || raw.plan_id || "";
+
+  const firstName =
+    raw.firstName ||
+    raw.first_name ||
+    raw.contactFirstName ||
+    raw.contact_first_name ||
+    fallback.firstName ||
+    fallback.first_name ||
+    owner[0] ||
+    "";
+
+  const lastName =
+    raw.lastName ||
+    raw.last_name ||
+    raw.contactLastName ||
+    raw.contact_last_name ||
+    fallback.lastName ||
+    fallback.last_name ||
+    (owner.length > 1 ? owner.slice(1).join(" ") : "") ||
+    "";
+
+  const addressLine1 =
+    raw.addressLine1 ||
+    raw.address_line1 ||
+    raw.address_line_1 ||
+    raw.street ||
+    (typeof address === "string"
+      ? address
+      : address.addressLine1 || address.address_line1 || address.address_line_1 || address.street || "") ||
+    fallback.addressLine1 ||
+    fallback.address_line1 ||
+    "";
+
+  const addressLine2 =
+    raw.addressLine2 ||
+    raw.address_line2 ||
+    raw.address_line_2 ||
+    (typeof address === "object"
+      ? address.addressLine2 || address.address_line2 || address.address_line_2 || address.unit || ""
+      : "") ||
+    fallback.addressLine2 ||
+    fallback.address_line2 ||
+    "";
+
+  const city =
+    raw.city ||
+    (typeof address === "object" ? address.city : "") ||
+    fallback.city ||
+    "";
+
+  const state =
+    raw.state ||
+    raw.province ||
+    (typeof address === "object" ? address.state || address.province : "") ||
+    fallback.state ||
+    "";
+
+  const postal =
+    raw.postalCode ||
+    raw.postal_code ||
+    raw.pinCode ||
+    raw.pin_code ||
+    raw.postal ||
+    raw.zipCode ||
+    raw.zip_code ||
+    raw.zip ||
+    (typeof address === "object"
+      ? address.zipCode || address.postalCode || address.postal_code || address.pinCode || address.pin_code || ""
+      : "") ||
+    fallback.postal ||
+    fallback.postalCode ||
+    fallback.postal_code ||
+    "";
+
+  const country =
+    raw.country ||
+    (typeof address === "object" ? address.country : "") ||
+    fallback.country ||
+    "";
+
   return {
     merchant: {
       ...blankMerchant(),
-      code: String(raw.merchantCode || raw.merchant_code || raw.code || fallback.merchantCode || ""),
-      ein: raw.ein || raw.EIN || "",
-      firstName: raw.firstName || owner[0] || "",
-      lastName: raw.lastName || owner.slice(1).join(" "),
-      name: raw.ownerName || [raw.firstName, raw.lastName].filter(Boolean).join(" "),
-      business: raw.legalBusinessName || raw.businessName || fallback.name || "",
-      display: raw.businessDisplayName || raw.businessName || raw.name || fallback.name || "",
-      email: raw.email || raw.merchantEmail || fallback.email || "",
-      phone: normalizePhone(raw.phone || raw.merchantPhoneNumber || fallback.phone || ""),
-      addressLine1: raw.addressLine1 || (typeof address === "string" ? address : address.addressLine1 || address.street || ""),
-      addressLine2: raw.addressLine2 || address.addressLine2 || address.unit || "",
-      city: raw.city || address.city || "",
-      state: raw.state || address.state || "",
-      postal: raw.postalCode || raw.pinCode || address.zipCode || "",
-      country: raw.country || address.country || "",
+      code: String(raw.merchantCode || raw.merchant_code || raw.code || fallback.merchantCode || fallback.merchant_code || fallback.code || ""),
+      ein: raw.ein || raw.EIN || raw.taxId || raw.tax_id || fallback.ein || "",
+      firstName,
+      lastName,
+      name: raw.ownerName || raw.merchantName || [firstName, lastName].filter(Boolean).join(" ") || fallback.name || "",
+      business: raw.legalBusinessName || raw.businessName || raw.business_name || fallback.business || fallback.businessName || fallback.name || "",
+      display: raw.businessDisplayName || raw.business_display_name || raw.businessName || raw.name || fallback.display || fallback.businessDisplayName || fallback.name || "",
+      email: raw.email || raw.merchantEmail || fallback.email || fallback.merchantEmail || "",
+      phone: normalizePhone(raw.phone || raw.merchantPhoneNumber || fallback.phone || fallback.merchantPhoneNumber || ""),
+      addressLine1,
+      addressLine2,
+      city,
+      state,
+      postal,
+      country,
     },
     planId,
     planName: subscription.planName || subscription.planCode || raw.plan || fallback.plan || "",
@@ -187,7 +267,10 @@ function MerchantEditor({ merchantId, localMerchants, onSave }) {
   const selected = merchantId
     ? localMerchants.find((row) => String(row.id) === String(merchantId)) || location.state?.merchant || null
     : null;
-  const [merchant, setMerchant] = useState(selected?._onboarding?.merchant || blankMerchant());
+  const [merchant, setMerchant] = useState(
+    selected?._onboarding?.merchant ||
+    (selected ? merchantDetailToDraft({ raw: selected, merchant: selected }, selected).merchant : blankMerchant())
+  );
   const locationOptions = useLocationOptions(merchant);
   const [plans, setPlans] = useState([]);
   const [planId, setPlanId] = useState(selected?._onboarding?.planId || "");
@@ -276,8 +359,11 @@ function MerchantEditor({ merchantId, localMerchants, onSave }) {
     const nationalDigits = phoneDigits.startsWith(phoneDialCode) ? phoneDigits.slice(phoneDialCode.length) : phoneDigits;
     if (nationalDigits.length < 7 || phoneDigits.length > 15) return "Enter a valid phone number.";
     if (!String(merchant.country || "").trim()) return "Select a country before entering the phone number.";
-    const countryMatches = locationOptions.selectedCountry?.iso2?.toLowerCase() === phoneCountry.toLowerCase();
-    if (!countryMatches) return "Phone country code must match the selected merchant country.";
+    const countryMatches =
+      !locationOptions.selectedCountry?.iso2 ||
+      !phoneCountry ||
+      locationOptions.selectedCountry?.iso2?.toLowerCase() === phoneCountry.toLowerCase();
+    if (!countryMatches && !editing) return "Phone country code must match the selected merchant country.";
     return "";
   };
   const validateMerchant = () => {
