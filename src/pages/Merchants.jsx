@@ -213,7 +213,13 @@ async function openEmployeeEdit(employee) {
       if (!details || typeof details !== 'object' || Array.isArray(details)) {
         throw new Error('The employee details response was empty.');
       }
-      setEditingEmployee({ ...employee, ...details });
+      const detailPhone = [details.phone, details.phoneNumber, details.phone_number, details.contactNo, details.contact_no, details.contactNumber]
+        .map((value) => String(value ?? "").trim())
+        .find((value) => value && !["—", "-", "n/a", "null", "undefined"].includes(value.toLowerCase()));
+      const listPhone = [employee.phone, employee.phoneNumber, employee.phone_number, employee.contactNo, employee.contact_no, employee.contactNumber]
+        .map((value) => String(value ?? "").trim())
+        .find((value) => value && !["—", "-", "n/a", "null", "undefined"].includes(value.toLowerCase()));
+      setEditingEmployee({ ...employee, ...details, phone: listPhone || detailPhone || "" });
     } catch (failure) {
       setEmployeesError(failure.message || 'Unable to load employee details for editing.');
     } finally {

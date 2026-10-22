@@ -625,6 +625,7 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
   const [loadError, setLoadError] = useState("");
   const [reload, setReload] = useState(0);
   const saveLock = useRef(false);
+  const requestedPlanCatalog = useRef("");
   const hoursRef = useRef(blankHours());
   const permissionsRef = useRef({});
   const editedPermissionRoles = useRef(new Set());
@@ -832,29 +833,21 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
     );
   }, [masterPlans, subscription, plan, merchant]);
 
+  // Prefer the selected master plan. Subscription entitlements can be stale,
+  // and store-type feature flags describe availability rather than plan access.
   const planFeatureList =
-    subscription?.includedFeatures ??
-    subscription?.included_features ??
-    plan?.includedFeatures ??
+    matchedPlan?.includedFeatures ??
+    matchedPlan?.included_features ??
+    matchedPlan?.features ??
     plan?.included_features ??
-    plan?.features ??
-    matchedPlan?.includedFeatures;
+    plan?.includedFeatures ??
+    plan?.entitlements ??
+    subscription?.included_features ??
+    subscription?.includedFeatures ??
+    subscription?.entitlements;
 
   const includedFeatures = useMemo(() => {
-    const raw = [
-      ...listFrom(subscription?.entitlements),
-      ...listFrom(
-        subscription?.includedFeatures ?? subscription?.included_features,
-      ),
-      ...listFrom(
-        plan?.included_features ?? plan?.includedFeatures ?? plan?.features,
-      ),
-      ...listFrom(
-        matchedPlan?.included_features ??
-          matchedPlan?.includedFeatures ??
-          matchedPlan?.features,
-      ),
-    ];
+    const raw = listFrom(planFeatureList);
     const knownFeatures = [...catalog, ...typeFeatures]
       .map(
         (item) =>
@@ -891,6 +884,32 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
     const unique = [];
     const seen = new Set();
     for (const entry of raw) {
+      const featureData =
+        entry?.feature ||
+        entry?.featureDetails ||
+        entry?.featureDefinition ||
+        entry;
+      const flags = [
+        entry?.included,
+        entry?.isIncluded,
+        entry?.is_included,
+        entry?.planIncluded,
+        entry?.plan_included,
+        featureData?.included,
+        featureData?.isIncluded,
+        featureData?.is_included,
+        featureData?.planIncluded,
+        featureData?.plan_included,
+      ];
+      if (flags.some((value) => value === false)) continue;
+      const access = String(
+        entry?.planAccess ?? entry?.plan_access ??
+        featureData?.planAccess ?? featureData?.plan_access ?? "",
+      )
+        .trim()
+        .toUpperCase()
+        .replace(/[\s-]+/g, "_");
+      if (["NOT_INCLUDED", "EXCLUDED", "UNAVAILABLE"].includes(access)) continue;
       const identities = new Set(identityValues(entry));
       const match = knownFeatures.find(feature =>
         identityValues(feature).some(value => identities.has(value)),
@@ -903,7 +922,7 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
       }
     }
     return unique;
-  }, [subscription, plan, matchedPlan, catalog, typeFeatures]);
+  }, [planFeatureList, catalog, typeFeatures]);
 
   const featureRows = useMemo(() => {
     const source = activeStoreTypeId ? typeFeatures : catalog;
@@ -998,21 +1017,7 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
       )
     )
       return true;
-    if (feature && typeof feature.included === "boolean" && feature.included)
-      return true;
-    if (
-      feature?.planAccess &&
-      String(feature.planAccess).toUpperCase() === "INCLUDED"
-    )
-      return true;
-    if (includedFeatures.length > 0) return false;
-    if (
-      planFeatureList != null &&
-      Array.isArray(planFeatureList) &&
-      planFeatureList.length > 0
-    )
-      return false;
-    return Boolean(activeStoreTypeId) && Boolean(feature);
+    return false;
   };
   const filteredFeatures = featureRows.filter((row) => {
     const matchesCategory =
@@ -1306,9 +1311,10 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
     async function loadMerchantContext() {
       try {
         const [result, employeeResult, storesResult] = await Promise.all([
-          embeddedAccess && merchantContext
-            ? Promise.resolve({ merchant: merchantContext, subscription: existingStore?.subscription })
-            : pendingStoreRead(`merchant:${merchantId}`, () => getMerchant(merchantId)),
+          pendingStoreRead(`merchant:${merchantId}`, () => getMerchant(merchantId)).catch(() => ({
+            merchant: merchantContext,
+            subscription: existingStore?.subscription,
+          })),
           Promise.resolve([]),
           editing || !embeddedAccess
             ? pendingStoreRead(`merchant-stores:${merchantId}`, () => api.get(endpoints.merchantStores(encodeURIComponent(merchantId)))).catch(() => null)
@@ -1683,16 +1689,20 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
   // Embedded Features only needs the plan catalog when entitlement data is absent.
   useEffect(() => {
     if ((!embeddedAccess && !editing) || !needsFeatures || loading || merchantLoading || !merchantInfo) return;
-    const hasEntitlements = subscription?.entitlements != null ||
-      subscription?.includedFeatures != null || subscription?.included_features != null ||
-      plan?.includedFeatures != null || plan?.included_features != null || plan?.features != null;
-    if (hasEntitlements) return;
-    let active = true;
+    const selectedPlanKey = String(
+      subscription?.planId || subscription?.plan_id || subscription?.planCode ||
+      subscription?.plan_code || subscription?.planName || subscription?.plan_name ||
+      plan?.id || plan?.planId || plan?.code || plan?.planCode || plan?.name ||
+      merchant?.planId || merchant?.plan_id || merchant?.plan || "",
+    ).trim().toLowerCase();
+    if (!selectedPlanKey || matchedPlan || masterPlans.length > 0) return;
+    const requestScope = `${merchantId}:${selectedPlanKey}`;
+    if (requestedPlanCatalog.current === requestScope) return;
+    requestedPlanCatalog.current = requestScope;
     pendingStoreRead("store-setup-plans", () => listPlans())
-      .then(rows => { if (active) setMasterPlans(Array.isArray(rows) ? rows : []); })
-      .catch(error => { if (active) setLoadError(error.message || "Unable to load plan entitlements."); });
-    return () => { active = false; };
-  }, [featuresOnly, needsFeatures, loading, merchantLoading, merchantInfo, subscription, plan]);
+      .then(rows => setMasterPlans(Array.isArray(rows) ? rows : []))
+      .catch(error => setLoadError(error.message || "Unable to load plan entitlements."));
+  }, [featuresOnly, needsFeatures, loading, merchantLoading, merchantInfo, subscription, plan, merchant, matchedPlan, masterPlans.length, merchantId]);
   // Default Enable Entitled Features
   useEffect(() => {
     if (
@@ -3008,7 +3018,7 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
 
   const featuresScreen = () => {
     const includedCount = featureRows.filter((row) =>
-      enabledFeatures.includes(row.name),
+      entitled(row.name),
     ).length;
     return (
       <>

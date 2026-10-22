@@ -4,11 +4,13 @@ import { endpoints } from "./endpoints";
 
 // Keep UI camelCase values at the API boundary; employee HTTP fields are snake_case.
 export function toEmployeeUpdatePayload(data) {
+  const phone = data.phone ?? data.phoneNumber ?? data.phone_number ?? data.contactNo ?? data.contact_no ?? data.contactNumber ?? "";
+  const temporaryPassword = data.password || data.temporaryPassword || data.temporary_password || "";
   const payload = {
     first_name: data.firstName?.trim() || "",
     last_name: data.lastName?.trim() || "",
     email: data.email?.trim() || "",
-    phone: data.phone?.trim() || "",
+    phone: String(phone).trim(),
     gender: data.gender || "",
     address_line1: data.address1?.trim() || data.addressLine1?.trim() || "",
     address_line2: data.address2?.trim() || data.addressLine2?.trim() || "",
@@ -18,7 +20,7 @@ export function toEmployeeUpdatePayload(data) {
     country: data.country || "India",
     username: data.username?.trim() || "",
     ...(data.status ? { status: data.status.toUpperCase() } : {}),
-    ...(data.password ? { temporary_password: data.password } : {}),
+    ...(String(temporaryPassword).length > 0 ? { temporary_password: String(temporaryPassword) } : {}),
     ...(typeof data.sendCredentials === "boolean" ? { send_credentials: data.sendCredentials } : {}),
   };
   const dob = data.dob || data.dateOfBirth;
@@ -69,7 +71,15 @@ export async function createEmployee(data, assignments = [], image) {
 }
 
 export async function updateEmployee(employeeId, data, image) {
-  return employeeResponse(await api.put(endpoints.employee(employeeId), employeeBody(toEmployeeUpdatePayload(data), image)));
+  const response = await api.put(
+    endpoints.employee(employeeId),
+    employeeBody(toEmployeeUpdatePayload(data), image),
+  );
+  const result = response?.data ?? response;
+  if (result?.success === false) {
+    throw new Error(result.message || result.error || "Unable to update employee.");
+  }
+  return employeeResponse(response);
 }
 
 export async function getEmployee(employeeId) {
@@ -176,7 +186,7 @@ export function mapEmployeeToRow(employee) {
  
     email: employee.email || "—",
  
-    phone: employee.phone || "—",
+    phone: employee.phone || employee.phoneNumber || employee.phone_number || employee.contactNo || employee.contact_no || employee.contactNumber || "—",
 
     loginPin: employee.loginPin || employee.employeeLoginPin || employee.pin || "",
  

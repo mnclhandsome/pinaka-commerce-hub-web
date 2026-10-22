@@ -12,22 +12,21 @@ import {
   Upload,
   CalendarDays,
   ChevronDown,
-  Eye,
-  EyeOff,
   ArrowLeft,
   Save,
 } from "lucide-react";
 
-import DeviceNavigation from "../components/DeviceNavigation";
+import PhoneInputModule from "react-phone-input-2";
+const PhoneInput = PhoneInputModule.default || PhoneInputModule;
+import "react-phone-input-2/lib/style.css";
 import "../styles/add-employee.css";
 import "../styles/editemployee.css";
-import "../styles/employee-device-edit.css";
 
 // import { updateEmployee } from "../api/employees";
 import {
   updateEmployee,
+  getEmployee,
   uploadEmployeeProfileImage,
-  getEmployeeProfileImage,
   deleteEmployeeProfileImage,
 } from "../api/employees";
 
@@ -150,6 +149,24 @@ function getEmployeeDate(value) {
   return date.toISOString().slice(0, 10);
 }
 
+function getEmployeePhone(...values) {
+  for (const value of values) {
+    const phone = String(value ?? "").trim();
+    if (phone && !["—", "-", "n/a", "null", "undefined"].includes(phone.toLowerCase())) {
+      return phone;
+    }
+  }
+  return "";
+}
+
+function getNationalPhone(phone, dialCode) {
+  const digits = String(phone ?? "").replace(/\D/g, "");
+  if (dialCode && digits.startsWith(dialCode) && digits.length > 10) {
+    return digits.slice(dialCode.length);
+  }
+  return digits;
+}
+
 // Extract human-readable Business Name from Merchant Object or String
 function getMerchantName(m) {
   if (!m) return "";
@@ -176,8 +193,10 @@ export default function EditEmployee({ employee: employeeProp, onBack: onBackPro
 
   const employee =  employeeProp ||  location.state?.employee || {};
   const employeeId = useMemo(() => getEmployeeId(employee), [employee]);
+  const [loadingDetails, setLoadingDetails] = useState(Boolean(employeeId));
+  const [detailLoadError, setDetailLoadError] = useState(false);
 
-  const [showPassword, setShowPassword] = useState(false);
+  const [phoneDialCode, setPhoneDialCode] = useState("");
   const [saving, setSaving] = useState(false);
   const [apiError, setApiError] = useState("");
   const [notice, setNotice] = useState("");
@@ -194,19 +213,52 @@ export default function EditEmployee({ employee: employeeProp, onBack: onBackPro
   useEffect(() => {
     if (!employeeId) return;
     let active = true;
-    getEmployeeProfileImage(employeeId)
+    getEmployee(employeeId)
       .then((response) => {
         if (!active) return;
-        const savedEmployee = response?.employee;
-        setProfileImage(savedEmployee?.profileImageUrl || null);
-        const savedPin = savedEmployee?.loginPin || savedEmployee?.employeeLoginPin || savedEmployee?.login_pin || savedEmployee?.pin;
-        if (savedPin) {
-          setFormData((current) => ({ ...current, employeeLoginPin: String(savedPin) }));
-        }
+        const savedEmployee = response?.employee || response?.data?.employee || response?.data || response || {};
+        const address = savedEmployee.address || savedEmployee.businessAddress || {};
+        const merchant = savedEmployee.merchant;
+        setProfileImage(savedEmployee.profileImageUrl || savedEmployee.profile_image_url || savedEmployee.profileImage || null);
+        setFormData((current) => ({
+          ...current,
+          firstName: savedEmployee.firstName || savedEmployee.first_name || current.firstName,
+          lastName: savedEmployee.lastName || savedEmployee.last_name || current.lastName,
+          email: savedEmployee.email || current.email,
+          phone: getEmployeePhone(
+            current.phone,
+            current.contactNo,
+            current.contact_no,
+            current.contactNumber,
+            savedEmployee.phone,
+            savedEmployee.phoneNumber,
+            savedEmployee.phone_number,
+            savedEmployee.contactNo,
+            savedEmployee.contact_no,
+            savedEmployee.contactNumber,
+          ),
+          dob: getEmployeeDate(savedEmployee.dateOfBirth || savedEmployee.date_of_birth || savedEmployee.dob) || current.dob,
+          gender: savedEmployee.gender || current.gender,
+          address1: savedEmployee.addressLine1 || savedEmployee.address_line1 || savedEmployee.address_line_1 || (typeof address === "string" ? address : address.street || address.addressLine1 || "") || current.address1,
+          address2: savedEmployee.addressLine2 || savedEmployee.address_line2 || savedEmployee.address_line_2 || address.addressLine2 || "",
+          city: savedEmployee.city || address.city || current.city,
+          state: savedEmployee.state || address.state || current.state,
+          pinCode: savedEmployee.postalCode || savedEmployee.postal_code || savedEmployee.pinCode || savedEmployee.pin_code || address.zipCode || current.pinCode,
+          country: savedEmployee.country || address.country || current.country,
+          merchantId: savedEmployee.merchantId || savedEmployee.merchant_id || merchant?.id || merchant?.uuid || current.merchantId,
+          merchant: getMerchantName(merchant) || savedEmployee.merchantName || savedEmployee.merchant_name || current.merchant,
+          employeeLoginPin: savedEmployee.loginPin || savedEmployee.employeeLoginPin || savedEmployee.login_pin || savedEmployee.pin || current.employeeLoginPin,
+          username: savedEmployee.username || savedEmployee.employeeCode || savedEmployee.employee_code || current.username,
+          status: String(savedEmployee.status || current.status).toUpperCase() === "ACTIVE" ? "Active" : "Inactive",
+        }));
       })
       .catch((error) => {
-        if (active) setNotice(error.message || "Unable to load the saved profile photo.");
-      });
+        if (active) {
+          setDetailLoadError(true);
+          setNotice(error.message || "Unable to load employee details.");
+        }
+      })
+      .finally(() => active && setLoadingDetails(false));
     return () => { active = false; };
   }, [employeeId]);
 
@@ -215,7 +267,7 @@ export default function EditEmployee({ employee: employeeProp, onBack: onBackPro
     lastName:
       employee.lastName || employee.name?.split(" ").slice(1).join(" ") || "",
     email: employee.email || "",
-    phone: employee.phone || "",
+    phone: getEmployeePhone(employee.phone, employee.phoneNumber, employee.phone_number, employee.contactNo, employee.contact_no, employee.contactNumber),
     dob: getEmployeeDate(employee.dateOfBirth || employee.dob),
     gender: employee.gender || "",
     address1: employee.addressLine1 || employee.address1 || "",
@@ -238,11 +290,23 @@ export default function EditEmployee({ employee: employeeProp, onBack: onBackPro
     employeeLoginPin: employee.loginPin || employee.employeeLoginPin || employee.login_pin || employee.pin || "",
     manager: employee.manager || "",
     username: employee.username || employee.employeeCode || employee.id || "",
-    status: String(employee.status || "INACTIVE").toUpperCase() === "ACTIVE" ? "Active" : "Inactive",
     password: "",
+    status: String(employee.status || "INACTIVE").toUpperCase() === "ACTIVE" ? "Active" : "Inactive",
     sendCredentials: employee.sendCredentials ?? true,
   });
   const locationOptions = useLocationOptions(formData);
+
+  useEffect(() => {
+    const country = locationOptions.selectedCountry;
+    if (!country?.iso2 || !country?.phoneCode) return;
+    const nextDialCode = String(country.phoneCode).replace(/\D/g, "");
+    setPhoneDialCode(nextDialCode);
+    setFormData((current) => {
+      const nationalNumber = getNationalPhone(current.phone, phoneDialCode);
+      const nextPhone = `${nextDialCode}${nationalNumber}`;
+      return current.phone === nextPhone ? current : { ...current, phone: nextPhone };
+    });
+  }, [locationOptions.selectedCountry?.iso2, locationOptions.selectedCountry?.phoneCode]);
 
 
   const [errors, setErrors] = useState({});
@@ -357,12 +421,6 @@ export default function EditEmployee({ employee: employeeProp, onBack: onBackPro
       case "status":
         return ["Active", "Inactive"].includes(value) ? "" : "Select Active or Inactive.";
 
-      case "password":
-        if (!value) return "";
-        if (trimmed.length < 8) return "Temporary password must be at least 8 characters.";
-        if (trimmed.length > 128) return "Temporary password cannot exceed 128 characters.";
-        return "";
-
       default:
         return "";
     }
@@ -403,11 +461,6 @@ export default function EditEmployee({ employee: employeeProp, onBack: onBackPro
       if (error) nextErrors.employeeLoginPin = error;
     }
 
-    if (formData.password) {
-      const error = validateField("password", formData.password);
-      if (error) nextErrors.password = error;
-    }
-
     setErrors(nextErrors);
     return Object.keys(nextErrors).length === 0;
   };
@@ -440,7 +493,9 @@ export default function EditEmployee({ employee: employeeProp, onBack: onBackPro
     }
   };
 
-  const handlePhoneChange = (value) => {
+  const handlePhoneChange = (event) => {
+    const nationalNumber = event.target.value.replace(/\D/g, "");
+    const value = `${phoneDialCode}${nationalNumber}`;
     setFormData((prev) => ({
       ...prev,
       phone: value,
@@ -452,6 +507,16 @@ export default function EditEmployee({ employee: employeeProp, onBack: onBackPro
         phone: validateField("phone", value),
       }));
     }
+  };
+
+  const handlePhoneCountryChange = (value, country) => {
+    if (!country?.dialCode) return;
+    const nextDialCode = country.dialCode;
+    setPhoneDialCode(nextDialCode);
+    setFormData((prev) => ({
+      ...prev,
+      phone: `${nextDialCode}${getNationalPhone(prev.phone, phoneDialCode)}`,
+    }));
   };
 
   /* =========================================================
@@ -468,6 +533,7 @@ export default function EditEmployee({ employee: employeeProp, onBack: onBackPro
       e.target.value = "";
       return;
     }
+    if (loadingDetails) return;
 
     if (!file.type.startsWith("image/")) {
       setNotice("Please select a JPG or PNG image.");
@@ -578,6 +644,11 @@ export default function EditEmployee({ employee: employeeProp, onBack: onBackPro
       );
       return;
     }
+    if (loadingDetails) return;
+    if (detailLoadError) {
+      setApiError("Employee details could not be loaded. Refresh the page before saving changes.");
+      return;
+    }
 
     if (!validateForm()) {
       requestAnimationFrame(() => {
@@ -624,16 +695,17 @@ export default function EditEmployee({ employee: employeeProp, onBack: onBackPro
 
 
   return (
-    <div className={`add-employee-page${employeeProp ? " merchant-employee-edit" : " employee-device-edit-page"}`}>
+    <div className={`add-employee-page edit-employee-page${employeeProp ? " merchant-employee-edit" : ""}`}>
       <StoreRoleAssignmentStyles />
 
-      {!employeeProp && (
-        <DeviceNavigation
-          title="Edit Employee"
-          listLabel="Employees"
-          onBack={handleBack}
-        />
-      )}
+      {!employeeProp && <header className="sf-topbar add-employee-topbar">
+        <button type="button" className="sf-back-link" onClick={handleBack}>
+          <i className="bi bi-arrow-left" aria-hidden="true" /> Employees
+        </button>
+        <span>/</span>
+        <strong>Edit Employee</strong>
+        <span className="sf-topbar-spacer" />
+      </header>}
 
       {/* PAGE HEADER */}
       <div className="add-employee-header">
@@ -665,30 +737,20 @@ export default function EditEmployee({ employee: employeeProp, onBack: onBackPro
 
       {/* API ERROR BANNER */}
       <EmployeeToast message={notice || apiError} onClose={() => { setNotice(""); setApiError(""); }} />
+      {loadingDetails && <p className="employee-api-error" role="status">Loading employee details…</p>}
       {confirmPhotoDelete && <EmployeeDeleteDialog title="Delete Profile Photo?" description="Are you sure you want to remove this employee’s profile photo?" busy={deletingProfileImage} onCancel={() => setConfirmPhotoDelete(false)} onConfirm={handleDeleteProfileImage} />}
 
       {/* FORM */}
-      <form id="edit-employee-form" onSubmit={handleSave} autoComplete="off">
-        <div className={employeeProp ? undefined : "employee-edit-main-card"}>
-          {!employeeProp && (
-            <div className="device-card-header employee-edit-card-header">
-              <div className="device-card-icon">
-                <Settings size={19} />
-              </div>
-              <div>
-                <h2>Employee Details</h2>
-                <p>Update employee information, roles, and account settings.</p>
-              </div>
-            </div>
-          )}
+      <form id="edit-employee-form" onSubmit={handleSave} autoComplete="off" noValidate>
           <div className="add-employee-layout">
           {/* LEFT COLUMN */}
           <div className="add-employee-left">
             {/* PERSONAL INFORMATION */}
-            <section className="employee-card">
+            <section className="employee-card employee-personal-card">
               <CardHeader
                 icon={<User size={21} />}
                 title="Personal Information"
+                theme="blue"
                 description="Enter the basic details of the employee."
               />
 
@@ -734,18 +796,36 @@ export default function EditEmployee({ employee: employeeProp, onBack: onBackPro
                     Phone Number <span className="text-red-500">*</span>
                   </label>
 
-                  <input
-                    type="tel"
-                    id="employee-phone"
-                    name="phone"
-                    aria-label="Phone Number"
-                    placeholder="Enter phone number, including country code"
-                    value={formData.phone}
-                    onChange={(event) => handlePhoneChange(event.target.value)}
-                    required
-                    autoComplete="tel"
-                    className={errors.phone ? "field-invalid" : ""}
-                  />
+                  <div className={`employee-phone-control ${errors.phone ? "employee-phone-control-invalid" : ""}`}>
+                    <div className="employee-phone-country">
+                      <PhoneInput
+                        key={locationOptions.selectedCountry?.iso2 || "in"}
+                        country={locationOptions.selectedCountry?.iso2?.toLowerCase() || "in"}
+                        enableSearch
+                        countryCodeEditable={false}
+                        value={locationOptions.selectedCountry?.phoneCode || phoneDialCode}
+                        inputStyle={{ display: "none" }}
+                        buttonStyle={{ width: "48px", height: "46px" }}
+                        onMount={(_, country) => {
+                          if (country?.dialCode) setPhoneDialCode(country.dialCode);
+                        }}
+                        onChange={handlePhoneCountryChange}
+                        inputProps={{ tabIndex: -1, "aria-hidden": true }}
+                      />
+                    </div>
+                    <span className="employee-phone-code">+{phoneDialCode}</span>
+                    <input
+                      id="employee-phone"
+                      name="phone"
+                      type="tel"
+                      value={getNationalPhone(formData.phone, phoneDialCode)}
+                      onChange={handlePhoneChange}
+                      placeholder="Enter phone number"
+                      required
+                      autoComplete="tel-national"
+                      aria-label="Phone Number"
+                    />
+                  </div>
 
                   {errors.phone && (
                     <span className="field-error">{errors.phone}</span>
@@ -788,10 +868,11 @@ export default function EditEmployee({ employee: employeeProp, onBack: onBackPro
             </section>
 
             {/* ADDRESS */}
-            <section className="employee-card">
+            <section className="employee-card employee-address-card">
               <CardHeader
                 icon={<MapPin size={21} />}
                 title="Address"
+                theme="amber"
                 description="Enter the employee's address details."
               />
 
@@ -840,6 +921,7 @@ export default function EditEmployee({ employee: employeeProp, onBack: onBackPro
               <CardHeader
                 icon={<Camera size={21} />}
                 title="Profile Photo"
+                theme="purple"
                 description="Upload a profile photo for the employee."
               />
 
@@ -886,6 +968,7 @@ export default function EditEmployee({ employee: employeeProp, onBack: onBackPro
               <CardHeader
                 icon={<BriefcaseBusiness size={21} />}
                 title="Work Information"
+                theme="teal"
                 description="Assign roles to one or more stores under the selected merchant."
               />
 
@@ -944,41 +1027,22 @@ export default function EditEmployee({ employee: employeeProp, onBack: onBackPro
 
                 <div className="employee-field">
                   <label htmlFor="employee-temporary-password">Temporary Password</label>
-
                   <div className="password-input">
                     <input
-                      type={showPassword ? "text" : "password"}
                       id="employee-temporary-password"
                       name="password"
+                      type="text"
                       placeholder="Enter a new temporary password"
                       value={formData.password}
                       onChange={handleChange}
                       autoComplete="new-password"
                       spellCheck={false}
                       autoCapitalize="none"
-
-                      className={errors.password ? "field-invalid" : ""}
                     />
-
-                    <button
-                      type="button"
-                      aria-label={showPassword ? "Hide temporary password" : "Show temporary password"}
-                      aria-pressed={showPassword}
-                      onMouseDown={(event) => event.preventDefault()}
-                      onClick={() => {
-                        setShowPassword((visible) => !visible);
-                        document.getElementById("employee-temporary-password")?.focus();
-                      }}
-                    >
-                      {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
-                    </button>
                   </div>
-
-
-
-                  {errors.password && (
-                    <span className="field-error">{errors.password}</span>
-                  )}
+                  <small className="employee-password-help">
+                    Leave blank to keep the current password. New passwords must be at least 8 characters.
+                  </small>
                 </div>
 
                 <div className="employee-login-pin-field">
@@ -999,7 +1063,6 @@ export default function EditEmployee({ employee: employeeProp, onBack: onBackPro
               </div>
             </section>
           </div>
-          </div>
         </div>
       </form>
 
@@ -1010,7 +1073,7 @@ export default function EditEmployee({ employee: employeeProp, onBack: onBackPro
           type="button"
           className="cancel-employee-btn"
           onClick={handleBack}
-          disabled={saving}
+          disabled={saving || loadingDetails || detailLoadError}
         >
           Cancel
         </button>
@@ -1019,7 +1082,7 @@ export default function EditEmployee({ employee: employeeProp, onBack: onBackPro
           type="submit"
           form="edit-employee-form"
           className="save-employee-btn"
-          disabled={saving}
+          disabled={saving || loadingDetails || detailLoadError}
         >
           <Save size={15} />
           {saving ? "Updating..." : "Save Changes"}
@@ -1032,12 +1095,12 @@ export default function EditEmployee({ employee: employeeProp, onBack: onBackPro
             type="button"
             className="cancel-employee-btn"
             onClick={handleBack}
-            disabled={saving}
+            disabled={saving || loadingDetails || detailLoadError}
           >
             Cancel
           </button>
 
-          <button type="submit" form="edit-employee-form" className="save-employee-btn" disabled={saving}>
+          <button type="submit" form="edit-employee-form" className="save-employee-btn" disabled={saving || loadingDetails || detailLoadError}>
             {saving ? "Updating..." : "Update Employee"}
           </button>
         </div>
@@ -1050,9 +1113,9 @@ export default function EditEmployee({ employee: employeeProp, onBack: onBackPro
    CARD HEADER COMPONENT
 ========================================================= */
 
-function CardHeader({ icon, title, description }) {
+function CardHeader({ icon, title, description, theme }) {
   return (
-    <div className="employee-card-header">
+    <div className={`employee-card-header employee-card-header-${theme}`}>
       <div className="employee-card-icon">{icon}</div>
 
       <div>

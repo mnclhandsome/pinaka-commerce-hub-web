@@ -39,34 +39,36 @@ const blankMerchant = () => ({
 
 function merchantDetailToDraft(result, fallback = {}) {
   const response = result?.raw || {};
-  const raw = response.merchant || response.data?.merchant || response.data || response;
-  const address = raw.businessAddress || raw.address || {};
+  const raw = response.merchant || response.data?.merchant || response.data?.data?.merchant || response.data || response;
+  const address = raw.businessAddress || raw.business_address || raw.address || {};
   const subscription = result?.subscription || raw.subscription || {};
-  const owner = String(raw.ownerName || raw.merchantName || "").trim().split(/\s+/);
-  const planId = subscription.planId || subscription.plan_id || raw.planId || raw.plan_id || "";
+  const owner = String(raw.ownerName || raw.owner_name || raw.merchantName || raw.merchant_name || "").trim().split(/\s+/);
+  const planId = subscription.planId || subscription.plan_id || subscription.plan?.id || subscription.plan?.planId || raw.planId || raw.plan_id || "";
+  const field = (...values) => values.find((value) => value !== undefined && value !== null && value !== "") ?? "";
+  const addressField = (...values) => field(...values, typeof address === "string" ? address : "");
   return {
     merchant: {
       ...blankMerchant(),
-      code: String(raw.merchantCode || raw.merchant_code || raw.code || fallback.merchantCode || ""),
-      ein: raw.ein || raw.EIN || "",
-      firstName: raw.firstName || owner[0] || "",
-      lastName: raw.lastName || owner.slice(1).join(" "),
-      name: raw.ownerName || [raw.firstName, raw.lastName].filter(Boolean).join(" "),
-      business: raw.legalBusinessName || raw.businessName || fallback.name || "",
-      display: raw.businessDisplayName || raw.businessName || raw.name || fallback.name || "",
-      email: raw.email || raw.merchantEmail || fallback.email || "",
-      phone: normalizePhone(raw.phone || raw.merchantPhoneNumber || fallback.phone || ""),
-      addressLine1: raw.addressLine1 || (typeof address === "string" ? address : address.addressLine1 || address.street || ""),
-      addressLine2: raw.addressLine2 || address.addressLine2 || address.unit || "",
-      city: raw.city || address.city || "",
-      state: raw.state || address.state || "",
-      postal: raw.postalCode || raw.pinCode || address.zipCode || "",
-      country: raw.country || address.country || "",
+      code: String(field(raw.merchantCode, raw.merchant_code, raw.code, fallback.merchantCode)),
+      ein: field(raw.ein, raw.EIN),
+      firstName: field(raw.firstName, raw.first_name, owner[0]),
+      lastName: field(raw.lastName, raw.last_name, owner.slice(1).join(" ")),
+      name: field(raw.ownerName, raw.owner_name, [raw.firstName || raw.first_name, raw.lastName || raw.last_name].filter(Boolean).join(" ")),
+      business: field(raw.legalBusinessName, raw.legal_business_name, raw.businessName, raw.business_name, fallback.name),
+      display: field(raw.businessDisplayName, raw.business_display_name, raw.display, raw.businessName, raw.business_name, raw.name, fallback.name),
+      email: field(raw.email, raw.merchantEmail, raw.merchant_email, fallback.email),
+      phone: normalizePhone(field(raw.phone, raw.merchantPhoneNumber, raw.merchant_phone_number, fallback.phone)),
+      addressLine1: addressField(raw.addressLine1, raw.address_line_1, raw.address_line1, typeof address === "object" && (address.addressLine1 || address.address_line1 || address.street || address.streetAddress)),
+      addressLine2: field(raw.addressLine2, raw.address_line_2, typeof address === "object" && (address.addressLine2 || address.address_line2 || address.unit)),
+      city: field(raw.city, address.city),
+      state: field(raw.state, address.state, address.province),
+      postal: field(raw.postalCode, raw.postal_code, raw.pinCode, raw.pin_code, address.zipCode, address.zip_code, address.postalCode),
+      country: field(raw.country, address.country),
     },
     planId,
-    planName: subscription.planName || subscription.planCode || raw.plan || fallback.plan || "",
+    planName: field(subscription.planName, subscription.plan_name, subscription.planCode, subscription.plan_code, subscription.plan?.name, raw.plan, fallback.plan),
     cycle: normalizeCycle(subscription.billingCycle || subscription.billing_cycle || raw.billingCycle || raw.billing_cycle),
-    start: String(subscription.startDate || subscription.start || "").slice(0, 10),
+    start: String(subscription.startDate || subscription.start_date || subscription.start || "").slice(0, 10),
     subscriptionId: subscription.id || subscription.subscriptionId || "",
     subscriptionStatus: subscription.status || "Pending activation",
     employeeCount: raw.employeeCount ?? fallback.employeeCount ?? null,
@@ -249,7 +251,7 @@ function MerchantEditor({ merchantId, localMerchants, onSave }) {
     return () => { active = false; };
   }, [merchantId]);
 
-  const plan = plans.find((item) => String(item.id) === String(planId)) || null;
+  const plan = plans.find((item) => [item.id, item.planId, item.plan_id, item.code, item.planCode, item.plan_code, item.name].some((value) => String(value || "").toLowerCase() === String(planId || "").toLowerCase())) || null;
   const planGroups = useMemo(() => {
     const groups = new Map();
     plans.forEach((item) => {
@@ -425,7 +427,7 @@ function MerchantEditor({ merchantId, localMerchants, onSave }) {
               <Field label="Email Address *" type="email" placeholder="Enter email address" value={merchant.email} required error={fieldErrors.email} onChange={(v) => updateField("email", v)} />
               <div className={`pch-field pch-phone-field${fieldErrors.phone ? " pch-field-invalid" : ""}`}>
                 <label htmlFor="merchant-phone">Phone Number <span className="text-red-500" style={{ color: "#dc2626" }}>*</span></label>
-                <PhoneInput country="in" enableSearch countryCodeEditable={false} autoFormat value={merchant.phone} onMount={(_value, data) => { if (data?.countryCode) setPhoneCountry(data.countryCode); if (data?.dialCode) setPhoneDialCode(data.dialCode); }} onChange={(value, data) => { updateField("phone", value); if (data?.countryCode) setPhoneCountry(data.countryCode); if (data?.dialCode) setPhoneDialCode(data.dialCode); }} inputProps={{ id: "merchant-phone", name: "phone", required: true, autoComplete: "tel", "aria-invalid": Boolean(fieldErrors.phone) }} />
+                <PhoneInput country={locationOptions.selectedCountry?.iso2?.toLowerCase() || phoneCountry} enableSearch countryCodeEditable={false} autoFormat value={merchant.phone} onMount={(_value, data) => { if (data?.countryCode) setPhoneCountry(data.countryCode); if (data?.dialCode) setPhoneDialCode(data.dialCode); }} onChange={(value, data) => { updateField("phone", value); if (data?.countryCode) setPhoneCountry(data.countryCode); if (data?.dialCode) setPhoneDialCode(data.dialCode); }} inputProps={{ id: "merchant-phone", name: "phone", required: true, autoComplete: "tel", "aria-invalid": Boolean(fieldErrors.phone) }} />
                 {fieldErrors.phone && <span className="pch-field-error" role="alert">{fieldErrors.phone}</span>}
               </div>
               <Field label="Address Line 1 *" placeholder="Enter street address" value={merchant.addressLine1} required error={fieldErrors.addressLine1} onChange={(v) => updateField("addressLine1", v)} />
