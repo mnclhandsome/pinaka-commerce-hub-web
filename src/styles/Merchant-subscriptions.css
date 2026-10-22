@@ -2866,7 +2866,29 @@
 }/* ========================================
    CHOOSE SUBSCRIPTION PLAN — LATEST UI
    UI-only overrides; API/flow logic unchanged
-======================================== */.choose-plan-redesign { max-width:none; width:100%; margin:0; padding:0 0 28px; background:#f7f9fd; }.choose-plan-back-strip { min-height:64px; display:flex; align-items:center; padding:0 28px; background:#fff; border-bottom:1px solid #e3e9f3; }.choose-plan-redesign .choose-plan-back-strip .page-back { margin:0; color:#5143bc; font-size:14px; font-weight:600; }.choose-plan-layout { display:grid; grid-template-columns:280px minmax(0,1fr); min-height:calc(100vh - 140px); }.subscription-stepper { position:relative; padding:18px 14px 24px; background:#fff; border-right:1px solid #e1e8f2; }.subscription-stepper::before { content:""; position:absolute; left:43px; top:48px; bottom:calc(100% - 310px); width:1px; background:#d8e2f0; }.subscription-step { position:relative; z-index:1; display:grid; grid-template-columns:42px minmax(0,1fr); gap:12px; align-items:start; min-height:86px; padding:10px 10px; border-radius:8px; }.subscription-step.active { background:#eef6ff; }.step-number { display:flex; align-items:center; justify-content:center; width:38px; height:38px; border:2px solid #c9d6e8; border-radius:50%; background:#fff; color:#173d73; font-weight:700; }.subscription-step.active .step-number { border-color:#5143bc; background:#5143bc; color:#fff; }.subscription-step strong { display:block; margin:6px 0 5px; color:#0b1c39; font-size:14px; line-height:1.25; }.subscription-step.active strong { color:#075ee8; }.subscription-step p { margin:0; color:#5774a7; font-size:12px; line-height:1.4; }.choose-plan-main { min-width:0; padding:22px 20px 28px; }.choose-plan-heading h1 { margin:0 0 4px; color:#08182f; font-size:30px; font-weight:600; line-height:1.2; letter-spacing: -.035em; }.choose-plan-redesign .choose-plan-heading .flow-subtitle { margin:0 0 16px; color:#4f6796; font-size:15px; }.choose-plan-grid { grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; margin-top:0; align-items:stretch; }.choose-plan-card { min-height:530px; padding:20px 18px 18px; border-color:#dbe4f0; border-radius:8px; box-shadow:0 2px 8px rgba(24,48,84,.025); }.choose-plan-card.selected,.choose-plan-card.current { padding:19px 17px 17px; border:2px solid #5143bc; box-shadow:0 2px 10px rgba(8,113,255,.08); }.choose-plan-card-top { display:flex; align-items:flex-start; justify-content:space-between; min-height:58px; }.plan-visual-icon { display:flex; align-items:center; justify-content:center; width:58px; height:58px; border-radius:10px; color:#5143bc; background:#f5f3ff; }.plan-tone-1 .plan-visual-icon { color:#5143bc; background:#f4ebff; }.plan-tone-2 .plan-visual-icon { color:#ff7900; background:#fff0e3; }.choose-plan-card .current-plan-badge { position:static; margin-top:2px; padding:7px 10px; border-radius:7px; background:#e6f3ff; color:#0871ef; font-size:11px; }.choose-plan-card .plan-card-header { min-height:auto; margin-top:14px; }.choose-plan-card .plan-card-header h3 { margin:0 0 5px; color:#07182f; font-size:20px; font-weight:700; }.choose-plan-card .plan-card-header p { min-height:38px; margin:0; color:#4e6da3; font-size:13px; line-height:1.45; }.choose-plan-card .plan-divider { margin:14px 0 16px; background:#dbe4f0; }.choose-plan-card .plan-price { margin:0; color:#06162f; font-size:30px; line-height:1.1; }.choose-plan-card .plan-price span { color:#506b9c; font-size:13px; }.choose-plan-card .plan-yearly { margin-top:7px; color:#506b9c; font-size:13px; }.plan-capacity-row { display:grid; grid-template-columns:minmax(0,1fr) 1px minmax(0,1fr); gap:10px; align-items:center; margin:18px 0 14px; padding:10px 12px; border-radius:8px; background:#f5f9fe; }.plan-capacity-divider { width:1px; height:42px; background:#dce6f2; }.plan-capacity-item { display:flex; align-items:center; gap:9px; min-width:0; }.capacity-icon { display:flex; align-items:center; justify-content:center; flex:0 0 34px; width:34px; height:34px; border-radius:7px; color:#5143bc; background:#e7f3ff; }.plan-tone-1 .capacity-icon { color:#5143bc; background:#f1e8ff; }.plan-tone-2 .capacity-icon { color:#ff7900; background:#fff0e3; }.plan-capacity-item strong,.plan-capacity-item small { display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }.plan-capacity-item strong { margin-bottom:3px; color:#385582; font-size:12px; font-weight:500; }.plan-capacity-item small { color:#3f5d8d; font-size:10px; }.choose-plan-card .choose-plan-features { margin:2px 0 16px; }.choose-plan-card .choose-plan-features li { padding:6px 0; color:#122a4e; font-size:13px; }.choose-plan-card .choose-plan-features li svg { color:#00ad78; }.choose-plan-card .select-plan-btn { min-height:48px; margin-top:auto; padding:11px; border-color:#cfdbea; border-radius:7px; color:#07182f; background:#fff; font-size:13px; }.choose-plan-card .select-plan-btn:disabled { background:#edf6ff; color:#77aaff; border-color:#e2efff; }.choose-plan-card .select-plan-btn.chosen:not(:disabled) { background:#f5f3ff; color:#5143bc; border-color:#9fc5ff; }.choose-plan-info-banner { margin:18px 0 0; padding:14px 18px; border-radius:8px; background:#eaf5ff; color:#173f79; }.choose-plan-info-banner strong { color:#123d79; }.choose-plan-info-banner p { margin-top:4px; }.choose-plan-actions { margin-top:14px; }.choose-plan-actions .primary-flow-button { min-width:172px; min-height:52px; border-radius:8px; font-weight:600; }.choose-plan-loading { grid-column:1/-1; padding:30px; text-align:center; }@media (max-width:1350px) {
+======================================== */.choose-plan-redesign { max-width:none; width:100%; margin:0; padding:0 0 28px; background:#f7f9fd; }.choose-plan-back-strip { min-height:64px; display:flex; align-items:center; padding:0 28px; background:#fff; border-bottom:1px solid #e3e9f3; }.choose-plan-redesign .choose-plan-back-strip .page-back { margin:0; color:#5143bc; font-size:14px; font-weight:600; }.choose-plan-layout { display:grid; grid-template-columns:280px minmax(0,1fr); min-height:calc(100vh - 140px); }.subscription-stepper { position:relative; padding:18px 14px 24px; background:#fff; border-right:1px solid #e1e8f2; }.subscription-stepper::before { content:""; position:absolute; left:43px; top:48px; bottom:calc(100% - 310px); width:1px; background:#d8e2f0; }.subscription-step { position:relative; z-index:1; display:grid; grid-template-columns:42px minmax(0,1fr); gap:12px; align-items:start; min-height:86px; padding:10px 10px; border-radius:8px; }.subscription-step.active { border: 1px solid #c4b9ff; border-radius: 9px; background: #e7e1ff; color: #5143bc; }.step-number { display:flex; align-items:center; justify-content:center; width:38px; height:38px; border:2px solid #c9d6e8; border-radius:50%; background:#fff; color:#173d73; font-weight:700; }.subscription-step.active .step-number { border-color: #5937e8; background: #5937e8; color: #fff; }.subscription-step strong { display:block; margin:6px 0 5px; color:#0b1c39; font-size:14px; line-height:1.25; }.subscription-step.active strong { color: #5143bc; font-weight: 700; }
+.subscription-step.active p { color: #8994aa; }.subscription-step p { margin:0; color:#5774a7; font-size:12px; line-height:1.4; }.choose-plan-main { min-width:0; padding:22px 20px 28px; }.choose-plan-heading h1 { margin:0 0 4px; color:#08182f; font-size:30px; font-weight:600; line-height:1.2; letter-spacing: -.035em; }.choose-plan-redesign .choose-plan-heading .flow-subtitle { margin:0 0 16px; color:#4f6796; font-size:15px; }.choose-plan-grid { grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; margin-top:0; align-items:stretch; }.choose-plan-card { min-height:530px; padding:20px 18px 18px; border-color:#dbe4f0; border-radius:8px; box-shadow:0 2px 8px rgba(24,48,84,.025); }.choose-plan-card.selected,.choose-plan-card.current { padding:19px 17px 17px; border:2px solid #5143bc; box-shadow:0 2px 10px rgba(8,113,255,.08); }.choose-plan-card-top { display:flex; align-items:flex-start; justify-content:space-between; min-height:58px; }.plan-visual-icon { display:flex; align-items:center; justify-content:center; width:58px; height:58px; border-radius:10px; color:#5143bc; background:#f5f3ff; }.plan-tone-1 .plan-visual-icon { color:#5143bc; background:#f4ebff; }.plan-tone-2 .plan-visual-icon { color:#ff7900; background:#fff0e3; }.choose-plan-card .current-plan-badge { position:static; margin-top:2px; padding:7px 10px; border-radius:7px; background:#e6f3ff; color:#0871ef; font-size:11px; }.choose-plan-card .plan-card-header { min-height:auto; margin-top:14px; }.choose-plan-card .plan-card-header h3 { margin:0 0 5px; color:#07182f; font-size:20px; font-weight:700; }.choose-plan-card .plan-card-header p { min-height:38px; margin:0; color:#4e6da3; font-size:13px; line-height:1.45; }.choose-plan-card .plan-divider { margin:14px 0 16px; background:#dbe4f0; }.choose-plan-card .plan-price { margin:0; color:#06162f; font-size:30px; line-height:1.1; }.choose-plan-card .plan-price span { color:#506b9c; font-size:13px; }.choose-plan-card .plan-yearly { margin-top:7px; color:#506b9c; font-size:13px; }.plan-capacity-row { display:grid; grid-template-columns:minmax(0,1fr) 1px minmax(0,1fr); gap:10px; align-items:center; margin:18px 0 14px; padding:10px 12px; border-radius:8px; background:#f5f9fe; }.plan-capacity-divider { width:1px; height:42px; background:#dce6f2; }.plan-capacity-item { display:flex; align-items:center; gap:9px; min-width:0; }.capacity-icon { display:flex; align-items:center; justify-content:center; flex:0 0 34px; width:34px; height:34px; border-radius:7px; color:#5143bc; background:#e7f3ff; }.plan-tone-1 .capacity-icon { color:#5143bc; background:#f1e8ff; }.plan-tone-2 .capacity-icon { color:#ff7900; background:#fff0e3; }.plan-capacity-item strong,.plan-capacity-item small { display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }.plan-capacity-item strong { margin-bottom:3px; color:#385582; font-size:12px; font-weight:500; }.plan-capacity-item small { color:#3f5d8d; font-size:10px; }.choose-plan-card .choose-plan-features { margin:2px 0 16px; }.choose-plan-card .choose-plan-features li { padding:6px 0; color:#122a4e; font-size:13px; }.choose-plan-card .choose-plan-features li svg { color:#00ad78; }.choose-plan-card .select-plan-btn { min-height:48px; margin-top:auto; padding:11px; border-color:#cfdbea; border-radius:7px; color:#07182f; background:#fff; font-size:13px; }.choose-plan-card .select-plan-btn:disabled { background:#edf6ff; color:#77aaff; border-color:#e2efff; }.choose-plan-card .select-plan-btn.chosen:not(:disabled) { background:#f5f3ff; color:#5143bc; border-color:#9fc5ff; }.choose-plan-info-banner { margin:18px 0 0; padding:14px 18px; border-radius:8px; background:#eaf5ff; color:#173f79; }.choose-plan-info-banner strong { color:#123d79; }.choose-plan-info-banner p { margin-top:4px; }.choose-plan-actions { margin-top:14px; }.choose-plan-actions .primary-flow-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 40px;
+  min-height: 40px;
+  min-width: 180px;
+  padding: 0 20px;
+  border: 1px solid #5143bc;
+  border-radius: 8px;
+  background: #5143bc;
+  color: #ffffff;
+  font: 600 14px/1 Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  cursor: pointer;
+  box-shadow: 0 2px 5px rgba(81, 67, 188, 0.18);
+  transition: all 0.16s ease;
+}
+.choose-plan-actions .primary-flow-button:hover:not(:disabled) {
+  background: #40339e;
+  border-color: #40339e;
+}.choose-plan-loading { grid-column:1/-1; padding:30px; text-align:center; }@media (max-width:1350px) {
  .choose-plan-layout { grid-template-columns:240px minmax(0,1fr); }
  .choose-plan-main { padding:20px 16px 26px; }
  .choose-plan-grid { gap:10px; }
@@ -3191,24 +3213,56 @@
   color: #876a32;
   font-size: 11px;
 }.confirm-plan-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
   margin-top: 16px;
-}.confirm-plan-actions .secondary-flow-button {
-  min-height: 52px;
-  width: 124px;
-  padding: 9px 18px;
-  border-radius: 7px;
-  font-size: 12.5px;
-  font-weight: 600;
-}.confirm-plan-actions .primary-flow-button {
-  min-height: 52px;
-  padding: 9px 18px;
-  border-radius: 7px;
-  font-size: 12.5px;
-  font-weight: 600;
-}.confirm-plan-actions .primary-flow-button {
-  min-width: 172px;
+}
+.confirm-plan-actions .secondary-flow-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 40px;
+  min-height: 40px;
+  min-width: 100px;
+  padding: 0 18px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #24324d;
+  font: 600 14px/1 Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  cursor: pointer;
+  box-shadow: none;
+  transition: all 0.16s ease;
+}
+.confirm-plan-actions .secondary-flow-button:hover:not(:disabled) {
+  background: #f8fafc;
+  border-color: #94a3b8;
+  color: #0f172a;
+}
+.confirm-plan-actions .primary-flow-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 40px;
+  min-height: 40px;
+  min-width: 180px;
+  padding: 0 20px;
+  border: 1px solid #5143bc;
+  border-radius: 8px;
   background: #5143bc;
-  border-color: transparent;
+  color: #ffffff;
+  font: 600 14px/1 Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  cursor: pointer;
+  box-shadow: 0 2px 5px rgba(81, 67, 188, 0.18);
+  transition: all 0.16s ease;
+}
+.confirm-plan-actions .primary-flow-button:hover:not(:disabled) {
+  background: #40339e;
+  border-color: #40339e;
 }@media (max-width: 1050px) {
   .confirm-plan-layout {
     grid-template-columns: 230px minmax(0, 1fr);
@@ -4471,9 +4525,16 @@
 }.payment-page-redesign .payment-summary select {
   width: 220px;
   max-width: 100%;
-  height: 34px;
-  padding: 0 10px;
-  border-radius: 6px;
+  height: 38px;
+  min-height: 38px;
+  padding: 0 32px 0 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #1e293b;
+  font-size: 13px;
+  font-weight: 500;
+  box-sizing: border-box;
 }.payment-page-redesign .payment-total {
   margin: 10px -4px -4px;
   padding: 12px;
@@ -4510,14 +4571,61 @@
   width: 14px;
   height: 14px;
 }.payment-page-redesign .payment-actions {
-  gap: 10px;
-  margin-top: 12px;
-}.payment-page-redesign .payment-actions button {
-  min-height: 52px;
-  min-width: 172px;
-  padding: 8px 16px;
-  border-radius: 7px;
-  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 20px;
+}
+.payment-page-redesign .payment-actions button,
+.payment-page-redesign .payment-actions .primary-flow-button,
+.payment-page-redesign .payment-actions .secondary-flow-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 40px;
+  min-height: 40px;
+  padding: 0 20px;
+  border-radius: 8px;
+  font: 600 14px/1 Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  box-sizing: border-box;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.16s ease;
+}
+.payment-page-redesign .payment-actions .secondary-flow-button,
+.payment-page-redesign .payment-actions .flow-button.secondary {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  color: #24324d;
+  min-width: 100px;
+  box-shadow: none;
+}
+.payment-page-redesign .payment-actions .secondary-flow-button:hover:not(:disabled),
+.payment-page-redesign .payment-actions .flow-button.secondary:hover:not(:disabled) {
+  background: #f8fafc;
+  border-color: #94a3b8;
+  color: #0f172a;
+}
+.payment-page-redesign .payment-actions .primary-flow-button,
+.payment-page-redesign .payment-actions .flow-button.primary {
+  background: #5143bc;
+  border: 1px solid #5143bc;
+  color: #ffffff;
+  min-width: 140px;
+  box-shadow: 0 2px 5px rgba(81, 67, 188, 0.18);
+}
+.payment-page-redesign .payment-actions .primary-flow-button:hover:not(:disabled),
+.payment-page-redesign .payment-actions .flow-button.primary:hover:not(:disabled) {
+  background: #40339e;
+  border-color: #40339e;
+}
+.payment-page-redesign .payment-actions .primary-flow-button:disabled,
+.payment-page-redesign .payment-actions .secondary-flow-button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  box-shadow: none;
 }@media(max-width:1180px) and (min-width:821px) {
   .payment-page-redesign .payment-layout {
     grid-template-columns: 270px minmax(0, 1fr);
@@ -5610,4 +5718,163 @@
         margin-left: 10px;
         padding: 12px 0;
     }
+}
+
+
+/* =========================================================
+   STANDARDIZED DROPDOWNS & ACTION BUTTONS ACROSS SUBSCRIPTIONS
+   ========================================================= */
+:is(.merchant-subscriptions-page, .subscription-flow-page, .subscription-page) .pch-filter-dropdown {
+  position: relative;
+  display: inline-grid;
+  max-width: 100%;
+}
+
+:is(.merchant-subscriptions-page, .subscription-flow-page, .subscription-page) .payment-summary .detail-row .pch-filter-dropdown {
+  width: 220px;
+  max-width: 100%;
+}
+
+:is(.merchant-subscriptions-page, .subscription-flow-page, .subscription-page) .payment-form .pch-filter-dropdown,
+:is(.merchant-subscriptions-page, .subscription-flow-page, .subscription-page) .select-field .pch-filter-dropdown,
+[role="dialog"][aria-labelledby="subscription-crud-title"] .form-group .pch-filter-dropdown {
+  width: 100%;
+}
+
+:is(.merchant-subscriptions-page, .subscription-flow-page, .subscription-page) .pch-filter-dropdown .pch-filter-trigger {
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  color: #1e293b;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 0 32px 0 12px;
+  box-shadow: none;
+  min-height: 38px;
+  height: 38px;
+  transition: border-color 0.16s ease, box-shadow 0.16s ease;
+}
+
+:is(.merchant-subscriptions-page, .subscription-flow-page, .subscription-page) .payment-form .pch-filter-dropdown .pch-filter-trigger,
+[role="dialog"][aria-labelledby="subscription-crud-title"] .form-group .pch-filter-dropdown .pch-filter-trigger {
+  min-height: 42px;
+  height: 42px;
+  font-size: 14px;
+}
+
+:is(.merchant-subscriptions-page, .subscription-flow-page, .subscription-page) .pch-filter-dropdown .pch-filter-trigger:hover:not(:disabled),
+[role="dialog"][aria-labelledby="subscription-crud-title"] .pch-filter-dropdown .pch-filter-trigger:hover:not(:disabled) {
+  border-color: #94a3b8 !important;
+}
+
+:is(.merchant-subscriptions-page, .subscription-flow-page, .subscription-page) .pch-filter-dropdown .pch-filter-trigger:focus-visible,
+:is(.merchant-subscriptions-page, .subscription-flow-page, .subscription-page) .pch-filter-dropdown .pch-filter-trigger[aria-expanded="true"],
+[role="dialog"][aria-labelledby="subscription-crud-title"] .pch-filter-dropdown .pch-filter-trigger:focus-visible,
+[role="dialog"][aria-labelledby="subscription-crud-title"] .pch-filter-dropdown .pch-filter-trigger[aria-expanded="true"] {
+  border-color: #5143bc !important;
+  box-shadow: 0 0 0 3px rgba(81, 67, 188, 0.14) !important;
+  outline: none !important;
+}
+
+:is(.merchant-subscriptions-page, .subscription-flow-page, .subscription-page) .pch-filter-dropdown .pch-filter-trigger:disabled,
+[role="dialog"][aria-labelledby="subscription-crud-title"] .pch-filter-dropdown .pch-filter-trigger:disabled {
+  background-color: #f8fafc;
+  border-color: #e2e8f0;
+  color: #94a3b8;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+:is(.merchant-subscriptions-page, .subscription-flow-page, .subscription-page) .pch-filter-dropdown .pch-filter-trigger > i.bi-chevron-down,
+[role="dialog"][aria-labelledby="subscription-crud-title"] .pch-filter-dropdown .pch-filter-trigger > i.bi-chevron-down {
+  color: #64748b;
+  font-size: 11px;
+}
+
+/* Universal button standard for subscriptions flow */
+:is(.merchant-subscriptions-page, .subscription-flow-page, .subscription-page) .flow-button,
+:is(.merchant-subscriptions-page, .subscription-flow-page, .subscription-page) .primary-flow-button,
+:is(.merchant-subscriptions-page, .subscription-flow-page, .subscription-page) .secondary-flow-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 40px;
+  min-height: 40px;
+  padding: 0 18px;
+  border-radius: 8px;
+  font: 600 14px/1 Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  box-sizing: border-box;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.16s ease;
+}
+
+:is(.merchant-subscriptions-page, .subscription-flow-page, .subscription-page) .flow-button.secondary,
+:is(.merchant-subscriptions-page, .subscription-flow-page, .subscription-page) .secondary-flow-button {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  color: #24324d;
+  box-shadow: none;
+}
+
+:is(.merchant-subscriptions-page, .subscription-flow-page, .subscription-page) .flow-button.secondary:hover:not(:disabled),
+:is(.merchant-subscriptions-page, .subscription-flow-page, .subscription-page) .secondary-flow-button:hover:not(:disabled) {
+  background: #f8fafc;
+  border-color: #94a3b8;
+  color: #0f172a;
+}
+
+:is(.merchant-subscriptions-page, .subscription-flow-page, .subscription-page) .flow-button.primary,
+:is(.merchant-subscriptions-page, .subscription-flow-page, .subscription-page) .primary-flow-button {
+  background: #5143bc;
+  border: 1px solid #5143bc;
+  color: #ffffff;
+  box-shadow: 0 2px 5px rgba(81, 67, 188, 0.18);
+}
+
+:is(.merchant-subscriptions-page, .subscription-flow-page, .subscription-page) .flow-button.primary:hover:not(:disabled),
+:is(.merchant-subscriptions-page, .subscription-flow-page, .subscription-page) .primary-flow-button:hover:not(:disabled) {
+  background: #40339e;
+  border-color: #40339e;
+}
+
+:is(.merchant-subscriptions-page, .subscription-flow-page, .subscription-page) .flow-button:disabled,
+:is(.merchant-subscriptions-page, .subscription-flow-page, .subscription-page) .primary-flow-button:disabled,
+:is(.merchant-subscriptions-page, .subscription-flow-page, .subscription-page) .secondary-flow-button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+
+/* =========================================================
+   SUBSCRIPTION FLOW SIDEBAR — EXACT ACTIVE STYLING FROM ADD/EDIT STORES
+   ========================================================= */
+
+:is(.choose-plan-redesign, .confirm-plan-redesign, .payment-page-redesign, .success-page-redesign, .subscription-flow-page, .merchant-subscriptions-page) :is(.choose-plan-stepper, .confirm-stepper, .payment-stepper, .success-stepper, .subscription-stepper) .subscription-step.active,
+.subscription-stepper .subscription-step.active {
+  border: 1px solid #c4b9ff !important;
+  background: #e7e1ff !important;
+  color: #5143bc !important;
+  border-radius: 9px !important;
+}
+
+:is(.choose-plan-redesign, .confirm-plan-redesign, .payment-page-redesign, .success-page-redesign, .subscription-flow-page, .merchant-subscriptions-page) :is(.choose-plan-stepper, .confirm-stepper, .payment-stepper, .success-stepper, .subscription-stepper) .subscription-step.active .step-number,
+.subscription-stepper .subscription-step.active .step-number {
+  border-color: #5937e8 !important;
+  background: #5937e8 !important;
+  color: #ffffff !important;
+}
+
+:is(.choose-plan-redesign, .confirm-plan-redesign, .payment-page-redesign, .success-page-redesign, .subscription-flow-page, .merchant-subscriptions-page) :is(.choose-plan-stepper, .confirm-stepper, .payment-stepper, .success-stepper, .subscription-stepper) .subscription-step.active strong,
+.subscription-stepper .subscription-step.active strong {
+  color: #5143bc !important;
+  font-weight: 700 !important;
+}
+
+:is(.choose-plan-redesign, .confirm-plan-redesign, .payment-page-redesign, .success-page-redesign, .subscription-flow-page, .merchant-subscriptions-page) :is(.choose-plan-stepper, .confirm-stepper, .payment-stepper, .success-stepper, .subscription-stepper) .subscription-step.active p,
+.subscription-stepper .subscription-step.active p {
+  color: #8994aa !important;
 }

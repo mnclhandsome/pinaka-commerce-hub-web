@@ -451,7 +451,7 @@ export default function Discounts({ embedded = false, storeId: storeIdProp }) {
                 <th>Name</th>
                 <th>Discount type</th>
                 <th>Amount</th>
-                <th>Product / rules</th>
+                <th>Product</th>
                 <th>Usage / limit</th>
                 <th>Start date</th>
                 <th>Expiry date</th>

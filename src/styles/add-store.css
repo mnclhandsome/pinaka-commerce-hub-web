@@ -198,7 +198,7 @@
 }
 
 .sf-sidebar nav button.active {
-  border-color: #e2dcff;
+  border-color: #06021c;
   background: var(--sf-purple-soft);
   color: #5143bc;
 }
@@ -1967,7 +1967,7 @@
 .sf-sidebar nav { display: grid; gap: 7px; }
 .sf-sidebar nav button { display: flex; width: 100%; min-height: 59px; align-items: center; gap: 11px; padding: 8px 10px; border: 1px solid transparent; border-radius: 9px; background: transparent; color: #56627a; text-align: left; }
 .sf-sidebar nav button:hover { background: #f8f7ff; }
-.sf-sidebar nav button.active { border-color: #e2dcff; background: var(--sf-purple-soft); color:#5143bc; }
+.sf-sidebar nav button.active { border-color: #c4b9ff; background: #e7e1ff ; color:#5143bc; }
 .sf-sidebar nav button.complete .sf-step-number { color: #fff; background: #16a567; border-color: #16a567; }
 .sf-step-number { display: inline-grid; width: 30px; height: 30px; flex: 0 0 30px; place-items: center; border: 1px solid #dce2ed; border-radius: 50%; background: #fff; color: #76829a; font-size: 12px; font-weight: 700; }
 .sf-sidebar nav button.active .sf-step-number { border-color: var(--sf-purple); background: var(--sf-purple); color: #fff; }

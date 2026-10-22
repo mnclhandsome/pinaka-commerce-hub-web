@@ -2688,7 +2688,7 @@
   .ea-inline-filter select,
   .sm-filter-card select,
   .shift-filter-bar select,
-  .shift-bottom-toolbar select,
+  .shift-bottom-toolbar select
 ) {
   box-sizing: border-box;
   height: 40px;
@@ -4725,10 +4725,351 @@
   overflow: visible !important;
 }
 
+/* =========================================================
+   STORE MODULE SUBSCREENS - UNIFIED LAYOUT OVERRIDES
+   Applies strictly across all store detail tabs/subscreens
+   ========================================================= */
+
 .store-workspace-page .store-workspace-card {
   width: 100% !important;
   max-width: 100% !important;
+  height: auto !important;
+  min-height: 0 !important;
   margin-left: 0 !important;
   margin-right: 0 !important;
   box-sizing: border-box !important;
+}
+
+/* 1. Standardize Root Container Padding for ALL Store Subscreens (Strict pb-4 16px below pagination, natural height) */
+.store-workspace-page .store-workspace-card > :is(
+  .store-section-editor,
+  .employee-attendance,
+  .orders-page,
+  .products-page,
+  .store-customers-page,
+  .sm-screen,
+  .sd-screen,
+  .store-payment-records-page,
+  .merchant-vendors,
+  .vendor-screen,
+  .fast-keys-panel,
+  .store-panel,
+  .coupons-page,
+  .discounts-page,
+  .pos-page-content,
+  .store-categories-page,
+  .store-devices-page
+),
+.store-workspace-page .store-workspace-card > div > .store-section-editor {
+  box-sizing: border-box !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  height: auto !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 24px 24px 16px 24px !important; /* Strict pb-4 (16px) below pagination */
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+/* 2. Strip Nested Card / Panel Wrappers Inside Store Subscreens */
+.store-workspace-page .store-workspace-card :is(
+  .orders-card,
+  .products-card,
+  .store-customers-card,
+  .store-payment-records-card,
+  .coupons-card,
+  .discounts-card,
+  .categories-panel,
+  .mv-card,
+  .mv-list-card,
+  .sf-employee-assignment-panel,
+  .sf-feature-list-panel,
+  .sm-records-card,
+  .sd-card,
+  .store-devices-card
+) {
+  box-sizing: border-box !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  height: auto !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+/* 3. Horizontal Alignment: Subscreen Header Row (Flush 0 to 100%) */
+.store-workspace-page .store-workspace-card :is(
+  .store-panel-heading,
+  .ea-header,
+  .orders-header,
+  .products-header,
+  .store-customers-header,
+  .sm-page-heading,
+  .store-payment-records-header,
+  .mv-header,
+  .vendor-title-row,
+  .coupons-header,
+  .fast-keys-heading,
+  .store-categories-header,
+  .pos-config-page-header
+) {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: 0 0 20px 0 !important;
+  padding: 0 !important;
+  box-sizing: border-box !important;
+  border: 0 !important;
+  background: transparent !important;
+}
+
+.store-workspace-page .store-workspace-card :is(
+  .store-panel-heading,
+  .ea-header,
+  .orders-header,
+  .products-header,
+  .store-customers-header,
+  .sm-page-heading,
+  .store-payment-records-header,
+  .mv-header,
+  .vendor-title-row,
+  .coupons-header,
+  .fast-keys-heading,
+  .store-categories-header,
+  .pos-config-page-header
+) :is(h1, h2) {
+  margin: 0 0 4px 0 !important;
+  padding: 0 !important;
+  text-align: left !important;
+}
+
+.store-workspace-page .store-workspace-card :is(
+  .store-panel-heading,
+  .ea-header,
+  .orders-header,
+  .products-header,
+  .store-customers-header,
+  .sm-page-heading,
+  .store-payment-records-header,
+  .mv-header,
+  .vendor-title-row,
+  .coupons-header,
+  .fast-keys-heading,
+  .store-categories-header,
+  .pos-config-page-header
+) p {
+  margin: 0 !important;
+  padding: 0 !important;
+  text-align: left !important;
+}
+
+.store-workspace-page .store-workspace-card :is(
+  .store-panel-heading,
+  .ea-header,
+  .orders-header,
+  .products-header,
+  .store-customers-header,
+  .sm-page-heading,
+  .store-payment-records-header,
+  .mv-header,
+  .vendor-title-row,
+  .coupons-header,
+  .fast-keys-heading,
+  .store-categories-header,
+  .pos-config-page-header
+) :is(.store-panel-actions, .ea-header-actions, .products-header-actions, .mv-popup-actions, .vendor-actions, .coupons-header-actions, .store-config-btn, .ea-export, .mv-primary, .coupon-create-btn) {
+  margin-right: 0 !important;
+}
+
+/* 4. Horizontal Alignment: Summary & Metric Cards (Flush 0 to 100%) */
+.store-workspace-page .store-workspace-card :is(
+  .sf-employee-summary,
+  .sf-plan-summary,
+  .orders-summary,
+  .products-summary,
+  .store-customers-summary,
+  .coupons-summary,
+  .discounts-summary
+) {
+  box-sizing: border-box !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: 0 0 20px 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+/* 5. Horizontal Alignment: Filter & Search Toolbars (Flush 0 to 100%) */
+.store-workspace-page .store-workspace-card :is(
+  .sf-employee-tools,
+  .sf-feature-tools,
+  .filters-bar,
+  .products-toolbar,
+  .coupons-toolbar,
+  .store-customers-toolbar,
+  .store-payment-records-toolbar,
+  .ea-toolbar,
+  .sm-filter-card,
+  .vendor-toolbar,
+  .categories-toolbar,
+  .fast-key-toolbar
+) {
+  box-sizing: border-box !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: 0 0 16px 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+/* 6. Horizontal Alignment & Cadence: Table Wrappers (Flush 0 to 100%, 0 Bottom Margin) */
+.store-workspace-page .store-workspace-card :is(
+  .sf-employees-table-wrap,
+  .sf-feature-table-wrap,
+  .orders-table-wrapper,
+  .products-table-wrapper,
+  .store-customers-table-wrapper,
+  .store-payment-records-table-wrapper,
+  .coupons-table-wrapper,
+  .categories-table-wrap,
+  .vendor-table-wrapper,
+  .vendor-history-table-scroll,
+  .mv-scroll,
+  .ea-table-wrap,
+  .sm-table-wrap,
+  .sd-table-wrap,
+  .fast-key-table-wrap,
+  .store-devices-table-wrapper
+) {
+  box-sizing: border-box !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: 0 0 0 0 !important;
+  padding: 0 !important;
+  border: 1px solid #dfe9f4 !important;
+  border-radius: 8px !important;
+  background: #fff !important;
+  overflow-x: auto !important;
+}
+
+/* 7. Horizontal Alignment & Cadence: Pagination Footer (Flush 0 to 100%, Strict 16px Top Spacing) */
+.store-workspace-page .store-workspace-card :is(
+  .pagination-container,
+  .table-pagination-footer,
+  .sm-pagination-wrapper,
+  .sd-pagination-wrapper,
+  .employee-pagination-container,
+  .sf-feature-pagination,
+  .products-pagination,
+  .mv-footer,
+  .fast-key-footer
+) {
+  box-sizing: border-box !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  height: auto !important;
+  min-height: 40px !important;
+  margin-top: 16px !important;
+  margin-bottom: 0 !important;
+  margin-inline: 0 !important;
+  padding: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  border-top: 0 !important;
+  background: transparent !important;
+}
+
+.store-workspace-page .store-workspace-card :is(
+  .sm-pagination-wrapper,
+  .sd-pagination-wrapper,
+  .products-pagination,
+  .fast-key-footer
+) > :is(.pagination-container, .table-pagination-footer) {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border-top: 0 !important;
+}
+
+.store-workspace-page .store-workspace-card :is(
+  .pagination-container,
+  .table-pagination-footer,
+  .employee-pagination-container,
+  .mv-footer
+) :is(.pagination-info, span:first-child) {
+  margin-left: 0 !important;
+  padding-left: 0 !important;
+}
+
+.store-workspace-page .store-workspace-card :is(
+  .pagination-container,
+  .table-pagination-footer,
+  .employee-pagination-container,
+  .mv-footer
+) :is(.pagination-controls, .pagination-actions, .mv-pagination) {
+  margin-right: 0 !important;
+  padding-right: 0 !important;
+}
+
+/* 8. Natural Empty Table Row Heights (Eliminate artificial vertical whitespace voids) */
+.store-workspace-page .store-workspace-card :is(
+  .discount-table-empty,
+  .coupons-table-empty,
+  .orders-table-empty,
+  .products-table-empty-cell,
+  .store-empty-row,
+  .fast-key-table-empty-cell,
+  .ea-empty,
+  .sf-empty
+) {
+  height: auto !important;
+  min-height: 0 !important;
+  padding: 32px 16px !important;
+  text-align: center !important;
+}
+
+.store-workspace-page .store-workspace-card .products-table-empty-state {
+  min-height: 0 !important;
+  padding: 0 !important;
+}
+
+/* 9. Mobile Responsiveness */
+@media (max-width: 600px) {
+  .store-workspace-page .store-workspace-card > :is(
+    .store-section-editor,
+    .employee-attendance,
+    .orders-page,
+    .products-page,
+    .store-customers-page,
+    .sm-screen,
+    .sd-screen,
+    .store-payment-records-page,
+    .merchant-vendors,
+    .vendor-screen,
+    .fast-keys-panel,
+    .store-panel,
+    .coupons-page,
+    .discounts-page,
+    .pos-page-content,
+    .store-categories-page,
+    .store-devices-page
+  ),
+  .store-workspace-page .store-workspace-card > div > .store-section-editor {
+    padding: 16px 16px 12px 16px !important;
+  }
 }

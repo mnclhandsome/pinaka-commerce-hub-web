@@ -4,6 +4,7 @@ import { listMerchants } from "../api/merchants";
 import Pagination from "../components/Pagination";
 import ListActions from "../components/ListActions";
 import FiltersBar from "../components/FiltersBar";
+import FilterDropdown from "../components/FilterDropdown";
 import {
 
   Eye,
@@ -276,7 +277,7 @@ function PageBack({ label, onClick }) {
 
   return (
 
-    <button className="page-back" onClick={onClick}>
+    <button type="button" className="page-back" onClick={onClick}>
 
       <ArrowLeft size={17} />
 
@@ -288,24 +289,14 @@ function PageBack({ label, onClick }) {
 
 }
 
-function SelectField({ value, onChange, children }) {
-
+function SelectField({ value, onChange, children, className = "", ariaLabel = "Select option" }) {
   return (
-
     <div className="select-field">
-
-      <select value={value} onChange={onChange}>
-
+      <FilterDropdown value={value} onChange={onChange} className={className} aria-label={ariaLabel}>
         {children}
-
-      </select>
-
-      <ChevronDown size={16} />
-
+      </FilterDropdown>
     </div>
-
   );
-
 }
 
 function DetailRow({ label, value }) {
@@ -1503,6 +1494,7 @@ function ChoosePlan({
 
           <div className="flow-bottom-actions choose-plan-actions">
             <button
+              type="button"
               className="primary-flow-button"
               disabled={!selectedPlan || selectedPlan === currentKey || plansLoading || !plans.length}
               onClick={onNext}
@@ -1661,8 +1653,8 @@ function ConfirmPlanChange({ merchant, plans, selectedPlan, onBack, onNext }) {
           </div>
 
           <div className="flow-bottom-actions confirm-plan-actions">
-            <button className="secondary-flow-button" onClick={onBack}>Cancel</button>
-            <button className="primary-flow-button" onClick={onNext}>
+            <button type="button" className="secondary-flow-button" onClick={onBack}>Cancel</button>
+            <button type="button" className="primary-flow-button" onClick={onNext}>
               Proceed to Payment
               <ArrowRight size={17} />
             </button>
@@ -1774,23 +1766,16 @@ function PaymentScreen({
         />
 
         <div className="detail-row">
-
           <span>Billing Cycle</span>
-
-          <select
-
+          <FilterDropdown
+            aria-label="Billing Cycle"
+            className="payment-billing-cycle-select"
             value={billingCycle}
-
             onChange={(e) => setBillingCycle(e.target.value)}
-
           >
-
             <option value="MONTHLY">Monthly</option>
-
             <option value="ANNUAL">Annual</option>
-
-          </select>
-
+          </FilterDropdown>
         </div>
 
         <DetailRow label="Tax" value={formatPrice(tax, currency)} />
@@ -1812,49 +1797,30 @@ function PaymentScreen({
         <h3>Select Payment Method</h3>
 
         <div className="payment-tabs">
-
           <button
-
+            type="button"
             className={paymentMethod === "Card" ? "active" : ""}
-
             onClick={() => setPaymentMethod("Card")}
-
           >
-
             <CreditCard size={16} />
-
             Card
-
           </button>
-
           <button
-
+            type="button"
             className={paymentMethod === "UPI" ? "active" : ""}
-
             onClick={() => setPaymentMethod("UPI")}
-
           >
-
             <Smartphone size={16} />
-
             UPI
-
           </button>
-
           <button
-
+            type="button"
             className={paymentMethod === "Net Banking" ? "active" : ""}
-
             onClick={() => setPaymentMethod("Net Banking")}
-
           >
-
             <Landmark size={16} />
-
             Net Banking
-
           </button>
-
         </div>
 
         {paymentMethod === "Card" && (
@@ -1998,63 +1964,45 @@ function PaymentScreen({
         )}
 
         {paymentMethod === "Net Banking" && (
-
           <div className="payment-form">
-
             <label>
-
               Select Bank
-
-              <select
-
+              <FilterDropdown
+                aria-label="Select Bank"
+                className="payment-bank-select"
                 value={paymentDetails.bank}
-
                 onChange={(e) => updatePaymentField("bank", e.target.value)}
-
               >
-
                 <option value="">Select your bank</option>
-
-                <option>State Bank of India</option>
-
-                <option>HDFC Bank</option>
-
-                <option>ICICI Bank</option>
-
-                <option>Axis Bank</option>
-
-              </select>
-
+                <option value="State Bank of India">State Bank of India</option>
+                <option value="HDFC Bank">HDFC Bank</option>
+                <option value="ICICI Bank">ICICI Bank</option>
+                <option value="Axis Bank">Axis Bank</option>
+              </FilterDropdown>
             </label>
-
           </div>
-
         )}
 
         {paymentError && <div className="payment-error">{paymentError}</div>}
 
         <div className="payment-actions">
-
-         <button className="flow-button secondary">
-            Back
-            </button>
-
-
-
-            <button className="flow-button primary"
-
-            disabled={paymentSubmitting}
-
-            onClick={() => onSubmit({ agreementPrice: amount, tax, totalDueToday })}
-
+          <button
+            type="button"
+            className="secondary-flow-button"
+            onClick={onBack}
           >
-
-            <Lock size={16} />
-
-            {paymentSubmitting ? "Processing…" : `Pay ${formatPrice(totalDueToday, currency)}`}
-
+            Back
           </button>
 
+          <button
+            type="button"
+            className="primary-flow-button"
+            disabled={paymentSubmitting}
+            onClick={() => onSubmit({ agreementPrice: amount, tax, totalDueToday })}
+          >
+            <Lock size={16} />
+            {paymentSubmitting ? "Processing…" : `Pay ${formatPrice(totalDueToday, currency)}`}
+          </button>
         </div>
 
       </div>
@@ -2156,7 +2104,7 @@ function PaymentSuccess({
             <CircleCheck size={18} />
             <span>The merchant can now use the features of the {planName(next)}.</span>
           </div>
-          <button className="primary-flow-button success-back-button" onClick={onBack}>
+          <button type="button" className="primary-flow-button success-back-button" onClick={onBack}>
             <ArrowLeft size={17} />Back to Subscription Details
           </button>
         </main>
@@ -2265,8 +2213,10 @@ function SubscriptionCrudForm({
           <div className="form-grid">
             <label className="form-group">
               Merchant
-              <select
+              <FilterDropdown
                 required
+                aria-required="true"
+                aria-label="Merchant"
                 disabled={Boolean(editing)}
                 value={form.merchantId || ""}
                 onChange={(event) => field("merchantId", event.target.value)}
@@ -2277,13 +2227,15 @@ function SubscriptionCrudForm({
                     {merchant.name || merchant.businessName || merchant.business_name || merchant.id} ({merchant.id})
                   </option>
                 ))}
-              </select>
+              </FilterDropdown>
             </label>
 
             <label className="form-group">
               Plan
-              <select
+              <FilterDropdown
                 required
+                aria-required="true"
+                aria-label="Plan"
                 value={form.planCode || ""}
                 onChange={(event) => choosePlan(event.target.value)}
               >
@@ -2298,7 +2250,7 @@ function SubscriptionCrudForm({
                     {crudPlanName(plan)}
                   </option>
                 ))}
-              </select>
+              </FilterDropdown>
             </label>
 
             <label className="form-group">
@@ -2345,20 +2297,25 @@ function SubscriptionCrudForm({
 
             <label className="form-group">
               Billing cycle
-              <select
+              <FilterDropdown
+                aria-label="Billing cycle"
                 disabled
                 value={form.billingCycle || "MONTHLY"}
                 onChange={(event) => field("billingCycle", event.target.value)}
               >
-                {billingCycles.map((value) => <option key={value}>{value}</option>)}
-              </select>
+                {billingCycles.map((value) => <option key={value} value={value}>{value}</option>)}
+              </FilterDropdown>
             </label>
 
             <label className="form-group">
               Status
-              <select value={form.status || "ACTIVE"} onChange={(event) => field("status", event.target.value)}>
-                {statuses.map((value) => <option key={value}>{value}</option>)}
-              </select>
+              <FilterDropdown
+                aria-label="Status"
+                value={form.status || "ACTIVE"}
+                onChange={(event) => field("status", event.target.value)}
+              >
+                {statuses.map((value) => <option key={value} value={value}>{value}</option>)}
+              </FilterDropdown>
             </label>
 
             <label className="form-group">

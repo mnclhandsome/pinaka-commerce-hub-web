@@ -121,7 +121,7 @@ export default function StoreShifts({ merchantId, storeId, store }) {
 
   if (selectedShift) return <ShiftDetails shift={selectedShift} store={store} onBack={() => setSelectedShift(null)} />;
 
-  return <section className="sm-screen" aria-label="Store shift management">
+  return <section className="sm-screen pb-4" aria-label="Store shift management">
     <header className="sm-page-heading">
       <div><h1>Shift Management</h1><p>View and manage store-level shifts. A shift remains open until it is closed.</p></div>
     </header>
@@ -147,12 +147,13 @@ export default function StoreShifts({ merchantId, storeId, store }) {
       <button type="button" className="sm-text-button" onClick={() => { setCustomStart(""); setCustomEnd(""); setDraft((current) => ({ ...current, from: "", to: "" })); setFilters((current) => ({ ...current, from: "", to: "" })); setDatePreset("any"); setShowDateRange(false); }}>Clear dates</button>
     </div> : null}
 
-      <div className="sm-table-wrap"><table className="sm-table"><thead><tr><th>#</th><th>Shift ID</th><th>Opened By</th><th>Opening Device</th><th>Open Time</th><th>Closed By</th><th>Closing Device</th><th>Close Time</th><th>Duration</th><th>Opening Balance</th><th>Closing Balance</th><th>Status</th><th>View</th></tr></thead>
+      <div className="sm-table-wrap mb-0"><table className="sm-table"><thead><tr><th>#</th><th>Shift ID</th><th>Opened By</th><th>Opening Device</th><th>Open Time</th><th>Closed By</th><th>Closing Device</th><th>Close Time</th><th>Duration</th><th>Opening Balance</th><th>Closing Balance</th><th>Status</th><th>View</th></tr></thead>
         <tbody>{visible.map((shift, index) => <tr key={shift.id} style={{ cursor: "pointer" }} onClick={(event) => { if (event.target.closest('button, a, input, select, textarea, label, [role="button"], [contenteditable="true"]')) return; setSelectedShift(shift); }}><td>{(page - 1) * pageSize + index + 1}</td><td><button type="button" className="sm-link" onClick={(e) => { e.stopPropagation(); setSelectedShift(shift); }}>{shift.id}</button></td><td>{shift.openedBy || "—"}{shift.openedCode && <small>({shift.openedCode})</small>}</td><td>{shift.openDevice || "—"}</td><td>{timeLabel(shift.openTime)}</td><td>{shift.closedBy ? <>{shift.closedBy}{shift.closedCode && <small>({shift.closedCode})</small>}</> : "—"}</td><td>{shift.closeDevice || "—"}</td><td>{timeLabel(shift.closeTime)}</td><td>{shift.duration}</td><td>{money(shift.openingBalance)}</td><td>{money(shift.closingBalance)}</td><td><span className={`sm-status ${shift.status.toLowerCase()}`}>{shift.status}</span></td><td><button type="button" className="sm-button-outline sm-view-button" aria-label={`View shift ${shift.id}`} onClick={(e) => { e.stopPropagation(); setSelectedShift(shift); }}><i className="bi bi-eye" aria-hidden="true" /></button></td></tr>)}
           {!visible.length && <tr><td colSpan={13} className="sm-empty">{loading ? "Loading shifts…" : error ? "Shift records could not be loaded." : records.length ? "No shift records match these filters." : "No shifts found for this store."}</td></tr>}
         </tbody>
       </table></div>
-      <Pagination
+      <div className="sm-pagination-wrapper mt-4 mb-0">
+        <Pagination
         currentPage={page}
         totalPages={Math.max(1, Math.ceil(filtered.length / pageSize))}
         totalItems={filtered.length}
@@ -163,6 +164,7 @@ export default function StoreShifts({ merchantId, storeId, store }) {
         showWhenEmpty
         pageSizeOptions={[10, 25, 50]}
       />
+      </div>
   </section>;
 }
 

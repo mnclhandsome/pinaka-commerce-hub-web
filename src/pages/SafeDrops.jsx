@@ -138,15 +138,15 @@ export default function SafeDrops({ store, storeId: storeIdProp, merchantId }) {
     if (!draftFrom || !draftTo || draftFrom > draftTo) { setDateError("Select a valid from and to date."); return; }
     setDateFrom(draftFrom); setDateTo(draftTo); setDatePreset("custom"); setShowCustomDate(false); setDateError(""); setPage(1);
   };
-  return <main className="sd-screen">
+  return <main className="sd-screen pb-4">
     <header className="sd-heading"><div><h1>Safe Drops</h1><p>View and manage store safe drop records.</p></div></header>
-    <section className="sd-card merchant-table-card" aria-label="Safe drop records">
+    <section className="sd-card merchant-table-card pb-4" aria-label="Safe drop records">
       <FiltersBar searchValue={search} onSearchChange={(value) => { setSearch(value); setPage(1); }} searchPlaceholder="Search safe drop, shift or employee..." filters={[
         { key: "employee", label: "Employee", value: employee, options: [{ label: "All Employees", value: "" }, ...employees.map((name) => ({ label: name, value: name }))], onChange: (value) => { setEmployee(value); setPage(1); } },
         { key: "date", label: "Date Range", value: datePreset, options: [{ label: "Any Date", value: "" }, { label: "Today", value: "today" }, { label: "This Week", value: "week" }, { label: "This Month", value: "month" }, { label: "Custom Date", value: "custom" }], onChange: changeDatePreset },
       ]} onClear={reset} />
       {showCustomDate && <div className="sd-custom-date"><label>From<input type="date" value={draftFrom} max={draftTo || undefined} onChange={(event) => { setDraftFrom(event.target.value); setDateError(""); }} /></label><label>To<input type="date" value={draftTo} min={draftFrom || undefined} onChange={(event) => { setDraftTo(event.target.value); setDateError(""); }} /></label><button type="button" onClick={applyCustomDate}>Apply date range</button><button className="sd-cancel-date" type="button" onClick={() => { setShowCustomDate(false); setDateError(""); }}>Cancel</button>{dateError && <p role="alert">{dateError}</p>}</div>}
-      <div className="sd-table-wrap"><table className="sd-table"><thead><tr><th>Safe Drop / Shift</th><th>Employee</th><th>Denominations</th><th>Total Amount</th><th>Created At</th><th>Updated At</th><th>Actions</th></tr></thead>
+      <div className="sd-table-wrap mb-0"><table className="sd-table"><thead><tr><th>Safe Drop / Shift</th><th>Employee</th><th>Denominations</th><th>Total Amount</th><th>Created At</th><th>Updated At</th><th>Actions</th></tr></thead>
         <tbody>{!loading && !error && visibleRows.map((row, index) => { const created = dateParts(row.created); const updated = dateParts(row.updated); return <tr key={row.id || index} style={{ cursor: "pointer" }} onClick={(event) => { if (event.target.closest('button, a, input, select, textarea, label, [role="button"], [contenteditable="true"]')) return; setSelected(row); }}>
           <td><strong className="sd-record-name" title={row.shiftId}>Safe Drop – Shift {row.shift}</strong></td>
           <td title={row.employee === "Unknown employee" ? row.createdBy : undefined}>{row.employee}</td>
@@ -158,7 +158,9 @@ export default function SafeDrops({ store, storeId: storeIdProp, merchantId }) {
           {!loading && error && <tr><td className="sd-empty" colSpan="7" role="alert">{error}</td></tr>}
           {!loading && !error && !rows.length && <tr><td className="sd-empty" colSpan="7">{safeDrops.length ? "No safe drop records match your filters." : "No safe drops recorded for this store yet."}</td></tr>}</tbody>
       </table></div>
-      <Pagination currentPage={page} totalPages={Math.max(1, Math.ceil(rows.length / pageSize))} totalItems={rows.length} pageSize={pageSize} onPageChange={setPage} onPageSizeChange={(size) => { setPageSize(size); setPage(1); }} itemLabel="items" showWhenEmpty pageSizeOptions={[10, 25, 50]} />
+      <div className="sd-pagination-wrapper mt-4 mb-0">
+        <Pagination currentPage={page} totalPages={Math.max(1, Math.ceil(rows.length / pageSize))} totalItems={rows.length} pageSize={pageSize} onPageChange={setPage} onPageSizeChange={(size) => { setPageSize(size); setPage(1); }} itemLabel="items" showWhenEmpty pageSizeOptions={[10, 25, 50]} />
+      </div>
     </section>
     <BentoDetailModal
       open={Boolean(selected)}

@@ -552,7 +552,7 @@ async function confirmDeleteTender() {
         </div>
       </form>
 
-      <div className="tenders-list-card">
+      <section className="features-list-card tenders-list-card">
         <div className="tenders-list-toolbar">
           <div>
             <h2>Tenders</h2>
@@ -612,8 +612,8 @@ async function confirmDeleteTender() {
           </div>
         </div>
 
-        <div className="tenders-table-wrap">
-          <table className="tenders-table">
+        <div className="features-table-wrap tenders-table-wrap">
+          <table className="features-table tenders-table">
             <thead>
               <tr>
                 <th>Tender Code</th>
@@ -706,20 +706,22 @@ async function confirmDeleteTender() {
             <div className="tenders-empty">No tenders found.</div>
           )}
         </div>
-            <Pagination
-  currentPage={currentPage}
-  totalPages={totalPages}
-  totalItems={filteredTenders.length}
-  pageSize={ITEMS_PER_PAGE}
-  onPageChange={setCurrentPage}
-  onPageSizeChange={(newPageSize) => {
-    // Fixed at 5 items per page
-    setCurrentPage(1);
-  }}
-  itemLabel="tenders"
-  showWhenEmpty={true}
-/>
-      </div>
+        <div className="feature-pagination-row tenders-pagination">
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalItems={filteredTenders.length}
+            pageSize={ITEMS_PER_PAGE}
+            onPageChange={setCurrentPage}
+            onPageSizeChange={(newPageSize) => {
+              // Fixed at 5 items per page
+              setCurrentPage(1);
+            }}
+            itemLabel="tenders"
+            showWhenEmpty={true}
+          />
+        </div>
+      </section>
 
 <DeleteConfirmationDialog
   isOpen={Boolean(deleteConfirmTender)}

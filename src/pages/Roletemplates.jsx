@@ -572,7 +572,7 @@ async function confirmDeleteTemplate() {
         </div>
 
         {/* ------------------ LIST & FILTERS ------------------ */}
-        <div className="role-list-card">
+        <section className="features-list-card role-list-card">
           <div className="role-list-header">
             <div>
               <h2>Role Templates</h2>
@@ -622,8 +622,8 @@ async function confirmDeleteTemplate() {
             </div>
           </div>
  
-          <div className="role-table-wrap">
-            <table className="role-table">
+          <div className="features-table-wrap role-table-wrap">
+            <table className="features-table role-table">
               <colgroup>
                 <col className="role-code-col role-equal-col" />
                 <col className="role-name-col role-equal-col" />
@@ -766,7 +766,7 @@ async function confirmDeleteTemplate() {
           </div>
 
           {/* ------------------ PAGINATION ------------------ */}
-<div className="role-pagination">
+<div className="feature-pagination-row role-pagination">
   <Pagination
     currentPage={currentPage}
     totalPages={totalPages}
@@ -780,7 +780,7 @@ async function confirmDeleteTemplate() {
     itemLabel="role templates"
   />
 </div>
-        </div>
+        </section>
       </section>
 
       {/* ------------------ DELETE (Deactivate) MODAL ------------------ */}

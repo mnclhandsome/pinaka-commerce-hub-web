@@ -1624,7 +1624,7 @@ dialog.merchant-delete-dialog::backdrop {
     width: calc(100% - 24px);
     max-width: calc(100% - 24px);
     margin: 0 12px;
-    padding: 10px 0;
+    padding: 12px 0;
     box-sizing: border-box;
     border-top: 0;
 

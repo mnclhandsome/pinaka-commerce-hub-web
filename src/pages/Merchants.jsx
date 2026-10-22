@@ -603,7 +603,7 @@ async function openEmployeeEdit(employee) {
   aria-labelledby="merchant-tab-employees"
   hidden={activeTab !== "employees"}
   tabIndex={0}
-  className="merchant-panel-content flex-1 min-w-0 w-full max-w-full overflow-hidden"
+  className="merchant-panel-content min-w-0 w-full max-w-full overflow-hidden"
 >
   {employeesError && (
     <div className="alert alert-danger" role="alert">

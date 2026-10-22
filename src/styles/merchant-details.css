@@ -102,27 +102,39 @@
   min-width: 0;
   max-width: 100%;
   width: 100%;
+  height: auto !important;
+  min-height: 0 !important;
+  flex: none !important;
 }
 
 /* Merchant detail list cards share a content edge for the toolbar, table and
-   pagination. FiltersBar's default inner padding caused it to sit farther in
-   than the table; keep its controls on the card's existing content edge. */
+   pagination. Standardized vertical rhythm: 16px table-to-pagination gap, pb-4 (16px) below pagination. */
 .merchant-readonly .merchant-view-main :is(
   .store-list-card,
+  .stores-card,
   .mt-card,
   .mel-card,
   .mdl-card,
-  .mv-card
+  .mv-card,
+  .mv-list-card
 ) {
-  min-width: 0;
-  box-sizing: border-box;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  height: auto !important;
+  min-height: 0 !important;
+  box-sizing: border-box !important;
+  padding: 18px 18px 16px 18px !important; /* Strict pb-4 below pagination */
 }
 
 .merchant-readonly .merchant-view-main :is(
   .store-list-card,
+  .stores-card,
   .mt-card,
   .mel-card,
-  .mdl-card
+  .mdl-card,
+  .mv-card,
+  .mv-list-card
 ) > .filters-bar {
   width: 100%;
   max-width: 100%;
@@ -132,12 +144,71 @@
   box-sizing: border-box;
 }
 
+.merchant-readonly .merchant-view-main :is(
+  .store-list-card,
+  .stores-card,
+  .mt-card,
+  .mel-card,
+  .mdl-card,
+  .mv-card,
+  .mv-list-card
+) :is(.pagination-container, .table-pagination-footer),
+.merchant-readonly .merchant-view-main .store-pagination,
+.merchant-readonly .merchant-view-main .mel footer,
+.merchant-readonly .merchant-view-main .mdl footer,
+.merchant-readonly .merchant-view-main .merchant-vendors .mv-footer,
+.merchant-readonly .merchant-view-main .merchant-tenders .mt-footer {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  height: auto !important;
+  min-height: 40px !important;
+  margin-top: 16px !important;
+  margin-bottom: 0 !important;
+  margin-inline: 0 !important;
+  padding: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  border-top: 0 !important;
+  background: transparent !important;
+  box-sizing: border-box !important;
+}
 
 .merchant-readonly .merchant-view-main :is(
   .store-list-card,
+  .stores-card,
   .mt-card,
   .mel-card,
-  .mdl-card
+  .mdl-card,
+  .mv-card,
+  .mv-list-card
+) :is(.pagination-container, .table-pagination-footer) :is(.pagination-info, span:first-child) {
+  margin-left: 0 !important;
+  padding-left: 0 !important;
+}
+
+.merchant-readonly .merchant-view-main :is(
+  .store-list-card,
+  .stores-card,
+  .mt-card,
+  .mel-card,
+  .mdl-card,
+  .mv-card,
+  .mv-list-card
+) :is(.pagination-container, .table-pagination-footer) :is(.pagination-controls, .pagination-actions, .mv-pagination) {
+  margin-right: 0 !important;
+  padding-right: 0 !important;
+}
+
+.merchant-readonly .merchant-view-main :is(
+  .store-list-card,
+  .stores-card,
+  .mt-card,
+  .mel-card,
+  .mdl-card,
+  .mv-card,
+  .mv-list-card
 ) > .pagination-container > * {
   min-width: 0;
   box-sizing: border-box;
@@ -150,11 +221,20 @@
   .mdl-scroll,
   .mv-scroll
 ) {
-  width: 100%;
-  max-width: 100%;
-  min-width: 0;
-  box-sizing: border-box;
-  overflow-x: auto;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  margin-bottom: 0 !important;
+  box-sizing: border-box !important;
+  overflow-x: auto !important;
+}
+
+.merchant-readonly .merchant-view-main table tbody td[colspan],
+.merchant-readonly .merchant-view-main .store-empty-row {
+  height: auto !important;
+  min-height: 0 !important;
+  padding: 24px 16px !important;
+  text-align: center !important;
 }
 
 .merchant-readonly .merchant-view-main .merchant-vendors .mv-scroll {

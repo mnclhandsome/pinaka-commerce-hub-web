@@ -1,10 +1,16 @@
 .sm-screen {
   width: 100%;
   min-width: 0;
-  padding: 24px;
+  padding: 24px 24px 16px;
   color: #142347;
   font-family: Inter, Arial, sans-serif;
   font-size: 14px;
+  height: auto;
+  min-height: 0;
+}
+.sm-screen.pb-4,
+.sm-screen.pb-5 {
+  padding-bottom: 16px !important;
 }
 .sm-screen * { box-sizing: border-box; }
 .sm-breadcrumb { display:flex; align-items:center; gap:9px; margin:0 0 14px; color:#617999; font-size:12px; }
@@ -47,13 +53,18 @@
 .sm-button-primary { background:#5635ef; color:#fff; }
 .sm-button-primary:hover { background:#4325dc; }
 .sm-button-outline:hover { background:#f5f3ff; }
-.sm-records-card { overflow:hidden; padding:20px 18px 0; }
-.sm-records-card > .pagination-container { width: 100%; padding: 16px 0; background: transparent; box-sizing: border-box; }
+.sm-records-card { overflow:hidden; padding:20px 18px 16px; height:auto; min-height:0; }
+.sm-records-card > .pagination-container { width: 100%; padding: 0; margin-top: 16px; margin-bottom: 0; background: transparent; box-sizing: border-box; }
 .sm-filter-card + .sm-records-card { border-top:1px solid #e1e8f2; border-radius:10px; box-shadow:0 1px 2px #19305a08; }
 .sm-records-card h2 { display:flex; align-items:center; gap:10px; margin:0 0 24px; color:#152448; font-size:19px; }
 .sm-records-card h2 > i { color:#5140ec; font-size:19px; }
 .sm-records-card h2 span { font-weight:600; }
-.sm-table-wrap { width:100%; overflow-x:auto; overscroll-behavior-x:contain; scrollbar-width:thin; scrollbar-color:#3c465a #f1f4f9; }
+.sm-table-wrap { width:100%; margin-bottom:0 !important; overflow-x:auto; overscroll-behavior-x:contain; scrollbar-width:thin; scrollbar-color:#3c465a #f1f4f9; }
+.sm-pagination-wrapper { width:100%; box-sizing:border-box; margin-top:16px !important; margin-bottom:0 !important; padding:0 !important; }
+.sm-pagination-wrapper.mt-4 { margin-top:16px !important; }
+.sm-pagination-wrapper.mb-0 { margin-bottom:0 !important; }
+.sm-screen .pagination-container,
+.sm-pagination-wrapper .pagination-container { width:100% !important; max-width:100% !important; margin:0 !important; padding:0 !important; height:auto !important; min-height:40px !important; background:transparent !important; border-top:0 !important; }
 .sm-table-wrap::-webkit-scrollbar { height:10px; }
 .sm-table-wrap::-webkit-scrollbar-track { border-radius:8px; background:#f1f4f9; }
 .sm-table-wrap::-webkit-scrollbar-thumb { border:2px solid #f1f4f9; border-radius:8px; background:#3c465a; }

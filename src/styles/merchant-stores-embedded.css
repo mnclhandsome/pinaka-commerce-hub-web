@@ -658,7 +658,12 @@
 ========================================================= */
 
 .merchant-stores-embedded .pagination-container {
-    padding: 16px 0; 
+    width: 100%;
+    padding: 0 !important;
+    margin-top: 16px !important;
+    margin-bottom: 0 !important;
+    background: transparent;
+    box-sizing: border-box;
 }
 
 .merchant-stores-embedded .store-pagination {

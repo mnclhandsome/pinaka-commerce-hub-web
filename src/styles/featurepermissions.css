@@ -543,7 +543,8 @@
 
 .feature-permissions-page .fp-list-card {
   width: 100%;
-  padding: 24px 28px 20px;
+  padding: 22px 28px 24px;
+  margin-bottom: 20px;
   box-sizing: border-box;
 }
 
@@ -1023,14 +1024,18 @@
    LIST FOOTER
    ========================================================= */
 
+.feature-permissions-page .feature-pagination-row,
+.feature-permissions-page .fp-pagination-row,
 .feature-permissions-page .fp-list-footer {
   width: 100%;
   display: block;
-  margin: 0;
-  padding: 12px 0 0;
+  margin-top: 12px;
+  padding: 0;
   box-sizing: border-box;
 }
 
+.feature-permissions-page .feature-pagination-row .pagination-container,
+.feature-permissions-page .fp-pagination-row .pagination-container,
 .feature-permissions-page .fp-list-footer .pagination-container {
   height: auto;
   padding: 0;
@@ -3273,7 +3278,14 @@ body .feature-permissions-page
   box-sizing: border-box !important;
 }
 
-
+.feature-permissions-page .fp-list-footer .pagination-container,
+.feature-permissions-page .feature-pagination-row .pagination-container {
+  width: 100% !important;
+  height: auto !important;
+  min-height: auto !important;
+  padding: 0 !important;
+  background: transparent !important;
+}
 
 @media (max-width: 1100px) {
   .feature-permissions-page .fp-table {

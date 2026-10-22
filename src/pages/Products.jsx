@@ -9,6 +9,46 @@ import {
 } from "../api/products";
 import "../styles/products.css";
 
+export const normalizeStock = (val) =>
+    String(val ?? "")
+        .toLowerCase()
+        .replace(/[\s_-]+/g, "");
+
+export const getProductStockStatus = (product) => {
+    if (!product) return "";
+
+    const rawStatus = normalizeStock(
+        product.stockStatus ?? product.stock_status
+    );
+
+    const rawQty =
+        product.quantity ??
+        product.stockQuantity ??
+        product.stock_quantity;
+
+    const hasNumericQty =
+        rawQty !== undefined &&
+        rawQty !== null &&
+        rawQty !== "" &&
+        !isNaN(Number(rawQty));
+
+    const numericQty = hasNumericQty ? Number(rawQty) : null;
+
+    if (rawStatus === "outofstock" || rawStatus === "outstock") {
+        return "outofstock";
+    }
+
+    if (rawStatus === "instock") {
+        return "instock";
+    }
+
+    if (hasNumericQty) {
+        return numericQty > 0 ? "instock" : "outofstock";
+    }
+
+    return rawStatus;
+};
+
 export default function Products({
     embedded = false,
     merchantId,
@@ -49,9 +89,7 @@ export default function Products({
     const [selectedProduct, setSelectedProduct] = useState(null);
 
     const getStockStatus = (product) =>
-        String(product?.stockStatus || "")
-            .toLowerCase()
-            .replace(/[\s_-]+/g, "");
+        getProductStockStatus(product);
 
     // =========================================================
     // LOAD PRODUCTS FROM API
@@ -178,10 +216,16 @@ export default function Products({
                 !type ||
                 product.type === type;
 
+            const selectedStock =
+                normalizeStock(stockStatus);
+
             const matchesStock =
-                !stockStatus ||
-                product.stockStatus ===
-                    stockStatus;
+                !selectedStock ||
+                (selectedStock === "instock"
+                    ? getProductStockStatus(product) === "instock"
+                    : selectedStock === "outofstock"
+                    ? getProductStockStatus(product) === "outofstock"
+                    : getProductStockStatus(product) === selectedStock);
 
             return (
                 matchesSearch &&
@@ -326,26 +370,23 @@ export default function Products({
             key: "stockStatus",
             label: "Stock Status",
             render: (value) => {
-                const status = String(
-                    value || ""
-                ).toLowerCase();
+                const status = normalizeStock(value);
 
                 let className =
                     "detail-status";
 
                 if (
-                    status === "in stock"
+                    status === "instock"
                 ) {
                     className += " active";
                 } else if (
-                    status ===
-                    "out of stock"
+                    status === "outofstock" ||
+                    status === "outstock"
                 ) {
                     className +=
                         " inactive";
                 } else if (
-                    status ===
-                    "low stock"
+                    status === "lowstock"
                 ) {
                     className +=
                         " pending";
@@ -936,9 +977,7 @@ function ProductRow({
     onClick,
 }) {
     const normalizedStockStatus =
-        String(
-            product.stockStatus || ""
-        ).toLowerCase().replace(/[\s_-]+/g, "");
+        getProductStockStatus(product);
 
     const stockClass =
         normalizedStockStatus ===
@@ -1020,7 +1059,11 @@ function ProductRow({
                             }
                         >
                             {product.stockStatus ||
-                                "—"}
+                                (normalizedStockStatus === "instock"
+                                    ? "In stock"
+                                    : normalizedStockStatus === "outofstock"
+                                    ? "Out of stock"
+                                    : "—")}
                         </strong>
 
                         {product.quantity !==

@@ -294,7 +294,7 @@ export default function Orders({
   }
 
   return (
-    <div className="page-content orders-page">
+    <div className={`page-content orders-page ${!embedded ? "orders-standalone-page" : "orders-embedded-page"}`}>
       {!embedded && (
         <div className="orders-header">
           <div className="orders-title-area">
@@ -313,7 +313,7 @@ export default function Orders({
         <SummaryCard icon="bi-cash-stack" tone="blue" label="Total Value" value={`$${totalAmount.toFixed(2)}`} meta="Across loaded orders" metaTone="info" />
       </div>
 
-      <div className="orders-card w-full max-w-full min-w-0 overflow-hidden">
+      <div className={`orders-card ${!embedded ? "orders-standalone-card" : ""} w-full max-w-full min-w-0 overflow-hidden`}>
         {ordersToolbar}
 
         {error && <div className="orders-banner error">{error}</div>}
@@ -323,7 +323,7 @@ export default function Orders({
           <>
             
 
-            <div className="orders-table-wrapper w-full overflow-x-auto">
+            <div className={`orders-table-wrapper ${!embedded ? "orders-standalone-table-wrapper" : ""} w-full overflow-x-auto`}>
               <table className="orders-table w-full min-w-[880px] text-left">
                 <thead>
                   <tr>

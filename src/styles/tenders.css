@@ -284,7 +284,7 @@
    ========================================================= */
 
 .tenders-list-card {
-  padding: 20px 22px;
+  padding: 22px 28px 24px;
   margin-bottom: 20px;
   border: 1px solid #e1ebf5;
   border-radius: 11px;
@@ -393,8 +393,10 @@
    ========================================================= */
 
 .tenders-table-wrap {
+  width: 100%;
   overflow-x: auto;
-  margin-top: 17px;
+  overflow-y: visible;
+  margin: 0;
   border: 1px solid #e3ecf5;
   border-radius: 8px;
 }
@@ -575,8 +577,19 @@
   font-size: 10px;
 }
 
+.tenders-pagination {
+  width: 100%;
+  display: block;
+  box-sizing: border-box;
+  margin-top: 12px;
+  padding: 0;
+}
+
+.tenders-pagination .pagination-container,
 .tenders-list-card > .pagination-container {
   height: auto;
+  height: auto;
+  min-height: auto;
   margin-top: 12px;
   padding: 0;
 }
@@ -963,6 +976,14 @@
   scrollbar-width: thin;
 }
 
+.tenders-list-card > .pagination-container,
+.tenders-pagination .pagination-container {
+  width: 100%;
+  height: auto;
+  min-height: auto;
+  padding: 0;
+  background: transparent;
+}
 .tenders-table {
   width: 100%;
   min-width: 980px;

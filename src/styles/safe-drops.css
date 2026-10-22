@@ -1,11 +1,15 @@
-.sd-screen { width:100%; min-width:0; padding:20px; color:#3c465a; font-family:Inter,Arial,sans-serif; font-size:13px; line-height:1.45; }
+.sd-screen { width:100%; min-width:0; padding:20px 20px 16px; color:#3c465a; font-family:Inter,Arial,sans-serif; font-size:13px; line-height:1.45; height:auto; min-height:0; }
+.sd-screen.pb-4, .sd-card.pb-4 { padding-bottom:16px !important; }
 .sd-screen * { box-sizing:border-box; }
 .sd-heading { display:flex; align-items:center; justify-content:space-between; margin:0 0 8px; }
 .sd-heading h1 { margin:0; color:#172640; font-size:18px; line-height:1.4; font-weight:600; }
 .sd-heading p { margin:5px 0 0; color:#7b879b; font-size:13px; }
-.sd-card { padding:0 0 0; border:0; border-radius:8px; background:#fff; }
+.sd-card { padding:0 0 16px; border:0; border-radius:8px; background:#fff; height:auto; min-height:0; }
 .sd-card > .filters-bar { box-sizing:border-box; width:calc(100% - 24px); margin:0px; padding:12px 0 16px; border:0; background:transparent; }
-.sd-screen .sd-card > .pagination-container { box-sizing:border-box; width:calc(100% - 24px); max-width:calc(100% - 24px); height:60px; margin:0px; padding:16px 0; }
+.sd-pagination-wrapper { width:100%; box-sizing:border-box; margin-top:16px !important; margin-bottom:0 !important; padding:0 !important; }
+.sd-pagination-wrapper.mt-4 { margin-top:16px !important; }
+.sd-pagination-wrapper.mb-0 { margin-bottom:0 !important; }
+.sd-screen .sd-card > .pagination-container, .sd-pagination-wrapper .pagination-container { box-sizing:border-box; width:100% !important; max-width:100% !important; height:auto !important; min-height:40px !important; margin:0px !important; padding:0 !important; background:transparent !important; border-top:0 !important; }
 .sd-custom-date { display:flex; flex-wrap:wrap; align-items:flex-end; gap:10px; width:calc(100% - 24px); margin:0 12px 12px; padding:12px; border:1px solid #e1e8f2; border-radius:8px; background:#f8f7ff; }
 .sd-custom-date label { display:grid; gap:5px; color:#3c465a; font-size:12px; }
 .sd-custom-date input { height:36px; min-width:165px; padding:0 9px; border:1px solid #d9e6f4; border-radius:6px; background:#fff; color:#294a76; font:13px Inter,Arial,sans-serif; }
@@ -13,7 +17,7 @@
 .sd-custom-date .sd-cancel-date { border-color:#d9e6f4; background:#fff; color:#5b79ad; }
 .sd-custom-date p { width:100%; margin:0; color:#b42318; font-size:13px; }
 .sd-reset:hover,.sd-view:hover { background:#f7f7ff; }
-.sd-table-wrap { box-sizing:border-box; width:calc(100% - 24px); max-width:calc(100% - 24px); margin:0px; overflow-x:auto; border:1px solid #dfe9f4; border-radius:8px; background:#fff; }
+.sd-table-wrap { box-sizing:border-box; width:100% !important; max-width:100% !important; margin:0 0 0 0 !important; overflow-x:auto; border:1px solid #dfe9f4; border-radius:8px; background:#fff; }
 .sd-table { width:100%; min-width:1060px; border:0; border-spacing:0; }
 .sd-table th,.sd-table td { padding:14px 18px; border-bottom:1px solid #e8edf5; text-align:left; vertical-align:middle; }
 .sd-table th { height:44px; padding-top:0; padding-bottom:0; background:#f1f3fd; color:#263650; font-size:13px; font-weight:650; white-space:nowrap; }

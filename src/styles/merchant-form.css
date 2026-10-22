@@ -249,26 +249,27 @@
 }
 
 #pch-new .pch-rail button.pch-current {
-    background: #5143bc;
-    color: #fff;
-    border-color: #e2dcff;
+    border-color: #c4b9ff;
+    background: #e7e1ff;
+    color: #5143bc;
+    border-radius: 9px;
 }
 
 #pch-new .pch-rail button.pch-current:hover:not(:disabled) {
-    background: #5143bc;
-    border-color: #e2dcff;
-    color: #fff;
-    box-shadow: 0 3px 10px rgba(49, 39, 135, 0.18);
+    border-color: #c4b9ff;
+    background: #e7e1ff;
+    color: #5143bc;
+    box-shadow: none;
 }
 
 #pch-new .pch-rail button.pch-current:hover .pch-number {
-    background: #f7f6ff;
-    border-color: #f7f6ff;
-    color: #5937e8;
+    border-color: #5937e8;
+    background: #5937e8;
+    color: #fff;
 }
 
 #pch-new .pch-rail button.pch-current:hover .pch-rail-description {
-    color: #eff0f0;
+    color: #8994aa;
 }
 
 #pch-new .pch-rail .pch-number {
@@ -288,8 +289,14 @@
 }
 
 #pch-new .pch-rail button.pch-current .pch-number {
-    background: #f7f6ff;
-    color: #5937e8;
+    border-color: #5937e8;
+    background: #5937e8;
+    color: #fff;
+}
+
+#pch-new .pch-rail button.pch-current strong,
+#pch-new .pch-rail button.pch-current > span {
+    color: #5143bc;
 }
 
 #pch-new .pch-rail button:not(.pch-current) .pch-number {
@@ -314,7 +321,7 @@
 }
 
 #pch-new .pch-rail button.pch-current .pch-rail-description {
-    color: #eff0f0;
+    color: #8994aa;
 }
  
 

@@ -1383,7 +1383,7 @@ const paginatedPermissions = filteredPermissions.slice(
           PERMISSIONS LIST
           ===================================================== */}
 
-      <section className="fp-list-card">
+      <section className="features-list-card fp-list-card">
         <div className="fp-list-toolbar">
           <h2>
             Permissions List
@@ -1493,8 +1493,8 @@ const paginatedPermissions = filteredPermissions.slice(
             TABLE
             =================================================== */}
 
-        <div className="fp-table-wrap">
-          <table className="fp-table">
+        <div className="features-table-wrap fp-table-wrap">
+          <table className="features-table fp-table">
             <colgroup>
               <col className="fp-col-key" />
               <col className="fp-col-name" />
@@ -1700,9 +1700,8 @@ const paginatedPermissions = filteredPermissions.slice(
             TABLE FOOTER
             =================================================== */}
 
-        
-<div className="fp-list-footer">
-  <Pagination
+        <div className="feature-pagination-row fp-pagination-row fp-list-footer">
+          <Pagination
     currentPage={currentPage}
     totalPages={totalPages}
     totalItems={totalEntries}

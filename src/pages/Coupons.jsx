@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Pagination from "../components/Pagination";
 import BentoDetailModal from "../components/BentoDetailModal";
 import DeleteConfirmationDialog from "../components/DeleteConfirmationDialog";
+import ListActions from "../components/ListActions";
 import { api, pendingStoreRead } from "../api/http";
 import { normalizeCatalog } from "../api/products";
 import { catalogProductId } from "./discountForm";
@@ -1253,8 +1254,14 @@ function CouponRow({ coupon, onView, onEdit, onDelete }) {
             </td>
 
             <td className="coupon-row-actions" onClick={(event) => event.stopPropagation()} onKeyDown={(event) => event.stopPropagation()}>
-                <button type="button" aria-label={`Edit ${coupon.code}`} title="Edit coupon" onClick={onEdit}><i className="bi bi-pencil" /></button>
-                <button type="button" aria-label={`Delete ${coupon.code}`} title="Delete coupon" onClick={onDelete}><i className="bi bi-trash3" /></button>
+                <ListActions
+                    onView={onView}
+                    onEdit={onEdit}
+                    onDelete={onDelete}
+                    viewLabel={`View ${coupon.code}`}
+                    editLabel={`Edit ${coupon.code}`}
+                    deleteLabel={`Delete ${coupon.code}`}
+                />
             </td>
 
         </tr>

@@ -350,7 +350,7 @@
     white-space: nowrap;
 }
 
-.coupon-row-actions button {
+.coupon-row-actions > button {
     width: 38px;
     height: 38px;
     margin-right: 7px;
@@ -362,19 +362,19 @@
     cursor: pointer;
 }
 
-.coupon-row-actions button:hover {
+.coupon-row-actions > button:hover {
     border-color: #3478ff;
     background: #f7faff;
     color: #1f65ec;
 }
 
-.coupon-row-actions button:last-child:hover {
+.coupon-row-actions > button:last-child:hover {
     border-color: #ef7077;
     background: #fff8f8;
     color: #e34b55;
 }
 
-.coupon-row-actions button:last-child { color: #ef5a63; }
+.coupon-row-actions > button:last-child { color: #ef5a63; }
 
 .coupon-editor-heading {
     display: flex;
