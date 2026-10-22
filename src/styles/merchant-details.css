@@ -132,19 +132,6 @@
   box-sizing: border-box;
 }
 
-.merchant-readonly .merchant-view-main :is(
-  .store-list-card,
-  .mt-card,
-  .mel-card,
-  .mdl-card
-) > .pagination-container {
-  width: 100%;
-  max-width: 100%;
-  min-width: 0;
-  margin-inline: 0;
-  padding-inline: 0;
-  box-sizing: border-box;
-}
 
 .merchant-readonly .merchant-view-main :is(
   .store-list-card,
@@ -168,6 +155,12 @@
   min-width: 0;
   box-sizing: border-box;
   overflow-x: auto;
+}
+
+.merchant-readonly .merchant-view-main .merchant-vendors .mv-scroll {
+  width: calc(100% - 48px);
+  max-width: calc(100% - 48px);
+  margin-inline: 24px;
 }
 
 /* This tab's legacy layout padded the whole component in addition to its

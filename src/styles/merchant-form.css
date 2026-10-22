@@ -1307,11 +1307,11 @@
 #pch-new .pch-rule{gap:16px;overflow-wrap:anywhere;}
 #pch-new .pch-rail-description{display:block;}
 #pch-new .pch-layout,#pch-new main,#pch-new .pch-field{min-width:0;}
-#pch-new .pch-phone-field .react-tel-input{width:100%;margin-top:6px;font-family:inherit;}
-#pch-new .pch-phone-field .react-tel-input .form-control{width:100%;height:42px;padding-left:54px!important;border:1px solid var(--pch-border);border-radius:7px;font-size:14px;font-family:inherit;color:#304766;}
+#pch-new .pch-phone-field .react-tel-input{width:100%;margin-top:5px;font-family:inherit;}
+#pch-new .pch-phone-field .react-tel-input .form-control{width:100%;height:34px;padding-left:54px!important;border:1px solid var(--pch-border);border-radius:5px;font-size:14px;font-family:inherit;color:#304766;}
 #pch-new .pch-phone-field .react-tel-input .form-control:focus{border-color:#8b7ce0;box-shadow:0 0 0 3px rgba(81,67,188,.1);}
-#pch-new .pch-phone-field .react-tel-input .flag-dropdown{border:1px solid var(--pch-border);border-radius:7px 0 0 7px;background:#f8f9fc;}
-#pch-new .pch-phone-field .react-tel-input .selected-flag{width:44px;padding-left:10px;}
+#pch-new .pch-phone-field .react-tel-input .flag-dropdown{height:34px;border:1px solid var(--pch-border);border-radius:5px 0 0 5px;background:#f8f9fc;}
+#pch-new .pch-phone-field .react-tel-input .selected-flag{width:44px;height:32px;padding-left:10px;}
 #pch-new .pch-phone-field .react-tel-input .selected-flag .arrow{left:23px;}
 #pch-new .pch-phone-field .react-tel-input .country-list{z-index:20;width:min(320px,calc(100vw - 48px));max-height:260px;border-color:var(--pch-border);border-radius:8px;box-shadow:0 10px 28px rgba(29,39,65,.16);}
 #pch-new .pch-phone-error{display:block;margin-top:5px;color:#b42318;font-size:12px;line-height:1.4;}
@@ -1319,7 +1319,7 @@
 @media(max-width:600px){#pch-new .pch-panel-heading{align-items:flex-start;flex-wrap:wrap;}#pch-new .pch-context-toolbar>.pch-field{max-width:none;}#pch-new .pch-context-toolbar>button{width:100%;}}
 
 /* Match panel headings to the onboarding typography. */
-#pch-new .pch-panel-heading h2 { font-size:18px; font-weight:600; line-height:24px; }
+#pch-new .pch-panel-heading h2 { font-size:18px; font-weight:600; line-height:24px;}
 
 /* Add and edit merchant breadcrumb. */
 #pch-new .pch-breadcrumb {

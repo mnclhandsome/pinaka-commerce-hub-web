@@ -428,12 +428,12 @@ function MerchantEditor({ merchantId, localMerchants, onSave }) {
                 <PhoneInput country="in" enableSearch countryCodeEditable={false} autoFormat value={merchant.phone} onMount={(_value, data) => { if (data?.countryCode) setPhoneCountry(data.countryCode); if (data?.dialCode) setPhoneDialCode(data.dialCode); }} onChange={(value, data) => { updateField("phone", value); if (data?.countryCode) setPhoneCountry(data.countryCode); if (data?.dialCode) setPhoneDialCode(data.dialCode); }} inputProps={{ id: "merchant-phone", name: "phone", required: true, autoComplete: "tel", "aria-invalid": Boolean(fieldErrors.phone) }} />
                 {fieldErrors.phone && <span className="pch-field-error" role="alert">{fieldErrors.phone}</span>}
               </div>
+              <Select label="Country *" value={merchant.country} options={locationOptions.countries.map((value) => ({ value, label: value }))} required error={fieldErrors.country} onChange={(v) => { updateField("country", v); updateField("state", ""); }} />
+              <Select label="State / Province *" value={merchant.state} placeholder={merchant.country ? "Select state or province" : "Select country first"} options={locationOptions.states.map((value) => ({ value, label: value }))} required error={fieldErrors.state} onChange={(v) => updateField("state", v)} />
+              <Field label="City *" placeholder="Enter city" value={merchant.city} required error={fieldErrors.city} onChange={(v) => updateField("city", v)} />
               <Field label="Address Line 1 *" placeholder="Enter street address" value={merchant.addressLine1} required error={fieldErrors.addressLine1} onChange={(v) => updateField("addressLine1", v)} />
               <Field label="Address Line 2" placeholder="Apartment, suite, etc. (optional)" value={merchant.addressLine2} onChange={(v) => updateField("addressLine2", v)} />
-              <Field label="City *" placeholder="Enter city" value={merchant.city} required error={fieldErrors.city} onChange={(v) => updateField("city", v)} />
-              <Select label="State / Province *" value={merchant.state} placeholder={merchant.country ? "Select state or province" : "Select country first"} options={locationOptions.states.map((value) => ({ value, label: value }))} required error={fieldErrors.state} onChange={(v) => updateField("state", v)} />
               <Field label="ZIP / Postal Code *" placeholder="Enter ZIP or postal code" value={merchant.postal} required error={fieldErrors.postal} onChange={(v) => updateField("postal", v)} />
-              <Select label="Country *" value={merchant.country} options={locationOptions.countries.map((value) => ({ value, label: value }))} required error={fieldErrors.country} onChange={(v) => { updateField("country", v); updateField("state", ""); }} />
             </div></Panel>
             {error && <div className="pch-error" role="alert">{error}</div>}
             <div className="pch-footerbar"><button type="button" disabled={submitting} onClick={cancel}>Back</button><button className="pch-primary" type="button" disabled={submitting} onClick={continueStep}>Continue</button></div>

@@ -4,8 +4,10 @@
 .merchant-roles .mr-header{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:14px}
 .merchant-roles h2{margin:0 0 4px;font-size:18px;font-weight:600;color:#17233e;}
 .merchant-roles p{margin:0;color:#81899a;font-size:13px}
-.merchant-roles .mr-actions{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end}
-.merchant-roles button{padding:8px 12px;border:1px solid #dfe3eb;border-radius:5px;background:#fff;color:#5143bc;font:inherit;cursor:pointer}
+.merchant-roles .mr-select-all{display:inline-flex;align-items:center;gap:8px;white-space:nowrap;color:#5143bc;cursor:pointer}
+.merchant-roles .mr-select-all input{margin:0;accent-color:#5143bc;width:16px;height:16px}
+.merchant-roles .mr-footer-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:16px;padding-top:14px;border-top:1px solid #e8ebf1}
+.merchant-roles button{padding:8px 12px;border:1px solid #5143bc;border-radius:5px;background:#fff;color:#5143bc;font:inherit;cursor:pointer}
 .merchant-roles button:disabled{opacity:.5;cursor:not-allowed}
 .merchant-roles .mr-primary{background:#5143bc;color:#fff;border-color:#5143bc}
 .merchant-roles .mr-primary:hover:not(:disabled){background:#4538a6;border-color:#4538a6}
@@ -26,6 +28,6 @@
 .merchant-roles :focus-visible{outline:2px solid #5143bc;outline-offset:2px}
 @media(max-width:700px){
   .merchant-roles .mr-header{flex-direction:column}
-  .merchant-roles .mr-actions{width:100%;justify-content:stretch}
-  .merchant-roles .mr-actions button{flex:1}
+  .merchant-roles .mr-select-all{align-self:flex-start}
+  .merchant-roles .mr-footer-actions button{flex:1}
 }

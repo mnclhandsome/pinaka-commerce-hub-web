@@ -559,11 +559,8 @@
 }
 
 .role-pagination .pagination-container {
-  width: 100%;
   height: auto;
-  min-height: auto;
   padding: 0;
-  background: transparent;
 }
 
 /* Delete confirmation */
@@ -2863,11 +2860,6 @@
   box-sizing: border-box;
 }
 
-.role-pagination .pagination-container {
-  width: 100%;
-  padding: 16px 0;
-  background: transparent;
-}
 
 .role-pagination-info {
   display: inline-block;

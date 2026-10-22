@@ -1176,13 +1176,13 @@ table tbody tr:last-child td,
   font-size: 12px !important;
 }
 
-/* Status Column Sizing Standard: Size for 96px pill + padding */
+/* Status Column Sizing Standard: Size for 96px pill + padding
 th:is([class*="status"], :has([class*="status"])),
 td:is([class*="status"], :has(.status-badge, .status, .store-status, .store-status-badge, [class*="status-pill"], [class*="status-badge"])) {
   min-width: 135px !important;
   white-space: nowrap !important;
   box-sizing: border-box !important;
-}
+} */
 
 .status-badge,
 .status,

@@ -24,11 +24,6 @@ import "../styles/add-employee.css";
 import { createEmployee } from "../api/employees";
 import { listMerchants } from "../api/merchants";
 
-/*
- * Store Role Assignment UI styles.
- * Kept here so the new Work Information UI works without requiring
- * changes to the existing add-employee.css file.
- */
 const storeRoleStyles = `
   .field-error {
     display: block;
@@ -101,300 +96,28 @@ const storeRoleStyles = `
     font-size: 12px;
   }
 
-  .store-role-assignment-section {
-    margin-top: 22px;
-  }
-
-  .store-role-heading {
-    margin-bottom: 12px;
-  }
-
-  .store-role-label {
-    display: block;
-    margin-bottom: 5px;
-    font-size: 15px;
-    font-weight: 600;
-  }
-
-  .store-role-label span,
-  .store-role-field label span {
-    color: #e11d48;
-  }
-
-  .store-role-heading p {
-    margin: 0;
-    color: #7b8da8;
+  .employee-api-error {
+    margin-bottom: 15px;
+    padding: 11px 14px;
+    border: 1px solid #fecaca;
+    border-radius: 8px;
+    background: #fef2f2;
+    color: #b91c1c;
     font-size: 13px;
   }
 
-  .store-assignment-list {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-
-  .store-assignment-card {
-    position: relative;
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr) 36px;
-    align-items: center;
-    gap: 14px;
-    min-height: 76px;
-    padding: 10px 12px;
-    border: 1px solid #dce5f1;
-    border-radius: 10px;
-    background: #fff;
-    box-sizing: border-box;
-  }
-
-  .store-assignment-info {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    min-width: 0;
-  }
-
-  .store-assignment-icon {
-    width: 38px;
-    height: 38px;
-    flex: 0 0 38px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    background: #f0ebff;
-    color: #4b24df;
-  }
-
-  .store-assignment-name {
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
-  }
-
-  .store-assignment-name strong {
-    color: #17233d;
-    font-size: 15px;
-    line-height: 1.2;
-  }
-
-  .store-assignment-name span {
-    color: #7890b1;
-    font-size: 12px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .store-select-inline {
-    position: relative;
-    display: flex;
-    align-items: center;
-    width: 100%;
-  }
-
-  .store-select-inline select {
-    width: 100%;
-    min-width: 0;
-    padding: 0 22px 0 0;
-    border: 0;
-    outline: 0;
-    background: transparent;
-    color: #7890b1;
-    font-size: 12px;
-    appearance: none;
-    cursor: pointer;
-  }
-
-  .store-select-inline svg {
-    position: absolute;
-    right: 2px;
-    pointer-events: none;
-    color: #7890b1;
-  }
-
-  .store-role-field {
-    min-width: 0;
-  }
-
-  .store-role-field > label {
-    display: block;
-    margin-bottom: 5px;
-    color: #17233d;
-    font-size: 12px;
-    font-weight: 600;
-  }
-
-  .role-multi-select-wrapper {
-    position: relative;
-  }
-
-  .role-multi-select {
-    width: 100%;
-    min-height: 38px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-    padding: 5px 10px;
-    border: 1px solid #d4dfed;
-    border-radius: 8px;
-    background: #fff;
-    color: #1c3154;
-    cursor: pointer;
-    text-align: left;
-    box-sizing: border-box;
-  }
-
-  .role-multi-select:hover {
-    border-color: #8c7bf2;
-  }
-
-  .selected-role-chips {
-    min-width: 0;
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 4px;
-  }
-
-  .role-chip {
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-    padding: 5px 8px;
-    border-radius: 6px;
-    background: #edf3fb;
-    color: #27466f;
-    font-size: 12px;
-    line-height: 1;
-  }
-
-  .remove-role-chip {
-    border: 0;
-    padding: 0;
-    background: transparent;
-    color: #68809f;
-    font-size: 15px;
-    line-height: 12px;
-    cursor: pointer;
-  }
-
-  .role-placeholder {
-    padding: 5px 2px;
-    color: #91a3bd;
-    font-size: 12px;
-  }
-
-  .role-select-chevron {
-    flex: 0 0 auto;
-    transition: transform .15s ease;
-  }
-
-  .role-select-chevron.open {
-    transform: rotate(180deg);
-  }
-
-  .role-options-menu {
-    position: absolute;
-    z-index: 30;
-    top: calc(100% + 5px);
-    left: 0;
-    right: 0;
-    max-height: 190px;
-    overflow-y: auto;
-    padding: 5px;
-    border: 1px solid #d8e2ef;
-    border-radius: 8px;
-    background: #fff;
-    box-shadow: 0 12px 30px rgba(33, 55, 88, .14);
-  }
-
-  .role-option {
-    width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 9px 10px;
-    border: 0;
-    border-radius: 6px;
-    background: transparent;
-    color: #263d60;
-    cursor: pointer;
-    text-align: left;
-    font-size: 13px;
-  }
-
-  .role-option:hover,
-  .role-option.selected {
-    background: #f2efff;
-    color: #4323c8;
-  }
-
-  .delete-store-assignment-btn {
-    width: 36px;
-    height: 36px;
-    align-self: center;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 1px solid #ffd1dc;
-    border-radius: 8px;
-    background: #fff6f8;
-    color: #e11d48;
-    cursor: pointer;
-    font-size: 15px;
-  }
-
-  .delete-store-assignment-btn:hover {
-    background: #ffe8ee;
-  }
-
-  .add-another-store-btn {
-    width: 100%;
-    min-height: 44px;
-    margin-top: 12px;
-    border: 1px dashed #8172ef;
-    border-radius: 8px;
-    background: #faf9ff;
-    color: #4226c9;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-  }
-
-  .add-another-store-btn:hover:not(:disabled) {
-    background: #f3f0ff;
-  }
-
-  .add-another-store-btn:disabled {
-    opacity: .55;
+  .save-employee-btn:disabled {
+    opacity: .6;
     cursor: not-allowed;
-  }
-
-  .add-store-plus {
-    margin-right: 7px;
-    font-size: 21px;
-    line-height: 0;
-    vertical-align: -2px;
   }
 
   @media (max-width: 900px) {
     .store-assignment-card {
       grid-template-columns: minmax(0, 1fr) 36px;
     }
-
-    .store-role-field {
-      grid-column: 1 / -1;
-    }
-
-    .delete-store-assignment-btn {
-      grid-column: 2;
-      grid-row: 1;
-    }
   }
 `;
+
 
 function StoreRoleAssignmentStyles() {
   return <style>{storeRoleStyles}</style>;
@@ -1043,36 +766,13 @@ export default function AddEmployee() {
                 description="Enter the employee's address details."
               />
 
-              <div className="employee-form-grid two-columns">
-                <FormField
-                  label={
-                    <>
-                      Address Line 1 <span className="text-red-500">*</span>
-                    </>
-                  }
-                  name="address1"
-                  placeholder="Enter address line 1"
-                  value={formData.address1}
-                  onChange={handleChange}
-                  error={errors.address1}
-                />
-
-                <FormField
-                  label="Address Line 2"
-                  name="address2"
-                  placeholder="Enter address line 2 (optional)"
-                  value={formData.address2}
-                  onChange={handleChange}
-                  error={errors.address2}
-                />
-              </div>
-
               <div className="employee-form-grid two-columns" style={{ columnGap: "28px", rowGap: "18px", marginTop: "24px" }}>
                 <SelectField
-                  label="City" required name="city" value={formData.city}
-                  onChange={handleChange} error={errors.city} options={cityOptions}
-                  placeholder={formData.state ? "Select city" : "Select state first"}
-                  disabled={locationsLoading || !formData.state}
+                  label="Country" required name="country" value={formData.country}
+                  onChange={handleChange} error={errors.country}
+                  options={locations.map(country => country.name)}
+                  placeholder={locationsLoading ? "Loading countries..." : "Select country"}
+                  disabled={locationsLoading}
                 />
                 <SelectField
                   label="State" required name="state" value={formData.state}
@@ -1085,11 +785,33 @@ export default function AddEmployee() {
               {locationError && <p role="alert" className="field-error">{locationError}</p>}
               <div className="employee-form-grid two-columns" style={{ columnGap: "28px", rowGap: "18px", marginTop: "24px" }}>
                 <SelectField
-                  label="Country" required name="country" value={formData.country}
-                  onChange={handleChange} error={errors.country}
-                  options={locations.map(country => country.name)}
-                  placeholder={locationsLoading ? "Loading countries..." : "Select country"}
-                  disabled={locationsLoading}
+                  label="City" required name="city" value={formData.city}
+                  onChange={handleChange} error={errors.city} options={cityOptions}
+                  placeholder={formData.state ? "Select city" : "Select state first"}
+                  disabled={locationsLoading || !formData.state}
+                />
+                <FormField
+                  label={
+                    <>
+                      Address Line 1 <span className="text-red-500">*</span>
+                    </>
+                  }
+                  name="address1"
+                  placeholder="Enter address line 1"
+                  value={formData.address1}
+                  onChange={handleChange}
+                  error={errors.address1}
+                />
+              </div>
+
+              <div className="employee-form-grid two-columns" style={{ columnGap: "28px", rowGap: "18px", marginTop: "24px" }}>
+                <FormField
+                  label="Address Line 2"
+                  name="address2"
+                  placeholder="Enter address line 2 (optional)"
+                  value={formData.address2}
+                  onChange={handleChange}
+                  error={errors.address2}
                 />
                 <FormField
                   label="PIN Code" required name="pinCode" placeholder="Enter PIN code"

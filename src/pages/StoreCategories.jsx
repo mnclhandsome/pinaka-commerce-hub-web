@@ -1204,13 +1204,6 @@ export default function StoreCategories({
                     <td>
 
                       <div className="category-name-cell">
-
-                        <div className="category-icon attribute-icon">
-
-                          <i className="bi bi-sliders" />
-
-                        </div>
-
                         <div>
 
                           <strong>

@@ -918,42 +918,13 @@
 }
 
 
-.plans-pagination {
-  width: 100%;
-  display: block;
-  box-sizing: border-box;
-  margin-top: 12px;
-}
-
 .plans-pagination .pagination-container {
-  width: 100%;
+  margin-top: 12px;
   height: auto;
-  min-height: auto;
   padding: 0;
-  background: transparent;
+  
 }
 
-.plans-pagination div {
-  display: flex;
-  gap: 7px;
-}
-
-.plans-pagination button {
-  display: grid;
-  width: 32px;
-  height: 32px;
-  place-items: center;
-  border: 1px solid #dce9f5;
-  border-radius: 6px;
-  color: #684ee3;
-  background: #fff;
-  cursor: pointer;
-}
-
-.plans-pagination button.active {
-  color: #fff;
-  background: #684ee3;
-}
 
 .delete-plan-overlay {
   position: fixed;

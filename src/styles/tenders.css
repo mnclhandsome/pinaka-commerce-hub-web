@@ -576,12 +576,9 @@
 }
 
 .tenders-list-card > .pagination-container {
-  width: 100%;
   height: auto;
-  min-height: auto;
   margin-top: 12px;
   padding: 0;
-  background: transparent;
 }
 
 /* =========================================================
@@ -964,12 +961,6 @@
   border: 1px solid #dce8f4;
   border-radius: 8px;
   scrollbar-width: thin;
-}
-
-.tenders-list-card > .pagination-container {
-  width: 100%;
-  padding: 16px 0;
-  background: transparent;
 }
 
 .tenders-table {

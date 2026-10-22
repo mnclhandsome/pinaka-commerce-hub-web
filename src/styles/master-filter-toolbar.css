@@ -1,10 +1,4 @@
 /* Existing Master Setup controls use the unchanged Vendors presentation. */
-.pch-master-toolbar.pch-master-control {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-}
 
 .pch-master-search.pch-master-control {
   box-sizing: border-box;

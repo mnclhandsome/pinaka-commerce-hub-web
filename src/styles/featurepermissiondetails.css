@@ -651,24 +651,18 @@
   width: 100%;
   display: block;
   box-sizing: border-box;
-  padding-top: 12px;
+  margin-top: 12px;
 }
 
 .fp-table-footer .pagination-container {
-  width: 100%;
   height: auto;
-  min-height: auto;
   padding: 0;
-  background: transparent;
   box-sizing: border-box;
 }
 
-
 .fp-results-text {
   margin: 0 0 4px;
-
   color: #42638f;
-
   font-size: 10px;
   line-height: 14px;
 }

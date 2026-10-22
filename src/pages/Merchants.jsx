@@ -20,7 +20,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { listMerchants, getMerchant, updateMerchantStatus, deleteMerchant } from "../api/merchants";
 import { EmployeeToast, EmployeeDeleteDialog } from "../components/EmployeeFeedback";
-import { listMerchantEmployees, getEmployee, deleteEmployee } from "../api/employees";
+import { listMerchantEmployees, getEmployee, updateEmployee } from "../api/employees";
 import { api, ApiError, pendingStoreRead } from "../api/http";
 import { devicesApi } from "../api/devices";
 import { storeListFromResponse, normalizeStore } from "../api/stores";
@@ -847,11 +847,18 @@ export default function Merchants({ localMerchants = [], onLocalDelete, onSaveEm
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState('');
   const [notice, setNotice] = useState('');
+  const [noticeType, setNoticeType] = useState('success');
+  const noticeTimeout = useRef(null);
   const deleteInFlight = useRef(false);
   const mounted = useRef(false);
   const [search, setSearch] = useState("");
 const [statusFilter, setStatusFilter] = useState("");
   useEffect(() => { mounted.current = true; return () => { mounted.current = false; }; }, []);
+  useEffect(() => {
+    if (!notice) return undefined;
+    noticeTimeout.current = window.setTimeout(() => setNotice(''), 1800);
+    return () => window.clearTimeout(noticeTimeout.current);
+  }, [notice]);
   async function confirmDelete() {
     if (deleteInFlight.current || !deleteTarget) return;
     deleteInFlight.current = true; setDeleting(true); setDeleteError('');
@@ -866,7 +873,7 @@ const [statusFilter, setStatusFilter] = useState("");
       setMerchants(previous => previous.map(item => item.id === target.id
         ? { ...item, status: 'Inactive', isDeleted: true }
         : item));
-      setNotice(target.name + ' was deactivated.'); setDeleteTarget(null);
+      setNoticeType('Inactive'); setNotice(target.name + ' was Inactive.'); setDeleteTarget(null);
     } catch (error) { if (mounted.current) setDeleteError(error.message || 'Unable to delete merchant. Please try again.'); }
     finally { deleteInFlight.current = false; if (mounted.current) setDeleting(false); }
   }
@@ -880,7 +887,7 @@ const [statusFilter, setStatusFilter] = useState("");
       setMerchants(previous => previous.map(item => item.id === merchant.id
         ? { ...item, status: 'Active', isDeleted: false }
         : item));
-      setNotice(merchant.name + ' was activated.');
+      setNoticeType('success'); setNotice(merchant.name + ' was activated.');
     } catch (error) {
       setError(error.message || 'Unable to activate merchant.');
     }
@@ -1047,7 +1054,9 @@ const [statusFilter, setStatusFilter] = useState("");
 
   return (
     <div className="page-content">
-      {notice && <div className="alert alert-success" role="status">{notice}</div>}
+      {notice && <div className={`alert merchant-notice ${noticeType === 'Inactive' ? 'merchant-notice-Inactive' : 'alert-success'}`} role="status">
+        <span>{notice}</span>
+      </div>}
       <div className="page-header">
         <div>
           <h1>Merchants</h1>
@@ -1350,8 +1359,8 @@ const [statusFilter, setStatusFilter] = useState("");
         }
         viewLabel={`View ${m.name} details`}
         editLabel={`Edit ${m.name}`}
-        activateLabel={`Activate ${m.name}`}
-        deleteLabel={`Deactivate ${m.name}`}
+        activateLabel={`Active ${m.name}`}
+        deleteLabel={`Inactive ${m.name}`}
     />
 </td>
                   </tr>
@@ -1374,11 +1383,11 @@ const [statusFilter, setStatusFilter] = useState("");
 {deleteTarget && (
   <DeleteConfirmationDialog
     isOpen={!!deleteTarget}
-    title="Deactivate Merchant?"
-    message={`Are you sure you want to deactivate ${deleteTarget.name}?`}
+    title="Inactive Merchant?"
+    message={`Are you sure you want to Inactive ${deleteTarget.name}?`}
     cancelLabel="Cancel"
-    confirmLabel="Deactivate"
-    busyLabel="Deactivating..."
+    confirmLabel="Inactive"
+    busyLabel="Inactivating..."
     busy={deleting}
     error={deleteError}
     iconClassName="bi bi-trash3"
@@ -1405,15 +1414,46 @@ function MerchantEmployeeList({employees,merchantName,onAdd,onRefresh,onEdit}) {
     deleteLock.current = true;
     setDeleteBusy(true);
     try {
-      await deleteEmployee(deleteTarget.employeeId || deleteTarget.id);
+      const fullName = String(deleteTarget.name || deleteTarget.employeeName || "").trim().split(/\s+/);
+      const firstName = String(deleteTarget.firstName || deleteTarget.first_name || fullName[0] || "").trim();
+      const lastName = String(deleteTarget.lastName || deleteTarget.last_name || fullName.slice(1).join(" ") || "").trim();
+      await updateEmployee(deleteTarget.employeeId || deleteTarget.employee_id || deleteTarget.id, {
+        firstName,
+        lastName,
+        email: String(deleteTarget.email || "").trim(),
+        status: "INACTIVE",
+      });
       setDeleteTarget(null);
       await onRefresh?.();
-      setNotice("Employee deleted successfully.");
+      setNotice("Employee Inactivae successfully.");
     } catch (error) {
-      setNotice(error.message || "Unable to delete employee.");
+      setNotice(error.message || "Unable to Inactive employee.");
     } finally {
       deleteLock.current = false;
       setDeleteBusy(false);
+    }
+  }
+  async function activateEmployee(employee) {
+    const employeeId = employee.employeeId || employee.employee_id || employee.id;
+    if (!employeeId) return;
+    const fullName = String(employee.name || employee.employeeName || "").trim().split(/\s+/);
+    const firstName = String(employee.firstName || employee.first_name || fullName[0] || "").trim();
+    const lastName = String(employee.lastName || employee.last_name || fullName.slice(1).join(" ") || "").trim();
+    const email = String(employee.email || "").trim();
+    if (!firstName) {
+      setNotice("Employee first name is required before this employee can be restored.");
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setNotice("A valid employee email is required before this employee can be restored.");
+      return;
+    }
+    try {
+      await updateEmployee(employeeId, { firstName, lastName, email, status: "ACTIVE" });
+      await onRefresh?.();
+      setNotice(`${employeeName(employee)} activated successfully.`);
+    } catch (error) {
+      setNotice(error.message || "Unable to activate employee.");
     }
   }
   const blank={query:''};
@@ -1437,14 +1477,14 @@ function MerchantEmployeeList({employees,merchantName,onAdd,onRefresh,onEdit}) {
 {deleteTarget && (
   <DeleteConfirmationDialog
     isOpen={!!deleteTarget}
-    title="Delete Employee?"
-    message={`Are you sure you want to delete ${employeeName(deleteTarget)}? This action cannot be undone.`}
+    title="Inactive Employee?"
+    message={`Are you sure you want to Inactive ${employeeName(deleteTarget)}?`}
     cancelLabel="Cancel"
-    confirmLabel="Delete"
-    busyLabel="Deleting..."
+    confirmLabel="Inactive"
+    busyLabel="Inactivating..."
     busy={deleteBusy}
     error=""
-    iconClassName="bi bi-trash3"
+    iconClassName="bi bi-person-x"
     onCancel={() => {
       if (!deleteBusy) {
         setDeleteTarget(null);
@@ -1515,7 +1555,9 @@ function MerchantEmployeeList({employees,merchantName,onAdd,onRefresh,onEdit}) {
                 viewLabel={`View ${employeeName(e)}`}
                 onEdit={() => onEdit(e)}
                 editLabel={`Edit ${employeeName(e)}`}
-                onDelete={() => setDeleteTarget(e)}
+                onActivate={String(e.status || "").toUpperCase() !== "ACTIVE" ? () => activateEmployee(e) : undefined}
+                activateLabel={`Activate ${employeeName(e)}`}
+                onDelete={String(e.status || "").toUpperCase() === "ACTIVE" ? () => setDeleteTarget(e) : undefined}
                 deleteLabel={`Delete ${employeeName(e)}`}
                 deleteDisabled={deleteBusy}
             />

@@ -665,7 +665,7 @@ export default function EditEmployee({ employee: employeeProp, onBack: onBackPro
 
       {/* API ERROR BANNER */}
       <EmployeeToast message={notice || apiError} onClose={() => { setNotice(""); setApiError(""); }} />
-      {confirmPhotoDelete && <EmployeeDeleteDialog title="Delete Profile Photo?" description="Are you sure you want to remove this employee’s profile photo?" busy={deletingProfileImage} onCancel={() => setConfirmPhotoDelete(false)} onConfirm={handleDeleteProfileImage} />}
+      {confirmPhotoDelete && <EmployeeDeleteDialog title="Delete Profile Photo?" description="Are you sure you want to Inactivee this employee’s profile photo?" busy={deletingProfileImage} onCancel={() => setConfirmPhotoDelete(false)} onConfirm={handleDeleteProfileImage} />}
 
       {/* FORM */}
       <form id="edit-employee-form" onSubmit={handleSave} autoComplete="off">

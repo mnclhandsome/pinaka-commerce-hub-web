@@ -1121,6 +1121,78 @@ export default function Vendors({
           </label>
 
           {/* =================================================
+              COUNTRY
+          ================================================= */}
+
+          <label>
+            <span>
+              Country <span className="text-red-500">*</span>
+            </span>
+
+            <select
+              name="country"
+              value={form.country}
+              onChange={handleChange}
+              required
+              disabled={saving || viewingId !== null}
+              aria-invalid={Boolean(validationErrors.country)}
+            >
+              <option value="">Select country</option>
+              {locationOptions.countries.map((country) => <option key={country} value={country}>{country}</option>)}
+            </select>
+            {validationErrors.country && <small className="vendors-field-error">Country is required.</small>}
+
+          </label>
+
+          {/* =================================================
+              STATE
+          ================================================= */}
+
+          <label>
+            <span>
+              State <span className="text-red-500">*</span>
+            </span>
+
+            <select
+              name="state"
+              value={form.state}
+              onChange={handleChange}
+              required
+              disabled={saving || viewingId !== null}
+              aria-invalid={Boolean(validationErrors.state)}
+            >
+              <option value="">{form.country ? "Select state or province" : "Select country first"}</option>
+              {locationOptions.states.map((state) => <option key={state} value={state}>{state}</option>)}
+            </select>
+            {validationErrors.state && <small className="vendors-field-error">State is required.</small>}
+
+          </label>
+
+          {/* =================================================
+              CITY
+          ================================================= */}
+
+          <label>
+            <span>
+              City <span className="text-red-500">*</span>
+            </span>
+
+            <input
+              type="text"
+              name="city"
+              value={form.city}
+              onChange={handleChange}
+              placeholder="Enter city"
+              autoComplete="off"
+              required
+              disabled={saving || viewingId !== null}
+              aria-invalid={Boolean(validationErrors.city)}
+            />
+            {validationErrors.city && <small className="vendors-field-error">City is required.</small>}
+
+          </label>
+
+          {/* =================================================
               ADDRESS LINE 1
           ================================================= */}
 
@@ -1170,54 +1242,6 @@ export default function Vendors({
           </label>
 
           {/* =================================================
-              CITY
-          ================================================= */}
-
-          <label>
-            <span>
-              City <span className="text-red-500">*</span>
-            </span>
-
-            <input
-              type="text"
-              name="city"
-              value={form.city}
-              onChange={handleChange}
-              placeholder="Enter city"
-              autoComplete="off"
-              required
-              disabled={saving || viewingId !== null}
-              aria-invalid={Boolean(validationErrors.city)}
-            />
-            {validationErrors.city && <small className="vendors-field-error">City is required.</small>}
-
-          </label>
-
-          {/* =================================================
-              STATE
-          ================================================= */}
-
-          <label>
-            <span>
-              State <span className="text-red-500">*</span>
-            </span>
-
-            <select
-              name="state"
-              value={form.state}
-              onChange={handleChange}
-              required
-              disabled={saving || viewingId !== null}
-              aria-invalid={Boolean(validationErrors.state)}
-            >
-              <option value="">{form.country ? "Select state or province" : "Select country first"}</option>
-              {locationOptions.states.map((state) => <option key={state} value={state}>{state}</option>)}
-            </select>
-            {validationErrors.state && <small className="vendors-field-error">State is required.</small>}
-
-          </label>
-
-          {/* =================================================
               ZIP CODE
           ================================================= */}
 
@@ -1240,30 +1264,6 @@ export default function Vendors({
               aria-invalid={Boolean(validationErrors.zipCode)}
             />
             {validationErrors.zipCode && <small className="vendors-field-error">ZIP Code is required.</small>}
-
-          </label>
-
-          {/* =================================================
-              COUNTRY
-          ================================================= */}
-
-          <label>
-            <span>
-              Country <span className="text-red-500">*</span>
-            </span>
-
-            <select
-              name="country"
-              value={form.country}
-              onChange={handleChange}
-              required
-              disabled={saving || viewingId !== null}
-              aria-invalid={Boolean(validationErrors.country)}
-            >
-              <option value="">Select country</option>
-              {locationOptions.countries.map((country) => <option key={country} value={country}>{country}</option>)}
-            </select>
-            {validationErrors.country && <small className="vendors-field-error">Country is required.</small>}
 
           </label>
 
@@ -1751,16 +1751,16 @@ export default function Vendors({
 
       <DeleteConfirmationDialog
         isOpen={Boolean(deleteTarget)}
-        title="Deactivate Vendor?"
+        title="Inactive Vendor?"
         message={deleteTarget && (
           <>
-            Are you sure you want to deactivate{" "}
+            Are you sure you want to Inactive{" "}
             <strong>{deleteTarget.name}</strong>?
           </>
         )}
         cancelLabel="Cancel"
-        confirmLabel="Deactivate"
-        busyLabel="Deactivating..."
+        confirmLabel="Inactive"
+        busyLabel="Inactivating..."
         busy={deleting}
         error={error}
         onCancel={() => {

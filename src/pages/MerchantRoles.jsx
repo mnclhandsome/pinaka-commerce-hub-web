@@ -70,14 +70,15 @@ export default function MerchantRoles({ merchantId }) {
     setMessage("");
   }
 
-  function selectAll() {
-    setSelected(new Set(templates.map((row) => row.id)));
+  function toggleAll(checked) {
+    setSelected(checked ? new Set(templates.map((row) => row.id)) : new Set());
     setMessage("");
   }
 
-  function clearOptional() {
-    setSelected(new Set());
+  function cancel() {
+    setSelected(new Set(baseline));
     setMessage("");
+    setError("");
   }
 
   async function save() {
@@ -115,22 +116,15 @@ export default function MerchantRoles({ merchantId }) {
               Select which roles apply to this merchant.
             </p>
           </div>
-          <div className="mr-actions">
-            <button type="button" onClick={selectAll} disabled={loading || !templates.length}>
-              Select all
-            </button>
-            <button type="button" onClick={clearOptional} disabled={loading || !templates.length}>
-              Clear optional
-            </button>
-            <button
-              type="button"
-              className="mr-primary"
-              onClick={save}
-              disabled={loading || saving || !dirty}
-            >
-              {saving ? "Saving…" : "Save roles"}
-            </button>
-          </div>
+          <label className="mr-select-all">
+            <input
+              type="checkbox"
+              checked={templates.length > 0 && templates.every((row) => selected.has(row.id))}
+              disabled={loading || saving || !templates.length}
+              onChange={(event) => toggleAll(event.target.checked)}
+            />
+            <span>Select all</span>
+          </label>
         </div>
 
         {loading && <p role="status">Loading role templates…</p>}
@@ -194,6 +188,14 @@ export default function MerchantRoles({ merchantId }) {
             })}
           </ul>
         )}
+        <div className="mr-footer-actions">
+          <button type="button" onClick={cancel} disabled={loading || saving || !dirty}>
+            Cancel
+          </button>
+          <button type="button" className="mr-primary" onClick={save} disabled={loading || saving || !dirty}>
+            {saving ? "Saving..." : "Save roles"}
+          </button>
+        </div>
       </div>
     </section>
   );

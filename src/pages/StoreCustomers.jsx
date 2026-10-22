@@ -562,18 +562,6 @@ function CustomerRow({ customer, onView }) {
       <td>
 
         <div className="store-customer-info">
-
-          <div className="store-customer-avatar">
-            {customer.profilePhoto ? (
-              <img
-                src={customer.profilePhoto}
-                alt={displayName}
-              />
-            ) : (
-              initials
-            )}
-          </div>
-
           <div>
             <strong>
               {displayName}

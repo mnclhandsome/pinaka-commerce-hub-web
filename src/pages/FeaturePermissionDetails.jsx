@@ -435,6 +435,7 @@ const confirmDeletePermission = async () => {
       setCurrentPage(1);
     }}
     itemLabel="permissions"
+    showWhenEmpty="true"
   />
 </div>
       </section>
