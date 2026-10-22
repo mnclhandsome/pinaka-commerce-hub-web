@@ -1459,6 +1459,15 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
   useEffect(() => {
     if (storeTypeRoleIds === null || storeTypeRolesLoading || !activeStoreTypeId) return;
     setRoles((current) => {
+      if (!editing && current.length === 0 && roleDefinitions.length > 0) {
+        const defaultRoles = roleDefinitions
+          .filter((role) => roleTemplateKeys(role).some((key) => storeTypeRoleIds.has(key)))
+          .map((role) => role.id);
+        if (defaultRoles.length > 0) {
+          setActiveRole((act) => act || defaultRoles[0]);
+          return defaultRoles;
+        }
+      }
       const allowed = current.flatMap((roleId) => {
         const role = roleDefinitions.find(
           (item) =>
@@ -1481,7 +1490,7 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
       }
       return unique;
     });
-  }, [storeTypeRoleIds, storeTypeRolesLoading, activeStoreTypeId, roleDefinitions, savedRoleKeys]);
+  }, [storeTypeRoleIds, storeTypeRolesLoading, activeStoreTypeId, roleDefinitions, savedRoleKeys, editing]);
 
   // Load Store-Type Features
   useEffect(() => {
