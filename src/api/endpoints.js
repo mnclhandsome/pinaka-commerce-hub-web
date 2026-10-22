@@ -75,6 +75,7 @@ export const endpoints = {
   features: "/features",
   feature: (id) => `/features/${id}`,
   permissions: "/permissions",
+  menuPermissions: "/menu-permissions",
   permission: (id) => `/permissions/${id}`,
   plans: "/plans",
   plansMerchantForm: "/plans/merchant-form",

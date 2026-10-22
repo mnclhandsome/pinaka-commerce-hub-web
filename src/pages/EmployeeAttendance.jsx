@@ -835,7 +835,7 @@ export default function EmployeeAttendance({
                     </td>
 
                     <td>
-                      <ListActions
+                      <ListActions resource="attendance"
                         onView={() => handleView(row)}
                         viewLabel={`View ${row.name} attendance`}
                       />

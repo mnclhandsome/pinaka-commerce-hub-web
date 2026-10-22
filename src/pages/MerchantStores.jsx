@@ -449,7 +449,7 @@ export default function MerchantStores({
 
                           {/* ACTIONS */}
                           <td>
-                            <ListActions
+                            <ListActions resource="stores"
                               onEdit={() => handleEdit(store)}
                               editLabel={`Edit ${storeName}`}
                               onActivate={

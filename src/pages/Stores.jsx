@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { activateStore, deactivateStore, listStores } from "../api/stores";
 import Pagination from "../components/Pagination";
 import ListActions from "../components/ListActions";
+import Can from "../components/Can";
 import FiltersBar from "../components/FiltersBar";
 import DeleteConfirmationDialog from "../components/DeleteConfirmationDialog";
 import { getStoreDeviceMappings } from "../api/storeDeviceMappings";
@@ -268,9 +269,11 @@ useEffect(() => {
           <p>Manage and monitor all stores connected to Pinaka Commerce Hub</p>
         </div>
         <div className="page-actions">
+          <Can resource="stores" action="create">
           <button className="add-store-btn btn-primary" onClick={() => nav("/stores/new")}>
             <i className="bi bi-plus-lg" /> Add Store
           </button>
+          </Can>
           <button
             className="add-store-btn btn-secondary"
             type="button"
@@ -497,7 +500,7 @@ useEffect(() => {
                       );
                     })}
                     <td>
-                      <ListActions
+                      <ListActions resource="stores"
                          onView={() => openView(s)}
                          onEdit={() =>
                              nav(`/stores/${encodeURIComponent(s.id)}/edit`)}

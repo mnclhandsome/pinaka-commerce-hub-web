@@ -4,6 +4,14 @@ import {
   logout as logoutRequest,
   refreshSession,
 } from "../api/auth";
+import { getMenuPermissions } from "../api/menuPermissionsApi";
+import {
+  defaultGrants,
+  grantAllows,
+  grantsFromResponse,
+  grantsToSet,
+  principalFromUser,
+} from "./access";
 import {
   clearSession,
   getAccessToken,
@@ -14,12 +22,57 @@ import {
 
 const AuthContext = createContext(null);
 
+function buildAccess(user, ready) {
+  const principal = principalFromUser(user);
+  return {
+    ready,
+    locked: principal.locked,
+    configured: false,
+    principalRole: principal.principalRole,
+    grants: grantsToSet(defaultGrants(principal.principalRole)),
+  };
+}
+
+async function loadAccess(user) {
+  const principal = principalFromUser(user);
+  if (!user || principal.locked) {
+    return {
+      ready: true,
+      locked: true,
+      configured: true,
+      principalRole: principal.principalRole,
+      grants: grantsToSet(defaultGrants("SUPER_ADMIN")),
+    };
+  }
+
+  try {
+    const response = await getMenuPermissions(principal.principalRole, principal.roleTemplateId);
+    const grants = grantsFromResponse(response, principal.principalRole);
+    return {
+      ready: true,
+      locked: false,
+      configured: Boolean(response?.configured),
+      principalRole: principal.principalRole,
+      grants: grantsToSet(grants),
+    };
+  } catch {
+    return {
+      ready: true,
+      locked: false,
+      configured: false,
+      principalRole: principal.principalRole,
+      grants: grantsToSet(defaultGrants(principal.principalRole)),
+    };
+  }
+}
+
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(() => getStoredUser());
   const [isReady, setIsReady] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(
     () => Boolean(getAccessToken() || getStoredUser())
   );
+  const [access, setAccess] = useState(() => buildAccess(getStoredUser(), false));
 
   useEffect(() => {
     let cancelled = false;
@@ -38,12 +91,14 @@ export function AuthProvider({ children }) {
           const nextUser = getStoredUser();
           setUser(nextUser);
           setIsAuthenticated(Boolean(getAccessToken() || nextUser));
+          setAccess(await loadAccess(nextUser));
         }
       } catch {
         if (!cancelled) {
           clearSession();
           setUser(null);
           setIsAuthenticated(false);
+          setAccess(buildAccess(null, true));
         }
       } finally {
         if (!cancelled) setIsReady(true);
@@ -64,9 +119,12 @@ export function AuthProvider({ children }) {
           clearSession();
           setUser(null);
           setIsAuthenticated(false);
+          setAccess(buildAccess(null, true));
         } else {
-          setUser(getStoredUser());
+          const nextUser = getStoredUser();
+          setUser(nextUser);
           setIsAuthenticated(true);
+          loadAccess(nextUser).then(setAccess);
         }
       }
     }
@@ -82,12 +140,22 @@ export function AuthProvider({ children }) {
       user,
       isReady,
       isAuthenticated,
+      accessReady: access.ready,
+      can(resource, action = "view") {
+        if (!resource) return true;
+        if (access.locked || !access.ready) return true;
+        if (!access.configured) {
+          return grantAllows(grantsToSet(defaultGrants(access.principalRole)), resource, action);
+        }
+        return grantAllows(access.grants, resource, action);
+      },
       async login(email, password, remember = false) {
         setRememberMe(remember);
         const data = await loginRequest(email, password, remember);
         const nextUser = data.user || getStoredUser() || { email };
         setUser(nextUser);
         setIsAuthenticated(true);
+        setAccess(await loadAccess(nextUser));
         return data;
       },
       async logout() {
@@ -96,10 +164,11 @@ export function AuthProvider({ children }) {
         } finally {
           setUser(null);
           setIsAuthenticated(false);
+          setAccess(buildAccess(null, true));
         }
       },
     }),
-    [user, isReady, isAuthenticated]
+    [user, isReady, isAuthenticated, access]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

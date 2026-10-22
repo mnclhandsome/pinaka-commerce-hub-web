@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import Pagination from "../components/Pagination";
 import DeleteConfirmationDialog from "../components/DeleteConfirmationDialog";
 import ListActions from "../components/ListActions";
+import { useActionAllowed } from "../components/Can";
 
 import {
   roleTemplatesApi,
@@ -59,6 +60,7 @@ export default function RoleTemplates() {
   const [form, setForm] = useState(initialForm);
  
   const [editingId, setEditingId] = useState(null);
+  const allowSave = useActionAllowed("role-templates", editingId !== null);
   const [originalForm, setOriginalForm] = useState(null);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
@@ -560,7 +562,7 @@ async function confirmDeleteTemplate() {
               type="button"
               className="role-template-submit-button"
               onClick={saveTemplate}
-              disabled={saving || !canSubmit}
+              disabled={saving || !canSubmit || !allowSave}
             >
               {saving
                 ? "Saving..."
@@ -738,7 +740,7 @@ async function confirmDeleteTemplate() {
                     </td>
  
                     <td className="role-actions role-equal-col">
-                      <ListActions
+                      <ListActions resource="role-templates"
                         onEdit={(event) => { event.stopPropagation(); editTemplate(template); }}
                         onDelete={(event) => { event.stopPropagation(); openDeletePopup(template); }}
                         editLabel={`Edit ${template.name || template.roleCode}`}

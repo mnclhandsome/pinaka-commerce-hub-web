@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import Pagination from "../components/Pagination";
 import DeleteConfirmationDialog from "../components/DeleteConfirmationDialog";
 import ListActions from "../components/ListActions";
+import { useActionAllowed } from "../components/Can";
 import { storeTypesApi } from "../api/storeTypes";
 
 function getStoreTypesForScreen() {
@@ -137,6 +138,7 @@ export default function CreateStoreType() {
   const [sortBy, setSortBy] = useState("newest");
 
   const [editingId, setEditingId] = useState(null);
+  const allowSave = useActionAllowed("store-types", editingId !== null);
 
   const [deleteTarget, setDeleteTarget] = useState(null);
 
@@ -777,6 +779,8 @@ const paginatedStoreTypes = filteredStoreTypes.slice(
 
               saving ||
 
+              !allowSave ||
+
               !canSubmitStoreType ||
 
               (editingId !== null && !hasChanges)
@@ -954,7 +958,7 @@ const paginatedStoreTypes = filteredStoreTypes.slice(
                 </div>
 
                 <div>
-                  <ListActions
+                  <ListActions resource="store-types"
                     onEdit={(event) => { event.stopPropagation(); editStoreType(item); }}
                     onDelete={(event) => { event.stopPropagation(); setDeleteError(""); setDeleteTarget(item); }}
                     editLabel={`Edit ${item.name}`}

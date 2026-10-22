@@ -473,7 +473,7 @@ export default function Discounts({ embedded = false, storeId: storeIdProp }) {
                   <td>{formatSystemDate(discount.date_starts)}</td>
                   <td>{formatSystemDate(discount.date_expires)}</td>
                   <td className="coupon-row-actions">
-                    <ListActions
+                    <ListActions resource="pos-configuration"
                       onEdit={() => openEdit(discount)}
                       onDelete={() => { setDeleteError(""); setDeleteTarget(discount); }}
                       editLabel={`Edit ${discount.code}`}

@@ -4,6 +4,7 @@ import { storeTypesApi } from "../api/storeTypes";
 import Pagination from "../components/Pagination";
 import DeleteConfirmationDialog from "../components/DeleteConfirmationDialog";
 import ListActions from "../components/ListActions";
+import { useActionAllowed } from "../components/Can";
 import { tendorsApi } from "../api/tendors";
 import { useNavigate } from "react-router-dom";
 
@@ -162,6 +163,7 @@ const [currentPage, setCurrentPage] = useState(1);
   const [fieldErrors, setFieldErrors] = useState({});
   const [originalForm, setOriginalForm] = useState(null);
   const [editingId, setEditingId] = useState(null);
+  const allowSave = useActionAllowed("tenders", editingId !== null);
   const [deletingId, setDeletingId] = useState(null);
 
   const [search, setSearch] = useState("");
@@ -541,7 +543,7 @@ async function confirmDeleteTender() {
           <button
             type="submit"
             className="tenders-save-button"
-            disabled={saving || !tenderCanSave}
+            disabled={saving || !tenderCanSave || !allowSave}
           >
             {saving
               ? "Saving..."
@@ -686,7 +688,7 @@ async function confirmDeleteTender() {
                     </td>
 
                     <td>
-                      <ListActions
+                      <ListActions resource="tenders"
                         onEdit={(event) => { event.stopPropagation(); editTender(tender); }}
                         onDelete={(event) => { event.stopPropagation(); requestDeleteTender(tender); }}
                         editLabel={`Edit ${tender.name}`}

@@ -48,6 +48,7 @@ import FeatureOverview from "./pages/FeatureOverview";
 import FeatureStoreTypes from "./pages/FeatureStoreTypes";
 import FeaturePermissionDetails from "./pages/FeaturePermissionDetails";
 import RoleTemplates from "./pages/Roletemplates";
+import MenuPermissions from "./pages/MenuPermissions";
 import Vendors from "./pages/Vendors";
 import Tenders from "./pages/Tenders";
 import TenderDetails from "./pages/TenderDetails";
@@ -321,6 +322,7 @@ export default function App() {
         <Route path="/tenders" element={<Tenders />} />
         <Route path="/tenders/:tenderId" element={<TenderDetails />} />
         <Route path="/role-templates" element={<RoleTemplates />} />
+        <Route path="/menu-permissions" element={<MenuPermissions />} />
         <Route path="/plans/new" element={<CreatePlan />} />
         <Route path="/store-types" element={<CreateStoreType />} />
         <Route path="/store-types/new" element={<CreateStoreType />} />

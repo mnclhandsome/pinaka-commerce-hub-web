@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import Pagination from "../components/Pagination";
 import DeleteConfirmationDialog from "../components/DeleteConfirmationDialog";
 import ListActions from "../components/ListActions";
+import { useActionAllowed } from "../components/Can";
 import { storeTypesApi } from "../api/storeTypes";
 import { createPlan, deletePlan, listPlans, updatePlan } from "../api/plans";
 
@@ -168,6 +169,7 @@ export default function CreatePlan() {
   const [form, setForm] = useState(emptyForm);
   const [planStep, setPlanStep] = useState(1);
   const [editingId, setEditingId] = useState(null);
+  const allowSave = useActionAllowed("plans", editingId !== null);
   const [includedFeatures, setIncludedFeatures] = useState([]);
 
   const [pendingIncludedFeatureNames, setPendingIncludedFeatureNames] =
@@ -1256,7 +1258,7 @@ export default function CreatePlan() {
             <button
               type="button"
               className="plan-submit-button"
-              disabled={savingPlan}
+              disabled={savingPlan || !allowSave}
               onClick={createOrUpdatePlan}
             >
               {savingPlan
@@ -1437,7 +1439,7 @@ export default function CreatePlan() {
                   })()}
 
                   <div className="plan-actions-cell" data-no-tooltip="true">
-                    <ListActions
+                    <ListActions resource="plans"
                       onEdit={(event) => {
                         event.stopPropagation();
                         editPlan(plan);

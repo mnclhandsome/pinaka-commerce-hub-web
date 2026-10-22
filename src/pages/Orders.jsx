@@ -376,7 +376,7 @@ export default function Orders({
                       </td>
                       <td><strong className="order-total">{order.total}</strong></td>
                       <td className="orders-actions-cell">
-                        <ListActions
+                        <ListActions resource="orders"
                           onView={() => handleViewOrder(order)}
                           viewLabel={`View order ${order.wooOrderId}`}
                         />

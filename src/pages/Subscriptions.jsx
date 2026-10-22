@@ -3,6 +3,7 @@ import { useMemo, useState, useEffect } from "react";
 import { listMerchants } from "../api/merchants";
 import Pagination from "../components/Pagination";
 import ListActions from "../components/ListActions";
+import Can from "../components/Can";
 import FiltersBar from "../components/FiltersBar";
 import {
 
@@ -716,6 +717,7 @@ const handleDateRangeChange = (value) => {
           }}
         >
 
+ <Can resource="subscriptions" action="create">
  <button
             type="button"
             className="flow-button primary"
@@ -726,6 +728,7 @@ const handleDateRangeChange = (value) => {
              <i className="bi bi-plus-lg" />
             Add Subscription
           </button>
+          </Can>
 
           <button
             className="flow-button secondary"
@@ -1069,7 +1072,7 @@ const handleDateRangeChange = (value) => {
                       </td>
 
                       <td onClick={(e) => e.stopPropagation()}>
-    <ListActions
+    <ListActions resource="subscriptions"
         onView={() => onView(item)}
         viewLabel={`View ${item.merchant || "Subscription"}`}
     />

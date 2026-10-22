@@ -367,7 +367,7 @@ async function confirmDeleteRole() {
         <div>{role.scope}</div>
 
         <div>
-          <ListActions
+          <ListActions resource="role-templates"
             onDelete={() => { setDeleteError(""); setDeleteTarget(role); }}
             deleteLabel={`Remove ${role.name} assignment`}
             deleteButtonClassName="role-template-delete-button"

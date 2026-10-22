@@ -963,7 +963,7 @@ useEffect(() => {
                                                 ================================================= */}
 
                                                 <td>
-                                                    <ListActions
+                                                    <ListActions resource="vendors"
                                                         onView={() => setModal({ type: "view", vendor })}
                                                         viewLabel={`View ${vendor.name}`}
                                                         onDelete={() => {

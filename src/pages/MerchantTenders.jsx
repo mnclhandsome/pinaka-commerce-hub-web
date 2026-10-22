@@ -626,7 +626,7 @@ export default function MerchantTenders({
                         <td>{badge(tender)}</td>
 
                         <td>
-                          <ListActions
+                          <ListActions resource="tenders"
                             onView={() => setModal({ type: "view", tender })}
                             viewLabel={`View ${tender.name}`}
                             onDelete={() => {

@@ -275,7 +275,7 @@ export function DeviceMapping({ onBack }) {
         onClear={() => { setMappedSearch(""); setMappedTypeFilter("all"); setMappedStatusFilter("all"); setMappedPage(1); }}
       />
       <div className="mv-scroll"><table><thead><tr><th>Device Code</th><th>Device ID</th><th>Device Name</th><th>Serial Number</th><th>Device Type</th><th>Actions</th></tr></thead><tbody>
-        {mappedRows.map((device) => <tr key={device.deviceId}><td>{device.code || "—"}</td><td>{device.deviceIdentifier || "—"}</td><td><strong>{device.name || "—"}</strong></td><td>{device.serial || "—"}</td><td>{device.type || "—"}</td><td><ListActions onDelete={() => removeMapping(device)} deleteLabel={`Remove ${device.name || "device"} from this store`} deleteDisabled={deletingMappingId === String(device.deviceId)} /></td></tr>)}
+        {mappedRows.map((device) => <tr key={device.deviceId}><td>{device.code || "—"}</td><td>{device.deviceIdentifier || "—"}</td><td><strong>{device.name || "—"}</strong></td><td>{device.serial || "—"}</td><td>{device.type || "—"}</td><td><ListActions resource="devices" onDelete={() => removeMapping(device)} deleteLabel={`Remove ${device.name || "device"} from this store`} deleteDisabled={deletingMappingId === String(device.deviceId)} /></td></tr>)}
         {!mappedRows.length && <tr><td colSpan="7">No mapped devices match. Use Add Existing Device to select from merchant devices.</td></tr>}
       </tbody></table></div>
       <Pagination currentPage={mappedPage} totalPages={mappedPageCount} totalItems={filteredMappings.length}

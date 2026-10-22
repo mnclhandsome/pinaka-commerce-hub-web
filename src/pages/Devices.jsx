@@ -13,6 +13,7 @@ import "../styles/devices.css";
 import { devicesApi } from "../api/devices";
 import Pagination from "../components/Pagination";
 import ListActions from "../components/ListActions";
+import Can from "../components/Can";
 import FiltersBar from "../components/FiltersBar";
 import DeleteConfirmationDialog from "../components/DeleteConfirmationDialog";
  
@@ -278,6 +279,7 @@ export default function Devices() {
  
           {" "}
  
+          <Can resource="devices" action="create">
           <button
  
             type="button"
@@ -292,7 +294,8 @@ export default function Devices() {
  
             <span>+</span> Add Device{" "}
  
-          </button>{" "}
+          </button>
+          </Can>{" "}
  
           <button type="button" className="devices-export-btn">
  
@@ -741,7 +744,7 @@ function DeviceRow({
 
       {/* ACTIONS */}
       <td onClick={(event) => event.stopPropagation()}>
-        <ListActions
+        <ListActions resource="devices"
           onView={onView}
           onEdit={onEdit}
           onDelete={onDelete}

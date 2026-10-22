@@ -1,6 +1,7 @@
 import { listStores } from "../api/stores";
 import { pendingStoreRead } from "../api/http";
 import { EmployeeToast } from "../components/EmployeeFeedback";
+import Can from "../components/Can";
 import React, { useEffect, useMemo, useState } from "react";
 import { listEmployees } from "../api/employees";
 import Pagination from "../components/Pagination";
@@ -421,6 +422,7 @@ const handlePageSizeChange = (size) => {
           </p>
         </div>
         <div className="employees-header-actions">
+          <Can resource="employees" action="create">
           <button
             className="employees-add-btn"
             onClick={() => navigate("/employees/add")}
@@ -428,6 +430,7 @@ const handlePageSizeChange = (size) => {
             <Plus size={18} />
             Add Employee
           </button>
+          </Can>
           <button
             className="employees-export-btn"
             onClick={() => console.log("Export clicked")}
@@ -665,7 +668,7 @@ const handlePageSizeChange = (size) => {
 
                     {/* ACTIONS */}
                     <td>
-                      <ListActions
+                      <ListActions resource="employees"
                           onView={() => openView(employee)}
                           viewLabel={`View ${employee.name}`}
                           onEdit={() =>

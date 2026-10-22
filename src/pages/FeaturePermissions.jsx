@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import Pagination from "../components/Pagination";
 import DeleteConfirmationDialog from "../components/DeleteConfirmationDialog";
 import ListActions from "../components/ListActions";
+import { useActionAllowed } from "../components/Can";
 import { listFeatures } from "../api/features";
 import {
   listFeaturePermissions,
@@ -118,6 +119,7 @@ export default function FeaturePermissions() {
 
   const [editingId, setEditingId] =
     useState(null);
+  const allowSave = useActionAllowed("feature-permissions", editingId !== null);
 
   
 const [permissionToDelete, setPermissionToDelete,] = useState(null);
@@ -1367,7 +1369,7 @@ const paginatedPermissions = filteredPermissions.slice(
     <button
       type="submit"
       className="fp-btn fp-btn-primary"
-      disabled={!canSubmit}
+      disabled={!canSubmit || !allowSave}
     >
       {isEditing
         ? "Update Permission"
@@ -1664,7 +1666,7 @@ const paginatedPermissions = filteredPermissions.slice(
 
                     <td>
                       <div className="fp-row-actions">
-                        <ListActions
+                        <ListActions resource="feature-permissions"
                           onEdit={(event) => { event.stopPropagation(); editPermission(permission); }}
                           onDelete={(event) => { event.stopPropagation(); openDeleteConfirmation(permission); }}
                           editLabel={`Edit ${permission.name}`}

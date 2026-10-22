@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import Pagination from "../components/Pagination";
 import DeleteConfirmationDialog from "../components/DeleteConfirmationDialog";
 import ListActions from "../components/ListActions";
+import { useActionAllowed } from "../components/Can";
 import "../styles/features.css";
 import { listFeatures, createFeature as createFeatureApi, updateFeature as updateFeatureApi, deleteFeature as deleteFeatureApi } from "../api/features";
 
@@ -67,6 +68,7 @@ export default function Features() {
   const [itemsPerPage, setItemsPerPage] = useState(5);
 
   const isEditing = editingId !== null;
+  const allowSave = useActionAllowed("features", isEditing);
   const editingFeature = features.find((item) => item.id === editingId);
 
   const categoryOptions = useMemo(() => {
@@ -454,7 +456,7 @@ const confirmDeleteFeature = async () => {
               className="feature-action primary"
               type="button"
               onClick={isEditing ? updateFeature : saveFeature}
-              disabled={!canSubmitFeature}
+              disabled={!canSubmitFeature || !allowSave}
             >
               {isEditing ? "Update Feature" : "Add Feature"}
             </button>
@@ -603,7 +605,7 @@ const confirmDeleteFeature = async () => {
                     })()}
                   </td>
                   <td className="actions-col">
-                      <ListActions
+                      <ListActions resource="features"
                         onEdit={(event) => { event.stopPropagation(); editFeature(item); }}
                         onDelete={(event) => { event.stopPropagation(); setDeleteError(""); setDeleteTarget(item); }}
                         editLabel={`Edit ${item.name}`}

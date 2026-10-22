@@ -4,6 +4,7 @@ import FiltersBar from "../components/FiltersBar";
 import { Download } from "lucide-react";
 import DeleteConfirmationDialog from "../components/DeleteConfirmationDialog";
 import ListActions from "../components/ListActions";
+import Can from "../components/Can";
 import { useLocationOptions } from "../data/useLocationOptions";
 import { getVendor, getVendors, createVendor, updateVendor, deleteVendor as deleteVendorApi, } from "../api/vendors";
 
@@ -1407,7 +1408,9 @@ export default function Vendors({
           </p>
         </div>
         <div className="vendors-header-actions">
+          <Can resource="vendors" action="create">
           <button type="button" className="vendors-primary-button" onClick={() => { resetForm(); setShowForm(true); }}><i className="bi bi-plus-lg" /> Add Vendor</button>
+          </Can>
           <button type="button" className="vendors-export-button" onClick={exportVendors}><Download size={18} aria-hidden="true" /> Export</button>
         </div>
       </div>
@@ -1674,7 +1677,7 @@ export default function Vendors({
                       {/* ACTIONS */}
 
                       <td>
-                        <ListActions
+                        <ListActions resource="vendors"
                           onView={() => viewVendor(vendor)}
                           onEdit={() => editVendor(vendor)}
                           onDelete={() => confirmDelete(vendor)}

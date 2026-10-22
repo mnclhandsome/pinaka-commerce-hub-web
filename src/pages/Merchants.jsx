@@ -27,6 +27,7 @@ import { storeListFromResponse, normalizeStore } from "../api/stores";
 import { getStoreDeviceMappings } from "../api/storeDeviceMappings";
 import Pagination from "../components/Pagination";
 import ListActions from "../components/ListActions";
+import Can from "../components/Can";
 import FiltersBar from "../components/FiltersBar";
 import DeleteConfirmationDialog from "../components/DeleteConfirmationDialog";
 import BentoDetailModal from "../components/BentoDetailModal";
@@ -1055,12 +1056,14 @@ const [statusFilter, setStatusFilter] = useState("");
              Manage merchant accounts, subscriptions, stores, and business details. </p>
         </div>
         <div className="page-actions">
+          <Can resource="merchants" action="create">
           <button
             className="btn btn-primary"
             type="button" onClick={() => nav("/merchants/new")}
           >
             <i className="bi bi-plus-lg" /> Add Merchant
           </button>
+          </Can>
           <button
             className="btn btn-secondary"
             onClick={() => exportMerchants(rows)}
@@ -1332,7 +1335,7 @@ const [statusFilter, setStatusFilter] = useState("");
                     <td>{merchantTimestamp(m.createdAt || m.created_at || m.createdDate || m._raw?.merchant?.created_at || m.joined)}</td>
                     <td>{merchantTimestamp(m.updatedAt || m.updated_at || m.updatedDate || m._raw?.merchant?.updated_at)}</td>
                     <td>
-    <ListActions
+    <ListActions resource="merchants"
         onView={() => openView(m)}
         onEdit={() => openEdit(m)}
         onActivate={
@@ -1507,7 +1510,7 @@ function MerchantEmployeeList({employees,merchantName,onAdd,onRefresh,onEdit}) {
         <td><span className={"employee-status " + (String(e.status || 'INACTIVE').toUpperCase() === 'ACTIVE' ? 'active' : 'inactive')}>{String(e.status || 'INACTIVE').toUpperCase() === 'ACTIVE' ? 'Active' : 'Inactive'}</span></td>
 
         <td>
-            <ListActions
+            <ListActions resource="employees"
                 onView={(event) => {
                     lastFocus.current = event.currentTarget;
                     setView(e);
@@ -1833,7 +1836,7 @@ return (
                       </span>
                     </td>
                     <td>
-                      <ListActions
+                      <ListActions resource="devices"
                         viewLabel={'View ' + d.name}
                         onView={(e) => {
                           lastFocus.current = e.currentTarget;

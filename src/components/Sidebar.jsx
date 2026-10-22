@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
+import { useAuth } from "../auth/AuthContext";
+import { resourceForPath } from "../navigation/menuCatalog";
 
 const sections = [
   {
@@ -32,6 +34,7 @@ const sections = [
           ["/tenders", "bi-cash-coin", "Tenders"],
         ],
       ],
+      ["/menu-permissions", "bi-list-check", "Menu Permissions"],
     ],
   },
   {
@@ -65,7 +68,28 @@ export default function Sidebar({
   setMobileOpen,
 }) {
   const location = useLocation();
+  const { can, accessReady } = useAuth();
   const originPath = location.state?.from?.split("?")[0] || "";
+
+  function allowedPath(path) {
+    if (!accessReady) return true;
+    const resource = resourceForPath(path);
+    return !resource || can(resource, "view");
+  }
+
+  const visibleSections = sections
+    .map((section) => ({
+      ...section,
+      items: section.items
+        .map((item) => {
+          if (item[4]) {
+            return [item[0], item[1], item[2], item[3], item[4].filter((subItem) => allowedPath(subItem[0]))];
+          }
+          return item;
+        })
+        .filter((item) => (item[4] ? item[4].length > 0 : allowedPath(item[0]))),
+    }))
+    .filter((section) => section.items.length > 0);
 
   function isContextActive(path, isRouteActive) {
     // Order details are routed through /orders/:id even when opened from an
@@ -84,6 +108,7 @@ export default function Sidebar({
     location.pathname.startsWith("/features") ||
     location.pathname.startsWith("/permissions") ||
     location.pathname.startsWith("/role-templates") ||
+    location.pathname.startsWith("/menu-permissions") ||
     location.pathname.startsWith("/plans") ||
     location.pathname.startsWith("/vendors") ||
     location.pathname.startsWith("/tenders");
@@ -115,7 +140,7 @@ export default function Sidebar({
       </div>
 
       <nav className="sidebar-menu">
-        {sections.map((section, sectionIndex) => (
+        {visibleSections.map((section, sectionIndex) => (
           <div key={`${section.title}-${sectionIndex}`}>
             {section.title && !collapsed && (
               <div className="menu-section">{section.title}</div>
@@ -200,6 +225,10 @@ className={({ isActive }) => {
     active =
       pathname === "/role-templates" ||
       pathname.startsWith("/role-templates/");
+  }
+
+  if (subTo === "/menu-permissions") {
+    active = pathname.startsWith("/menu-permissions");
   }
 
   // Plans

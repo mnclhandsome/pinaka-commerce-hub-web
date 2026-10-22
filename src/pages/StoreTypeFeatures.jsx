@@ -491,7 +491,7 @@ async function confirmDeleteFeature() {
         <div className="store-features-name">{feature.name}</div>
         <div>{feature.category}</div>
         <div>
-          <ListActions
+          <ListActions resource="features"
             onDelete={() => { setDeleteError(""); setDeleteTarget(feature); }}
             deleteLabel={`Remove ${feature.name} assignment`}
             deleteButtonClassName="feature-delete-button"

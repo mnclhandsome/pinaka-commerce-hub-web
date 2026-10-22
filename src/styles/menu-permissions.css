@@ -1,0 +1,316 @@
+.menu-permissions-page {
+  flex: 1;
+  min-height: calc(100vh - 72px);
+  padding: 18px 28px 30px;
+  box-sizing: border-box;
+  color: #10264d;
+  background: #f6f7fb;
+}
+
+.menu-permissions-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.menu-permissions-heading h1 {
+  margin: 0 0 6px;
+  color: #10254a;
+  font-size: 20px;
+  font-weight: 650;
+}
+
+.menu-permissions-heading p {
+  margin: 0;
+  max-width: 720px;
+  color: #5b79ad;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.menu-permissions-count {
+  flex: 0 0 auto;
+  height: 28px;
+  padding: 0 12px;
+  border: 1px solid #d5e2f2;
+  border-radius: 15px;
+  background: #fff;
+  color: #31598d;
+  font-size: 12px;
+  font-weight: 650;
+  line-height: 28px;
+}
+
+.menu-permissions-layout {
+  display: grid;
+  grid-template-columns: 280px minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.menu-permissions-roles,
+.menu-permissions-editor {
+  border: 1px solid #e0eaf5;
+  border-radius: 11px;
+  background: #fff;
+  box-shadow: 0 3px 12px rgba(21, 67, 129, 0.04);
+}
+
+.menu-permissions-roles {
+  padding: 16px 12px;
+}
+
+.menu-permissions-group {
+  margin: 14px 8px 0;
+  color: #5b79ad;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.menu-permissions-roles h2,
+.menu-permissions-toolbar h2 {
+  margin: 0;
+  color: #173861;
+  font-size: 14px;
+}
+
+.menu-permissions-roles ul {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.menu-permissions-roles button {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+
+.menu-permissions-roles button strong,
+.menu-permissions-grid strong {
+  display: block;
+  color: #173861;
+  font-size: 13px;
+}
+
+.menu-permissions-roles button small,
+.menu-permissions-grid small,
+.menu-permissions-toolbar p,
+.menu-permissions-note {
+  color: #6380ae;
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.menu-permissions-roles button.active {
+  border-color: #c9d4ff;
+  background: #f5f4ff;
+}
+
+.menu-permissions-editor {
+  padding: 18px 18px 16px;
+}
+
+.menu-permissions-toolbar,
+.menu-permissions-section-head,
+.menu-permissions-footer,
+.menu-permissions-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.menu-permissions-toolbar p {
+  margin: 4px 0 0;
+}
+
+.menu-permissions-actions,
+.menu-permissions-footer,
+.menu-permissions-section-head {
+  gap: 8px;
+}
+
+.menu-permissions-actions button,
+.menu-permissions-section-head button,
+.menu-permissions-footer button {
+  height: 32px;
+  padding: 0 12px;
+  border: 1px solid #d5e2f2;
+  border-radius: 7px;
+  background: #fff;
+  color: #31598d;
+  font-size: 12px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.menu-permissions-actions button:disabled,
+.menu-permissions-section-head button:disabled,
+.menu-permissions-footer button:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.menu-permissions-footer button.primary {
+  border-color: #5b4ce0;
+  background: #5b4ce0;
+  color: #fff;
+}
+
+.menu-permissions-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 14px 0;
+  padding: 0 12px;
+  height: 38px;
+  border: 1px solid #dce8f5;
+  border-radius: 8px;
+  color: #6380ae;
+}
+
+.menu-permissions-search input {
+  flex: 1;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: #173861;
+  font-size: 13px;
+}
+
+.menu-permissions-error,
+.menu-permissions-success,
+.menu-permissions-note {
+  margin: 0 0 12px;
+}
+
+.menu-permissions-error {
+  color: #b42318;
+  font-size: 13px;
+}
+
+.menu-permissions-success {
+  color: #067647;
+  font-size: 13px;
+}
+
+.menu-permissions-section {
+  margin-bottom: 16px;
+}
+
+.menu-permissions-section-head {
+  margin-bottom: 8px;
+}
+
+.menu-permissions-section-head h3 {
+  margin: 0;
+  color: #5b79ad;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+}
+
+.menu-permissions-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.menu-permission-card {
+  border: 1px solid #dce8f5;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.menu-permission-card.selected {
+  border-color: #a9baff;
+  background: #f5f4ff;
+}
+
+.menu-permission-card > label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 58px;
+  padding: 8px 10px;
+  cursor: pointer;
+}
+
+.menu-permission-action-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  padding: 0 10px 10px 36px;
+}
+
+.menu-permission-action-row label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #31598d;
+  font-size: 11px;
+  font-weight: 650;
+}
+
+.menu-permissions-grid label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 58px;
+  padding: 8px 10px;
+  border: 1px solid #dce8f5;
+  border-radius: 8px;
+  background: #fff;
+  cursor: pointer;
+}
+
+.menu-permissions-grid label.selected {
+  border-color: #a9baff;
+  background: #f5f4ff;
+}
+
+.menu-permissions-grid label i {
+  color: #684ee3;
+  font-size: 16px;
+}
+
+.menu-permissions-grid span {
+  min-width: 0;
+}
+
+.menu-permissions-grid small {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.menu-permissions-footer {
+  justify-content: flex-end;
+  margin-top: 8px;
+  padding-top: 12px;
+  border-top: 1px solid #e0eaf5;
+}
+
+@media (max-width: 960px) {
+  .menu-permissions-page {
+    padding: 16px;
+  }
+
+  .menu-permissions-layout,
+  .menu-permissions-grid,
+  .menu-permissions-heading {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+}
