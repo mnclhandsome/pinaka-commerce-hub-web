@@ -641,6 +641,7 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
   const [roles, setRoles] = useState([]);
   const [savedRoleKeys, setSavedRoleKeys] = useState([]);
   const appliedRoleSnapshot = useRef("");
+  const lastLoadedStoreTypeRolesRef = useRef("");
   const [activeRole, setActiveRole] = useState("");
   const [copyFromRole, setCopyFromRole] = useState("");
   const [permissions, setPermissions] = useState({});
@@ -657,9 +658,9 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
   const [pinDraft, setPinDraft] = useState("");
   const [pinError, setPinError] = useState("");
   const [step, setStep] = useState(embeddedStep ?? 0);
-  const needsEmployees = step === 4;
-  const needsRoles = step === 3 || step === 4;
-  const needsFeatures = step === 2 || step === 3;
+  const needsEmployees = step >= 4;
+  const needsRoles = step >= 3;
+  const needsFeatures = step >= 2;
   const [loading, setLoading] = useState(true);
   const [mastersLoading, setMastersLoading] = useState(true);
   const [featuresLoading, setFeaturesLoading] = useState(false);
@@ -1032,7 +1033,10 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
   );
   const selectableFeatureNames = filteredFeatures.filter((row) => entitled(row.name)).map((row) => row.name);
   const allVisibleFeaturesSelected = selectableFeatureNames.length > 0 && selectableFeatureNames.every((name) => enabledFeatures.includes(name));
-  const roleAvailableForStoreType = (role) => storeTypeRoleIds === null || roleTemplateKeys(role).some((key) => storeTypeRoleIds.has(key));
+  const roleAvailableForStoreType = (role) =>
+    storeTypeRoleIds === null ||
+    storeTypeRoleIds.size === 0 ||
+    roleTemplateKeys(role).some((key) => storeTypeRoleIds.has(key));
   const selectableRoleDefinitions = roleDefinitions.filter(roleAvailableForStoreType);
   const activeEmployees = employees.filter(
     (employee) =>
@@ -1412,19 +1416,24 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
   // Only offer role templates mapped to this store's selected store type.
   useEffect(() => {
     let cancelled = false;
-    setStoreTypeRoleIds(null);
-    setRolesError("");
-    if (!needsRoles || !activeStoreTypeId) {
-      setStoreTypeRoleIds(new Set());
+    if (!activeStoreTypeId) {
+      lastLoadedStoreTypeRolesRef.current = "";
+      setStoreTypeRoleIds(null);
       setStoreTypeRolesLoading(false);
-      return () => {
-        cancelled = true;
-      };
+      setRolesError("");
+      return;
+    }
+    if (!needsRoles) return;
+    const cacheKey = `${activeStoreTypeId}:${reload}`;
+    if (lastLoadedStoreTypeRolesRef.current === cacheKey && storeTypeRoleIds !== null) {
+      return;
     }
     setStoreTypeRolesLoading(true);
+    setRolesError("");
     pendingStoreRead(`store-type-roles:${activeStoreTypeId}`, () => roleTemplatesApi.getForStoreType(activeStoreTypeId))
       .then((response) => {
         if (cancelled) return;
+        lastLoadedStoreTypeRolesRef.current = cacheKey;
         const ids = readRoleTemplatesList(response)
           .filter((row) => {
             const status = String(
@@ -1441,7 +1450,6 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
       })
       .catch((err) => {
         if (!cancelled) {
-          setStoreTypeRoleIds(new Set());
           setRolesError(
             err?.message ||
               "Unable to load role templates for this store type.",
@@ -1457,7 +1465,7 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
   }, [activeStoreTypeId, reload, needsRoles]);
 
   useEffect(() => {
-    if (storeTypeRoleIds === null || storeTypeRolesLoading || !activeStoreTypeId) return;
+    if (storeTypeRoleIds === null || storeTypeRolesLoading || !activeStoreTypeId || storeTypeRoleIds.size === 0) return;
     setRoles((current) => {
       if (!editing && current.length === 0 && roleDefinitions.length > 0) {
         const defaultRoles = roleDefinitions
@@ -1746,6 +1754,8 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
     setEmployees([]);
     setTypeFeatures([]);
     setEnabledFeatures([]);
+    lastLoadedStoreTypeRolesRef.current = "";
+    setStoreTypeRoleIds(null);
     setRoleDefinitions([]);
     setRoles([]);
     setActiveRole("");
