@@ -64,19 +64,7 @@
   color: #294a76;
 }
 
-:is(.merchant-subscriptions-page, .merchant-table-card, .stores-page, .orders-page, .cash-management-page, .employees-page, .devices-page) .filters-bar .filter-reset-btn {
-  height: 34px;
-  padding: 0 12px;
-  border: 1px solid #d9e6f4;
-  border-radius: 7px;
-  background: #fff;
-  color: #5b79ad;
-  flex-shrink: 0;
-}
 
-:is(.merchant-subscriptions-page, .merchant-table-card, .stores-page, .orders-page, .cash-management-page, .employees-page, .devices-page) .filters-bar .filter-reset-btn i {
-  font-size: 14px;
-}
 
 :is(.merchant-subscriptions-page, .merchant-table-card, .stores-page, .orders-page, .cash-management-page, .employees-page, .devices-page) .filters-bar :is(.filter-select-wrapper select, .filter-reset-btn):hover {
   border-color: #aeb7ff;

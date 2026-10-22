@@ -51,25 +51,8 @@
 
   box-sizing: border-box;
 
-}.merchant-subscriptions-page button,
-
-.subscription-flow-page button,
-
-.merchant-subscriptions-page input,
-
-.subscription-flow-page input,
-
-.subscription-flow-page select {
-
-  font: inherit;
-
-}.merchant-subscriptions-page button,
-
-.subscription-flow-page button {
-
-  cursor: pointer;
-
-}.merchant-subscriptions-page button:disabled,
+}
+.merchant-subscriptions-page button:disabled,
 
 .subscription-flow-page button:disabled {
 
@@ -5187,21 +5170,6 @@
   --control-focus: #5143bc;
   --control-radius: 8px;
 }
-:is(.merchant-subscriptions-page, .subscription-flow-page, .subscription-page) button,
-:is(.merchant-subscriptions-page, .subscription-flow-page, .subscription-page) input,
-:is(.merchant-subscriptions-page, .subscription-flow-page, .subscription-page) select,
-:is(.merchant-subscriptions-page, .subscription-flow-page, .subscription-page) textarea {
-  font-family: "Inter", sans-serif;
-}
-:is(.merchant-subscriptions-page, .subscription-flow-page, .subscription-page) button {
-  cursor: pointer;
-  transition: background-color .18s ease, border-color .18s ease, box-shadow .18s ease;
-}
-:is(.merchant-subscriptions-page, .subscription-flow-page, .subscription-page) button:disabled {
-  cursor: not-allowed;
-  opacity: .58;
-}
-
 
 
 :is(.merchant-subscriptions-page, .subscription-flow-page, .subscription-page) :is(input, select, textarea):disabled,
@@ -5622,14 +5590,6 @@
   background: #fff;
 }
 
-.merchant-subscriptions-page > .subscription-table-card > .pagination-container {
-   width: calc(100% - 24px);
-    max-width: calc(100% - 24px);
-    margin: 0 12px;
-    padding: 16px 0;
-    box-sizing: border-box;
-    border-top: 0;
-}
 
 :is(.merchant-subscriptions-page, .subscription-flow-page, .subscription-page) .subscription-filter-bar {
   border-bottom: 0;

@@ -1474,15 +1474,15 @@ export default function CreatePlan() {
 
       <DeleteConfirmationDialog
         isOpen={Boolean(deleteTarget)}
-        title="Deactivate Plan?"
+        title="Inactive Plan?"
         message={
           deleteTarget
-            ? `Are you sure you want to deactivate "${deleteTarget.name || "this plan"}"?`
+            ? `Are you sure you want to Inactive "${deleteTarget.name || "this plan"}"?`
             : ""
         }
         cancelLabel="Cancel"
-        confirmLabel="Deactivate"
-        busyLabel="Deactivating..."
+        confirmLabel="Inactive"
+        busyLabel="Inactivating..."
         busy={deletingPlan}
         error={deleteError}
         iconClassName="bi bi-trash3"

@@ -865,7 +865,7 @@ const [deleteError, setDeleteError] = useState("");
     console.error("Delete permission failed:", error);
 
     setDeleteError(
-      error?.message || "Unable to deactivate permission."
+      error?.message || "Unable to Inactive permission."
     );
   } finally {
     setIsDeleting(false);
@@ -1668,7 +1668,7 @@ const paginatedPermissions = filteredPermissions.slice(
                           onEdit={(event) => { event.stopPropagation(); editPermission(permission); }}
                           onDelete={(event) => { event.stopPropagation(); openDeleteConfirmation(permission); }}
                           editLabel={`Edit ${permission.name}`}
-                          deleteLabel={`Deactivate ${permission.name}`}
+                          deleteLabel={`Inactive ${permission.name}`}
                           deleteDisabled={permission.status === "Inactive"}
                           deleteButtonClassName="delete delete-button"
                           editButtonClassName="edit edit-button"
@@ -1713,6 +1713,7 @@ const paginatedPermissions = filteredPermissions.slice(
       setCurrentPage(1);
     }}
     itemLabel="permissions"
+    showWhenEmpty="true"
   />
 </div>
 
@@ -1727,7 +1728,7 @@ const paginatedPermissions = filteredPermissions.slice(
 
 <DeleteConfirmationDialog
   isOpen={Boolean(permissionToDelete)}
-  title="Deactivate Permission?"
+  title="Inactive Permission?"
   message={
     permissionToDelete
       ? `Are you sure you want to mark "${
@@ -1738,8 +1739,8 @@ const paginatedPermissions = filteredPermissions.slice(
       : ""
   }
   cancelLabel="Cancel"
-  confirmLabel="Deactivate"
-  busyLabel="Deactivating..."
+  confirmLabel="Inactive"
+  busyLabel="Inactivating..."
   busy={isDeleting}
   error={deleteError}
   iconClassName="bi bi-trash3"

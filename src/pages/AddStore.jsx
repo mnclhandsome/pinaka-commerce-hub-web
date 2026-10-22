@@ -2,6 +2,8 @@ import { buildStoreSetupPayload } from "../api/storeDetails";
 import { useLocationOptions } from "../data/useLocationOptions";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
+import PhoneInputModule from "react-phone-input-2";
+import "react-phone-input-2/lib/style.css";
 import {
   listMerchantEmployees,
   listStoreEmployees,
@@ -34,6 +36,8 @@ import {
   extractActiveSubscription,
 } from "../api/subscriptions_stores";
 import "../styles/add-store.css";
+
+const PhoneInput = PhoneInputModule.default || PhoneInputModule;
 
 const DAYS = [
   "Monday",
@@ -2754,6 +2758,25 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
                   })),
                 ]}
               />
+              <SelectField
+                label="State / Province *"
+                invalid={invalidStoreFields.has("State / Province")}
+                error={getFieldValidationMessage(error, "State / Province")}
+                value={store.state}
+                onChange={(value) => updateStore("state", value)}
+                options={[
+                  { value: "", label: store.country ? "Select state or province" : "Select country first" },
+                  ...locationOptions.states.map((value) => ({ value, label: value })),
+                ]}
+              />
+              <Field
+                label="City *"
+                invalid={invalidStoreFields.has("City")}
+                error={getFieldValidationMessage(error, "City")}
+                value={store.city}
+                onChange={(value) => updateStore("city", value)}
+                placeholder="City"
+              />
               <Field
                 label="Address Line 1 *"
                 invalid={invalidStoreFields.has("Address Line 1")}
@@ -2768,25 +2791,6 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
                 value={store.addressLine2}
                 onChange={(value) => updateStore("addressLine2", value)}
                 placeholder="Apartment, suite, etc."
-              />
-              <Field
-                label="City *"
-                invalid={invalidStoreFields.has("City")}
-                error={getFieldValidationMessage(error, "City")}
-                value={store.city}
-                onChange={(value) => updateStore("city", value)}
-                placeholder="City"
-              />
-              <SelectField
-                label="State / Province *"
-                invalid={invalidStoreFields.has("State / Province")}
-                error={getFieldValidationMessage(error, "State / Province")}
-                value={store.state}
-                onChange={(value) => updateStore("state", value)}
-                options={[
-                  { value: "", label: store.country ? "Select state or province" : "Select country first" },
-                  ...locationOptions.states.map((value) => ({ value, label: value })),
-                ]}
               />
               <Field
                 label="Zip / Postal Code *"
@@ -2969,18 +2973,24 @@ export default function AddStore({ embeddedStep = null, readOnly = false, onEdit
             title="Contact Information"
             subtitle="Provide the primary contact details for this store."
           >
-            <Field
-              label="Store Phone *"
-              invalid={invalidStoreFields.has("Store Phone")}
-              error={getFieldValidationMessage(error, "Store Phone")}
-              value={store.phone}
-              onChange={(value) => updateStore("phone", value.replace(/\D/g, ""))}
-              type="tel"
-              inputMode="numeric"
-              pattern="[0-9]*"
-              maxLength={15}
-              placeholder="Enter phone number"
-            />
+            <div className={`sf-field sf-phone-field${invalidStoreFields.has("Store Phone") ? " sf-field-invalid" : ""}`}>
+              <label htmlFor="store-phone">Store Phone <span style={{ color: "#ef3340" }}>*</span></label>
+              <PhoneInput
+                country={locationOptions.selectedCountry?.iso2?.toLowerCase() || "in"}
+                enableSearch
+                countryCodeEditable={false}
+                value={store.phone}
+                onChange={(value, countryData) => {
+                  updateStore("phone", value.replace(/\D/g, ""));
+                  if (countryData?.name && countryData.name !== store.country) {
+                    changeCountry(countryData.name);
+                  }
+                }}
+                inputProps={{ id: "store-phone", name: "phone", type: "tel", autoComplete: "tel", "aria-invalid": invalidStoreFields.has("Store Phone") }}
+                placeholder="Enter phone number"
+              />
+              {getFieldValidationMessage(error, "Store Phone") && <small className="sf-field-error" role="alert">{getFieldValidationMessage(error, "Store Phone")}</small>}
+            </div>
             <Field
               label="Store Email"
               invalid={invalidStoreFields.has("Store Email")}

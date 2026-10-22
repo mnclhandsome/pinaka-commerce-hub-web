@@ -32,6 +32,15 @@
   border-color: #ef4456 !important;
 }
 
+.add-employee-page .employee-phone-field .react-tel-input,
+.add-employee-page .employee-phone-field .react-tel-input .form-control,
+.add-employee-page .employee-phone-field .react-tel-input .flag-dropdown {
+  height: 42px !important;
+  box-sizing: border-box;
+}
+
+
+
 /* =========================================================
    HEADER
 ========================================================= */
@@ -618,9 +627,7 @@
 
 .cancel-employee-btn {
   border: 1px solid #5143bc;
-
-  background: #fff;
-
+  background-color: transparent;
   color: #5143bc;
 }
 
@@ -633,7 +640,6 @@
 
   color: #fff;
 
-  box-shadow: 0 4px 10px rgba(91, 59, 221, 0.18);
 }
 
 /* =========================================================

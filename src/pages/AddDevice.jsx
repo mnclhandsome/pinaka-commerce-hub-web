@@ -1,5 +1,5 @@
 import { pendingStoreRead } from "../api/http";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import DeviceNavigation from "../components/DeviceNavigation";
 import { useNavigate } from "react-router-dom";
 import { Settings, ChevronDown } from "lucide-react";
@@ -119,7 +119,7 @@ export default function AddDevice({ merchantId: scopedMerchantId = "", merchant:
     setValidationErrors(nextValidationErrors);
     if (Object.keys(nextValidationErrors).length) {
       requestAnimationFrame(() => {
-        const firstInvalid = document.querySelector(".device-field-invalid input, .device-field-invalid select");
+        const firstInvalid = document.querySelector(".device-field-invalid input, .device-field-invalid select, .device-field-invalid [aria-haspopup='listbox']");
         firstInvalid?.focus?.();
         firstInvalid?.scrollIntoView?.({ behavior: "smooth", block: "center" });
       });
@@ -365,20 +365,79 @@ function SelectField({
   disabled,
   invalid,
 }) {
+  const [open, setOpen] = useState(false);
+  const wrapperRef = useRef(null);
+  const normalizedOptions = options.map((option) =>
+    typeof option === "string" ? { value: option, label: option } : option,
+  );
+  const selectedOption = normalizedOptions.find((option) => option.value === value);
+
+  useEffect(() => {
+    if (!open) return undefined;
+    const closeOnOutsideClick = (event) => {
+      if (!wrapperRef.current?.contains(event.target)) setOpen(false);
+    };
+    const closeOnEscape = (event) => {
+      if (event.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("mousedown", closeOnOutsideClick);
+    document.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.removeEventListener("mousedown", closeOnOutsideClick);
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [open]);
+
+  const selectOption = (optionValue) => {
+    onChange({ target: { name, value: optionValue } });
+    setOpen(false);
+  };
+
   return (
-    <div className="device-select-wrapper">
-      <select name={name} value={value} onChange={onChange} required={required} disabled={disabled} aria-invalid={Boolean(invalid)}>
-        {placeholder && <option value="">{placeholder}</option>}
-
-        {options.map((option) => {
-          const item = typeof option === "string" ? { value: option, label: option } : option;
-          return <option key={item.value} value={item.value}>
-            {item.label}
-          </option>
-        })}
-      </select>
-
-      <ChevronDown size={16} className="device-select-arrow" />
+    <div className={`device-select-wrapper${open ? " is-open" : ""}`} ref={wrapperRef}>
+      <button
+        type="button"
+        className="device-select-trigger"
+        name={name}
+        onClick={() => setOpen((current) => !current)}
+        disabled={disabled}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        aria-invalid={Boolean(invalid)}
+        aria-required={Boolean(required)}
+      >
+        <span className={!selectedOption ? "device-select-placeholder" : ""}>
+          {selectedOption?.label || placeholder || "Select an option"}
+        </span>
+        <ChevronDown size={16} className="device-select-arrow" aria-hidden="true" />
+      </button>
+      {open && !disabled && (
+        <div className="device-select-menu" role="listbox" aria-label={placeholder || name}>
+          {placeholder && (
+            <button
+              type="button"
+              className={`device-select-option${!value ? " selected" : ""}`}
+              role="option"
+              aria-selected={!value}
+              onClick={() => selectOption("")}
+            >
+              {placeholder}
+            </button>
+          )}
+          {normalizedOptions.map((option) => (
+            <button
+              type="button"
+              key={option.value}
+              className={`device-select-option${value === option.value ? " selected" : ""}`}
+              role="option"
+              aria-selected={value === option.value}
+              onClick={() => selectOption(option.value)}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

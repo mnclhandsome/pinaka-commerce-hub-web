@@ -1032,11 +1032,9 @@
 }
 
 .feature-permissions-page .fp-list-footer .pagination-container {
-  width: 100%;
   height: auto;
-  min-height: auto;
   padding: 0;
-  background: transparent;
+  
 }
 
 .feature-permissions-page .fp-list-footer > span {
@@ -3275,11 +3273,7 @@ body .feature-permissions-page
   box-sizing: border-box !important;
 }
 
-.feature-permissions-page .fp-list-footer .pagination-container {
-  width: 100% !important;
-  padding: 16px 0 !important;
-  background: transparent !important;
-}
+
 
 @media (max-width: 1100px) {
   .feature-permissions-page .fp-table {

@@ -88,7 +88,7 @@
    BUTTONS
 ========================================================= */
 
-.merchant-vendors button {
+/* .merchant-vendors button {
     font-family: "Inter", sans-serif;
     font-size: 14px;
     line-height: 20px;
@@ -103,7 +103,7 @@
         background-color 0.15s ease,
         border-color 0.15s ease,
         color 0.15s ease;
-}
+} */
 
 .merchant-vendors button .primary {
     background: #5143bc;
@@ -190,9 +190,6 @@
 }
 
 .merchant-vendors .mv-list-card > .pagination-container {
-    width: 100%;
-    max-width: 100%;
-    min-width: 0;
     height: auto;
     margin: 0;
     padding: 16px 24px 12px;
@@ -287,72 +284,43 @@
 
 .merchant-vendors th:nth-child(1),
 .merchant-vendors td:nth-child(1) {
-    width: 10%;
+    width: 11%;
 }
 
 .merchant-vendors th:nth-child(2),
 .merchant-vendors td:nth-child(2) {
-    width: 12%;
+    width: 14%;
 }
 
 .merchant-vendors th:nth-child(3),
 .merchant-vendors td:nth-child(3) {
-    width: 10%;
+    width: 12%;
 }
 
 .merchant-vendors th:nth-child(4),
 .merchant-vendors td:nth-child(4) {
-    width: 12%;
+    width: 14%;
 }
 
 .merchant-vendors th:nth-child(5),
 .merchant-vendors td:nth-child(5) {
-    width: 10%;
+    width: 12%;
 }
 
 .merchant-vendors th:nth-child(6),
 .merchant-vendors td:nth-child(6) {
-    width: 10%;
+    width: 14%;
 }
 
 .merchant-vendors th:nth-child(7),
-.merchant-vendors td:nth-child(7),
-.merchant-vendors th.mv-status-th,
-.merchant-vendors td.mv-status-cell {
-    width: 130px;
-    min-width: 125px;
-    overflow: visible !important;
-    text-overflow: clip !important;
+.merchant-vendors td:nth-child(7){
+    width: 11%; 
 }
 
 .merchant-vendors th:nth-child(8),
 .merchant-vendors td:nth-child(8) {
-    width: 90px;
-    min-width: 80px;
-}
-
-/* =========================================================
-   TABLE HEADER
-========================================================= */
-
-.merchant-vendors th {
-    height: 44px;
-
-    padding: 0 14px;
-
-    background: #f1f3fd;
-
-    border-bottom: 1px solid #dfe5ef;
-
-    color: #17233e;
-
-    font-size: 12px;
-    font-weight: 600;
-
-    text-align: left;
-    vertical-align: middle;
-
-    white-space: nowrap;
+    width: 12%;
+   
 }
 
 /* =========================================================

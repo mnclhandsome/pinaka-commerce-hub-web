@@ -234,7 +234,7 @@ const confirmDeleteFeature = async () => {
     setDeleteTarget(null);
   } catch (e) {
     setDeleteError(
-      e.message || "Unable to deactivate feature. Please try again."
+      e.message || "Unable to Inactive feature. Please try again."
     );
   } finally {
     setDeleting(false);
@@ -636,15 +636,15 @@ const confirmDeleteFeature = async () => {
       
 <DeleteConfirmationDialog
   isOpen={Boolean(deleteTarget)}
-  title="Deactivate Feature?"
+  title="Inactive Feature?"
   message={
     deleteTarget
-      ? `Are you sure you want to deactivate "${deleteTarget.name}"?`
+      ? `Are you sure you want to Inactive "${deleteTarget.name}"?`
       : ""
   }
   cancelLabel="Cancel"
-  confirmLabel="Deactivate"
-  busyLabel="Deactivating..."
+  confirmLabel="Inactive"
+  busyLabel="Inactivating..."
   busy={deleting}
   error={deleteError}
   iconClassName="bi bi-trash"

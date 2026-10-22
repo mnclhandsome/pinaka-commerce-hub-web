@@ -7,7 +7,7 @@ import Pagination from "../components/Pagination";
 import FiltersBar from "../components/FiltersBar";
 import DeleteConfirmationDialog from "../components/DeleteConfirmationDialog";
 import { useNavigate, useLocation } from "react-router-dom";
-import { getEmployeeList, deleteEmployee } from "../api/employees";
+import { getEmployeeList, updateEmployee } from "../api/employees";
 
 import {
   Search,
@@ -257,6 +257,7 @@ export default function Employees() {
   const [loadError, setLoadError] = useState("");
   const [deleteError, setDeleteError] = useState("");
   const [deletingId, setDeletingId] = useState(null);
+  const [activatingId, setActivatingId] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
 const [roleFilter, setRoleFilter] = useState("");
 const [statusFilter, setStatusFilter] = useState("");
@@ -271,7 +272,7 @@ async function handleDelete(employee) {
     employee.id === null ||
     String(employee.id).trim() === ""
   ) {
-    setDeleteError("Employee ID is missing. Cannot delete employee.");
+    setDeleteError("Employee ID is missing. Cannot Inactive employee.");
     return;
   }
 
@@ -279,22 +280,60 @@ async function handleDelete(employee) {
   setDeleteError("");
 
   try {
-    await deleteEmployee(employee.id);
+    const fullName = String(employee.name || "").trim().split(/\s+/);
+    const firstName = String(employee.firstName || employee.first_name || fullName[0] || "").trim();
+    const lastName = String(employee.lastName || employee.last_name || fullName.slice(1).join(" ") || "").trim();
+    await updateEmployee(employee.employeeId || employee.id, {
+      firstName,
+      lastName,
+      email: String(employee.email || "").trim(),
+      status: "INACTIVE",
+    });
 
     const result = await getEmployeeList();
     setEmployeeRows(result.employees);
     setStatistics(result.statistics);
 
     setDeleteTarget(null);
-    setNotice("Employee deleted successfully.");
+    setNotice("Employee Inactive successfully.");
   } catch (error) {
     setDeleteError(
       error?.response?.data?.message ||
       error?.message ||
-      "Unable to delete employee."
+      "Unable to Inactive employee."
     );
   } finally {
     setDeletingId(null);
+  }
+}
+
+async function handleActivate(employee) {
+  const employeeId = employee.employeeId || employee.id;
+  if (!employeeId || activatingId) return;
+  const fullName = String(employee.name || "").trim().split(/\s+/);
+  const firstName = String(employee.firstName || employee.first_name || fullName[0] || "").trim();
+  const lastName = String(employee.lastName || employee.last_name || fullName.slice(1).join(" ") || "").trim();
+  const email = String(employee.email || "").trim();
+  if (!firstName) {
+    setDeleteError("Employee first name is required before this employee can be restored.");
+    return;
+  }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    setDeleteError("A valid employee email is required before this employee can be restored.");
+    return;
+  }
+  setActivatingId(employeeId);
+  setDeleteError("");
+  try {
+    await updateEmployee(employeeId, { firstName, lastName, email, status: "ACTIVE" });
+    const result = await getEmployeeList();
+    setEmployeeRows(result.employees);
+    setStatistics(result.statistics);
+    setNotice(`${employee.name || "Employee"} activated successfully.`);
+  } catch (error) {
+    setDeleteError(error?.response?.data?.message || error?.message || "Unable to activate employee.");
+  } finally {
+    setActivatingId(null);
   }
 }
 
@@ -545,18 +584,18 @@ const handlePageSizeChange = (size) => {
         
 <DeleteConfirmationDialog
   isOpen={Boolean(deleteTarget)}
-  title="Delete Employee?"
+  title="Inactive Employee?"
   message={
     deleteTarget
-      ? `Are you sure you want to delete "${deleteTarget.name}"?`
+      ? `Are you sure you want to Inactive "${deleteTarget.name}"?`
       : ""
   }
   cancelLabel="Cancel"
-  confirmLabel="Delete"
-  busyLabel="Deleting..."
+  confirmLabel="Inactive"
+  busyLabel="Deactivating..."
   busy={Boolean(deletingId)}
   error={deleteError}
-  iconClassName="bi bi-trash3"
+  iconClassName="bi bi-person-x"
   onCancel={() => {
     if (deletingId) return;
     setDeleteTarget(null);
@@ -671,9 +710,12 @@ const handlePageSizeChange = (size) => {
                           onEdit={() =>
                           navigate("/employees/edit", {
                           state: { employee }, }) }
-                          onDelete={() => {
+                          onActivate={employee.status === "Inactive" ? () => handleActivate(employee) : undefined}
+                          activateLabel={`Activate ${employee.name}`}
+                          activateDisabled={Boolean(activatingId)}
+                          onDelete={employee.status !== "Inactive" ? () => {
                             setDeleteError("");
-                            setDeleteTarget(employee); }}
+                            setDeleteTarget(employee); } : undefined}
                             editLabel={`Edit ${employee.name}`}
                             deleteLabel={`Delete ${employee.name}`}
                             deleteDisabled={Boolean(deletingId)}
