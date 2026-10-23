@@ -1620,7 +1620,7 @@ dialog.merchant-delete-dialog::backdrop {
 .page-content > .merchant-table-card {
   margin-bottom: 8px;
 }
-.merchant-table-card > .pagination-container {
+/* .merchant-table-card > .pagination-container {
     width: calc(100% - 24px);
     max-width: calc(100% - 24px);
     margin: 0 12px;
@@ -1628,7 +1628,7 @@ dialog.merchant-delete-dialog::backdrop {
     box-sizing: border-box;
     border-top: 0;
 
-}
+} */
 
 .merchant-table-card > .filter-bar {
   min-height: 48px;
@@ -2290,3 +2290,6 @@ dialog.merchant-delete-dialog::backdrop {
 .merchant-timestamp { display: inline-flex; flex-direction: column; gap: 3px; line-height: 1.5; white-space: nowrap; }
 .merchant-timestamp > span { font-size: 12px; font-weight: 600; color: #10264d; }
 .merchant-timestamp small { font-size: 10px; font-weight: 400; color:#7290ba; }
+
+.merchant-notice { display: flex; align-items: center; }
+.merchant-notice-deactivated { background: #fee2e2; border-color: #fca5a5; color: #b91c1c; }

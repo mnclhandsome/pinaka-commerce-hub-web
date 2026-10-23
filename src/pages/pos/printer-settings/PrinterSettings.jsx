@@ -10,7 +10,7 @@ import {
 } from "../shared";
 import { getPrinterSettings, savePrinterSettings } from "./api";
 
-const DEFAULTS = { header: "", footer: "", logo: "", logoName: "" };
+const DEFAULTS = { header: "", footer: "", address: "", logo: "", logoName: "" };
 
 export function PrinterSettings({ onBack }) {
   const settings = usePosSettings();
@@ -51,6 +51,7 @@ export function PrinterSettings({ onBack }) {
     const saved = await savePrinterSettings(settings.storeId, {
       header: draft.header,
       footer: draft.footer,
+      address: draft.address,
       logo: draft.logo,
       logoName: draft.logoName,
     });
@@ -92,6 +93,9 @@ export function PrinterSettings({ onBack }) {
         </ConfigField>
         <ConfigField label="Receipt Footer">
           <textarea rows={3} maxLength={500} value={draft.footer || ""} onChange={(event) => update("footer", event.target.value)} placeholder="Thank you message or return policy" />
+        </ConfigField>
+        <ConfigField label="Address">
+          <textarea rows={3} maxLength={500} value={draft.address || ""} onChange={(event) => update("address", event.target.value)} placeholder="Store address printed on receipts" />
         </ConfigField>
       </div>
     </section>

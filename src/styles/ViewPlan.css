@@ -349,14 +349,6 @@
   box-sizing: border-box;
 }
 
-.plan-view-features-footer .pagination-container {
-  width: 100%;
-  padding: 16px 0;
-  background: transparent;
-  box-sizing: border-box;
-}
-
-
 @media (max-width: 1150px) {
   .view-plan-summary {
     grid-template-columns: repeat(3, 1fr);

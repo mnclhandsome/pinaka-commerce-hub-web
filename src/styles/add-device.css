@@ -50,12 +50,12 @@
 
 .merchant-device-create-page .device-field input,
 .merchant-device-create-page .device-field textarea,
-.merchant-device-create-page .device-select-wrapper select {
+.merchant-device-create-page .device-select-trigger {
   font-size: 14px;
 }
 
 .merchant-device-create-page .device-field input,
-.merchant-device-create-page .device-select-wrapper select {
+.merchant-device-create-page .device-select-trigger {
   height: 46px;
 }
 
@@ -186,7 +186,7 @@
   display: block;
   margin-bottom: 6px;
   color: #243e60;
-  font-size: 10px;
+  font-size: 14px;
   font-weight: 600;
 }
 
@@ -201,7 +201,7 @@
 
 .device-field input,
 .device-field textarea,
-.device-select-wrapper select {
+.device-select-trigger {
   width: 100%;
   box-sizing: border-box;
   border: 1px solid #d5e0ed;
@@ -226,7 +226,7 @@
 }
 
 .device-field input,
-.device-select-wrapper select {
+.device-select-trigger {
   height: 35px;
   padding: 0 10px;
 }
@@ -244,20 +244,20 @@
 
 .device-field input:focus,
 .device-field textarea:focus,
-.device-select-wrapper select:focus {
+.device-select-trigger:focus-visible {
   border-color: #6744dc;
   box-shadow: 0 0 0 2px rgba(103, 68, 220, 0.08);
 }
 
 .device-field-invalid input,
-.device-field-invalid .device-select-wrapper select {
+.device-field-invalid .device-select-trigger {
   border-color: #ef4456 !important;
   background-color: #fffafb !important;
   box-shadow: 0 0 0 1px rgba(239, 68, 86, 0.08) !important;
 }
 
 .device-field-invalid input:focus,
-.device-field-invalid .device-select-wrapper select:focus {
+.device-field-invalid .device-select-trigger:focus-visible {
   border-color: #ef4456 !important;
   box-shadow: 0 0 0 1px rgba(239, 68, 86, 0.08) !important;
   outline: none !important;
@@ -280,11 +280,65 @@
   width: 100%;
 }
 
-.device-select-wrapper select {
-  appearance: none;
-  -webkit-appearance: none;
+.device-select-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  text-align: left;
   padding-right: 32px;
   cursor: pointer;
+}
+
+.device-select-trigger:disabled {
+  background: #f1f4f8;
+  color: #8ca0b9;
+  cursor: not-allowed;
+}
+
+.device-select-placeholder {
+  color: #8ca0b9;
+}
+
+.device-select-menu {
+  position: absolute;
+  z-index: 30;
+  top: calc(100% + 5px);
+  left: 0;
+  right: 0;
+  max-height: 240px;
+  overflow-y: auto;
+  padding: 5px;
+  border: 1px solid #d5e0ed;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 8px 22px rgba(24, 42, 75, 0.16);
+}
+
+.device-select-option {
+  display: block;
+  width: 100%;
+  min-height: 34px;
+  padding: 7px 10px;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: #294668;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.device-select-option:hover,
+.device-select-option:focus-visible {
+  outline: none;
+  background: #f3f0ff;
+  color: #563fc4;
+}
+
+.device-select-option.selected {
+  background:#563fc4;
+  color: #f3f0ff;
+  font-weight: 600;
 }
 
 .device-select-arrow {
@@ -406,11 +460,11 @@
   }
 
   .device-field label {
-    font-size: 12px;
+    font-size: 14px;
   }
 
   .device-field input,
-  .device-select-wrapper select {
+  .device-select-trigger {
     height: 44px;
     font-size: 12px;
   }
@@ -463,7 +517,7 @@
   }
 
   .device-field input,
-  .device-select-wrapper select {
+  .device-select-trigger {
     height: 44px;
     padding: 0 8px;
     font-size: 12px;

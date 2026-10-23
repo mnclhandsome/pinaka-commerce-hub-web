@@ -397,11 +397,11 @@
 
 .employee-field .react-tel-input .form-control {
   width: 100% !important;
-  height: 46px !important;
+  height: 42px !important;
   box-sizing: border-box;
   padding-left: 48px !important;
   border: 1px solid #d4dfed !important;
-  border-radius: 8px !important;
+  border-radius: 5px !important;
   background: #fff;
   color: #1c3154;
   font-size: 15px;
@@ -416,15 +416,19 @@
 .employee-field .react-tel-input .flag-dropdown {
   height: 46px !important;
   border: 1px solid #d4dfed !important;
-  border-radius: 8px 0 0 8px !important;
+  border-radius: 6px 0 0 6px!important ;
   background: #fff !important;
 }
 
 .employee-field .react-tel-input .selected-flag {
-  height: 44px !important;
+  height: 42px !important;
   padding: 0 8px !important;
   display: flex;
   align-items: center;
+  width:40px;
+  outline: none;
+  position: relative;
+  
 }
 
 /* Keep error border consistent */

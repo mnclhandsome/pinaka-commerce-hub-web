@@ -380,7 +380,7 @@ async function confirmDeleteTender() {
     tender.id === null ||
     String(tender.id).trim() === ""
   ) {
-    setDeleteError("Tender ID is missing. Cannot deactivate.");
+    setDeleteError("Tender ID is missing. Cannot Inactive.");
     return;
   }
 
@@ -419,13 +419,13 @@ async function confirmDeleteTender() {
     setDeleteConfirmTender(null);
     setDeleteError("");
   } catch (error) {
-    console.error("Failed to deactivate tendor:", error);
+    console.error("Failed to Inactive tendor:", error);
 
     setDeleteError(
       error?.response?.data?.message ||
         error?.response?.data?.error ||
         error?.message ||
-        "Failed to deactivate tender.",
+        "Failed to Inactive tender.",
     );
   } finally {
     setDeleting(false);
@@ -719,23 +719,23 @@ async function confirmDeleteTender() {
     setCurrentPage(1);
   }}
   itemLabel="tenders"
-  showWhenEmpty={false}
+  showWhenEmpty={true}
 />
       </div>
 
 <DeleteConfirmationDialog
   isOpen={Boolean(deleteConfirmTender)}
-  title="Deactivate Tender?"
+  title="Inactive Tender?"
   message={
     deleteConfirmTender
-      ? `Are you sure you want to deactivate "${
+      ? `Are you sure you want to Inactive "${
           deleteConfirmTender.name || "this tender"
         }"?`
       : ""
   }
   cancelLabel="Cancel"
-  confirmLabel="Deactivate"
-  busyLabel="Deactivating..."
+  confirmLabel="Inactive"
+  busyLabel="Inactivating..."
   busy={deleting}
   error={deleteError}
   iconClassName="bi bi-exclamation-triangle"

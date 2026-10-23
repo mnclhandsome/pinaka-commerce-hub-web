@@ -164,7 +164,7 @@
 .summary-card span {
     display: block;
     color: #697286;
-    font-size: 14px;
+    font-size: 11px;
     margin-bottom: 3px;
 }
 
@@ -789,14 +789,14 @@
     background: #fff;
 }
 
-.stores-card > .pagination-container {
+/* .stores-card > .pagination-container {
     width: calc(100% - 24px);
     max-width: calc(100% - 24px);
     margin: 0 12px;
     padding: 16px 0;
     box-sizing: border-box;
     border-top: 0;
-}
+} */
 
 .stores-card .store-toolbar {
     border-bottom: 0;
@@ -855,3 +855,5 @@
         padding: 12px 0;
     }
 }
+.stores-notice { display: flex; align-items: center; }
+.stores-notice-deactivated { background: #fee2e2; border-color: #fca5a5; color: #b91c1c; }

@@ -82,11 +82,8 @@
 .vendors-primary-button,
 .vendors-save-button {
   border: 0;
-  border-radius: 8px;
   background: #5143bc;
   color: #ffffff;
-  cursor: pointer;
-  font-size: 14px;
   font-weight: 500;
 
   transition:
@@ -305,17 +302,6 @@
   margin-top: 10px;
 }
 
-.vendors-clear-button,
-.vendors-save-button {
-  width: 180px;
-  height: 42px;
-  padding: 0 21px;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-}
-
 .vendors-clear-button {
   border: 1px solid #dce8f4;
   background: #ffffff;
@@ -327,12 +313,6 @@
   background: #f8fbff;
 }
 
-.vendors-save-button {
-  border: 0;
-  background: #684ee3;
-  color: #ffffff;
-  box-shadow: 0 4px 10px rgba(8, 115, 249, 0.2);
-}
 
 
 /* =========================================================
@@ -636,7 +616,7 @@
   background: #fbfdff;
 }
 
-.vendors-page > .vendors-list-card > .pagination-container {
+/* .vendors-page > .vendors-list-card > .pagination-container {
   width: 100%;
   max-width: 100%;
   height: auto;
@@ -646,7 +626,7 @@
   box-sizing: border-box;
   background: transparent;
   border-top: 0;
-}
+} */
 
 
 .vendors-pagination {
@@ -1786,11 +1766,6 @@
 .vendors-create-page .vendors-clear-button {
   border-color: #d6e0ec;
   color: #334e70;
-}
-
-.vendors-create-page .vendors-save-button {
-  background: linear-gradient(90deg, #5d3ddd, #6740e5);
-  box-shadow: 0 4px 10px rgba(93, 61, 221, 0.18);
 }
 
 .vendors-create-page .vendors-form-actions button:focus-visible,

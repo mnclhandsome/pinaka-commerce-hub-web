@@ -555,6 +555,11 @@ function saveAndLeave() {
   });
 }
 
+  const selectableFeatures = featurePermissions.filter((feature) => feature.status !== "INACTIVE");
+  const allFeaturesSelected = selectableFeatures.length > 0 && selectableFeatures.every((feature) =>
+    enabledFeatures.includes(feature.id) && feature.permissions.every((permission) => selectedPermissions.includes(permission.id)),
+  );
+
   return (
     <section className="role-details-page">
       <button
@@ -609,10 +614,15 @@ function saveAndLeave() {
             </div>
           </div>
 
-          <div className="role-access-actions">
-            <button type="button" onClick={selectAll}>Select All</button>
-            <button type="button" onClick={clearAll}>Deselect All</button>
-          </div>
+          <label className="role-access-select-all">
+            <input
+              type="checkbox"
+              checked={allFeaturesSelected}
+              disabled={loading}
+              onChange={(event) => event.target.checked ? selectAll() : clearAll()}
+            />
+            <span>Select all</span>
+          </label>
         </div>
 
         <label className="role-access-search pch-master-search pch-master-control">

@@ -1428,12 +1428,12 @@ useEffect(() => {
 <DeleteConfirmationDialog
     isOpen={modal?.type === "remove"}
     title="Remove Vendor Assignment?"
-    message={`Are you sure you want to remove ${
+    message={`Are you sure you want to Inactive ${
         modal?.vendor?.name || "this vendor"
     } from this ${entityName}? The vendor will remain available in Master Data.`}
     cancelLabel="Cancel"
-    confirmLabel="Remove"
-    busyLabel="Removing..."
+    confirmLabel="Inactive"
+    busyLabel="Inactivating..."
     busy={busy}
     error={saveError}
     iconClassName="bi bi-trash3"

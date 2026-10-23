@@ -321,7 +321,7 @@ async function confirmDeleteTemplate() {
     String(targetId).trim() === ""
   ) {
     setDeleteError(
-      "Role Template ID is missing. Cannot deactivate."
+      "Role Template ID is missing. Cannot Inactive."
     );
     return;
   }
@@ -350,14 +350,14 @@ async function confirmDeleteTemplate() {
     setTemplateToDelete(null);
     setDeleteError("");
   } catch (err) {
-    console.error("Role Template deactivate failed:", err);
+    console.error("Role Template Inactive failed:", err);
 
     const errorMsg =
       err?.response?.data?.message ||
       err?.response?.data?.error ||
       err?.response?.data?.errors?.[0]?.message ||
       err?.message ||
-      "Unable to deactivate role template.";
+      "Unable to Inactive role template.";
 
     setDeleteError(errorMsg);
   } finally {
@@ -791,10 +791,10 @@ async function confirmDeleteTemplate() {
 
 <DeleteConfirmationDialog
   isOpen={deletePopup && Boolean(templateToDelete)}
-  title="Deactivate Role Template?"
+  title="Inactive Role Template?"
   message={
     templateToDelete
-      ? `Are you sure you want to deactivate "${
+      ? `Are you sure you want to Inactive "${
           templateToDelete.name ||
           templateToDelete.roleCode ||
           "this role template"
@@ -802,8 +802,8 @@ async function confirmDeleteTemplate() {
       : ""
   }
   cancelLabel="Cancel"
-  confirmLabel="Deactivate"
-  busyLabel="Deactivating..."
+  confirmLabel="Inactive"
+  busyLabel="Inactivating..."
   busy={saving}
   error={deleteError}
   iconClassName="bi bi-trash"

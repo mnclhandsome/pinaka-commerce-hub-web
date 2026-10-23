@@ -4,7 +4,7 @@
 .merchant-tenders .mt-header{  display: flex; align-items: center; justify-content: space-between;  gap: 16px;}
 .merchant-tenders h2,.merchant-tenders h3{margin:0 0 4px;padding:0;border:0;font-size:18px;font-weight:600;color:#17233e;}
 .merchant-tenders p{margin:4px 0 12px;color:#81899a;font-size:13px}
-.merchant-tenders button{padding:8px 12px;border:1px solid #5143bc;border-radius:5px;background:#fff;color:#5143bc;font:inherit;cursor:pointer}
+.merchant-tenders button{padding:8px 12px;border:1px solid #5143bc;border-radius:5px;background:#fff;color:#5143bc;cursor:pointer}
 .merchant-tenders button:disabled{opacity:.5;cursor:not-allowed}
 .merchant-tenders .mt-primary{background:#5143bc;color:white;border-color:#5143bc;white-space:nowrap}
 .merchant-tenders .mt-toolbar,.merchant-tenders .mt-footer{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:14px 0}
@@ -103,3 +103,10 @@
 @media(max-width:900px){.merchant-tenders .mt-existing-page>.pagination-container{height:auto;min-height:60px;flex-wrap:nowrap;justify-content:space-between;gap:10px;padding:10px 20px}.merchant-tenders .mt-existing-page>.pagination-container .pagination-info{width:auto;text-align:left}.merchant-tenders .mt-existing-page>.pagination-container .pagination-controls{width:auto;justify-content:flex-end}}
 @media(max-width:700px){.merchant-tenders .mt-existing-heading{align-items:flex-start;flex-direction:column;padding:18px 16px 10px}.merchant-tenders .mt-existing-page>.mt-picker-toolbar .filter-search{flex-basis:100%}.merchant-tenders .mt-existing-page>.mt-scroll{margin:0 16px;overflow-x:auto}.merchant-tenders .mt-existing-page>.pagination-container{padding:8px 16px 14px}.merchant-tenders .mt-existing-page>.mt-existing-footer{padding:16px;flex-wrap:wrap}.merchant-tenders .mt-existing-heading button{align-self:flex-end}}
 @media(max-width:560px){.merchant-tenders .mt-existing-page>.pagination-container{flex-wrap:wrap;justify-content:center}.merchant-tenders .mt-existing-page>.pagination-container .pagination-info{width:100%;text-align:center}.merchant-tenders .mt-existing-page>.pagination-container .pagination-controls{width:100%;justify-content:center}}
+
+.merchant-tenders > .mt-card:not(.mt-existing-page) > .pagination-container{
+  height: auto;
+    margin-top: 12px;
+    padding: 0;
+    box-sizing: border-box;
+}

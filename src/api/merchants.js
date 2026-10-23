@@ -164,8 +164,8 @@ export function toNestedMerchantPayload(data) {
   return {
     merchant: {
       ein: m.ein || m.EIN || "",
-      firstName: m.firstName || "",
-      lastName: m.lastName || "",
+      firstName: m.firstName || m.first_name || "",
+      lastName: m.lastName || m.last_name || "",
       business: businessName,
       display: businessDisplayName,
       name: merchantName,
@@ -234,18 +234,27 @@ export function toFlatMerchantPayload(data) {
 
   const addressLine1 =
     m.addressLine1 ||
+    m.address_line1 ||
+    m.address_line_1 ||
     data.addressLine1 ||
     primaryStore.addressLine1 ||
     primaryStore.address ||
     "";
   const addressLine2 =
-    m.addressLine2 || data.addressLine2 || primaryStore.addressLine2 || "";
+    m.addressLine2 ||
+    m.address_line2 ||
+    m.address_line_2 ||
+    data.addressLine2 ||
+    primaryStore.addressLine2 ||
+    "";
   const city = m.city || data.city || primaryStore.city || "";
   const state = m.state || data.state || primaryStore.state || "";
   const pinCode =
     m.postal ||
-    m.pinCode ||
     m.postalCode ||
+    m.postal_code ||
+    m.pinCode ||
+    m.pin_code ||
     data.postalCode ||
     primaryStore.postal ||
     primaryStore.zip ||
@@ -510,6 +519,30 @@ export function mapMerchantToRow(item) {
     merchant.updatedAt || merchant.updated_at || merchant.updatedDate ||
     merchant.updated_date || createdAt;
 
+  const address = merchant.businessAddress || merchant.address || {};
+  const firstName = merchant.firstName || merchant.first_name || "";
+  const lastName = merchant.lastName || merchant.last_name || "";
+  const addressLine1 =
+    merchant.addressLine1 ||
+    merchant.address_line1 ||
+    merchant.address_line_1 ||
+    (typeof address === "string" ? address : address.addressLine1 || address.address_line1 || address.address_line_1 || address.street || "") ||
+    "";
+  const addressLine2 =
+    merchant.addressLine2 ||
+    merchant.address_line2 ||
+    merchant.address_line_2 ||
+    (typeof address === "object" ? address.addressLine2 || address.address_line2 || address.address_line_2 || address.unit || "" : "") ||
+    "";
+  const postal =
+    merchant.postal ||
+    merchant.postalCode ||
+    merchant.postal_code ||
+    merchant.pinCode ||
+    merchant.pin_code ||
+    (typeof address === "object" ? address.zipCode || address.postalCode || address.postal_code || address.pinCode || "" : "") ||
+    "";
+
   return {
     id,
     uuid,
@@ -526,9 +559,19 @@ export function mapMerchantToRow(item) {
     initials: toInitials(name),
     createdAt,
     updatedAt,
-    country: merchant.country || "",
-    state: merchant.state || "",
-    city: merchant.city || "",
+    country: merchant.country || (typeof address === "object" ? address.country : "") || "",
+    state: merchant.state || (typeof address === "object" ? address.state || address.province : "") || "",
+    city: merchant.city || (typeof address === "object" ? address.city : "") || "",
+    firstName,
+    lastName,
+    addressLine1,
+    addressLine2,
+    postal,
+    postalCode: postal,
+    pinCode: postal,
+    business: merchant.legalBusinessName || merchant.businessName || merchant.business_name || name,
+    display: merchant.businessDisplayName || merchant.business_display_name || merchant.businessName || name,
+    ein: merchant.ein || merchant.EIN || merchant.taxId || merchant.tax_id || "",
     _raw: item,
   };
 }
@@ -542,18 +585,26 @@ export async function getMerchant(id) {
       ? merchant.stores
       : [];
   const subscription = data?.subscription || merchant?.subscription || null;
+  const mapped = mapMerchantToRow(merchant) || {};
 
   return {
     merchant: {
-      ...mapMerchantToRow(merchant),
+      ...mapped,
       plan:
         subscription?.planName ||
         subscription?.planCode ||
-        mapMerchantToRow(merchant).plan,
-      phone: merchant?.merchantPhoneNumber || merchant?.phone || "",
-      city: merchant?.city || "",
-      state: merchant?.state || "",
-      country: merchant?.country || "",
+        mapped.plan,
+      phone: merchant?.merchantPhoneNumber || merchant?.phone || mapped.phone || "",
+      city: merchant?.city || mapped.city || "",
+      state: merchant?.state || mapped.state || "",
+      country: merchant?.country || mapped.country || "",
+      firstName: merchant?.firstName || merchant?.first_name || mapped.firstName || "",
+      lastName: merchant?.lastName || merchant?.last_name || mapped.lastName || "",
+      addressLine1: merchant?.addressLine1 || merchant?.address_line1 || merchant?.address_line_1 || mapped.addressLine1 || "",
+      addressLine2: merchant?.addressLine2 || merchant?.address_line2 || merchant?.address_line_2 || mapped.addressLine2 || "",
+      postalCode: merchant?.postalCode || merchant?.postal_code || merchant?.pinCode || merchant?.pin_code || mapped.postal || "",
+      postal: merchant?.postal || merchant?.postalCode || merchant?.postal_code || merchant?.pinCode || merchant?.pin_code || mapped.postal || "",
+      pinCode: merchant?.pinCode || merchant?.pin_code || merchant?.postalCode || merchant?.postal_code || mapped.postal || "",
     },
     stores: stores.map(mapStoreToRow),
     subscription,

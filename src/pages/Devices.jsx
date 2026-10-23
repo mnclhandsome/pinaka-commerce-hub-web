@@ -233,11 +233,11 @@ export default function Devices() {
  
       } catch (error) {
  
-        console.error("Failed to deactivate device:", error);
+        console.error("Failed to Inactive device:", error);
  
         setApiError(
  
-          error?.message || "Failed to deactivate device. Please try again.",
+          error?.message || "Failed to Inactive device. Please try again.",
  
         );
  
@@ -478,7 +478,7 @@ export default function Devices() {
                 {" "}
 
  
-                <th>Device ID</th> <th>Device Code</th> <th>Device Name</th> <th>Device Type</th> <th>Serial Number</th>{" "}
+                <th>Device Code</th> <th>Device ID</th> <th>Device Name</th> <th>Device Type</th> <th>Serial Number</th>{" "}
  
                 <th>Merchant Name</th> <th>Connection Status</th>{" "}
  
@@ -579,14 +579,14 @@ export default function Devices() {
  
       <DeleteConfirmationDialog
         isOpen={Boolean(deleteDevice)}
-        title="Deactivate Device?"
+        title="Inactive Device?"
         message={deleteDevice
-          ? `Are you sure you want to deactivate ${deleteDevice.name || "this device"}?`
+          ? `Are you sure you want to Inactive ${deleteDevice.name || "this device"}?`
           : ""}
         busy={deleting}
         cancelLabel="Cancel"
-        confirmLabel="Deactivate"
-        busyLabel="Deactivating..."
+        confirmLabel="Inactive"
+        busyLabel="Inactivating..."
         onCancel={() => (deleting ? null : setDeleteDevice(null))}
         onConfirm={handleDeactivateDevice}
       />
@@ -702,11 +702,11 @@ function DeviceRow({
         }
       }}
     >
-      {/* DEVICE ID */}
-      <td>{device.deviceId || device.device_id || "-"}</td>
-
       {/* DEVICE CODE */}
       <td>{device.code || device.deviceCode || "-"}</td>
+
+      {/* DEVICE ID */}
+      <td>{device.deviceId || device.device_id || "-"}</td>
   
      {/* DEVICE NAME */}
       <td>
@@ -750,7 +750,7 @@ function DeviceRow({
           onDelete={onDelete}
           viewLabel={`View ${device.name || "device"}`}
           editLabel={`Edit ${device.name || "device"}`}
-          deleteLabel={`Deactivate ${device.name || "device"}`}
+          deleteLabel={`Inactive ${device.name || "device"}`}
           deleteDisabled={deleting}
         />
       </td>

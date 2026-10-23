@@ -490,7 +490,7 @@ export default function MerchantStores({
                                       setDeleteTarget(store);
                                     }
                               }
-                              deleteLabel={`Deactivate ${storeName}`}
+                              deleteLabel={`Inactive ${storeName}`}
                             />
                           </td>
                         </tr>
@@ -523,12 +523,12 @@ export default function MerchantStores({
 
       <DeleteConfirmationDialog
         isOpen={Boolean(deleteTarget)}
-        title="Deactivate Store?"
-        message={`Are you sure you want to deactivate ${
+        title="Inactive Store?"
+        message={`Are you sure you want to Inactive ${
           getStoreName(deleteTarget || {})
         }? The store will remain in the system with inactive status.`}
         cancelLabel="Cancel"
-        confirmLabel="Deactivate"
+        confirmLabel="Inactive"
         busyLabel="Deactivating..."
         busy={deleting}
         error={deleteError}
@@ -564,7 +564,7 @@ export default function MerchantStores({
             setDeleteTarget(null);
           } catch (failure) {
             setDeleteError(
-              failure.message || "Unable to deactivate store."
+              failure.message || "Unable to Inactive store."
             );
           } finally {
             setDeleting(false);

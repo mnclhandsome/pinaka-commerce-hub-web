@@ -408,8 +408,4 @@
 .add-employee-page .employee-phone-field .react-tel-input {
   width: 100%;
 }
-.add-employee-page .employee-phone-field .react-tel-input .form-control {
-  width: 100%;
-  height: 46px;
-  border-radius: 8px;
-}
+
